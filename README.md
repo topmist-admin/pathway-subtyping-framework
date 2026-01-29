@@ -2,7 +2,10 @@
 
 **A Disease-Agnostic Tool for Pathway-Based Molecular Subtype Discovery**
 
+[![CI](https://github.com/topmist-admin/pathway-subtyping-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/topmist-admin/pathway-subtyping-framework/actions/workflows/ci.yml)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ---
 
@@ -44,25 +47,58 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 ### Installation
 
 ```bash
+# Clone the repository
 git clone https://github.com/topmist-admin/pathway-subtyping-framework
 cd pathway-subtyping-framework
-pip install -r requirements.txt
+
+# Create virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+
+# Install the package
 pip install -e .
+
+# Verify installation
+psf --version
 ```
 
-### Run Demo
+### Run with Sample Data
 
 ```bash
-# Run with example autism data
-python -m pathway_subtyping --config configs/example_autism.yaml
+# Run the pipeline with synthetic test data
+psf --config configs/test_synthetic.yaml
 
-# Run with your disease config
-python -m pathway_subtyping --config configs/your_disease.yaml
+# View results
+cat outputs/synthetic_test/report.md
+```
+
+### Run with Your Data
+
+```bash
+# Copy and customize a config
+cp configs/example_autism.yaml configs/my_analysis.yaml
+
+# Edit paths in my_analysis.yaml, then run
+psf --config configs/my_analysis.yaml
 ```
 
 ### Try in Browser (No Installation)
 
-[Open in Google Colab](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/01_demo_generic.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/01_getting_started.ipynb)
+
+### Docker
+
+```bash
+# Run pipeline
+docker-compose run pipeline
+
+# Run tests
+docker-compose run test
+
+# Start Jupyter notebook
+docker-compose up jupyter
+# Open http://localhost:8888
+```
 
 ## Adapting for Your Disease
 
@@ -113,17 +149,37 @@ pathway-subtyping-framework/
 ├── configs/                   # Example YAML configurations
 │   ├── example_autism.yaml
 │   ├── example_schizophrenia.yaml
+│   ├── test_synthetic.yaml    # Ready-to-run test config
 │   └── example_epilepsy.yaml
-├── data/pathways/             # Pathway GMT files
-│   ├── autism_pathways.gmt
-│   ├── schizophrenia_pathways.gmt
-│   └── README.md              # How to create your own
+├── data/
+│   ├── pathways/              # Pathway GMT files
+│   └── sample/                # Synthetic test data
 ├── docs/guides/               # Documentation
 │   ├── adapting-for-your-disease.md
 │   ├── pathway-curation-guide.md
 │   └── validation-gates.md
-├── examples/notebooks/        # Jupyter notebooks
-└── tests/                     # Test suite
+├── examples/notebooks/        # Jupyter tutorials
+├── tests/                     # Test suite (64 tests)
+├── Dockerfile                 # Container support
+└── docker-compose.yml         # Easy orchestration
+```
+
+## Development
+
+```bash
+# Install with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/ -v
+
+# Run linting
+black src/ tests/
+isort src/ tests/
+flake8 src/ tests/
+
+# Set up pre-commit hooks
+pre-commit install
 ```
 
 ## Related Projects

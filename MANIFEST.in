@@ -1,0 +1,33 @@
+# Include documentation
+include README.md
+include CHANGELOG.md
+include CONTRIBUTING.md
+include LICENSE
+
+# Include configuration examples
+recursive-include configs *.yaml
+
+# Include pathway data
+recursive-include data/pathways *.gmt *.md
+
+# Include sample data for testing
+recursive-include data/sample *.vcf *.csv
+
+# Include documentation guides
+recursive-include docs *.md
+
+# Exclude test files from distribution (tests are in separate dev install)
+prune tests
+prune outputs
+
+# Exclude development files
+exclude .pre-commit-config.yaml
+exclude Dockerfile
+exclude docker-compose.yml
+exclude .dockerignore
+
+# Exclude CI/CD
+prune .github
+
+# Exclude notebooks from package (available separately)
+prune examples
