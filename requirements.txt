@@ -1,0 +1,25 @@
+# Core dependencies
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+scikit-learn>=1.3.0,<2.0.0
+scipy>=1.11.0,<2.0.0
+
+# VCF processing
+pysam>=0.21.0,<1.0.0
+
+# Configuration
+pyyaml>=6.0,<7.0
+
+# Visualization
+matplotlib>=3.7.0,<4.0.0
+seaborn>=0.12.0,<1.0.0
+
+# Reporting
+jinja2>=3.1.0,<4.0.0
+
+# Progress bars
+tqdm>=4.65.0,<5.0.0
+
+# Optional: Jupyter support
+# jupyter>=1.0.0
+# ipykernel>=6.0.0

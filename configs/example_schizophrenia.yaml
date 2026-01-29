@@ -1,0 +1,57 @@
+# Schizophrenia - Example Configuration
+# Adapt pathway file and phenotype measures for your cohort
+
+pipeline:
+  name: "schizophrenia_subtyping"
+  output_dir: "outputs/schizophrenia"
+  seed: 42
+  verbose: true
+
+data:
+  vcf_path: "path/to/your/scz_cohort.vcf"
+  phenotype_path: "path/to/your/scz_phenotypes.csv"
+  pathway_db: "data/pathways/schizophrenia_pathways.gmt"
+
+variant_filter:
+  min_depth: 10
+  min_gq: 20
+  max_maf: 0.001
+  consequences:
+    - "frameshift_variant"
+    - "stop_gained"
+    - "stop_lost"
+    - "splice_acceptor_variant"
+    - "splice_donor_variant"
+    - "missense_variant"
+  min_cadd: 25
+
+burden:
+  lof_weight: 2.0
+  missense_weight: 1.0
+  normalize: true
+
+clustering:
+  method: "gmm"
+  n_clusters: null
+  n_clusters_range: [2, 6]  # Schizophrenia may have fewer subtypes
+  covariance_type: "full"
+
+validation:
+  run_gates: true
+  label_shuffle_iterations: 100
+  random_genes_iterations: 100
+  bootstrap_iterations: 100
+  stability_threshold: 0.8
+  negative_control_threshold: 0.15
+
+output:
+  save_pathway_scores: true
+  save_cluster_assignments: true
+  generate_report: true
+  disclaimer: "Research use only. Not for clinical diagnosis."
+
+# Schizophrenia-specific notes:
+# - Consider PANSS scores for phenotype correlation
+# - Age of onset may correlate with subtypes
+# - Cognitive measures (MATRICS) are valuable
+# - Treatment response data can validate subtypes
