@@ -151,7 +151,8 @@ class ValidationGates:
         )
         results.append(stability_result)
         logger.info(
-            f"  - {stability_result.name}: {stability_result.status} (ARI = {stability_result.metric_value:.3f})"
+            f"  - {stability_result.name}: {stability_result.status} "
+            f"(ARI = {stability_result.metric_value:.3f})"
         )
 
         # Aggregate results

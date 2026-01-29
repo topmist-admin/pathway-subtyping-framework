@@ -322,7 +322,8 @@ def generate_cross_cohort_report(
                 f"{r.details.get('cohort_a_clusters', 'N/A')} clusters",
                 f"- Cohort B: {r.details.get('cohort_b_samples', 'N/A')} samples, "
                 f"{r.details.get('cohort_b_clusters', 'N/A')} clusters",
-                f"- Shared subtype labels: {', '.join(r.shared_subtypes) if r.shared_subtypes else 'None'}",
+                f"- Shared subtype labels: "
+                f"{', '.join(r.shared_subtypes) if r.shared_subtypes else 'None'}",
                 "",
             ]
         )
