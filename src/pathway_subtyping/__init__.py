@@ -10,6 +10,13 @@ __author__ = "Rohit Chauhan"
 
 from .pipeline import DemoPipeline, PipelineConfig
 from .validation import ValidationGates, ValidationGatesResult, ValidationResult
+from .cross_cohort import (
+    compare_cohorts,
+    load_cohort_result,
+    batch_compare_cohorts,
+    CohortResult,
+    CrossCohortResult,
+)
 
 __all__ = [
     "DemoPipeline",
@@ -17,5 +24,10 @@ __all__ = [
     "ValidationGates",
     "ValidationGatesResult",
     "ValidationResult",
+    "compare_cohorts",
+    "load_cohort_result",
+    "batch_compare_cohorts",
+    "CohortResult",
+    "CrossCohortResult",
     "__version__",
 ]
