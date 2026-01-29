@@ -83,6 +83,10 @@ outputs/
 *.fastq
 *.fastq.gz
 
+# Exception: Include sample data for testing
+!data/sample/*.vcf
+!data/sample/*.csv
+
 # Large data files
 data/cohorts/
 *.parquet

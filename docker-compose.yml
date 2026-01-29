@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Run the pipeline with a config file
+  pipeline:
+    build:
+      context: .
+      target: runtime
+    volumes:
+      - ./data:/home/psf/data:ro
+      - ./configs:/home/psf/configs:ro
+      - ./outputs:/home/psf/outputs
+    command: ["--config", "configs/test_synthetic.yaml"]
+
+  # Development environment with tests
+  dev:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/home/psf/workspace
+      - ./outputs:/home/psf/outputs
+    working_dir: /home/psf/workspace
+    command: ["/bin/bash"]
+    stdin_open: true
+    tty: true
+
+  # Run tests
+  test:
+    build:
+      context: .
+      target: development
+    volumes:
+      - ./outputs:/home/psf/outputs
+    command: ["pytest", "tests/", "-v"]
+
+  # Jupyter notebook server
+  jupyter:
+    build:
+      context: .
+      target: jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data:/home/psf/data:ro
+      - ./configs:/home/psf/configs:ro
+      - ./outputs:/home/psf/outputs
+      - ./examples/notebooks:/home/psf/examples/notebooks

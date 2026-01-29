@@ -1,0 +1,50 @@
+# Test configuration using synthetic sample data
+# This config demonstrates the pipeline with simulated data containing
+# 4 planted subtypes: synaptic, chromatin, ion_channel, and mtor
+
+pipeline:
+  name: synthetic_test
+  output_dir: outputs/synthetic_test
+  seed: 42
+  verbose: true
+
+data:
+  vcf_path: data/sample/synthetic_cohort.vcf
+  phenotype_path: data/sample/synthetic_phenotypes.csv
+  pathway_db: data/pathways/autism_pathways.gmt
+
+variant_filter:
+  min_depth: 10
+  min_gq: 20
+  max_maf: 0.001
+  consequences:
+    - frameshift_variant
+    - stop_gained
+    - missense_variant
+  min_cadd: 25
+
+burden:
+  weights:
+    frameshift_variant: 1.0
+    stop_gained: 1.0
+    missense_variant: 0.5
+  cadd_normalization: 40
+
+clustering:
+  method: gmm
+  n_clusters: null  # Auto-select using BIC
+  n_clusters_range: [2, 6]
+
+validation:
+  run_gates: true
+  label_shuffle_iterations: 100
+  bootstrap_iterations: 50
+  stability_threshold: 0.8
+  null_ari_max: 0.15
+
+output:
+  save_pathway_scores: true
+  save_cluster_assignments: true
+  generate_figures: true
+  generate_reports: true
+  disclaimer: "Synthetic test data - for demonstration purposes only."
