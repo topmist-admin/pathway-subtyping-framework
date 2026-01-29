@@ -1,0 +1,30 @@
+[flake8]
+# Use a more permissive line length (common with Black projects)
+max-line-length = 100
+
+# Ignore errors that conflict with Black or are not critical
+extend-ignore =
+    # E203: Whitespace before ':' (conflicts with Black's slice formatting)
+    E203,
+    # W503: Line break before binary operator (conflicts with Black)
+    W503,
+    # E501: Line too long (handled by Black, allow some flexibility)
+    E501,
+
+# Exclude directories
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.egg-info,
+    venv,
+    pathwayenv,
+    .eggs,
+
+# Per-file ignores
+per-file-ignores =
+    # __init__.py files often have unused imports for re-export
+    __init__.py: F401
+    # Test files may have imports for fixtures
+    test_*.py: F401,F841

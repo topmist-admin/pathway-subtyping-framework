@@ -2,7 +2,6 @@
 Pytest configuration and shared fixtures for pathway_subtyping tests.
 """
 
-import os
 import tempfile
 from pathlib import Path
 

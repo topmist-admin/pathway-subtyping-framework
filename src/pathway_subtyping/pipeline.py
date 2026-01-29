@@ -8,7 +8,6 @@ from data loading through subtype clustering and output generation.
 import hashlib
 import json
 import logging
-import os
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -20,7 +19,7 @@ import pandas as pd
 import yaml
 
 from .utils.seed import get_rng, set_global_seed
-from .validation import ValidationGates, ValidationGatesResult, format_validation_report
+from .validation import ValidationGates, ValidationGatesResult
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -370,7 +369,7 @@ class DemoPipeline:
             {
                 "sample_id": self.pathway_scores.index,
                 "cluster_id": labels,
-                "cluster_label": [cluster_labels[l] for l in labels],
+                "cluster_label": [cluster_labels[label] for label in labels],
                 "confidence": probs.max(axis=1),
             }
         )
@@ -623,8 +622,8 @@ class DemoPipeline:
             "",
             "## Input Summary",
             "",
-            f"| Metric | Value |",
-            f"|--------|-------|",
+            "| Metric | Value |",
+            "|--------|-------|",
             f"| Variants | {report['summary']['n_variants']} |",
             f"| Samples | {report['summary']['n_samples']} |",
             f"| Genes | {report['summary']['n_genes']} |",
@@ -694,11 +693,11 @@ class DemoPipeline:
             status = "PASS" if threshold_met else "FAIL"
             lines.extend(
                 [
-                    f"| Metric | Value | Status |",
-                    f"|--------|-------|--------|",
+                    "| Metric | Value | Status |",
+                    "|--------|-------|--------|",
                     f"| Adjusted Rand Index | {ari} | {status} |",
                     "",
-                    f"*Threshold: ARI > 0.7 for planted subtype recovery*",
+                    "*Threshold: ARI > 0.7 for planted subtype recovery*",
                 ]
             )
         else:
