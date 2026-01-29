@@ -1,14 +1,21 @@
 """
 Pathway Subtyping Framework
 
-A disease-agnostic tool for pathway-based molecular subtype discovery.
+A disease-agnostic framework for pathway-based molecular subtype discovery
+in genetically heterogeneous conditions.
 """
 
 __version__ = "0.1.0"
 __author__ = "Rohit Chauhan"
-__email__ = "info@topmist.com"
 
-from .pipeline import run_pipeline
-from .config import load_config
+from .pipeline import DemoPipeline, PipelineConfig
+from .validation import ValidationGates, ValidationGatesResult, ValidationResult
 
-__all__ = ["run_pipeline", "load_config", "__version__"]
+__all__ = [
+    "DemoPipeline",
+    "PipelineConfig",
+    "ValidationGates",
+    "ValidationGatesResult",
+    "ValidationResult",
+    "__version__",
+]
