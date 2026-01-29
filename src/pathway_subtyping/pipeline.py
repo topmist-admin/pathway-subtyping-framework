@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from .utils.seed import set_global_seed, get_rng
+from .utils.seed import get_rng, set_global_seed
 from .validation import ValidationGates, ValidationGatesResult, format_validation_report
 
 # Configure logging
@@ -323,8 +323,8 @@ class DemoPipeline:
         """Cluster samples into subtypes using GMM."""
         logger.info("Clustering samples into subtypes...")
 
-        from sklearn.mixture import GaussianMixture
         from sklearn.metrics import silhouette_score
+        from sklearn.mixture import GaussianMixture
 
         X = self.pathway_scores.values
 
@@ -332,9 +332,7 @@ class DemoPipeline:
         if self.config.n_clusters is None:
             best_bic = np.inf
             best_k = 2
-            for k in range(
-                self.config.n_clusters_range[0], self.config.n_clusters_range[1] + 1
-            ):
+            for k in range(self.config.n_clusters_range[0], self.config.n_clusters_range[1] + 1):
                 gmm = GaussianMixture(
                     n_components=k,
                     covariance_type="full",
@@ -379,9 +377,9 @@ class DemoPipeline:
 
         # Add planted subtype for validation if available
         if "planted_subtype" in self.phenotypes_df.columns:
-            self.cluster_assignments["planted_subtype"] = self.cluster_assignments[
-                "sample_id"
-            ].map(self.phenotypes_df["planted_subtype"])
+            self.cluster_assignments["planted_subtype"] = self.cluster_assignments["sample_id"].map(
+                self.phenotypes_df["planted_subtype"]
+            )
 
         # Compute silhouette score
         if n_clusters > 1:
@@ -408,7 +406,11 @@ class DemoPipeline:
                 label = "synaptic"
             elif "CHROMATIN" in top_pathway_upper or "HISTONE" in top_pathway_upper:
                 label = "chromatin"
-            elif "ION_CHANNEL" in top_pathway_upper or "SODIUM" in top_pathway_upper or "POTASSIUM" in top_pathway_upper:
+            elif (
+                "ION_CHANNEL" in top_pathway_upper
+                or "SODIUM" in top_pathway_upper
+                or "POTASSIUM" in top_pathway_upper
+            ):
                 label = "ion_channel"
             elif "DOPAMINE" in top_pathway_upper:
                 label = "dopamine"
@@ -491,6 +493,7 @@ class DemoPipeline:
         try:
             # Set non-interactive backend before importing pyplot
             import matplotlib
+
             matplotlib.use("Agg")
             import matplotlib.pyplot as plt
             import seaborn as sns
@@ -646,17 +649,19 @@ class DemoPipeline:
             tests = validation_gates.get("tests", [])
 
             status_str = "PASS" if all_passed else "FAIL"
-            lines.extend([
-                "",
-                "## Validation Gates",
-                "",
-                f"**Overall Status:** {status_str}",
-                "",
-                f"{summary}",
-                "",
-                "| Test | Status | Metric | Value | Threshold |",
-                "|------|--------|--------|-------|-----------|",
-            ])
+            lines.extend(
+                [
+                    "",
+                    "## Validation Gates",
+                    "",
+                    f"**Overall Status:** {status_str}",
+                    "",
+                    f"{summary}",
+                    "",
+                    "| Test | Status | Metric | Value | Threshold |",
+                    "|------|--------|--------|-------|-----------|",
+                ]
+            )
 
             for test in tests:
                 status_icon = "PASS" if test["status"] == "PASS" else "FAIL"
@@ -665,17 +670,19 @@ class DemoPipeline:
                     f"{test['value']:.3f} | {test['comparison']} {test['threshold']} |"
                 )
 
-            lines.extend([
-                "",
-                "### Interpretation",
-                "",
-                "- **Negative Control 1 (Label Shuffle)**: Clustering should NOT recover "
-                "randomly shuffled labels. PASS means no spurious patterns.",
-                "- **Negative Control 2 (Random Gene Sets)**: Clusters should be driven by "
-                "biological pathways, not random genes. PASS means pathways matter.",
-                "- **Stability Test (Bootstrap)**: Clusters should be robust to resampling. "
-                "PASS means stable features.",
-            ])
+            lines.extend(
+                [
+                    "",
+                    "### Interpretation",
+                    "",
+                    "- **Negative Control 1 (Label Shuffle)**: Clustering should NOT recover "
+                    "randomly shuffled labels. PASS means no spurious patterns.",
+                    "- **Negative Control 2 (Random Gene Sets)**: Clusters should be driven by "
+                    "biological pathways, not random genes. PASS means pathways matter.",
+                    "- **Stability Test (Bootstrap)**: Clusters should be robust to resampling. "
+                    "PASS means stable features.",
+                ]
+            )
 
         # Ground truth validation (planted subtypes)
         lines.extend(["", "## Ground Truth Validation", ""])
@@ -716,6 +723,7 @@ class DemoPipeline:
 
     def _save_metadata(self) -> None:
         """Save run metadata for reproducibility."""
+
         # Compute file hashes
         def file_hash(path: str) -> str:
             if not Path(path).exists():

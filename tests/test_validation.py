@@ -8,8 +8,8 @@ import pytest
 
 from pathway_subtyping.validation import (
     ValidationGates,
-    ValidationResult,
     ValidationGatesResult,
+    ValidationResult,
 )
 
 
@@ -65,12 +65,20 @@ class TestValidationResult:
     def test_validation_result_status_property(self):
         """Test status property."""
         result_pass = ValidationResult(
-            name="Test", passed=True, metric_name="ARI",
-            metric_value=0.1, threshold=0.15, comparison="<"
+            name="Test",
+            passed=True,
+            metric_name="ARI",
+            metric_value=0.1,
+            threshold=0.15,
+            comparison="<",
         )
         result_fail = ValidationResult(
-            name="Test", passed=False, metric_name="ARI",
-            metric_value=0.2, threshold=0.15, comparison="<"
+            name="Test",
+            passed=False,
+            metric_name="ARI",
+            metric_value=0.2,
+            threshold=0.15,
+            comparison="<",
         )
 
         assert result_pass.status == "PASS"
@@ -89,9 +97,7 @@ class TestValidationGatesResult:
         ]
 
         gates_result = ValidationGatesResult(
-            results=results,
-            all_passed=True,
-            summary="All 3 validation gates PASSED"
+            results=results, all_passed=True, summary="All 3 validation gates PASSED"
         )
 
         assert gates_result.all_passed is True
@@ -106,9 +112,7 @@ class TestValidationGatesResult:
         ]
 
         gates_result = ValidationGatesResult(
-            results=results,
-            all_passed=False,
-            summary="2/3 validation gates passed. FAILED: Test2"
+            results=results, all_passed=False, summary="2/3 validation gates passed. FAILED: Test2"
         )
 
         assert gates_result.all_passed is False
@@ -121,9 +125,7 @@ class TestValidationGatesResult:
         ]
 
         gates_result = ValidationGatesResult(
-            results=results,
-            all_passed=True,
-            summary="All tests passed"
+            results=results, all_passed=True, summary="All tests passed"
         )
         d = gates_result.to_dict()
 
@@ -307,9 +309,7 @@ class TestValidationGatesReproducibility:
 
         assert result1.metric_value == result2.metric_value
 
-    def test_different_seeds_different_results(
-        self, sample_pathway_scores, sample_cluster_labels
-    ):
+    def test_different_seeds_different_results(self, sample_pathway_scores, sample_cluster_labels):
         """Test that different seeds produce different results."""
         validator1 = ValidationGates(seed=42, n_permutations=20)
         validator2 = ValidationGates(seed=123, n_permutations=20)

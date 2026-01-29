@@ -5,7 +5,8 @@ Provides utility functions for loading pipeline configuration from YAML files.
 """
 
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
+
 import yaml
 
 

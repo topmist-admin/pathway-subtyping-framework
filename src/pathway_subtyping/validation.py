@@ -132,21 +132,27 @@ class ValidationGates:
             pathway_scores, cluster_labels, n_clusters, gmm_seed
         )
         results.append(nc1_result)
-        logger.info(f"  - {nc1_result.name}: {nc1_result.status} (ARI = {nc1_result.metric_value:.3f})")
+        logger.info(
+            f"  - {nc1_result.name}: {nc1_result.status} (ARI = {nc1_result.metric_value:.3f})"
+        )
 
         # Negative Control 2: Random gene sets
         nc2_result = self.negative_control_random_gene_sets(
             gene_burdens, pathways, cluster_labels, n_clusters, gmm_seed
         )
         results.append(nc2_result)
-        logger.info(f"  - {nc2_result.name}: {nc2_result.status} (ARI = {nc2_result.metric_value:.3f})")
+        logger.info(
+            f"  - {nc2_result.name}: {nc2_result.status} (ARI = {nc2_result.metric_value:.3f})"
+        )
 
         # Stability Test: Bootstrap
         stability_result = self.stability_test_bootstrap(
             pathway_scores, cluster_labels, n_clusters, gmm_seed
         )
         results.append(stability_result)
-        logger.info(f"  - {stability_result.name}: {stability_result.status} (ARI = {stability_result.metric_value:.3f})")
+        logger.info(
+            f"  - {stability_result.name}: {stability_result.status} (ARI = {stability_result.metric_value:.3f})"
+        )
 
         # Aggregate results
         all_passed = all(r.passed for r in results)
@@ -414,19 +420,21 @@ def format_validation_report(result: ValidationGatesResult) -> str:
             f"{test.metric_value:.3f} | {test.comparison} {test.threshold} |"
         )
 
-    lines.extend([
-        "",
-        "### Interpretation",
-        "",
-        "- **Negative Control 1 (Label Shuffle)**: Tests if clustering can recover "
-        "randomly shuffled labels. PASS means clustering does NOT find spurious patterns.",
-        "",
-        "- **Negative Control 2 (Random Gene Sets)**: Tests if clusters are driven by "
-        "biological pathways vs. random gene groupings. PASS means biological pathways matter.",
-        "",
-        "- **Stability Test (Bootstrap)**: Tests if clusters are robust to resampling. "
-        "PASS means clusters are stable features of the data.",
-        "",
-    ])
+    lines.extend(
+        [
+            "",
+            "### Interpretation",
+            "",
+            "- **Negative Control 1 (Label Shuffle)**: Tests if clustering can recover "
+            "randomly shuffled labels. PASS means clustering does NOT find spurious patterns.",
+            "",
+            "- **Negative Control 2 (Random Gene Sets)**: Tests if clusters are driven by "
+            "biological pathways vs. random gene groupings. PASS means biological pathways matter.",
+            "",
+            "- **Stability Test (Bootstrap)**: Tests if clusters are robust to resampling. "
+            "PASS means clusters are stable features of the data.",
+            "",
+        ]
+    )
 
     return "\n".join(lines)

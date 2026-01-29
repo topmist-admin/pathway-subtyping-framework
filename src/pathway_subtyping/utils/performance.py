@@ -66,9 +66,7 @@ def chunked_vcf_reader(
                 all_samples = parts[9:]
 
                 if sample_subset:
-                    sample_indices = [
-                        i for i, s in enumerate(all_samples) if s in sample_subset
-                    ]
+                    sample_indices = [i for i, s in enumerate(all_samples) if s in sample_subset]
                     samples = [all_samples[i] for i in sample_indices]
                 else:
                     samples = all_samples
@@ -96,18 +94,20 @@ def chunked_vcf_reader(
                     key, val = item.split("=", 1)
                     info_dict[key] = val
 
-            variants_chunk.append({
-                "chrom": chrom,
-                "pos": int(pos),
-                "id": vid,
-                "ref": ref,
-                "alt": alt,
-                "qual": float(qual) if qual != "." else 0,
-                "filter": filt,
-                "gene": info_dict.get("GENE", ""),
-                "consequence": info_dict.get("CONSEQUENCE", ""),
-                "cadd": float(info_dict.get("CADD", 0)),
-            })
+            variants_chunk.append(
+                {
+                    "chrom": chrom,
+                    "pos": int(pos),
+                    "id": vid,
+                    "ref": ref,
+                    "alt": alt,
+                    "qual": float(qual) if qual != "." else 0,
+                    "filter": filt,
+                    "gene": info_dict.get("GENE", ""),
+                    "consequence": info_dict.get("CONSEQUENCE", ""),
+                    "cadd": float(info_dict.get("CADD", 0)),
+                }
+            )
 
             # Parse genotypes
             sample_gts = parts[9:]
@@ -223,7 +223,7 @@ def parallel_pathway_scores(
         n_workers = min(os.cpu_count() or 4, len(pathways))
 
     def compute_single_pathway(
-        pathway_data: Tuple[str, List[str]]
+        pathway_data: Tuple[str, List[str]],
     ) -> Tuple[str, Optional[pd.Series]]:
         pathway_name, pathway_genes = pathway_data
         common_genes = [g for g in pathway_genes if g in gene_burdens.columns]
@@ -361,9 +361,7 @@ def downsample_cohort(
 
         for name, group in groups:
             n_select = min(len(group), samples_per_group)
-            selected.extend(
-                rng.choice(group.index.tolist(), size=n_select, replace=False)
-            )
+            selected.extend(rng.choice(group.index.tolist(), size=n_select, replace=False))
 
         # Fill remaining quota
         remaining = target_size - len(selected)

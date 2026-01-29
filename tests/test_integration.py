@@ -92,9 +92,7 @@ class TestEndToEndPipeline:
         assert "planted_subtype" in assignments.columns
 
         # Calculate ARI between discovered and planted
-        ari = adjusted_rand_score(
-            assignments["planted_subtype"], assignments["cluster_label"]
-        )
+        ari = adjusted_rand_score(assignments["planted_subtype"], assignments["cluster_label"])
 
         # Should have high agreement (ARI > 0.7)
         # Note: With perfect synthetic data, should be very high
@@ -169,6 +167,7 @@ class TestCLIIntegration:
     ):
         """Test CLI run with config file."""
         import subprocess
+
         import yaml
 
         # Create config file

@@ -78,9 +78,7 @@ def load_cohort_result(output_dir: str) -> CohortResult:
         name = output_path.name
 
     # Build cluster name mapping
-    cluster_names = dict(
-        zip(assignments["cluster_id"], assignments["cluster_label"])
-    )
+    cluster_names = dict(zip(assignments["cluster_id"], assignments["cluster_label"]))
 
     return CohortResult(
         name=name,
@@ -130,16 +128,17 @@ def compare_cohorts(
 
     # 1. Transfer Learning: Train on A, predict on B
     transfer_ari = _transfer_learning_validation(
-        scores_a, cohort_a.cluster_labels,
-        scores_b, cohort_b.cluster_labels,
-        cohort_a.n_clusters, seed
+        scores_a,
+        cohort_a.cluster_labels,
+        scores_b,
+        cohort_b.cluster_labels,
+        cohort_a.n_clusters,
+        seed,
     )
 
     # 2. Projection: Compare cluster means
     projection_ari = _projection_validation(
-        scores_a, cohort_a.cluster_labels,
-        scores_b, cohort_b.cluster_labels,
-        seed
+        scores_a, cohort_a.cluster_labels, scores_b, cohort_b.cluster_labels, seed
     )
 
     # 3. Pathway correlation
@@ -161,7 +160,7 @@ def compare_cohorts(
             "cohort_b_samples": cohort_b.n_samples,
             "cohort_a_clusters": cohort_a.n_clusters,
             "cohort_b_clusters": cohort_b.n_clusters,
-        }
+        },
     )
 
 
@@ -221,8 +220,7 @@ def _projection_validation(
     assigned_b = []
     for sample in proj_b:
         distances = {
-            label: np.linalg.norm(sample - centroid)
-            for label, centroid in centroids_a.items()
+            label: np.linalg.norm(sample - centroid) for label, centroid in centroids_a.items()
         }
         assigned_b.append(min(distances, key=distances.get))
 
@@ -286,42 +284,48 @@ def generate_cross_cohort_report(
             f"{r.projection_ari:.3f} | {r.pathway_correlation:.3f} | {shared_str} |"
         )
 
-    lines.extend([
-        "",
-        "## Interpretation",
-        "",
-        "- **Transfer ARI > 0.5**: Good reproducibility of subtype structure",
-        "- **Projection ARI > 0.5**: Consistent pathway-subtype relationships",
-        "- **Pathway Correlation > 0.7**: Similar pathway importance across cohorts",
-        "",
-        "### Metric Definitions",
-        "",
-        "- **Transfer ARI**: Train GMM on cohort A, predict on cohort B, "
-        "compare to cohort B's discovered labels",
-        "- **Projection ARI**: Project both cohorts to shared PCA space, "
-        "assign B samples to nearest A centroids",
-        "- **Pathway Correlation**: Correlation of pathway variance between cohorts",
-        "",
-    ])
+    lines.extend(
+        [
+            "",
+            "## Interpretation",
+            "",
+            "- **Transfer ARI > 0.5**: Good reproducibility of subtype structure",
+            "- **Projection ARI > 0.5**: Consistent pathway-subtype relationships",
+            "- **Pathway Correlation > 0.7**: Similar pathway importance across cohorts",
+            "",
+            "### Metric Definitions",
+            "",
+            "- **Transfer ARI**: Train GMM on cohort A, predict on cohort B, "
+            "compare to cohort B's discovered labels",
+            "- **Projection ARI**: Project both cohorts to shared PCA space, "
+            "assign B samples to nearest A centroids",
+            "- **Pathway Correlation**: Correlation of pathway variance between cohorts",
+            "",
+        ]
+    )
 
     # Add detailed results
-    lines.extend([
-        "## Detailed Results",
-        "",
-    ])
+    lines.extend(
+        [
+            "## Detailed Results",
+            "",
+        ]
+    )
 
     for i, r in enumerate(results, 1):
-        lines.extend([
-            f"### {i}. {r.cohort_a} vs {r.cohort_b}",
-            "",
-            f"- Common pathways: {r.details.get('common_pathways', 'N/A')}",
-            f"- Cohort A: {r.details.get('cohort_a_samples', 'N/A')} samples, "
-            f"{r.details.get('cohort_a_clusters', 'N/A')} clusters",
-            f"- Cohort B: {r.details.get('cohort_b_samples', 'N/A')} samples, "
-            f"{r.details.get('cohort_b_clusters', 'N/A')} clusters",
-            f"- Shared subtype labels: {', '.join(r.shared_subtypes) if r.shared_subtypes else 'None'}",
-            "",
-        ])
+        lines.extend(
+            [
+                f"### {i}. {r.cohort_a} vs {r.cohort_b}",
+                "",
+                f"- Common pathways: {r.details.get('common_pathways', 'N/A')}",
+                f"- Cohort A: {r.details.get('cohort_a_samples', 'N/A')} samples, "
+                f"{r.details.get('cohort_a_clusters', 'N/A')} clusters",
+                f"- Cohort B: {r.details.get('cohort_b_samples', 'N/A')} samples, "
+                f"{r.details.get('cohort_b_clusters', 'N/A')} clusters",
+                f"- Shared subtype labels: {', '.join(r.shared_subtypes) if r.shared_subtypes else 'None'}",
+                "",
+            ]
+        )
 
     with open(output_path, "w") as f:
         f.write("\n".join(lines))
@@ -351,7 +355,9 @@ def batch_compare_cohorts(
         try:
             cohort = load_cohort_result(dir_path)
             cohorts.append(cohort)
-            logger.info(f"Loaded {cohort.name}: {cohort.n_samples} samples, {cohort.n_clusters} clusters")
+            logger.info(
+                f"Loaded {cohort.name}: {cohort.n_samples} samples, {cohort.n_clusters} clusters"
+            )
         except Exception as e:
             logger.warning(f"Could not load {dir_path}: {e}")
 
@@ -361,7 +367,7 @@ def batch_compare_cohorts(
     # Compare all pairs
     results = []
     for i, cohort_a in enumerate(cohorts):
-        for cohort_b in cohorts[i + 1:]:
+        for cohort_b in cohorts[i + 1 :]:
             try:
                 result = compare_cohorts(cohort_a, cohort_b, seed)
                 results.append(result)
