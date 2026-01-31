@@ -1,0 +1,35 @@
+{
+  "title": "Pathway Subtyping Framework",
+  "description": "A disease-agnostic framework for pathway-based molecular subtype discovery in genetically heterogeneous conditions.",
+  "creators": [
+    {
+      "name": "Chauhan, Rohit",
+      "affiliation": "Independent Researcher"
+    }
+  ],
+  "keywords": [
+    "bioinformatics",
+    "genomics",
+    "pathway analysis",
+    "molecular subtyping",
+    "rare variants",
+    "clustering",
+    "precision medicine",
+    "genetic heterogeneity"
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/topmist-admin/pathway-subtyping-framework",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://pypi.org/project/pathway-subtyping/",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
