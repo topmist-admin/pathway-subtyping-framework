@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: Disease Agnostic Pathway Subtyping Framework
+message: >-
+  If you use this software, please cite it using
+  the metadata from this file.
+type: software
+authors:
+  - family-names: Chauhan
+    given-names: Rohit
+repository-code: 'https://github.com/topmist-admin/pathway-subtyping-framework'
+url: 'https://github.com/topmist-admin/pathway-subtyping-framework'
+license: MIT
+version: 0.1.0
+date-released: '2026-01-31'
+doi: '10.5281/zenodo.18442427'
+keywords:
+  - bioinformatics
+  - genomics
+  - pathway analysis
+  - molecular subtyping
+  - rare variants
+  - clustering
+  - precision medicine
+  - genetic heterogeneity

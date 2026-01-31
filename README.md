@@ -2,6 +2,8 @@
 
 **A Disease-Agnostic Tool for Pathway-Based Molecular Subtype Discovery**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18442427.svg)](https://doi.org/10.5281/zenodo.18442427)
+[![PyPI version](https://badge.fury.io/py/pathway-subtyping.svg)](https://pypi.org/project/pathway-subtyping/)
 [![CI](https://github.com/topmist-admin/pathway-subtyping-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/topmist-admin/pathway-subtyping-framework/actions/workflows/ci.yml)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
