@@ -96,7 +96,11 @@ data/cohorts/
 *.pem
 *.key
 credentials.json
+PyPI-Recovery-Codes*
 
 # Logs
 *.log
 logs/
+
+# Local outreach materials (not tracked)
+outreach/
