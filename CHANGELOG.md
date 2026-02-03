@@ -8,6 +8,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+#### Real-World Data Support (Week 4)
+- **Multi-allelic variant support**: Automatically expands multi-allelic variants (e.g., A→G,T) into separate bi-allelic records
+- **Data quality module** (`data_quality.py`): Comprehensive VCF parsing with quality checks
+  - `DataQualityReport`: Reports annotation coverage, multi-allelic handling, and data usability
+  - `VCFDataQualityError`: User-friendly exceptions with fix suggestions
+  - `load_vcf_with_quality_check()`: Robust VCF loading with quality validation
+  - `validate_vcf_for_pipeline()`: Pre-flight validation function
+- **Graceful handling of missing annotations**: Pipeline continues with warnings instead of failing
+- **Enhanced annotation helper** (`scripts/annotate_vcf.py`):
+  - Verbose mode with detailed statistics
+  - Validation-only mode to check existing VCF
+  - Better VEP/ANNOVAR format detection
+  - Comprehensive error messages with fix suggestions
+
+#### Performance Module Enhancements (`utils/performance.py`)
+- **Gzip support**: `chunked_vcf_reader()` now handles `.vcf.gz` files automatically
+- **Multi-allelic expansion**: Chunked reader expands multi-allelic variants with allele-specific genotype counting
+- **Consistent genotype parsing**: Uses `parse_genotype()` with `target_allele` parameter for accurate multi-allelic handling
+- **CADD defaults in chunked processing**: `compute_gene_burdens_chunked()` now applies consequence-based CADD defaults (35/20/10)
+- **Zero-variance pathway filtering**: `parallel_pathway_scores()` removes zero-variance pathways before Z-score normalization with clear error messages
+
+#### Configuration Validation (`config.py`)
+- **ConfigValidationError class**: Custom exception with field tracking and actionable fix suggestions
+- **Enhanced `validate_config()`**: Now accepts `check_files` parameter to skip file existence checks during testing
+- **`validate_gmt_file()` function**: Validates GMT pathway files with detailed error reporting
+  - Checks for minimum 3 tab-separated fields per line
+  - Validates minimum 2 genes per pathway
+  - Reports duplicate pathway names and parsing errors
+
+#### Analytical Reliability Improvements
+- **GMM convergence checking**: All GMM fits now verify convergence and log warnings if not converged
+- **GMM covariance regularization**: Added `reg_covar=1e-6` to all GMM calls for numerical stability
+- **Zero-variance pathway handling**: Automatically detects and removes pathways with zero variance before normalization
+- **CADD missing value handling**: Uses consequence-based defaults (35/20/10) instead of silent zeros
+- **Consistent genotype parsing**: Unified allele-specific counting between bi-allelic and multi-allelic variants
+- **Empty ARI array handling**: Validation gates now handle edge cases where no GMM fits converge
+
+#### Test Suite Expansion
+- **CLI test suite** (`tests/test_cli.py`): 20+ tests for command-line interface
+  - Version and help display tests
+  - Config loading and validation tests
+  - Command-line override tests (--output, --seed, --quiet)
+  - Error handling and exit code tests
+- **Performance module tests** (`tests/test_performance.py`): 25+ tests for performance utilities
+  - Chunked VCF reader tests (plain and gzipped)
+  - Multi-allelic expansion and genotype parsing tests
+  - Gene burden computation tests
+  - Parallel pathway scoring tests with zero-variance handling
+  - Memory estimation and downsampling tests
+  - Progress tracking tests
+- **Updated config tests** (`tests/test_config.py`): Tests for new validation functions
+- **Updated data quality tests**: Tests for multi-allelic `parse_genotype()` with `target_allele`
+- **Total test count**: 160 tests (up from 64)
+
+### Changed
+- Pipeline now uses `data_quality` module for VCF loading
+- Pipeline reports include data quality section
+- Version bumped to 0.2.0-dev
+- `parse_genotype()` now takes `target_allele` parameter for consistent multi-allelic handling
+- `validate_config()` raises `ConfigValidationError` instead of generic `ValueError`
+
+### Documentation
+- Updated troubleshooting guide with comprehensive real-world data section
+- Added VCF validation instructions
+- Added multi-allelic variant handling explanation
+- Added CADD score coverage guidance
+- Updated API documentation for config and validation modules
+
+### Other
 - PyPI package publishing preparation
 
 ## [0.1.0] - 2026-01-29

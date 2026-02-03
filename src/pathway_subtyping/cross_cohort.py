@@ -179,8 +179,13 @@ def _transfer_learning_validation(
         covariance_type="full",
         n_init=10,
         random_state=seed,
+        reg_covar=1e-6,  # Regularization for numerical stability
     )
     gmm.fit(scores_a.values)
+
+    # Check convergence
+    if not gmm.converged_:
+        logger.warning("GMM did not converge during transfer learning validation")
 
     # Predict on cohort B
     predicted_b = gmm.predict(scores_b.values)

@@ -5,14 +5,17 @@ Provides memory-efficient and parallelized implementations for
 processing large datasets (10,000+ samples).
 """
 
+import gzip
 import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Dict, Generator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
+
+from ..data_quality import parse_genotype
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +42,13 @@ def chunked_vcf_reader(
     Reads VCF file in chunks to avoid loading entire file into memory.
     Suitable for cohorts with 10,000+ samples.
 
+    Features:
+    - Gzip support (.vcf.gz files)
+    - Multi-allelic variant expansion
+    - Consistent genotype parsing using parse_genotype()
+
     Args:
-        vcf_path: Path to VCF file
+        vcf_path: Path to VCF file (supports .vcf and .vcf.gz)
         chunk_size: Number of variants per chunk
         sample_subset: Optional list of sample IDs to include
 
@@ -51,10 +59,14 @@ def chunked_vcf_reader(
     if not vcf_path.exists():
         raise FileNotFoundError(f"VCF file not found: {vcf_path}")
 
-    samples = []
-    sample_indices = None
+    samples: List[str] = []
+    sample_indices: Optional[List[int]] = None
 
-    with open(vcf_path, "r") as f:
+    # Determine if gzipped
+    is_gzipped = str(vcf_path).endswith(".gz")
+    open_func = gzip.open if is_gzipped else open
+
+    with open_func(vcf_path, "rt") as f:
         # Parse header
         for line in f:
             line = line.strip()
@@ -72,8 +84,8 @@ def chunked_vcf_reader(
                 break
 
         # Process variants in chunks
-        variants_chunk = []
-        genotypes_chunk = []
+        variants_chunk: List[Dict[str, Any]] = []
+        genotypes_chunk: List[Dict[str, int]] = []
 
         for line in f:
             line = line.strip()
@@ -87,44 +99,49 @@ def chunked_vcf_reader(
             # Parse variant
             chrom, pos, vid, ref, alt, qual, filt, info, fmt = parts[:9]
 
-            info_dict = {}
+            info_dict: Dict[str, str] = {}
             for item in info.split(";"):
                 if "=" in item:
                     key, val = item.split("=", 1)
                     info_dict[key] = val
 
-            variants_chunk.append(
-                {
-                    "chrom": chrom,
-                    "pos": int(pos),
-                    "id": vid,
-                    "ref": ref,
-                    "alt": alt,
-                    "qual": float(qual) if qual != "." else 0,
-                    "filter": filt,
-                    "gene": info_dict.get("GENE", ""),
-                    "consequence": info_dict.get("CONSEQUENCE", ""),
-                    "cadd": float(info_dict.get("CADD", 0)),
-                }
-            )
+            # Handle multi-allelic variants
+            alts = alt.split(",")
+            is_multi_allelic = len(alts) > 1
 
-            # Parse genotypes
+            # Parse genotypes for subset
             sample_gts = parts[9:]
             if sample_indices:
                 sample_gts = [sample_gts[i] for i in sample_indices]
 
-            gt_row = {}
-            for sample, gt_data in zip(samples, sample_gts):
-                gt = gt_data.split(":")[0]
-                if gt in ("0/0", "0|0"):
-                    gt_row[sample] = 0
-                elif gt in ("0/1", "1/0", "0|1", "1|0"):
-                    gt_row[sample] = 1
-                elif gt in ("1/1", "1|1"):
-                    gt_row[sample] = 2
-                else:
-                    gt_row[sample] = 0
-            genotypes_chunk.append(gt_row)
+            # Expand multi-allelic variants into separate records
+            for alt_idx, alt_allele in enumerate(alts):
+                alt_num = alt_idx + 1  # ALT alleles are 1-indexed
+
+                variant_id = f"{vid}_{alt_num}" if is_multi_allelic else vid
+
+                variants_chunk.append(
+                    {
+                        "chrom": chrom,
+                        "pos": int(pos),
+                        "id": variant_id,
+                        "ref": ref,
+                        "alt": alt_allele,
+                        "qual": float(qual) if qual != "." else 0,
+                        "filter": filt,
+                        "gene": info_dict.get("GENE", ""),
+                        "consequence": info_dict.get("CONSEQUENCE", ""),
+                        "cadd": _safe_float(info_dict.get("CADD"), 0.0),
+                    }
+                )
+
+                # Parse genotypes using unified parse_genotype function
+                gt_row: Dict[str, int] = {}
+                for sample, gt_data in zip(samples, sample_gts):
+                    # Use parse_genotype for consistent allele-specific counting
+                    allele_count, is_valid = parse_genotype(gt_data, target_allele=alt_num)
+                    gt_row[sample] = allele_count if is_valid else 0
+                genotypes_chunk.append(gt_row)
 
             # Yield chunk when full
             if len(variants_chunk) >= chunk_size:
@@ -145,6 +162,16 @@ def chunked_vcf_reader(
             )
 
 
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    """Safely convert a value to float."""
+    if value is None or value == "." or value == "":
+        return default
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return default
+
+
 def compute_gene_burdens_chunked(
     vcf_path: str,
     chunk_size: int = 1000,
@@ -154,8 +181,13 @@ def compute_gene_burdens_chunked(
     """
     Compute gene burdens with chunked processing for memory efficiency.
 
+    Features:
+    - Memory-efficient chunked processing
+    - Consequence-based CADD defaults for missing values
+    - Multi-allelic variant support
+
     Args:
-        vcf_path: Path to VCF file
+        vcf_path: Path to VCF file (supports .vcf and .vcf.gz)
         chunk_size: Variants per chunk
         sample_subset: Optional sample subset
         progress_callback: Optional callback(current, total) for progress
@@ -182,18 +214,34 @@ def compute_gene_burdens_chunked(
             if gene not in burden_accumulator:
                 burden_accumulator[gene] = {s: 0.0 for s in samples}
 
-            # Compute weight
+            consequence = str(var.get("consequence", "")).lower()
+
+            # Compute weight based on consequence
             weight = 0.1
-            if "frameshift" in var["consequence"] or "stop" in var["consequence"]:
+            if "frameshift" in consequence or "stop" in consequence:
                 weight = 1.0
-            elif "missense" in var["consequence"]:
+            elif "missense" in consequence:
                 weight = 0.5 if var["cadd"] > 25 else 0.1
+
+            # Handle missing CADD scores with consequence-based defaults
+            # This prevents silent data loss when CADD is unavailable
+            cadd_score = var["cadd"]
+            if cadd_score <= 0:
+                # Use consequence-based defaults (same as pipeline.py)
+                if "frameshift" in consequence or "stop" in consequence:
+                    cadd_score = 35.0  # High impact default
+                elif "missense" in consequence:
+                    cadd_score = 20.0  # Moderate impact default
+                else:
+                    cadd_score = 10.0  # Low impact default
+            # Cap and normalize CADD score
+            cadd_normalized = min(cadd_score, 40.0) / 40.0
 
             # Add burden for each sample
             for sample in samples:
                 gt = genotypes_df.loc[idx, sample]
                 if gt > 0:
-                    burden_accumulator[gene][sample] += gt * weight * (var["cadd"] / 40.0)
+                    burden_accumulator[gene][sample] += gt * weight * cadd_normalized
 
         if progress_callback:
             progress_callback(total_variants, -1)  # -1 = unknown total
@@ -210,13 +258,21 @@ def parallel_pathway_scores(
     """
     Compute pathway scores in parallel.
 
+    Features:
+    - Parallel computation for large pathway sets
+    - Zero-variance pathway handling (removed before normalization)
+    - Robust Z-score normalization
+
     Args:
         gene_burdens: Gene burden DataFrame (samples × genes)
         pathways: Dict of pathway name → gene list
         n_workers: Number of parallel workers (None = CPU count)
 
     Returns:
-        Pathway scores DataFrame (samples × pathways)
+        Pathway scores DataFrame (samples × pathways), Z-score normalized
+
+    Raises:
+        ValueError: If fewer than 2 pathways remain after filtering
     """
     if n_workers is None:
         n_workers = min(os.cpu_count() or 4, len(pathways))
@@ -252,8 +308,32 @@ def parallel_pathway_scores(
 
     scores_df = pd.DataFrame(pathway_scores)
 
-    # Z-score normalize
-    scores_df = (scores_df - scores_df.mean()) / scores_df.std()
+    if scores_df.empty:
+        raise ValueError("No valid pathways found (all have <2 genes in burden data)")
+
+    # Check for and handle zero-variance pathways before normalization
+    pathway_stds = scores_df.std()
+    zero_variance_pathways = pathway_stds[pathway_stds == 0].index.tolist()
+
+    if zero_variance_pathways:
+        logger.warning(
+            f"Removing {len(zero_variance_pathways)} zero-variance pathway(s): "
+            f"{zero_variance_pathways[:5]}{'...' if len(zero_variance_pathways) > 5 else ''}"
+        )
+        scores_df = scores_df.drop(columns=zero_variance_pathways)
+
+    if scores_df.empty or len(scores_df.columns) < 2:
+        raise ValueError(
+            f"Insufficient pathways after filtering: {len(scores_df.columns)} remaining. "
+            f"Need at least 2 pathways with non-zero variance for clustering."
+        )
+
+    # Z-score normalize with numerical stability
+    means = scores_df.mean()
+    stds = scores_df.std()
+    stds = stds.replace(0, 1e-10)  # Safety net (should not occur after filtering)
+    scores_df = (scores_df - means) / stds
+
     return scores_df.fillna(0)
 
 

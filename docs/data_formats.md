@@ -68,9 +68,43 @@ The framework recognizes VEP/Ensembl consequence terms:
 
 #### Compression
 
-- Uncompressed: `.vcf`
-- Compressed: `.vcf.gz` (bgzip recommended)
-- Index: `.vcf.gz.tbi` (tabix) for random access
+The framework supports both uncompressed and gzip-compressed VCF files:
+
+| Extension | Description | Recommendation |
+|-----------|-------------|----------------|
+| `.vcf` | Uncompressed | Small files (<100MB) |
+| `.vcf.gz` | Gzip compressed | Large files, bgzip recommended |
+| `.vcf.gz.tbi` | Tabix index | Optional, for random access |
+
+**Note:** Both standard gzip and bgzip compression are supported. The framework auto-detects compressed files by extension.
+
+#### Multi-Allelic Variants
+
+The framework automatically handles multi-allelic variants (variants with multiple alternate alleles):
+
+**Input:**
+```
+chr1  100  rs123  A  G,T  99  PASS  GENE=TEST  GT  0/1  0/2  1/2
+```
+
+**Processing:**
+Multi-allelic records are expanded into separate bi-allelic records with allele-specific genotype counting:
+
+| Expanded Record | S1 (0/1) | S2 (0/2) | S3 (1/2) |
+|-----------------|----------|----------|----------|
+| A→G (allele 1)  | 1        | 0        | 1        |
+| A→T (allele 2)  | 0        | 1        | 1        |
+
+The `parse_genotype()` function uses a `target_allele` parameter to correctly count copies of each specific alternate allele.
+
+#### Supported Genotype Formats
+
+| Format | Description | Example |
+|--------|-------------|---------|
+| Unphased | Standard diploid | `0/1`, `1/1`, `0/0` |
+| Phased | Pipe separator | `0\|1`, `1\|1` |
+| Multi-allelic | Multiple alts | `0/2`, `1/2`, `2/2` |
+| Missing | No call | `./.`, `.\|.` |
 
 #### Example VCF
 
@@ -117,10 +151,26 @@ IMMUNE_RESPONSE	Immune signaling pathway	IL6	TNF	IFNG	IL1B	NFKB1	STAT3
 
 #### Validation Rules
 
-- Minimum 3 genes per pathway
-- Gene symbols should be HGNC-approved
-- No duplicate pathway IDs
-- Tab-separated (not spaces)
+The `validate_gmt_file()` function enforces these rules:
+
+| Rule | Requirement | Error if violated |
+|------|-------------|-------------------|
+| Format | At least 3 tab-separated fields | "Expected at least 3 fields" |
+| Genes | Minimum 2 genes per pathway | "Pathway has fewer than 2 genes" |
+| Uniqueness | No duplicate pathway names | "Duplicate pathway name" |
+| Separators | Tab-separated (not spaces) | Genes not recognized |
+| Gene names | HGNC-approved symbols | Genes may not match VCF |
+
+**Validation example:**
+```python
+from pathway_subtyping.config import validate_gmt_file, ConfigValidationError
+
+try:
+    pathways = validate_gmt_file("pathways.gmt")
+    print(f"Validated {len(pathways)} pathways")
+except ConfigValidationError as e:
+    print(f"GMT validation failed: {e}")
+```
 
 #### Sources for Pathway Files
 

@@ -203,6 +203,24 @@ MemoryError: Unable to allocate array
 
 ## Data Issues
 
+### Validating Your VCF Before Running
+
+Before running the pipeline, validate your VCF has the required annotations:
+
+```bash
+# Quick validation
+python scripts/annotate_vcf.py your_file.vcf --validate-only
+
+# Detailed validation with statistics
+python scripts/annotate_vcf.py your_file.vcf --validate-only --detailed
+```
+
+Or programmatically:
+```python
+from pathway_subtyping import validate_vcf_for_pipeline
+is_valid, report, suggestions = validate_vcf_for_pipeline("your_file.vcf")
+```
+
 ### VCF parsing errors
 
 **Symptom:**
@@ -232,22 +250,90 @@ ValueError: Could not parse VCF line
 ```
 WARNING: 80% of variants have no gene annotation
 ```
+or
+```
+VCFDataQualityError: VCF data quality is insufficient for analysis
+```
 
 **Solution:**
-1. Annotate your VCF with VEP or ANNOVAR first
-2. Use the provided annotation helper:
+1. Check your annotation coverage:
    ```bash
-   python scripts/annotate_vcf.py \
-     --vcf input.vcf \
-     --annotations vep_output.tsv \
-     --output annotated.vcf
+   python scripts/annotate_vcf.py your_file.vcf --validate-only
    ```
+
+2. Annotate with VEP:
+   ```bash
+   # Install VEP (if not already installed)
+   # See: https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html
+
+   # Run VEP
+   vep -i input.vcf -o output.tsv \
+     --tab --symbol --pick \
+     --fields "Uploaded_variation,Gene,SYMBOL,Consequence,CADD_PHRED"
+
+   # Apply annotations
+   python scripts/annotate_vcf.py input.vcf annotated.vcf --vep-tsv output.tsv
+   ```
+
+3. Or annotate with ANNOVAR:
+   ```bash
+   # Convert VCF to ANNOVAR input format
+   convert2annovar.pl -format vcf4 input.vcf > input.avinput
+
+   # Run ANNOVAR
+   table_annovar.pl input.avinput humandb/ \
+     -buildver hg38 \
+     -out output \
+     -protocol refGene,cadd \
+     -operation g,f
+
+   # Apply annotations
+   python scripts/annotate_vcf.py input.vcf annotated.vcf --annovar-file output.hg38_multianno.txt
+   ```
+
+### Multi-allelic variants
+
+**Symptom:**
+```
+INFO: Expanded 150 multi-allelic variants to 320 bi-allelic records
+```
+
+**Explanation:**
+The framework automatically expands multi-allelic variants (variants with multiple alternate alleles) into separate bi-allelic records. This is logged for transparency.
+
+**Example:**
+```
+# Original multi-allelic
+chr1  100  .  A  G,T  .  .  .
+
+# Becomes two bi-allelic records
+chr1  100  .  A  G  .  .  .
+chr1  100  .  A  T  .  .  .
+```
+
+This is expected behavior and requires no action.
+
+### Low CADD score coverage
+
+**Symptom:**
+```
+WARNING: Low CADD score coverage (25.0%). Consider adding CADD annotations.
+```
+
+**Solution:**
+CADD scores improve variant weighting but are optional. To add them:
+
+1. Download CADD scores: https://cadd.gs.washington.edu/download
+2. Annotate with VEP using CADD plugin, or
+3. Use ANNOVAR with CADD database
 
 ### GMT file format errors
 
 **Symptom:**
 ```
-ValueError: Invalid GMT format
+ConfigValidationError: GMT file has 2 error(s):
+Line 5: Expected at least 3 tab-separated fields, got 2
+Line 12: Pathway 'SYNAPTIC' has fewer than 2 genes
 ```
 
 **Solution:**
@@ -261,6 +347,83 @@ ValueError: Invalid GMT format
    awk -F'\t' 'NF < 3 {print NR": "$0}' pathways.gmt
    ```
 
+3. Validate the GMT file programmatically:
+   ```python
+   from pathway_subtyping.config import validate_gmt_file, ConfigValidationError
+
+   try:
+       pathways = validate_gmt_file("pathways.gmt")
+       print(f"Valid: {len(pathways)} pathways")
+   except ConfigValidationError as e:
+       print(f"Errors:\n{e}")
+   ```
+
+4. Validate gene symbols match your VCF annotations
+
+### Configuration validation errors
+
+**Symptom:**
+```
+ConfigValidationError: Missing required field: data.vcf_path
+Field: data.vcf_path
+
+Suggested fixes:
+  1. Add 'vcf_path: /path/to/file' under the 'data:' section
+```
+
+**Solution:**
+The error message includes the field that's missing and suggested fixes. Common issues:
+
+1. **Missing required fields**: Add the specified field to your config
+2. **Invalid seed value**: Seed must be an integer, not a string
+3. **Invalid cluster range**: Ensure min ≥ 2 and max ≥ min
+
+**Example fix:**
+```yaml
+# Before (missing required field)
+data:
+  phenotype_path: pheno.csv
+
+# After (field added)
+data:
+  vcf_path: variants.vcf        # Added
+  phenotype_path: pheno.csv
+  pathway_db: pathways.gmt      # Also required
+```
+
+### Insufficient pathways after filtering
+
+**Symptom:**
+```
+ValueError: Insufficient pathways after filtering: 1 remaining.
+Need at least 2 pathways with non-zero variance for clustering.
+```
+
+**Cause:**
+Pathways are filtered out during processing for these reasons:
+- No genes from the pathway found in the burden data
+- Pathway has fewer than 2 genes overlapping with burden data
+- Pathway scores have zero variance (all samples have same score)
+
+**Solution:**
+1. Check pathway-gene overlap:
+   ```python
+   # See which genes from pathways are in your data
+   pathway_genes = set(gene for genes in pathways.values() for gene in genes)
+   burden_genes = set(gene_burdens.columns)
+   overlap = pathway_genes & burden_genes
+   print(f"Overlap: {len(overlap)} genes")
+   ```
+
+2. Use broader pathway definitions with more genes
+
+3. Ensure pathways contain genes that vary across samples
+
+4. Review the warning logs for details on filtered pathways:
+   ```
+   WARNING: Removing 3 zero-variance pathway(s): ['PATHWAY_A', 'PATHWAY_B', ...]
+   ```
+
 ### No samples pass QC
 
 **Symptom:**
@@ -270,8 +433,43 @@ ERROR: No samples remaining after QC filtering
 
 **Solution:**
 1. Check your VCF has variant calls (not all reference)
-2. Verify sample IDs match between VCF and phenotypes
+2. Verify sample IDs match between VCF and phenotypes:
+   ```bash
+   # List VCF samples
+   bcftools query -l your_file.vcf
+
+   # Compare with phenotypes
+   head -1 phenotypes.csv
+   ```
 3. Lower QC thresholds if appropriate for your data
+
+### Data Quality Report Interpretation
+
+The pipeline generates a data quality report with these key metrics:
+
+| Metric | Threshold | Action if below |
+|--------|-----------|-----------------|
+| Gene coverage | ≥50% | Annotate with VEP/ANNOVAR |
+| Consequence coverage | ≥50% | Re-run annotation |
+| CADD coverage | ≥30% | Optional - add CADD scores |
+
+Example output:
+```
+Data Quality Report
+========================================
+Total variants: 1000
+Parsed variants: 998
+Skipped variants: 2
+
+Annotation Coverage:
+  GENE: 95.0% (950/998)
+  CONSEQUENCE: 90.0% (898/998)
+  CADD: 80.0% (798/998)
+
+Multi-allelic variants: 50 (expanded to 110)
+
+Data Quality Status: PASS
+```
 
 ---
 
@@ -423,6 +621,38 @@ Clusters are not robust to resampling.
 1. Dataset may be too small for stable clustering
 2. Try reducing the number of clusters
 3. Check for outlier samples
+
+### GMM convergence warnings
+
+**Symptom:**
+```
+WARNING: GMM did not converge during transfer learning validation
+```
+or
+```
+WARNING: Label shuffle test: No GMM fits converged
+```
+
+**Meaning:**
+The Gaussian Mixture Model optimization did not converge within the maximum iterations.
+
+**Investigation:**
+1. **Small datasets**: GMM may struggle with very small sample sizes (<20)
+2. **Numerical instability**: Data may have numerical issues (NaN, Inf values)
+3. **Too many clusters**: The cluster count may be too high for the data
+
+**Solution:**
+1. The framework uses `reg_covar=1e-6` for numerical stability
+2. If warnings persist, check your data for:
+   ```python
+   import numpy as np
+   print(f"NaN values: {np.isnan(pathway_scores).sum().sum()}")
+   print(f"Inf values: {np.isinf(pathway_scores).sum().sum()}")
+   ```
+3. Try reducing the cluster count
+4. Increase sample size if possible
+
+**Note:** The validation framework handles non-converged fits gracefully by skipping them. If all fits fail to converge, the test returns a failing result with diagnostic information.
 
 ---
 

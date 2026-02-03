@@ -200,13 +200,36 @@ class ValidationGates:
                 covariance_type="full",
                 n_init=5,
                 random_state=(gmm_seed + i) if gmm_seed else None,
+                reg_covar=1e-6,  # Regularization for numerical stability
             )
             gmm.fit(pathway_scores.values)
+
+            # Skip non-converged fits
+            if not gmm.converged_:
+                continue
+
             new_labels = gmm.predict(pathway_scores.values)
 
             # Compare to shuffled (should NOT match)
             ari = adjusted_rand_score(shuffled_labels, new_labels)
             ari_values.append(ari)
+
+        # Handle edge case where no GMM fits converged
+        if not ari_values:
+            logger.warning("Label shuffle test: No GMM fits converged")
+            return ValidationResult(
+                name="Negative Control 1: Label Shuffle",
+                passed=False,
+                metric_name="mean_null_ARI",
+                metric_value=1.0,  # Worst case - fail the test
+                threshold=self.null_ari_max,
+                comparison="<",
+                details={
+                    "error": "No GMM fits converged during permutation testing",
+                    "n_permutations_attempted": self.n_permutations,
+                    "n_successful": 0,
+                },
+            )
 
         mean_ari = np.mean(ari_values)
         std_ari = np.std(ari_values)
@@ -224,6 +247,7 @@ class ValidationGates:
             details={
                 "std_ari": round(std_ari, 4),
                 "n_permutations": self.n_permutations,
+                "n_successful": len(ari_values),
                 "interpretation": "Clustering should NOT recover shuffled labels",
             },
         )
@@ -281,8 +305,14 @@ class ValidationGates:
                 covariance_type="full",
                 n_init=5,
                 random_state=(gmm_seed + i + 1000) if gmm_seed else None,
+                reg_covar=1e-6,  # Regularization for numerical stability
             )
             gmm.fit(random_scores_df.values)
+
+            # Skip non-converged fits
+            if not gmm.converged_:
+                continue
+
             random_labels = gmm.predict(random_scores_df.values)
 
             # Compare to original clustering
@@ -358,9 +388,15 @@ class ValidationGates:
                 covariance_type="full",
                 n_init=5,
                 random_state=(gmm_seed + i + 2000) if gmm_seed else None,
+                reg_covar=1e-6,  # Regularization for numerical stability
             )
             try:
                 gmm.fit(bootstrap_scores.values)
+
+                # Skip non-converged fits
+                if not gmm.converged_:
+                    continue
+
                 bootstrap_labels = gmm.predict(bootstrap_scores.values)
 
                 # Compare to original labels for these samples
@@ -370,6 +406,7 @@ class ValidationGates:
                 continue  # Skip failed fits
 
         if not ari_values:
+            logger.warning("Bootstrap stability test: No valid bootstrap iterations completed")
             return ValidationResult(
                 name="Stability Test: Bootstrap",
                 passed=False,
@@ -377,7 +414,11 @@ class ValidationGates:
                 metric_value=0.0,
                 threshold=self.stability_threshold,
                 comparison=">=",
-                details={"error": "Could not compute bootstrap stability"},
+                details={
+                    "error": "No valid bootstrap iterations completed",
+                    "n_bootstrap_attempted": self.n_bootstrap,
+                    "n_successful": 0,
+                },
             )
 
         mean_ari = np.mean(ari_values)

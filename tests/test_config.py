@@ -8,7 +8,12 @@ from pathlib import Path
 import pytest
 import yaml
 
-from pathway_subtyping.config import load_config, validate_config
+from pathway_subtyping.config import (
+    ConfigValidationError,
+    load_config,
+    validate_config,
+    validate_gmt_file,
+)
 
 
 class TestLoadConfig:
@@ -36,12 +41,12 @@ class TestLoadConfig:
         assert config["data"]["vcf_path"] == "test.vcf"
 
     def test_load_config_empty_file(self, tmp_path):
-        """Test loading an empty YAML file."""
+        """Test loading an empty YAML file raises error."""
         config_file = tmp_path / "empty.yaml"
         config_file.touch()
 
-        config = load_config(str(config_file))
-        assert config is None
+        with pytest.raises(ConfigValidationError, match="empty or invalid"):
+            load_config(str(config_file))
 
     def test_load_config_invalid_yaml(self, tmp_path):
         """Test loading invalid YAML raises error."""
@@ -91,7 +96,7 @@ class TestValidateConfig:
     """Tests for validate_config function."""
 
     def test_validate_config_valid(self):
-        """Test validation passes for valid config."""
+        """Test validation passes for valid config (without file checks)."""
         config = {
             "pipeline": {"name": "test"},
             "data": {
@@ -100,8 +105,8 @@ class TestValidateConfig:
                 "pathway_db": "test.gmt",
             },
         }
-        # Should not raise
-        result = validate_config(config)
+        # Should not raise when file checks disabled
+        result = validate_config(config, check_files=False)
         assert result is True
 
     def test_validate_config_missing_pipeline(self):
@@ -143,8 +148,8 @@ class TestValidateConfig:
             "pipeline": {"name": "test"},
             "data": {"vcf_path": "test.vcf", "pathway_db": "test.gmt"},
         }
-        with pytest.raises(ValueError, match="phenotype_path"):
-            validate_config(config)
+        with pytest.raises((ValueError, ConfigValidationError), match="phenotype_path"):
+            validate_config(config, check_files=False)
 
     def test_validate_config_missing_pathway_db(self):
         """Test validation fails without pathway_db."""
@@ -152,8 +157,8 @@ class TestValidateConfig:
             "pipeline": {"name": "test"},
             "data": {"vcf_path": "test.vcf", "phenotype_path": "test.csv"},
         }
-        with pytest.raises(ValueError, match="pathway_db"):
-            validate_config(config)
+        with pytest.raises((ValueError, ConfigValidationError), match="pathway_db"):
+            validate_config(config, check_files=False)
 
 
 class TestPipelineConfig:

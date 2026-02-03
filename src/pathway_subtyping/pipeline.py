@@ -18,6 +18,11 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from .data_quality import (
+    DataQualityReport,
+    VCFDataQualityError,
+    load_vcf_with_quality_check,
+)
 from .utils.seed import get_rng, set_global_seed
 from .validation import ValidationGates, ValidationGatesResult
 
@@ -102,6 +107,9 @@ class DemoPipeline:
         # Validation results
         self.validation_result: Optional[ValidationGatesResult] = None
 
+        # Data quality report
+        self.data_quality_report: Optional[DataQualityReport] = None
+
         # Timing
         self.start_time: Optional[datetime] = None
         self.end_time: Optional[datetime] = None
@@ -151,77 +159,82 @@ class DemoPipeline:
         )
 
     def _load_vcf(self) -> None:
-        """Load and parse VCF file."""
+        """Load and parse VCF file with data quality checking.
+
+        Features (v0.2):
+        - Multi-allelic variant support
+        - Graceful handling of missing annotations
+        - Data quality reporting with warnings
+        - User-friendly error messages with fix guidance
+        """
         vcf_path = Path(self.config.vcf_path)
         if not vcf_path.exists():
-            raise FileNotFoundError(f"VCF file not found: {vcf_path}")
+            raise FileNotFoundError(
+                f"VCF file not found: {vcf_path}\n\n"
+                f"Please check:\n"
+                f"  1. The file path is correct in your config\n"
+                f"  2. You have read permissions for the file\n"
+                f"  3. The file hasn't been moved or deleted\n\n"
+                f"Config path: {self.config.vcf_path}"
+            )
 
-        # Parse VCF manually (simplified for demo)
-        variants = []
-        samples = []
-        genotypes = []
+        try:
+            # Use the new data quality module for robust VCF parsing
+            self.variants_df, self.genotypes_df, self.samples, self.data_quality_report = (
+                load_vcf_with_quality_check(
+                    str(vcf_path),
+                    strict=False,  # Allow pipeline to continue with warnings
+                    min_gene_coverage=50.0,
+                )
+            )
 
-        with open(vcf_path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("##"):
-                    continue
-                if line.startswith("#CHROM"):
-                    # Parse header
-                    parts = line.split("\t")
-                    samples = parts[9:]  # Sample columns start at index 9
-                    continue
-
-                parts = line.split("\t")
-                if len(parts) < 9:
-                    continue
-
-                # Parse variant info
-                chrom, pos, vid, ref, alt, qual, filt, info, fmt = parts[:9]
-
-                # Parse INFO field
-                info_dict = {}
-                for item in info.split(";"):
-                    if "=" in item:
-                        key, val = item.split("=", 1)
-                        info_dict[key] = val
-                    else:
-                        info_dict[item] = True
-
-                variants.append(
-                    {
-                        "chrom": chrom,
-                        "pos": int(pos),
-                        "id": vid,
-                        "ref": ref,
-                        "alt": alt,
-                        "qual": float(qual) if qual != "." else 0,
-                        "filter": filt,
-                        "gene": info_dict.get("GENE", ""),
-                        "consequence": info_dict.get("CONSEQUENCE", ""),
-                        "cadd": float(info_dict.get("CADD", 0)),
-                    }
+            # Log data quality summary
+            if self.data_quality_report.multi_allelic_variants > 0:
+                logger.info(
+                    f"Expanded {self.data_quality_report.multi_allelic_variants} "
+                    f"multi-allelic variants to "
+                    f"{self.data_quality_report.multi_allelic_expanded} bi-allelic records"
                 )
 
-                # Parse genotypes
-                sample_gts = parts[9:]
-                gt_row = {}
-                for sample, gt_data in zip(samples, sample_gts):
-                    gt = gt_data.split(":")[0]
-                    # Convert GT to allele count: 0/0=0, 0/1=1, 1/1=2
-                    if gt in ("0/0", "0|0"):
-                        gt_row[sample] = 0
-                    elif gt in ("0/1", "1/0", "0|1", "1|0"):
-                        gt_row[sample] = 1
-                    elif gt in ("1/1", "1|1"):
-                        gt_row[sample] = 2
-                    else:
-                        gt_row[sample] = 0
-                genotypes.append(gt_row)
+            if self.data_quality_report.gene_coverage < 80:
+                logger.warning(
+                    f"Gene annotation coverage is {self.data_quality_report.gene_coverage:.1f}%. "
+                    f"Consider running VEP or ANNOVAR for better results."
+                )
 
-        self.variants_df = pd.DataFrame(variants)
-        self.genotypes_df = pd.DataFrame(genotypes)
-        self.samples = samples
+            if self.data_quality_report.warnings:
+                for warning in self.data_quality_report.warnings:
+                    logger.warning(f"Data quality: {warning}")
+
+            # Check if data is usable
+            if not self.data_quality_report.is_usable:
+                raise VCFDataQualityError(
+                    "VCF data quality is insufficient for analysis",
+                    self.data_quality_report,
+                    [
+                        "Annotate variants with gene symbols using VEP or ANNOVAR",
+                        "Use the annotation helper: python scripts/annotate_vcf.py",
+                        "See troubleshooting: docs/troubleshooting.md#data-issues",
+                    ],
+                )
+
+        except VCFDataQualityError:
+            # Re-raise data quality errors with full context
+            raise
+        except Exception as e:
+            # Wrap other errors with helpful context
+            raise RuntimeError(
+                f"Failed to parse VCF file: {vcf_path}\n\n"
+                f"Error: {e}\n\n"
+                f"Common causes:\n"
+                f"  1. File is corrupted or truncated\n"
+                f"  2. File is not in valid VCF format\n"
+                f"  3. Encoding issues (try UTF-8)\n\n"
+                f"To validate your VCF:\n"
+                f"  bcftools view -h {vcf_path} | head -20\n"
+                f"  python -c \"from pathway_subtyping.data_quality import validate_vcf_for_pipeline; "
+                f"validate_vcf_for_pipeline('{vcf_path}')\""
+            ) from e
 
     def _load_phenotypes(self) -> None:
         """Load phenotype CSV file."""
@@ -283,7 +296,21 @@ class DemoPipeline:
                         else:
                             weight = 0.1
 
-                        burden += gt * weight * (var["cadd"] / 40.0)  # Normalize CADD
+                        # Normalize CADD score (cap at 40, handle missing)
+                        cadd_score = var["cadd"]
+                        if cadd_score <= 0:
+                            # Missing CADD: use consequence-based default instead of 0
+                            # This prevents silent data loss when CADD is unavailable
+                            if "frameshift" in var["consequence"] or "stop" in var["consequence"]:
+                                cadd_score = 35.0  # High impact default
+                            elif "missense" in var["consequence"]:
+                                cadd_score = 20.0  # Moderate impact default
+                            else:
+                                cadd_score = 10.0  # Low impact default
+                            logger.debug(f"Missing CADD for {var['id']}, using default {cadd_score}")
+                        # Cap CADD at 40 to prevent normalization issues
+                        cadd_normalized = min(cadd_score, 40.0) / 40.0
+                        burden += gt * weight * cadd_normalized
 
                 if gene not in burden_data:
                     burden_data[gene] = {}
@@ -310,13 +337,36 @@ class DemoPipeline:
 
         self.pathway_scores = pd.DataFrame(pathway_scores)
 
-        # Z-score normalize
-        self.pathway_scores = (
-            self.pathway_scores - self.pathway_scores.mean()
-        ) / self.pathway_scores.std()
-        self.pathway_scores = self.pathway_scores.fillna(0)
+        # Check for and handle zero-variance pathways before normalization
+        pathway_stds = self.pathway_scores.std()
+        zero_variance_pathways = pathway_stds[pathway_stds == 0].index.tolist()
 
-        logger.info(f"Computed scores for {len(pathway_scores)} pathways")
+        if zero_variance_pathways:
+            logger.warning(
+                f"Removing {len(zero_variance_pathways)} zero-variance pathway(s): "
+                f"{zero_variance_pathways[:5]}{'...' if len(zero_variance_pathways) > 5 else ''}"
+            )
+            # Remove zero-variance pathways (they provide no discriminative power)
+            self.pathway_scores = self.pathway_scores.drop(columns=zero_variance_pathways)
+
+        if self.pathway_scores.empty or len(self.pathway_scores.columns) < 2:
+            raise ValueError(
+                f"Insufficient pathways after filtering: {len(self.pathway_scores.columns)} remaining. "
+                f"Need at least 2 pathways with non-zero variance for clustering. "
+                f"Check that your VCF contains variants in pathway genes."
+            )
+
+        # Z-score normalize with numerical stability (epsilon prevents div-by-zero)
+        means = self.pathway_scores.mean()
+        stds = self.pathway_scores.std()
+        # Add small epsilon only where std is very small (near zero but not exactly)
+        stds = stds.replace(0, 1e-10)  # Safety net (should not occur after filtering)
+        self.pathway_scores = (self.pathway_scores - means) / stds
+
+        logger.info(
+            f"Computed scores for {len(self.pathway_scores.columns)} pathways "
+            f"(removed {len(zero_variance_pathways)} zero-variance)"
+        )
 
     def cluster_samples(self) -> None:
         """Cluster samples into subtypes using GMM."""
@@ -337,8 +387,12 @@ class DemoPipeline:
                     covariance_type="full",
                     n_init=10,
                     random_state=self.config.seed,
+                    reg_covar=1e-6,  # Regularization for numerical stability
                 )
                 gmm.fit(X)
+                if not gmm.converged_:
+                    logger.warning(f"GMM with k={k} did not converge during BIC search")
+                    continue  # Skip non-converged models
                 bic = gmm.bic(X)
                 if bic < best_bic:
                     best_bic = bic
@@ -356,8 +410,18 @@ class DemoPipeline:
             covariance_type="full",
             n_init=10,
             random_state=self.config.seed,
+            reg_covar=1e-6,  # Regularization for numerical stability
         )
         gmm.fit(X)
+
+        # Verify convergence - critical for reliable results
+        if not gmm.converged_:
+            logger.warning(
+                f"GMM did not converge after {gmm.n_iter_} iterations. "
+                f"Results may be unreliable. Consider: (1) reducing n_clusters, "
+                f"(2) increasing max_iter, or (3) checking for data issues."
+            )
+
         labels = gmm.predict(X)
         probs = gmm.predict_proba(X)
 
@@ -574,6 +638,11 @@ class DemoPipeline:
         if self.validation_result:
             validation_gates = self.validation_result.to_dict()
 
+        # Data quality results
+        data_quality = {}
+        if self.data_quality_report:
+            data_quality = self.data_quality_report.to_dict()
+
         # JSON report
         report = {
             "pipeline_name": self.config.name,
@@ -592,6 +661,7 @@ class DemoPipeline:
                 "n_clusters": self.cluster_assignments["cluster_id"].nunique(),
             },
             "clusters": self.cluster_assignments["cluster_label"].value_counts().to_dict(),
+            "data_quality": data_quality,
             "ground_truth_validation": ground_truth_validation,
             "validation_gates": validation_gates,
             "disclaimer": self.config.disclaimer,
@@ -639,6 +709,46 @@ class DemoPipeline:
 
         for cluster, count in report["clusters"].items():
             lines.append(f"| {cluster} | {count} |")
+
+        # Data Quality section (v0.2)
+        data_quality = report.get("data_quality", {})
+        if data_quality:
+            annotation_cov = data_quality.get("annotation_coverage", {})
+            multi_allelic = data_quality.get("multi_allelic", {})
+            is_usable = data_quality.get("is_usable", True)
+            warnings = data_quality.get("warnings", [])
+
+            status_str = "PASS" if is_usable else "FAIL"
+            lines.extend(
+                [
+                    "",
+                    "## Data Quality",
+                    "",
+                    f"**Status:** {status_str}",
+                    "",
+                    "### Annotation Coverage",
+                    "",
+                    "| Field | Coverage |",
+                    "|-------|----------|",
+                    f"| GENE | {annotation_cov.get('gene', 'N/A')} |",
+                    f"| CONSEQUENCE | {annotation_cov.get('consequence', 'N/A')} |",
+                    f"| CADD | {annotation_cov.get('cadd', 'N/A')} |",
+                ]
+            )
+
+            if multi_allelic.get("original", 0) > 0:
+                lines.extend(
+                    [
+                        "",
+                        f"**Multi-allelic variants:** {multi_allelic.get('original', 0)} "
+                        f"(expanded to {multi_allelic.get('expanded', 0)} bi-allelic records)",
+                    ]
+                )
+
+            if warnings:
+                lines.extend(["", "### Warnings", ""])
+                for warning in warnings:
+                    lines.append(f"- {warning}")
 
         # Validation Gates section
         validation_gates = report.get("validation_gates", {})
@@ -714,7 +824,7 @@ class DemoPipeline:
                 "",
                 "---",
                 "",
-                "*Generated by Pathway Subtyping Framework v0.1*",
+                "*Generated by Pathway Subtyping Framework v0.2*",
             ]
         )
 

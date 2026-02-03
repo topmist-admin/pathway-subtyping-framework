@@ -333,6 +333,47 @@ validator_exploratory = ValidationGates(
 
 ---
 
+## Technical Implementation Details
+
+### GMM Reliability Improvements
+
+The validation module includes several reliability improvements for GMM clustering:
+
+**Covariance Regularization:**
+All GMM fits use `reg_covar=1e-6` to prevent numerical instability:
+```python
+gmm = GaussianMixture(
+    n_components=n_clusters,
+    covariance_type="full",
+    n_init=5,
+    random_state=seed,
+    reg_covar=1e-6,  # Regularization for numerical stability
+)
+```
+
+**Convergence Checking:**
+All validation tests check GMM convergence and handle non-converged fits gracefully:
+```python
+gmm.fit(data)
+if not gmm.converged_:
+    logger.warning("GMM did not converge")
+    continue  # Skip this iteration
+```
+
+**Empty Results Handling:**
+When no GMM fits converge during permutation testing, the validation test returns a failing result with clear diagnostic information:
+```python
+if not ari_values:
+    return ValidationResult(
+        name="Test Name",
+        passed=False,
+        metric_value=1.0,  # Worst case
+        details={"error": "No GMM fits converged", "n_attempted": n_permutations}
+    )
+```
+
+---
+
 ## Understanding Validation Failures
 
 ### Label Shuffle Fails (ARI too high)

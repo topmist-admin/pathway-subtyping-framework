@@ -160,7 +160,10 @@ class TestCLIIntegration:
         )
 
         assert result.returncode == 0
-        assert "0.1.0" in result.stdout
+        # Check for version pattern (e.g., "0.1.0", "0.2.0-dev")
+        import re
+
+        assert re.search(r"\d+\.\d+\.\d+", result.stdout), f"Version not found in: {result.stdout}"
 
     def test_cli_run_with_config(
         self, synthetic_vcf_path, synthetic_phenotypes_path, autism_pathways_path, tmp_path
