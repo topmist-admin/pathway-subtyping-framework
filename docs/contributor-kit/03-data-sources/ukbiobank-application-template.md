@@ -162,9 +162,9 @@ Software: Pathway Subtyping Framework (open-source)
 **Principal Investigator:**
 ```
 Name: [Your Name]
-Institution: OpenText Corporation
+Institution: [Your Institution]
 Role: [Your Role]
-Email: [your.email]@opentext.com
+Email: [your.email]
 ORCID: [Your ORCID]
 ```
 

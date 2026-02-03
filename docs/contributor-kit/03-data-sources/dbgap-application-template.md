@@ -117,16 +117,16 @@ Accession: phs######.v#.p#
 ```
 Name: [Your Name]
 eRA Commons ID: [Required]
-Institution: OpenText Corporation
+Institution: [Your Institution]
 Title: [Your Title]
-Email: [your.email]@opentext.com
+Email: [your.email]
 ```
 
 **Signing Official:**
 ```
 Name: [Institutional SO]
 Email: [SO email]
-Institution: OpenText Corporation
+Institution: [Your Institution]
 ```
 
 **Institutional Contact:**

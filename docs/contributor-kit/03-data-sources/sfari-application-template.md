@@ -128,8 +128,8 @@ Ideal: 5,000+ probands for robust subtype discovery
 ```
 Name: [Your Name]
 Title: [Your Title]
-Institution: OpenText Corporation
-Email: [your.email]@opentext.com
+Institution: [Your Institution]
+Email: [your.email]
 ```
 
 **Biosketch/CV:**
@@ -140,7 +140,7 @@ Email: [your.email]@opentext.com
 
 **Institution:**
 ```
-OpenText Corporation
+[Your Institution]
 [Address]
 ```
 

@@ -234,6 +234,38 @@ modeled after the successful Autism Pathway Framework 90-day plan.
 
 ---
 
+## Community Feedback: LinkedIn Poll (2026-02-02)
+
+**Question:** Preferred feature for pathway-subtyping framework?
+**Total votes:** 33
+
+| Feature | Votes | % |
+|---------|-------|---|
+| **Multi-omic support (RNAseq + WES)** | 22 | 67% |
+| Integrate with other pipelines | 8 | 24% |
+| More pre-built disease pathways | 2 | 6% |
+| Cloud ready deployment | 1 | 3% |
+
+### Key Insights
+
+1. **Multi-omic is the clear priority** — users want to combine genomics with transcriptomics (RNAseq + WES integration)
+2. **Pipeline integration is secondary** — interoperability with existing bioinformatics workflows matters
+3. **Pre-built pathways and cloud deployment are low priority** — users are willing to curate their own pathways and run locally
+
+### Roadmap Implications
+
+| Poll Result | Roadmap Impact |
+|-------------|----------------|
+| Multi-omic (67%) | **New priority**: Add RNAseq integration module in v0.3 |
+| Pipeline integration (24%) | Strengthen Nextflow/Snakemake examples in Week 6 |
+| Pre-built pathways (6%) | Week 5 scope is sufficient |
+| Cloud deployment (3%) | Defer to post-v0.2 |
+
+### Validated Use Cases
+
+- **Naresh Doni Jayavelu (Benaroya Research)**: Asthma research — heterogeneous disease, interested in multi-omic approach
+---
+
 ## Success Metrics
 
 | Metric | v0.1 Target | v0.2 Target |
@@ -262,4 +294,4 @@ gh project create "Pathway Subtyping Framework: v0.2 Roadmap" \
 
 ---
 
-*Last updated: 2026-01-29*
+*Last updated: 2026-02-02*

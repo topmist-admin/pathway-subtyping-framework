@@ -1,6 +1,6 @@
 # Contributor Kit for Genetic Research
 
-Welcome to the **Pathway Subtyping Framework** contributor kit. This package provides everything OpenText team members need to participate in genetic research projects using our pathway-based molecular subtyping approach.
+Welcome to the **Pathway Subtyping Framework** contributor kit. This package provides everything contributors need to participate in genetic research projects using our pathway-based molecular subtyping approach.
 
 ## What's in This Kit
 
