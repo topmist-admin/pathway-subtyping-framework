@@ -104,3 +104,7 @@ logs/
 
 # Local outreach materials (not tracked)
 outreach/
+
+# Claude session files (local context)
+claude-session.md
+claude-results.md
