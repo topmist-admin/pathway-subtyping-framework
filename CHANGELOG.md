@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Scientific Rigor Modules (Publication Readiness)
+- **Statistical rigor module** (`statistical_rigor.py`): Publication-quality statistics
+  - `benjamini_hochberg()`: FDR correction for multiple testing
+  - `BurdenWeightScheme`: Literature-based variant weighting (DEFAULT, GNOMAD_CONSTRAINT, ACMG_INSPIRED, UNIFORM)
+  - `PathwayNormalization`: Multiple aggregation methods (MEAN, MEDIAN, SIZE_NORMALIZED, PCA)
+  - `compute_pathway_effect_sizes()`: Cohen's d with bootstrap confidence intervals
+  - `compute_pathway_pvalues()`: Permutation-based p-value computation
+  - `run_statistical_analysis()`: Comprehensive statistical analysis pipeline
+- **Multiple clustering algorithms** (`clustering.py`): Algorithm comparison framework
+  - `ClusteringAlgorithm`: GMM, K-means, Hierarchical, Spectral clustering
+  - `run_clustering()`: Unified interface for all algorithms
+  - `select_n_clusters()`: BIC or silhouette-based model selection
+  - `cross_validate_clustering()`: K-fold cross-validation for stability
+  - `compare_algorithms()`: Pairwise ARI comparison, consensus labels
+- **Simulation framework** (`simulation.py`): Ground truth validation
+  - `SimulationConfig`: Configurable synthetic data generation
+  - `generate_synthetic_data()`: Planted subtype structure with effect size control
+  - `estimate_type_i_error()`: False positive rate estimation under null
+  - `run_power_analysis()`: Power curves across effect sizes
+  - `run_sample_size_analysis()`: Sample size recommendations for target power
+  - `validate_framework()`: Comprehensive framework validation
+- **Formal methods documentation** (`docs/METHODS.md`): Statistical methodology for publications
+
 #### Additional Disease Pathways (Week 5)
 - **Parkinson's Disease pathways** (`parkinsons_pathways.gmt`): 14 pathways, ~280 genes
   - Alpha-synuclein aggregation, mitochondrial function, autophagy-lysosomal pathway
@@ -73,7 +96,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Progress tracking tests
 - **Updated config tests** (`tests/test_config.py`): Tests for new validation functions
 - **Updated data quality tests**: Tests for multi-allelic `parse_genotype()` with `target_allele`
-- **Total test count**: 160 tests (up from 64)
+- **Statistical rigor tests** (`tests/test_statistical_rigor.py`): 32 tests for FDR, burden weights, effect sizes
+- **Clustering tests** (`tests/test_clustering.py`): 26 tests for algorithms, CV, comparison
+- **Simulation tests** (`tests/test_simulation.py`): 24 tests for synthetic data, power analysis
+- **Total test count**: 242 tests (up from 64)
 
 ### Changed
 - Pipeline now uses `data_quality` module for VCF loading

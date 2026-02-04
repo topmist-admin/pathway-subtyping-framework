@@ -41,8 +41,11 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 | Feature | Description |
 |---------|-------------|
 | **Pathway Scoring** | Aggregate gene burdens across biological pathways |
-| **Subtype Discovery** | GMM clustering with automatic model selection (BIC) |
+| **Multiple Clustering** | GMM, K-means, Hierarchical, Spectral with cross-validation |
 | **Validation Gates** | Negative controls + bootstrap stability testing |
+| **Statistical Rigor** | FDR correction, effect sizes, confidence intervals |
+| **Power Analysis** | Sample size recommendations, Type I error estimation |
+| **Simulation** | Synthetic data generation with ground truth for validation |
 | **Reproducibility** | Deterministic execution, pinned dependencies, Docker |
 | **Config-Driven** | YAML configuration for all parameters |
 
@@ -125,15 +128,28 @@ Rare damaging variants are aggregated into pathway-level disruption scores:
 - Scores normalized across samples
 
 ### 2. Subtype Discovery
-Gaussian Mixture Model clustering identifies patient subgroups:
-- Automatic cluster selection via BIC
-- Configurable cluster range (default: 2-8)
+Multiple clustering algorithms identify patient subgroups:
+- **GMM** (default): Soft assignments, automatic selection via BIC
+- **K-means**: Fast, spherical clusters
+- **Hierarchical**: Dendogram-based, no K required
+- **Spectral**: Nonlinear boundaries
+- Cross-validation for stability assessment
+- Algorithm comparison with pairwise ARI
 
 ### 3. Validation Gates
 Built-in tests prevent overfitting:
 - **Label shuffle**: Randomized labels should NOT cluster (ARI < 0.15)
 - **Random genes**: Fake pathways should NOT work (ARI < 0.15)
 - **Bootstrap**: Clusters should be stable under resampling (ARI > 0.8)
+
+### 4. Statistical Rigor
+Publication-quality statistics:
+- **FDR correction**: Benjamini-Hochberg for multiple testing
+- **Effect sizes**: Cohen's d with 95% bootstrap confidence intervals
+- **Power analysis**: Sample size recommendations for target effect sizes
+- **Type I error**: Estimation via null simulations
+
+See [docs/METHODS.md](docs/METHODS.md) for full statistical methodology.
 
 ## Data Requirements
 
@@ -150,20 +166,21 @@ Built-in tests prevent overfitting:
 ```
 pathway-subtyping-framework/
 ├── src/pathway_subtyping/     # Core Python package
+│   ├── pipeline.py            # Main pipeline
+│   ├── clustering.py          # Multiple clustering algorithms
+│   ├── statistical_rigor.py   # FDR, effect sizes, burden weights
+│   ├── simulation.py          # Synthetic data & power analysis
+│   ├── validation.py          # Validation gates
+│   └── data_quality.py        # VCF quality checks
 ├── configs/                   # Example YAML configurations
-│   ├── example_autism.yaml
-│   ├── example_schizophrenia.yaml
-│   ├── test_synthetic.yaml    # Ready-to-run test config
-│   └── example_epilepsy.yaml
 ├── data/
-│   ├── pathways/              # Pathway GMT files
+│   ├── pathways/              # Pathway GMT files (6 diseases)
 │   └── sample/                # Synthetic test data
-├── docs/guides/               # Documentation
-│   ├── adapting-for-your-disease.md
-│   ├── pathway-curation-guide.md
-│   └── validation-gates.md
+├── docs/
+│   ├── METHODS.md             # Statistical methods documentation
+│   └── guides/                # User guides
 ├── examples/notebooks/        # Jupyter tutorials
-├── tests/                     # Test suite (64 tests)
+├── tests/                     # Test suite (242 tests)
 ├── Dockerfile                 # Container support
 └── docker-compose.yml         # Easy orchestration
 ```
