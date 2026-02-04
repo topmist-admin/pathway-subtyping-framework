@@ -32,6 +32,8 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 | Schizophrenia | Template | `schizophrenia_pathways.gmt` |
 | Epilepsy | Template | `epilepsy_pathways.gmt` |
 | Intellectual Disability | Template | `intellectual_disability_pathways.gmt` |
+| Parkinson's Disease | Template | `parkinsons_pathways.gmt` |
+| Bipolar Disorder | Template | `bipolar_pathways.gmt` |
 | *Your disease* | [Adapt it →](docs/guides/adapting-for-your-disease.md) | `your_pathways.gmt` |
 
 ## Key Features

@@ -21,9 +21,11 @@ CHROMATIN_REMODELING	http://example.org/chromatin	CHD8	ARID1B	ASH1L	KMT2A	SETD5
 | File | Disease | Status | Gene Count |
 |------|---------|--------|------------|
 | `autism_pathways.gmt` | Autism Spectrum Disorder | Validated | ~200 genes |
-| `schizophrenia_pathways.gmt` | Schizophrenia | Template | ~150 genes |
-| `epilepsy_pathways.gmt` | Epilepsy | Template | ~100 genes |
-| `intellectual_disability_pathways.gmt` | Intellectual Disability | Template | ~180 genes |
+| `schizophrenia_pathways.gmt` | Schizophrenia | Template | ~250 genes |
+| `epilepsy_pathways.gmt` | Epilepsy | Template | ~200 genes |
+| `intellectual_disability_pathways.gmt` | Intellectual Disability | Template | ~350 genes |
+| `parkinsons_pathways.gmt` | Parkinson's Disease | Template | ~280 genes |
+| `bipolar_pathways.gmt` | Bipolar Disorder | Template | ~290 genes |
 
 ## Creating Your Own Pathway File
 
@@ -110,6 +112,24 @@ Most pathway databases offer GMT export. Look for "Download" → "GMT format" op
 - Glutamate signaling
 - mTOR pathway
 - Synaptic vesicle cycle
+
+### Parkinson's Disease
+- Alpha-synuclein aggregation
+- Mitochondrial function
+- Autophagy-lysosomal pathway
+- Dopamine metabolism
+- Endolysosomal trafficking
+- Immune/inflammation
+- Oxidative stress
+
+### Bipolar Disorder
+- Calcium signaling
+- Circadian rhythm
+- Glutamate/GABA signaling
+- WNT/GSK3 signaling (lithium target)
+- Inositol phosphate pathway
+- Synaptic transmission
+- HPA stress response
 
 ---
 

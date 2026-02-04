@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Additional Disease Pathways (Week 5)
+- **Parkinson's Disease pathways** (`parkinsons_pathways.gmt`): 14 pathways, ~280 genes
+  - Alpha-synuclein aggregation, mitochondrial function, autophagy-lysosomal pathway
+  - Dopamine metabolism, endolysosomal trafficking, immune/inflammation
+  - Sources: Nalls et al. 2019 (Lancet Neurol), Blauwendraat et al. 2020, IPDGC
+- **Bipolar Disorder pathways** (`bipolar_pathways.gmt`): 14 pathways, ~290 genes
+  - Calcium signaling, circadian rhythm, WNT/GSK3 signaling
+  - Glutamate/GABA signaling, HPA stress response, neuroplasticity
+  - Sources: Mullins et al. 2021 (Nat Genet), Stahl et al. 2019, BDgene
+- **Literature citations** added to autism pathway file header
+- Updated pathway documentation with new disease recommendations
+
 #### Real-World Data Support (Week 4)
 - **Multi-allelic variant support**: Automatically expands multi-allelic variants (e.g., A→G,T) into separate bi-allelic records
 - **Data quality module** (`data_quality.py`): Comprehensive VCF parsing with quality checks
