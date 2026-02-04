@@ -32,6 +32,8 @@ This framework enables discovery of molecular subtypes in genetically heterogene
 - **Schizophrenia** - Planned
 - **Epilepsy** - Planned
 - **Intellectual Disability** - Planned
+- **Parkinson's Disease** - Planned (AMP-PD, PPMI data sources identified)
+- **Bipolar Disorder** - Planned (PGC Bipolar data sources identified)
 
 ## Contact
 

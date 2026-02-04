@@ -40,6 +40,33 @@ This guide explains how to obtain access to genetic data for research using the 
 | **UK Biobank** | WES/WGS + cognitive | ~500,000 | Controlled |
 | **dbGaP** | Various | Variable | Controlled |
 
+### Parkinson's Disease
+| Repository | Data Type | Size | Access |
+|------------|-----------|------|--------|
+| **AMP-PD** | WGS + longitudinal clinical | ~10,000 cases | Controlled |
+| **PPMI** | WGS + biomarkers + imaging | ~1,500 PD + prodromal | Controlled |
+| **GP2** | WGS + phenotypes | ~150,000 (growing) | Controlled |
+| **UK Biobank** | WES/WGS + phenotypes | ~500,000 (subset) | Controlled |
+| **dbGaP - IPDGC** | GWAS + WES | ~40,000 | Controlled |
+
+**Notes:**
+- **AMP-PD** (Accelerating Medicines Partnership - Parkinson's Disease): https://amp-pd.org/ - Best resource for longitudinal WGS data with deep phenotyping
+- **PPMI** (Parkinson's Progression Markers Initiative): https://www.ppmi-info.org/ - Includes prodromal/at-risk cohorts
+- **GP2** (Global Parkinson's Genetics Program): https://gp2.org/ - Largest global PD genetics initiative
+
+### Bipolar Disorder
+| Repository | Data Type | Size | Access |
+|------------|-----------|------|--------|
+| **UK Biobank** | WES/WGS + phenotypes | ~500,000 (subset) | Controlled |
+| **dbGaP - PGC Bipolar** | GWAS + WES | ~40,000 cases | Controlled |
+| **STEP-BD** | WES + clinical + treatment | ~4,000 | Controlled |
+| **Stanley Brain Collection** | WES + postmortem | ~600 brains | Controlled |
+| **CommonMind Consortium** | WES + brain expression | ~1,000 | Controlled |
+
+**Notes:**
+- **PGC Bipolar**: https://pgc.unc.edu/for-researchers/resources/bipolar/ - Largest BD GWAS consortium
+- **CommonMind**: https://www.synapse.org/cmc - Combines genomics with brain transcriptomics
+
 ## Application Process Overview
 
 ### Step 1: Prepare Documentation (2-4 weeks)
@@ -79,6 +106,9 @@ This guide explains how to obtain access to genetic data for research using the 
 - **SFARI**: 4-6 weeks typical
 - **UK Biobank**: 8-12 weeks typical
 - **dbGaP**: 6-8 weeks typical
+- **AMP-PD**: 2-4 weeks typical (streamlined process)
+- **PPMI**: 2-4 weeks typical
+- **GP2**: 4-6 weeks typical
 
 ### Step 4: Data Access (1-2 weeks)
 
