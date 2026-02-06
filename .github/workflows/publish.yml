@@ -72,7 +72,8 @@ jobs:
         run: pip install dist/*.whl
 
       - name: Test import
-        run: python -c "import pathway_subtyping; print(f'Version: {pathway_subtyping.__version__}')"
+        run: |
+          python -c "import pathway_subtyping; print(f'Version: {pathway_subtyping.__version__}')"
 
       - name: Test CLI
         run: |
