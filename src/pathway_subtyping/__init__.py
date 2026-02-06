@@ -47,6 +47,35 @@ from .clustering import (
     cross_validate_clustering,
     compare_algorithms,
 )
+from .ancestry import (
+    AncestryAdjustmentResult,
+    AncestryMethod,
+    AncestryPCs,
+    AncestryStratificationReport,
+    adjust_pathway_scores,
+    check_ancestry_independence,
+    compute_ancestry_correlation,
+    compute_ancestry_pcs,
+    stratified_analysis,
+)
+from .batch_correction import (
+    BatchCorrectionMethod,
+    BatchCorrectionResult,
+    BatchEffectReport,
+    correct_batch_effects,
+    detect_batch_effects,
+    validate_batch_correction,
+)
+from .sensitivity import (
+    ParameterVariationResult,
+    SensitivityAnalysisResult,
+    SensitivityParameter,
+    run_sensitivity_analysis,
+    vary_clustering_algorithm,
+    vary_feature_subset,
+    vary_n_clusters,
+    vary_normalization,
+)
 from .simulation import (
     SimulationConfig,
     SimulatedData,
@@ -114,6 +143,32 @@ __all__ = [
     "run_power_analysis",
     "run_sample_size_analysis",
     "validate_framework",
+    # Batch correction
+    "BatchCorrectionMethod",
+    "BatchCorrectionResult",
+    "BatchEffectReport",
+    "correct_batch_effects",
+    "detect_batch_effects",
+    "validate_batch_correction",
+    # Sensitivity analysis
+    "ParameterVariationResult",
+    "SensitivityAnalysisResult",
+    "SensitivityParameter",
+    "run_sensitivity_analysis",
+    "vary_clustering_algorithm",
+    "vary_feature_subset",
+    "vary_n_clusters",
+    "vary_normalization",
+    # Ancestry correction
+    "AncestryAdjustmentResult",
+    "AncestryMethod",
+    "AncestryPCs",
+    "AncestryStratificationReport",
+    "adjust_pathway_scores",
+    "check_ancestry_independence",
+    "compute_ancestry_correlation",
+    "compute_ancestry_pcs",
+    "stratified_analysis",
     # Meta
     "__version__",
 ]

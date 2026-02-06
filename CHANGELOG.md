@@ -9,6 +9,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Ancestry / Population Stratification Correction
+- **Ancestry correction module** (`ancestry.py`): PCA-based population stratification detection and correction
+  - `AncestryMethod`: Enum for correction approaches (REGRESS_OUT, COVARIATE_AWARE, STRATIFIED)
+  - `compute_ancestry_pcs()`: PCA on genotype matrix with monomorphic variant handling
+  - `adjust_pathway_scores()`: Regression residualization to remove ancestry-correlated variance
+  - `check_ancestry_independence()`: Kruskal-Wallis test with Bonferroni correction for cluster-ancestry independence
+  - `stratified_analysis()`: Per-ancestry-group clustering with cross-group concordance
+  - `compute_ancestry_correlation()`: Pearson correlation matrix between pathways and ancestry PCs
+  - Dataclasses: `AncestryPCs`, `AncestryAdjustmentResult`, `AncestryStratificationReport` (all with `.to_dict()`, `.format_report()`, `.get_citations()`)
+- **Ancestry validation gate** (`validation.py`): 4th validation gate tests cluster-ancestry independence
+- **Ancestry simulation** (`simulation.py`): Configurable ancestry confounding for synthetic data
+  - `n_ancestry_groups`, `ancestry_effect_size`, `ancestry_confounding` parameters in `SimulationConfig`
+  - Simulated ancestry PCs and group labels in `SimulatedData`
+- **Pipeline integration** (`pipeline.py`): Optional ancestry correction between pathway scoring and clustering
+  - `ancestry_pcs_path`, `ancestry_correction`, `ancestry_n_pcs` in `PipelineConfig`
+  - Ancestry section in JSON and Markdown reports
+- **Config validation** (`config.py`): Ancestry section validation (method, PCs file, n_pcs)
+- **Ancestry test suite** (`tests/test_ancestry.py`): 44 tests covering all functions, edge cases, and end-to-end validation
+
+#### Batch Correction & Sensitivity Analysis
+- **Batch correction module** (`batch_correction.py`): ComBat-style batch effect detection and correction
+  - `BatchCorrectionMethod`: Enum for correction approaches (COMBAT, MEAN_CENTER, STANDARDIZE)
+  - `detect_batch_effects()`: ANOVA-based batch effect detection with eta-squared variance explained
+  - `correct_batch_effects()`: ComBat empirical Bayes correction, mean centering, or standardization
+  - `validate_batch_correction()`: Post-correction validation of variance reduction and signal preservation
+  - Dataclasses: `BatchEffectReport`, `BatchCorrectionResult` (all with `.to_dict()`, `.format_report()`, `.get_citations()`)
+- **Sensitivity analysis module** (`sensitivity.py`): Systematic parameter robustness testing
+  - `SensitivityParameter`: Enum for parameter axes (CLUSTERING_ALGORITHM, N_CLUSTERS, NORMALIZATION, FEATURE_SUBSET)
+  - `vary_clustering_algorithm()`: Compare GMM, K-means, Hierarchical across algorithms
+  - `vary_n_clusters()`: Sweep cluster count range with pairwise ARI
+  - `vary_feature_subset()`: Leave-one-out pathway sensitivity
+  - `vary_normalization()`: Compare z-score, min-max, robust, rank normalization
+  - `run_sensitivity_analysis()`: Full sensitivity analysis with robustness scoring
+  - Dataclasses: `ParameterVariationResult`, `SensitivityAnalysisResult` (all with `.to_dict()`, `.format_report()`, `.get_citations()`)
+- **Batch correction tests** (`tests/test_batch_correction.py`): 34 tests covering detection, correction, validation, edge cases
+- **Sensitivity analysis tests** (`tests/test_sensitivity.py`): 27 tests covering all parameter axes, reproducibility, dataclasses
+
 #### Scientific Rigor Modules (Publication Readiness)
 - **Statistical rigor module** (`statistical_rigor.py`): Publication-quality statistics
   - `benjamini_hochberg()`: FDR correction for multiple testing
@@ -99,7 +136,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Statistical rigor tests** (`tests/test_statistical_rigor.py`): 32 tests for FDR, burden weights, effect sizes
 - **Clustering tests** (`tests/test_clustering.py`): 26 tests for algorithms, CV, comparison
 - **Simulation tests** (`tests/test_simulation.py`): 24 tests for synthetic data, power analysis
-- **Total test count**: 242 tests (up from 64)
+- **Ancestry tests** (`tests/test_ancestry.py`): 44 tests for PCA, correction, independence, stratified analysis
+- **Batch correction tests** (`tests/test_batch_correction.py`): 34 tests for detection, correction, validation
+- **Sensitivity analysis tests** (`tests/test_sensitivity.py`): 27 tests for parameter variation, robustness
+- **Total test count**: 347 tests (up from 242)
 
 ### Changed
 - Pipeline now uses `data_quality` module for VCF loading

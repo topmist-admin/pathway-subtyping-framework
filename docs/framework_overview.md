@@ -66,6 +66,25 @@ Variants → Genes → Pathways → Subtypes
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
+│              ANCESTRY CORRECTION (optional)                      │
+├─────────────────────────────────────────────────────────────────┤
+│  • Load or compute ancestry PCs from genotype data              │
+│  • Regress out ancestry-correlated variance per pathway         │
+│  • Flag confounded pathways (R² > 0.1)                          │
+│  • Re-normalize adjusted scores                                  │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              BATCH CORRECTION (optional)                          │
+├─────────────────────────────────────────────────────────────────┤
+│  • Detect batch effects via ANOVA (eta-squared)                  │
+│  • ComBat empirical Bayes correction (default)                   │
+│  • Validate variance reduction & signal preservation             │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
 │                   GMM CLUSTERING                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │  • Fit Gaussian Mixture Models for K = 2..max_k                 │
@@ -81,6 +100,18 @@ Variants → Genes → Pathways → Subtypes
 │  Gate 1: Label Shuffle     → Verify no spurious patterns        │
 │  Gate 2: Random Gene Sets  → Verify pathways drive clustering   │
 │  Gate 3: Bootstrap         → Verify cluster stability           │
+│  Gate 4: Ancestry Indep.   → Verify no ancestry confounding     │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              SENSITIVITY ANALYSIS (optional)                      │
+├─────────────────────────────────────────────────────────────────┤
+│  • Vary clustering algorithm (GMM, K-means, Hierarchical)       │
+│  • Vary number of clusters (k sweep)                             │
+│  • Leave-one-out feature sensitivity                             │
+│  • Vary normalization method                                     │
+│  • Report overall robustness score                               │
 └────────────────────────┬────────────────────────────────────────┘
                          │
                          ▼
@@ -162,6 +193,7 @@ probabilities = gmm.predict_proba(pathway_scores)
 | Label Shuffle | Shuffle labels, re-cluster | ARI < 0.1 |
 | Random Genes | Random gene sets, re-cluster | ARI < 0.1 |
 | Bootstrap | Resample, re-cluster | ARI >= 0.7 |
+| Ancestry Independence | Kruskal-Wallis per PC | No significant association (Bonferroni) |
 
 ```python
 from pathway_subtyping import ValidationGates
@@ -181,6 +213,76 @@ results = gates.run_all_gates(
 **Methods**:
 - Direct comparison: Cluster both cohorts, compare with ARI
 - Transfer: Project cohort B onto cohort A's model
+
+### 6. Ancestry Correction (`ancestry.py`)
+
+**Purpose**: Detect and correct for population stratification confounding.
+
+**Methods**:
+- `compute_ancestry_pcs()`: PCA on genotype matrix for ancestry inference
+- `adjust_pathway_scores()`: Regress ancestry PCs out of pathway scores
+- `check_ancestry_independence()`: Kruskal-Wallis test for cluster-ancestry association
+- `stratified_analysis()`: Per-ancestry-group clustering with concordance
+
+```python
+from pathway_subtyping import (
+    compute_ancestry_pcs,
+    adjust_pathway_scores,
+    check_ancestry_independence,
+)
+
+# Compute ancestry PCs
+pcs = compute_ancestry_pcs(genotype_matrix, n_components=10, seed=42)
+
+# Adjust pathway scores
+result = adjust_pathway_scores(pathway_scores, pcs)
+adjusted_scores = result.adjusted_scores
+
+# Verify independence after clustering
+report = check_ancestry_independence(cluster_labels, pcs)
+print(f"Independent of ancestry: {report.passed}")
+```
+
+### 7. Batch Correction (`batch_correction.py`)
+
+**Purpose**: Detect and correct batch effects from multi-site or multi-run data.
+
+**Methods**:
+- `detect_batch_effects()`: ANOVA-based detection with eta-squared variance explained
+- `correct_batch_effects()`: ComBat empirical Bayes, mean centering, or standardization
+- `validate_batch_correction()`: Post-correction validation of variance reduction
+
+```python
+from pathway_subtyping import detect_batch_effects, correct_batch_effects
+
+# Detect batch effects
+report = detect_batch_effects(pathway_scores, batch_labels)
+print(f"Batch effect detected: {report.overall_batch_effect}")
+
+# Correct batch effects
+result = correct_batch_effects(pathway_scores, batch_labels)
+corrected_scores = result.corrected_scores
+```
+
+### 8. Sensitivity Analysis (`sensitivity.py`)
+
+**Purpose**: Evaluate robustness of clustering results to parameter choices.
+
+**Methods**:
+- `vary_clustering_algorithm()`: Compare results across GMM, K-means, Hierarchical
+- `vary_n_clusters()`: Sweep k range with pairwise ARI concordance
+- `vary_feature_subset()`: Leave-one-out pathway sensitivity
+- `vary_normalization()`: Compare z-score, min-max, robust, rank normalization
+- `run_sensitivity_analysis()`: Full sensitivity analysis across all axes
+
+```python
+from pathway_subtyping import run_sensitivity_analysis
+
+result = run_sensitivity_analysis(pathway_scores, n_clusters=3, seed=42)
+print(f"Overall stability: {result.overall_stability:.3f}")
+print(f"Robust: {result.is_robust}")
+print(f"Most sensitive: {result.most_sensitive_parameter}")
+```
 
 ---
 

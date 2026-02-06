@@ -83,6 +83,8 @@ Outputs are only as good as inputs:
 - Annotation databases have errors
 - Phenotype data may be inconsistent
 
+**Mitigation (v0.2):** The `data_quality` module validates VCF inputs before analysis. `load_vcf_with_quality_check()` reports annotation coverage (GENE, CONSEQUENCE, CADD), detects multi-allelic variants, and raises `VCFDataQualityError` with actionable fix suggestions when data falls below usability thresholds. See also `validate_vcf_for_pipeline()` for pre-flight checks.
+
 ### 2. Sequencing Technology Artifacts
 
 Different technologies produce different results:
@@ -99,6 +101,8 @@ Genetic analyses are confounded by:
 - Cryptic relatedness
 - Founder effects
 
+**Mitigation (v0.2):** The `ancestry` module provides PCA-based ancestry correction via regression residualization, plus a validation gate that tests cluster-ancestry independence using Kruskal-Wallis tests with Bonferroni correction. See `compute_ancestry_pcs()`, `adjust_pathway_scores()`, and `check_ancestry_independence()`. Note: this corrects for *linear* ancestry effects; nonlinear or interaction effects may persist.
+
 ### 4. Sample Size Constraints
 
 | Analysis Type | Typical Minimum | Limitation |
@@ -108,12 +112,16 @@ Genetic analyses are confounded by:
 | Rare variant association | 1000+ samples | Most variants too rare |
 | Cross-cohort replication | Multiple cohorts | Availability |
 
+**Mitigation (v0.2):** The `simulation` module provides empirical power analysis. `run_power_analysis()` estimates detection power across effect sizes, `run_sample_size_analysis()` recommends minimum samples for a target power level, and `estimate_type_i_error()` quantifies false positive rates under the null. These help researchers plan adequately powered studies.
+
 ### 5. Multiple Testing
 
 With many pathways and genes:
 - Many false positives expected
 - Stringent correction reduces power
 - Winner's curse inflates effect sizes
+
+**Mitigation (v0.2):** The `statistical_rigor` module implements Benjamini-Hochberg FDR correction via `benjamini_hochberg()`. All pathway-level p-values are corrected before reporting. `compute_pathway_pvalues()` uses permutation-based testing (≥1000 permutations) for robust estimates, and `compute_pathway_effect_sizes()` reports Cohen's d with 95% bootstrap confidence intervals to contextualize statistical significance.
 
 ---
 
@@ -128,6 +136,8 @@ Results depend on arbitrary choices:
 - Significance thresholds
 - Normalization methods
 
+**Mitigation (v0.2):** The framework provides multiple built-in alternatives for key parameters: `BurdenWeightScheme` (DEFAULT, GNOMAD_CONSTRAINT, ACMG_INSPIRED, UNIFORM), `PathwayNormalization` (MEAN, MEDIAN, SIZE_NORMALIZED, PCA), and `compare_algorithms()` for testing GMM, K-means, Hierarchical, and Spectral clustering side-by-side. Users can systematically evaluate whether conclusions are robust to methodological choices.
+
 ### 2. Clustering Limitations
 
 Unsupervised clustering has inherent issues:
@@ -136,12 +146,16 @@ Unsupervised clustering has inherent issues:
 - **Instability**: Small changes can shift assignments
 - **Interpretation**: Clusters may not correspond to biology
 
+**Mitigation (v0.2):** `select_n_clusters()` uses BIC or silhouette scores for principled K selection. `cross_validate_clustering()` measures stability across held-out folds. `compare_algorithms()` tests whether conclusions hold across GMM, K-means, Hierarchical, and Spectral methods, reporting pairwise ARI and consensus labels.
+
 ### 3. Overfitting Risk
 
 Complex models can:
 - Fit noise rather than signal
 - Fail to generalize to new data
 - Appear successful on training data only
+
+**Mitigation (v0.2):** Four validation gates guard against overfitting: label shuffle (clusters must outperform random), random gene sets (pathway biology must matter), bootstrap stability (clusters must be robust to resampling), and ancestry independence (clusters must not reflect population structure). `cross_validate_clustering()` provides additional K-fold stability assessment. `validate_framework()` runs comprehensive end-to-end validation on synthetic data.
 
 ---
 
@@ -161,6 +175,8 @@ True biological effects may not replicate due to:
 
 Failed replication does not prove null (may be underpowered).
 Successful replication does not prove causation.
+
+**Mitigation (v0.2):** The `cross_cohort` module provides `compare_cohorts()` for direct ARI-based comparison and transfer learning between independent cohorts. `batch_compare_cohorts()` enables systematic multi-cohort replication testing. Power analysis via `run_sample_size_analysis()` helps distinguish true null results from underpowered studies.
 
 ### 3. Publication Bias
 
@@ -183,6 +199,8 @@ Most genetic studies over-represent:
 - Certain phenotypic presentations
 
 Findings may not generalize to underrepresented groups.
+
+**Mitigation (v0.2):** The `ancestry` module's `stratified_analysis()` verifies whether discovered subtypes replicate within individual ancestry groups. Cross-group centroid concordance quantifies consistency. This helps identify when findings are specific to certain populations vs. generalizable.
 
 ### 2. Reductionism Risk
 
@@ -241,9 +259,16 @@ And inappropriate for:
 |------------|------------|
 | Incomplete pathways | Use multiple pathway databases; acknowledge gaps |
 | Static models | Integrate developmental data when available |
-| Overfitting | Cross-validation; replication; validation gates |
-| Multiple testing | FDR correction; pre-registration |
-| Confounding | Careful covariate adjustment; negative controls |
+| Data quality | `data_quality` module: VCF validation, annotation coverage checks |
+| Batch effects | `batch_correction` module: ComBat-style correction for sequencing site/technology |
+| Confounding | `ancestry` module: PCA correction, independence testing, stratified analysis |
+| Sample size | `simulation` module: power analysis, sample size recommendations |
+| Multiple testing | `statistical_rigor` module: BH FDR correction, permutation p-values |
+| Parameter sensitivity | `sensitivity` module: systematic parameter variation; `compare_algorithms()` |
+| Clustering instability | `clustering` module: BIC/silhouette model selection, cross-validation, algorithm comparison |
+| Overfitting | 4 validation gates + `cross_validate_clustering()` + `validate_framework()` |
+| Replication | `cross_cohort` module: ARI comparison, transfer learning, batch comparison |
+| Representation bias | `ancestry` module: `stratified_analysis()` verifies cross-group consistency |
 | Interpretation | Require experimental validation; temper claims |
 
 ---

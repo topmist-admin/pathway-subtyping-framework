@@ -47,6 +47,11 @@ class SimulationConfig:
     subtype_proportions: Optional[List[float]] = None
     seed: Optional[int] = 42
 
+    # Ancestry/population stratification (optional)
+    n_ancestry_groups: int = 0  # 0 = no ancestry simulation
+    ancestry_effect_size: float = 0.5  # Effect of ancestry on pathway scores
+    ancestry_confounding: float = 0.0  # Correlation between subtypes and ancestry (0-1)
+
     def __post_init__(self):
         if self.subtype_proportions is None:
             # Equal proportions by default
@@ -77,9 +82,11 @@ class SimulatedData:
     true_labels: np.ndarray
     config: SimulationConfig
     subtype_pathway_effects: Dict[int, List[str]] = field(default_factory=dict)
+    ancestry_labels: Optional[np.ndarray] = None
+    ancestry_pcs: Optional[pd.DataFrame] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        result = {
             "n_samples": len(self.true_labels),
             "n_pathways": len(self.pathways),
             "n_subtypes": len(np.unique(self.true_labels)),
@@ -93,6 +100,13 @@ class SimulatedData:
                 zip(*np.unique(self.true_labels, return_counts=True))
             },
         }
+        if self.ancestry_labels is not None:
+            result["ancestry"] = {
+                "n_groups": len(np.unique(self.ancestry_labels)),
+                "ancestry_effect_size": self.config.ancestry_effect_size,
+                "ancestry_confounding": self.config.ancestry_confounding,
+            }
+        return result
 
 
 def generate_synthetic_data(config: SimulationConfig) -> SimulatedData:
@@ -185,6 +199,15 @@ def generate_synthetic_data(config: SimulationConfig) -> SimulatedData:
     # Ensure non-negative
     gene_burdens = gene_burdens.clip(lower=0)
 
+    # Simulate ancestry/population structure (optional)
+    ancestry_labels = None
+    ancestry_pcs_df = None
+
+    if config.n_ancestry_groups > 0:
+        ancestry_labels, ancestry_pcs_df = _simulate_ancestry(
+            rng, config, gene_burdens, true_labels
+        )
+
     # Compute pathway scores
     pathway_scores = pd.DataFrame(index=gene_burdens.index)
 
@@ -204,6 +227,8 @@ def generate_synthetic_data(config: SimulationConfig) -> SimulatedData:
         true_labels=true_labels,
         config=config,
         subtype_pathway_effects=subtype_pathway_effects,
+        ancestry_labels=ancestry_labels,
+        ancestry_pcs=ancestry_pcs_df,
     )
 
 
@@ -679,3 +704,84 @@ def validate_framework(
         },
         "type_i_error": type_i.to_dict(),
     }
+
+
+def _simulate_ancestry(
+    rng: np.random.RandomState,
+    config: SimulationConfig,
+    gene_burdens: pd.DataFrame,
+    true_labels: np.ndarray,
+) -> Tuple[np.ndarray, pd.DataFrame]:
+    """
+    Add simulated population structure to gene burden data.
+
+    Creates ancestry groups and adds ancestry-correlated effects to
+    gene burdens. If ancestry_confounding > 0, ancestry groups are
+    correlated with true subtypes (creating the confounding problem
+    that ancestry correction is designed to address).
+
+    Args:
+        rng: Random state for reproducibility.
+        config: SimulationConfig with ancestry parameters.
+        gene_burdens: DataFrame of gene burdens to modify in-place.
+        true_labels: True subtype assignments.
+
+    Returns:
+        Tuple of (ancestry_labels, ancestry_pcs DataFrame).
+    """
+    n_samples = config.n_samples
+
+    # Assign ancestry groups
+    if config.ancestry_confounding > 0 and config.n_ancestry_groups >= config.n_subtypes:
+        # Confounded: ancestry partially correlated with subtypes
+        ancestry_labels = np.zeros(n_samples, dtype=int)
+        for i in range(n_samples):
+            if rng.random() < config.ancestry_confounding:
+                ancestry_labels[i] = int(true_labels[i]) % config.n_ancestry_groups
+            else:
+                ancestry_labels[i] = rng.randint(0, config.n_ancestry_groups)
+    else:
+        # Random (non-confounded) ancestry assignment
+        ancestry_labels = rng.randint(0, config.n_ancestry_groups, size=n_samples)
+
+    # Add ancestry-specific effects to gene burdens
+    n_ancestry_genes = max(5, len(gene_burdens.columns) // 4)
+
+    for group in range(config.n_ancestry_groups):
+        mask = ancestry_labels == group
+        if not np.any(mask):
+            continue
+
+        ancestry_genes = rng.choice(
+            gene_burdens.columns, size=min(n_ancestry_genes, len(gene_burdens.columns)),
+            replace=False,
+        )
+        for gene in ancestry_genes:
+            gene_burdens.loc[mask, gene] += rng.normal(
+                config.ancestry_effect_size * (group + 1),
+                0.1,
+                size=int(np.sum(mask)),
+            )
+
+    # Generate simulated ancestry PCs
+    n_pcs = min(10, config.n_ancestry_groups * 2)
+    pc_values = np.zeros((n_samples, n_pcs))
+
+    for i in range(n_pcs):
+        for group in range(config.n_ancestry_groups):
+            mask = ancestry_labels == group
+            if not np.any(mask):
+                continue
+            pc_values[mask, i] = rng.normal(
+                (group - config.n_ancestry_groups / 2) * (1.0 / (i + 1)),
+                0.3,
+                size=int(np.sum(mask)),
+            )
+
+    ancestry_pcs_df = pd.DataFrame(
+        pc_values,
+        index=gene_burdens.index,
+        columns=[f"PC{j+1}" for j in range(n_pcs)],
+    )
+
+    return ancestry_labels, ancestry_pcs_df

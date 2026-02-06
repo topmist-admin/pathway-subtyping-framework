@@ -48,6 +48,11 @@ class PipelineConfig:
     n_clusters: Optional[int] = None
     n_clusters_range: List[int] = field(default_factory=lambda: [2, 8])
 
+    # Ancestry correction (optional)
+    ancestry_pcs_path: Optional[str] = None
+    ancestry_correction: Optional[str] = None  # "regress_out", "covariate_aware"
+    ancestry_n_pcs: int = 10
+
     # Output settings
     disclaimer: str = "Research use only. Not medical advice."
 
@@ -62,6 +67,7 @@ class PipelineConfig:
         data = config_dict.get("data", {})
         clustering = config_dict.get("clustering", {})
         output = config_dict.get("output", {})
+        ancestry = config_dict.get("ancestry", {})
 
         return cls(
             name=pipeline.get("name", "demo_run"),
@@ -73,6 +79,9 @@ class PipelineConfig:
             pathway_db=data.get("pathway_db", ""),
             n_clusters=clustering.get("n_clusters"),
             n_clusters_range=clustering.get("n_clusters_range", [2, 8]),
+            ancestry_pcs_path=ancestry.get("pcs_path"),
+            ancestry_correction=ancestry.get("correction"),
+            ancestry_n_pcs=ancestry.get("n_pcs", 10),
             disclaimer=output.get("disclaimer", "Research use only."),
         )
 
@@ -109,6 +118,11 @@ class DemoPipeline:
 
         # Data quality report
         self.data_quality_report: Optional[DataQualityReport] = None
+
+        # Ancestry correction
+        self.ancestry_pcs = None
+        self.ancestry_adjustment = None
+        self.ancestry_report = None
 
         # Timing
         self.start_time: Optional[datetime] = None
@@ -263,6 +277,50 @@ class DemoPipeline:
                     # parts[1] is description, parts[2:] are genes
                     genes = parts[2:]
                     self.pathways[pathway_name] = genes
+
+    def _load_ancestry_pcs(self) -> None:
+        """Load pre-computed ancestry principal components."""
+        from .ancestry import AncestryPCs
+
+        pcs_path = Path(self.config.ancestry_pcs_path)
+        if not pcs_path.exists():
+            raise FileNotFoundError(
+                f"Ancestry PCs file not found: {pcs_path}\n\n"
+                f"Expected format: CSV with sample_id as index, PC1..PCn as columns.\n"
+                f"Generate PCs from genotype data using PLINK:\n"
+                f"  plink2 --bfile your_data --pca 10 --out ancestry_pcs"
+            )
+
+        pcs_df = pd.read_csv(pcs_path, index_col=0)
+        n_components = len(pcs_df.columns)
+
+        self.ancestry_pcs = AncestryPCs(
+            components=pcs_df,
+            explained_variance_ratio=np.zeros(n_components),
+            n_components=n_components,
+            sample_ids=list(pcs_df.index),
+        )
+        logger.info(
+            f"[Ancestry] Loaded {n_components} ancestry PCs for {len(pcs_df)} samples"
+        )
+
+    def _adjust_for_ancestry(self) -> None:
+        """Apply ancestry correction to pathway scores."""
+        from .ancestry import AncestryMethod, adjust_pathway_scores
+
+        method = AncestryMethod(self.config.ancestry_correction)
+        self.ancestry_adjustment = adjust_pathway_scores(
+            pathway_scores=self.pathway_scores,
+            ancestry_pcs=self.ancestry_pcs,
+            method=method,
+            n_pcs=self.config.ancestry_n_pcs,
+        )
+        self.pathway_scores = self.ancestry_adjustment.adjusted_scores
+        logger.info(
+            f"[Ancestry] Applied correction: {method.value} "
+            f"({self.ancestry_adjustment.n_pcs_used} PCs, "
+            f"{len(self.ancestry_adjustment.highly_confounded_pathways)} confounded pathways)"
+        )
 
     def compute_gene_burdens(self) -> None:
         """Compute gene-level burden scores for each sample."""
@@ -511,7 +569,15 @@ class DemoPipeline:
             gene_burdens=self.gene_burdens,
             n_clusters=self.n_clusters,
             gmm_seed=self.config.seed,
+            ancestry_pcs=self.ancestry_pcs,
         )
+
+        # Store ancestry report if available
+        if self.ancestry_pcs is not None:
+            from .ancestry import check_ancestry_independence
+            self.ancestry_report = check_ancestry_independence(
+                cluster_labels, self.ancestry_pcs
+            )
 
         # Log summary
         status = "PASS" if self.validation_result.all_passed else "FAIL"
@@ -643,6 +709,13 @@ class DemoPipeline:
         if self.data_quality_report:
             data_quality = self.data_quality_report.to_dict()
 
+        # Ancestry results
+        ancestry_info = {}
+        if self.ancestry_adjustment:
+            ancestry_info["adjustment"] = self.ancestry_adjustment.to_dict()
+        if self.ancestry_report:
+            ancestry_info["independence_test"] = self.ancestry_report.to_dict()
+
         # JSON report
         report = {
             "pipeline_name": self.config.name,
@@ -662,6 +735,7 @@ class DemoPipeline:
             },
             "clusters": self.cluster_assignments["cluster_label"].value_counts().to_dict(),
             "data_quality": data_quality,
+            "ancestry_correction": ancestry_info,
             "ground_truth_validation": ground_truth_validation,
             "validation_gates": validation_gates,
             "disclaimer": self.config.disclaimer,
@@ -749,6 +823,16 @@ class DemoPipeline:
                 lines.extend(["", "### Warnings", ""])
                 for warning in warnings:
                     lines.append(f"- {warning}")
+
+        # Ancestry Correction section
+        ancestry = report.get("ancestry_correction", {})
+        if ancestry:
+            lines.append("")
+            if self.ancestry_adjustment:
+                lines.append(self.ancestry_adjustment.format_report())
+            if self.ancestry_report:
+                lines.append("")
+                lines.append(self.ancestry_report.format_report())
 
         # Validation Gates section
         validation_gates = report.get("validation_gates", {})
@@ -894,6 +978,13 @@ class DemoPipeline:
             self.load_data()
             self.compute_gene_burdens()
             self.compute_pathway_scores()
+
+            # Ancestry correction (optional)
+            if self.config.ancestry_pcs_path:
+                self._load_ancestry_pcs()
+            if self.config.ancestry_correction and self.ancestry_pcs:
+                self._adjust_for_ancestry()
+
             self.cluster_samples()
             self.run_validation_gates()
             self.generate_outputs()

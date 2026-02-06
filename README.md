@@ -42,7 +42,10 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 |---------|-------------|
 | **Pathway Scoring** | Aggregate gene burdens across biological pathways |
 | **Multiple Clustering** | GMM, K-means, Hierarchical, Spectral with cross-validation |
-| **Validation Gates** | Negative controls + bootstrap stability testing |
+| **Ancestry Correction** | PCA-based population stratification correction with independence testing |
+| **Batch Correction** | ComBat-style batch effect detection and correction |
+| **Sensitivity Analysis** | Parameter robustness testing across algorithms, features, normalization |
+| **Validation Gates** | Negative controls + bootstrap stability + ancestry independence testing |
 | **Statistical Rigor** | FDR correction, effect sizes, confidence intervals |
 | **Power Analysis** | Sample size recommendations, Type I error estimation |
 | **Simulation** | Synthetic data generation with ground truth for validation |
@@ -118,7 +121,7 @@ See the full guide: [Adapting for Your Disease](docs/guides/adapting-for-your-di
 ## How It Works
 
 ```
-VCF Input → Variant Filter → Gene Burden → Pathway Aggregation → GMM Clustering → Validation → Report
+VCF Input → Variant Filter → Gene Burden → Pathway Aggregation → [Ancestry Correction] → [Batch Correction] → GMM Clustering → [Sensitivity Analysis] → Validation → Report
 ```
 
 ### 1. Pathway Scoring
@@ -141,6 +144,7 @@ Built-in tests prevent overfitting:
 - **Label shuffle**: Randomized labels should NOT cluster (ARI < 0.15)
 - **Random genes**: Fake pathways should NOT work (ARI < 0.15)
 - **Bootstrap**: Clusters should be stable under resampling (ARI > 0.8)
+- **Ancestry independence**: Clusters should not correlate with ancestry PCs (when provided)
 
 ### 4. Statistical Rigor
 Publication-quality statistics:
@@ -171,6 +175,9 @@ pathway-subtyping-framework/
 │   ├── statistical_rigor.py   # FDR, effect sizes, burden weights
 │   ├── simulation.py          # Synthetic data & power analysis
 │   ├── validation.py          # Validation gates
+│   ├── ancestry.py            # Population stratification correction
+│   ├── batch_correction.py    # Batch effect detection & correction
+│   ├── sensitivity.py         # Parameter sensitivity analysis
 │   └── data_quality.py        # VCF quality checks
 ├── configs/                   # Example YAML configurations
 ├── data/
@@ -180,7 +187,7 @@ pathway-subtyping-framework/
 │   ├── METHODS.md             # Statistical methods documentation
 │   └── guides/                # User guides
 ├── examples/notebooks/        # Jupyter tutorials
-├── tests/                     # Test suite (242 tests)
+├── tests/                     # Test suite (347 tests)
 ├── Dockerfile                 # Container support
 └── docker-compose.yml         # Easy orchestration
 ```

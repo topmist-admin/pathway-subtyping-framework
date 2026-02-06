@@ -108,6 +108,7 @@ class ValidationGates:
         gene_burdens: pd.DataFrame,
         n_clusters: int,
         gmm_seed: Optional[int] = None,
+        ancestry_pcs=None,
     ) -> ValidationGatesResult:
         """
         Run all validation gates.
@@ -119,6 +120,7 @@ class ValidationGates:
             gene_burdens: DataFrame of gene burdens (samples x genes)
             n_clusters: Number of clusters used
             gmm_seed: Seed for GMM clustering
+            ancestry_pcs: Optional AncestryPCs for ancestry independence gate
 
         Returns:
             ValidationGatesResult with all test outcomes
@@ -154,6 +156,17 @@ class ValidationGates:
             f"  - {stability_result.name}: {stability_result.status} "
             f"(ARI = {stability_result.metric_value:.3f})"
         )
+
+        # Negative Control 3: Ancestry Independence (if ancestry PCs available)
+        if ancestry_pcs is not None:
+            nc3_result = self.negative_control_ancestry_independence(
+                cluster_labels, ancestry_pcs
+            )
+            results.append(nc3_result)
+            logger.info(
+                f"  - {nc3_result.name}: {nc3_result.status} "
+                f"(p_min = {nc3_result.metric_value:.4f})"
+            )
 
         # Aggregate results
         all_passed = all(r.passed for r in results)
@@ -438,6 +451,53 @@ class ValidationGates:
                 "std_ari": round(std_ari, 4),
                 "n_bootstrap": len(ari_values),
                 "interpretation": "Clustering should be stable across bootstrap samples",
+            },
+        )
+
+
+    def negative_control_ancestry_independence(
+        self,
+        cluster_labels: np.ndarray,
+        ancestry_pcs,
+    ) -> ValidationResult:
+        """
+        Negative Control 3: Ancestry Independence Test.
+
+        Tests whether discovered clusters are confounded with ancestry
+        PCs. If clusters correlate significantly with ancestry, the
+        subtypes may reflect population structure rather than biology.
+
+        Pass criterion: No ancestry PC significantly associated with
+        clusters after Bonferroni correction (p > 0.05 / n_PCs).
+        """
+        from .ancestry import check_ancestry_independence
+
+        report = check_ancestry_independence(
+            cluster_labels=cluster_labels,
+            ancestry_pcs=ancestry_pcs,
+            significance_threshold=0.05,
+        )
+
+        # Use minimum p-value as the test statistic
+        min_pval = (
+            min(report.independence_test_pvalues.values())
+            if report.independence_test_pvalues
+            else 1.0
+        )
+        n_pcs = len(report.independence_test_pvalues)
+        bonferroni_threshold = 0.05 / n_pcs if n_pcs > 0 else 0.05
+
+        return ValidationResult(
+            name="Negative Control 3: Ancestry Independence",
+            passed=report.overall_independence_passed,
+            metric_name="min_ancestry_pvalue",
+            metric_value=min_pval,
+            threshold=bonferroni_threshold,
+            comparison=">",
+            details={
+                "n_pcs_tested": n_pcs,
+                "pvalues": {k: round(v, 6) for k, v in report.independence_test_pvalues.items()},
+                "interpretation": "Clusters should NOT correlate with ancestry PCs",
             },
         )
 

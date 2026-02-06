@@ -99,6 +99,11 @@ def validate_config(config: Dict[str, Any], check_files: bool = True) -> bool:
     if clustering:
         _validate_clustering_section(clustering)
 
+    # Validate ancestry section (optional)
+    ancestry = config.get("ancestry", {})
+    if ancestry:
+        _validate_ancestry_section(ancestry, check_files)
+
     return True
 
 
@@ -185,6 +190,39 @@ def _validate_clustering_section(clustering: Dict[str, Any]) -> None:
                 f"Maximum clusters ({max_k}) must be >= minimum ({min_k})",
                 field="clustering.n_clusters_range",
             )
+
+
+def _validate_ancestry_section(data: Dict[str, Any], check_files: bool) -> None:
+    """Validate the ancestry section of config."""
+    correction = data.get("correction")
+    valid_methods = ["regress_out", "covariate_aware", "stratified"]
+    if correction is not None and correction not in valid_methods:
+        raise ConfigValidationError(
+            f"Invalid ancestry correction method: {correction}",
+            field="ancestry.correction",
+            suggestions=[f"Use one of: {', '.join(valid_methods)}"],
+        )
+
+    pcs_path = data.get("pcs_path")
+    if pcs_path and check_files:
+        path = Path(pcs_path)
+        if not path.exists():
+            raise ConfigValidationError(
+                f"Ancestry PCs file not found: {pcs_path}",
+                field="ancestry.pcs_path",
+                suggestions=[
+                    "Provide a CSV with sample IDs as index and PC columns",
+                    "Generate PCs from genotype data: plink2 --bfile data --pca 10",
+                ],
+            )
+
+    n_pcs = data.get("n_pcs", 10)
+    if not isinstance(n_pcs, int) or n_pcs < 1:
+        raise ConfigValidationError(
+            f"Invalid n_pcs value: {n_pcs} (must be positive integer)",
+            field="ancestry.n_pcs",
+            suggestions=["Use a positive integer, typically 10"],
+        )
 
 
 def validate_gmt_file(gmt_path: str) -> Dict[str, List[str]]:

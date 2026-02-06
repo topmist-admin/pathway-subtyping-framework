@@ -28,6 +28,8 @@ Current/planned applications:
 - Schizophrenia
 - Epilepsy
 - Intellectual Disability
+- Parkinson's Disease
+- Bipolar Disorder
 
 ---
 
@@ -65,11 +67,36 @@ The framework is designed for rare variant analysis from sequencing data (WES/WG
 
 ### How do I handle multi-ethnic cohorts?
 
-Population stratification can confound clustering. Recommended approaches:
-1. Analyze populations separately if sample size permits
-2. Include ancestry PCs as covariates
-3. Use population-matched gnomAD frequencies
-4. Verify subtypes replicate across populations
+Population stratification can confound clustering. The framework provides built-in ancestry correction (v0.2):
+
+**Recommended workflow:**
+1. Compute ancestry PCs from your genotype data using `compute_ancestry_pcs()`
+2. Adjust pathway scores with `adjust_pathway_scores()` to regress out ancestry effects
+3. Run the pipeline on adjusted scores — the ancestry independence validation gate will automatically verify clusters are not confounded
+4. Use `stratified_analysis()` to confirm subtypes replicate within ancestry groups
+
+**Configuration (YAML):**
+```yaml
+ancestry:
+  pcs_path: data/ancestry_pcs.csv
+  correction: regress_out
+  n_pcs: 10
+```
+
+**Programmatic usage:**
+```python
+from pathway_subtyping import compute_ancestry_pcs, adjust_pathway_scores
+
+pcs = compute_ancestry_pcs(genotype_matrix, n_components=10, seed=42)
+result = adjust_pathway_scores(pathway_scores, pcs)
+# result.confounded_pathways lists pathways with R² > 0.1
+# result.adjusted_scores contains corrected scores
+```
+
+**Additional best practices:**
+- Use population-matched gnomAD frequencies for variant filtering
+- Check `result.r_squared_per_pathway` to identify heavily confounded pathways
+- For known ancestry groups, run `stratified_analysis()` to verify cross-group consistency
 
 ---
 

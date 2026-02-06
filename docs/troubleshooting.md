@@ -12,11 +12,14 @@ This guide covers common issues when running the Pathway Subtyping Framework and
 2. [Environment Setup](#environment-setup)
 3. [Pipeline Errors](#pipeline-errors)
 4. [Data Issues](#data-issues)
-5. [Reproducibility Issues](#reproducibility-issues)
-6. [Performance Issues](#performance-issues)
-7. [Validation Gate Failures](#validation-gate-failures)
-8. [Platform-Specific Issues](#platform-specific-issues)
-9. [Getting Help](#getting-help)
+5. [Ancestry Correction Issues](#ancestry-correction-issues)
+6. [Batch Correction Issues](#batch-correction-issues)
+7. [Sensitivity Analysis Issues](#sensitivity-analysis-issues)
+8. [Reproducibility Issues](#reproducibility-issues)
+7. [Performance Issues](#performance-issues)
+8. [Validation Gate Failures](#validation-gate-failures)
+9. [Platform-Specific Issues](#platform-specific-issues)
+10. [Getting Help](#getting-help)
 
 ---
 
@@ -473,6 +476,180 @@ Data Quality Status: PASS
 
 ---
 
+## Ancestry Correction Issues
+
+### Ancestry independence gate fails
+
+**Symptom:**
+```
+Ancestry Independence: FAIL (min_p_value = 0.001)
+```
+
+**Meaning:**
+Cluster assignments are significantly associated with ancestry principal components, suggesting population stratification is confounding the subtypes.
+
+**Solution:**
+1. Enable ancestry correction in your config:
+   ```yaml
+   ancestry:
+     pcs_path: data/ancestry_pcs.csv
+     correction: regress_out
+     n_pcs: 10
+   ```
+
+2. Or correct programmatically:
+   ```python
+   from pathway_subtyping import compute_ancestry_pcs, adjust_pathway_scores
+
+   pcs = compute_ancestry_pcs(genotype_matrix, n_components=10, seed=42)
+   result = adjust_pathway_scores(pathway_scores, pcs)
+   # Use result.adjusted_scores for clustering
+   ```
+
+3. If correction is already enabled, try increasing `n_pcs` (e.g., 15 or 20)
+
+### Many pathways flagged as confounded
+
+**Symptom:**
+```
+WARNING: 8 of 10 pathways have R² > 0.1 with ancestry PCs
+```
+
+**Meaning:**
+Most pathway scores have substantial ancestry-correlated variance. This is common in multi-ethnic cohorts.
+
+**Investigation:**
+1. Check ancestry correlation details:
+   ```python
+   from pathway_subtyping import compute_ancestry_correlation
+   corr = compute_ancestry_correlation(pathway_scores, ancestry_pcs)
+   print(corr)  # Shows per-pathway, per-PC Pearson r
+   ```
+
+2. Verify correction was applied (R² should decrease after adjustment)
+3. This is expected when ancestry groups have different genetic burden profiles — the correction handles it
+
+### Ancestry PCs file format errors
+
+**Symptom:**
+```
+ValueError: Ancestry PCs file must have sample IDs as first column
+```
+
+**Solution:**
+The ancestry PCs CSV must have:
+- First column: sample IDs matching your VCF
+- Remaining columns: PC values (PC1, PC2, ...)
+
+```csv
+sample_id,PC1,PC2,PC3,...
+SAMPLE_001,0.012,-0.034,0.008,...
+SAMPLE_002,-0.015,0.022,0.001,...
+```
+
+Generate PCs using `compute_ancestry_pcs()` or external tools (PLINK, EIGENSOFT).
+
+### Too few samples for stratified analysis
+
+**Symptom:**
+```
+WARNING: Skipping ancestry group 'AFR' with 8 samples (minimum 20 required)
+```
+
+**Meaning:**
+Ancestry groups with too few samples are excluded from stratified analysis because GMM clustering requires sufficient samples.
+
+**Solution:**
+1. Merge small ancestry groups if biologically appropriate
+2. Use `adjust_pathway_scores()` (regression) instead of `stratified_analysis()` for small groups
+3. Collect more samples from underrepresented populations
+
+### sklearn warnings during ancestry PCA
+
+**Symptom:**
+```
+RuntimeWarning: invalid value encountered in matmul
+```
+
+**Meaning:**
+Numerical precision issues in PCA computation, typically from near-monomorphic variants.
+
+**Solution:**
+These warnings are generally benign — the framework automatically filters monomorphic variants. The PCA results remain valid. To suppress:
+```python
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+```
+
+---
+
+## Batch Correction Issues
+
+### Batch effects persist after correction
+
+**Symptom:** `validate_batch_correction()` shows `batch_variance_reduced: False`.
+
+**Solutions:**
+1. Try a different correction method:
+   ```python
+   # If ComBat didn't work, try standardize
+   result = correct_batch_effects(scores, batch_labels, method=BatchCorrectionMethod.STANDARDIZE)
+   ```
+2. Check if batches are confounded with biology — if biological groups are entirely within one batch, correction will remove signal
+3. Verify batch labels are correct (misassigned labels will worsen the problem)
+
+### ComBat produces NaN values
+
+**Symptom:** NaN values in `corrected_scores` after ComBat correction.
+
+**Solutions:**
+1. Check for zero-variance pathways — the framework handles these, but very small batches (< 3 samples) may cause instability
+2. Use `MEAN_CENTER` instead for very small batch sizes
+3. Ensure at least 2 batches with ≥ 3 samples each
+
+### Not sure if batch effects exist
+
+**Solution:** Run detection first before correcting:
+```python
+report = detect_batch_effects(pathway_scores, batch_labels)
+print(report.format_report())
+# Only correct if report.overall_batch_effect is True
+```
+
+---
+
+## Sensitivity Analysis Issues
+
+### Sensitivity analysis shows low stability
+
+**Symptom:** `run_sensitivity_analysis()` returns `is_robust: False`.
+
+**Solutions:**
+1. This may indicate genuine instability — consider whether your data supports clear subtypes
+2. Check which parameter is most sensitive:
+   ```python
+   result = run_sensitivity_analysis(scores, n_clusters=3, seed=42)
+   print(f"Most sensitive: {result.most_sensitive_parameter}")
+   ```
+3. If `n_clusters` is most sensitive, your optimal K may be uncertain — use `select_n_clusters()` to verify
+4. If `feature_subset` is most sensitive, some pathways may be dominating — review pathway definitions
+
+### Sensitivity analysis is slow
+
+**Symptom:** `run_sensitivity_analysis()` takes too long.
+
+**Solutions:**
+1. Run only specific parameter axes:
+   ```python
+   result = run_sensitivity_analysis(
+       scores, n_clusters=3, seed=42,
+       parameters=[SensitivityParameter.CLUSTERING_ALGORITHM, SensitivityParameter.N_CLUSTERS]
+   )
+   ```
+2. Reduce data size for exploratory analysis, then run full sensitivity on final dataset
+
+---
+
 ## Reproducibility Issues
 
 ### Different results on different machines
@@ -775,4 +952,4 @@ python -c "import pathway_subtyping; print(pathway_subtyping.__version__)"
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*
