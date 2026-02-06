@@ -87,12 +87,8 @@ class AncestryPCs:
         return {
             "n_components": self.n_components,
             "n_samples": len(self.sample_ids),
-            "explained_variance_ratio": [
-                round(float(v), 4) for v in self.explained_variance_ratio
-            ],
-            "total_variance_explained": round(
-                float(np.sum(self.explained_variance_ratio)), 4
-            ),
+            "explained_variance_ratio": [round(float(v), 4) for v in self.explained_variance_ratio],
+            "total_variance_explained": round(float(np.sum(self.explained_variance_ratio)), 4),
         }
 
 
@@ -142,24 +138,29 @@ class AncestryAdjustmentResult:
         ]
 
         if self.highly_confounded_pathways:
-            lines.extend([
-                "### Pathways with Significant Ancestry Confounding",
-                "",
-                "| Pathway | R^2 (ancestry) |",
-                "|---------|---------------|",
-            ])
+            lines.extend(
+                [
+                    "### Pathways with Significant Ancestry Confounding",
+                    "",
+                    "| Pathway | R^2 (ancestry) |",
+                    "|---------|---------------|",
+                ]
+            )
             for pathway in self.highly_confounded_pathways:
                 r2 = self.r_squared_per_pathway[pathway]
                 lines.append(f"| {pathway} | {r2:.4f} |")
             lines.append("")
 
-        lines.extend([
-            "### Interpretation",
-            "",
-            "R^2 indicates the proportion of pathway score variance explained by ancestry PCs.",
-            "High R^2 values (> 0.1) suggest ancestry confounding that could create spurious subtypes.",
-            "After correction, these pathways should have reduced ancestry-driven variance.",
-        ])
+        lines.extend(
+            [
+                "### Interpretation",
+                "",
+                "R^2 indicates the proportion of pathway score variance explained by ancestry PCs.",
+                "High R^2 values (> 0.1) suggest ancestry confounding that could"
+                " create spurious subtypes.",
+                "After correction, these pathways should have reduced ancestry-driven variance.",
+            ]
+        )
 
         return "\n".join(lines)
 
@@ -200,7 +201,8 @@ class AncestryStratificationReport:
             },
             "n_pcs_tested": len(self.independence_test_pvalues),
             "n_significant_pcs": sum(
-                1 for v in self.independence_test_pvalues.values()
+                1
+                for v in self.independence_test_pvalues.values()
                 if v < self.significance_threshold
             ),
         }
@@ -267,9 +269,7 @@ def compute_ancestry_pcs(
     n_components = min(n_components, max_components)
 
     if n_components < 1:
-        raise ValueError(
-            "Cannot compute ancestry PCs: need at least 1 sample and 1 variant"
-        )
+        raise ValueError("Cannot compute ancestry PCs: need at least 1 sample and 1 variant")
 
     # Standardize genotype matrix (mean-center, unit variance per variant)
     # Standard practice for genotype PCA (Patterson et al., 2006)
@@ -345,9 +345,7 @@ def adjust_pathway_scores(
     logger.info(f"[Ancestry] Adjusting pathway scores using method: {method.value}")
 
     # Align samples between pathway scores and ancestry PCs
-    common_samples = sorted(
-        set(pathway_scores.index) & set(ancestry_pcs.components.index)
-    )
+    common_samples = sorted(set(pathway_scores.index) & set(ancestry_pcs.components.index))
 
     if not common_samples:
         raise ValueError(
@@ -379,8 +377,7 @@ def adjust_pathway_scores(
 
     # Identify highly confounded pathways
     highly_confounded = [
-        pathway for pathway, r2 in r2_per_pathway.items()
-        if r2 > confounding_threshold
+        pathway for pathway, r2 in r2_per_pathway.items() if r2 > confounding_threshold
     ]
 
     if highly_confounded:
@@ -458,7 +455,9 @@ def check_ancestry_independence(
 
     # Bonferroni correction: pass if NO PC is significant after correction
     n_tests = len(pvalues)
-    corrected_threshold = significance_threshold / n_tests if n_tests > 0 else significance_threshold
+    corrected_threshold = (
+        significance_threshold / n_tests if n_tests > 0 else significance_threshold
+    )
     overall_passed = all(p > corrected_threshold for p in pvalues.values())
 
     status = "PASS" if overall_passed else "FAIL"
@@ -532,9 +531,7 @@ def stratified_analysis(
         all_labels[str(group)] = (group_scores.index.tolist(), labels)
 
     # Cross-group concordance
-    concordance = _compute_cross_group_concordance(
-        pathway_scores, all_labels
-    )
+    concordance = _compute_cross_group_concordance(pathway_scores, all_labels)
 
     return {
         "n_groups": len(unique_groups),
@@ -566,14 +563,10 @@ def compute_ancestry_correlation(
     if n_pcs is None:
         n_pcs = min(5, ancestry_pcs.n_components)
 
-    common_samples = sorted(
-        set(pathway_scores.index) & set(ancestry_pcs.components.index)
-    )
+    common_samples = sorted(set(pathway_scores.index) & set(ancestry_pcs.components.index))
 
     if len(common_samples) < 3:
-        raise ValueError(
-            "Need at least 3 common samples to compute correlations"
-        )
+        raise ValueError("Need at least 3 common samples to compute correlations")
 
     scores_aligned = pathway_scores.loc[common_samples]
     pcs_aligned = ancestry_pcs.components.loc[common_samples].iloc[:, :n_pcs]
@@ -618,7 +611,7 @@ def _regress_out_ancestry(
         residuals = y - predicted
 
         # R^2 = proportion of variance explained by ancestry
-        ss_res = np.sum(residuals ** 2)
+        ss_res = np.sum(residuals**2)
         ss_tot = np.sum((y - np.mean(y)) ** 2)
         r_squared = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
 
@@ -672,14 +665,13 @@ def _compute_cross_group_concordance(
     # Pairwise centroid correlations between groups
     correlations = []
     for i, g1 in enumerate(group_names):
-        for g2 in group_names[i + 1:]:
+        for g2 in group_names[i + 1 :]:
             c1 = centroids_per_group[g1]
             c2 = centroids_per_group[g2]
             if len(c1) > 0 and len(c2) > 0:
                 for centroid_a in c1:
                     best_corr = max(
-                        float(np.corrcoef(centroid_a, centroid_b)[0, 1])
-                        for centroid_b in c2
+                        float(np.corrcoef(centroid_a, centroid_b)[0, 1]) for centroid_b in c2
                     )
                     correlations.append(best_corr)
 

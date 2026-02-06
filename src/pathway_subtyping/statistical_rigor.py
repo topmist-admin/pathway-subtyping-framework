@@ -23,9 +23,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from scipy import stats
-from sklearn.metrics import adjusted_rand_score
-from sklearn.mixture import GaussianMixture
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +30,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # BURDEN WEIGHT SCHEMES
 # =============================================================================
+
 
 class BurdenWeightScheme(Enum):
     """
@@ -93,9 +91,9 @@ class BurdenWeights:
     other_weight: float = 0.1
 
     # CADD thresholds
-    cadd_high_threshold: float = 25.0      # Top 0.3% most deleterious
+    cadd_high_threshold: float = 25.0  # Top 0.3% most deleterious
     cadd_moderate_threshold: float = 20.0  # Top 1% most deleterious
-    cadd_low_threshold: float = 15.0       # Top 3% most deleterious
+    cadd_low_threshold: float = 15.0  # Top 3% most deleterious
 
     # CADD normalization
     cadd_cap: float = 40.0
@@ -103,13 +101,18 @@ class BurdenWeights:
     def get_citations(self) -> List[str]:
         """Return literature citations for the weight scheme."""
         base_citations = [
-            "Lek M, et al. Analysis of protein-coding genetic variation in 60,706 humans. Nature. 2016;536(7616):285-291.",
-            "Kircher M, et al. A general framework for estimating the relative pathogenicity of human genetic variants. Nat Genet. 2014;46(3):310-315.",
+            "Lek M, et al. Analysis of protein-coding genetic variation"
+            " in 60,706 humans. Nature. 2016;536(7616):285-291.",
+            "Kircher M, et al. A general framework for estimating the"
+            " relative pathogenicity of human genetic variants."
+            " Nat Genet. 2014;46(3):310-315.",
         ]
 
         if self.scheme == BurdenWeightScheme.ACMG_INSPIRED:
             base_citations.append(
-                "Richards S, et al. Standards and guidelines for the interpretation of sequence variants. Genet Med. 2015;17(5):405-424."
+                "Richards S, et al. Standards and guidelines for the"
+                " interpretation of sequence variants."
+                " Genet Med. 2015;17(5):405-424."
             )
 
         return base_citations
@@ -214,8 +217,15 @@ def compute_variant_weight(
     consequence_lower = consequence.lower()
 
     # Loss-of-function variants
-    lof_terms = ["frameshift", "stop_gained", "stop_lost", "splice_donor",
-                 "splice_acceptor", "start_lost", "transcript_ablation"]
+    lof_terms = [
+        "frameshift",
+        "stop_gained",
+        "stop_lost",
+        "splice_donor",
+        "splice_acceptor",
+        "start_lost",
+        "transcript_ablation",
+    ]
     if any(term in consequence_lower for term in lof_terms):
         return weights.lof_weight
 
@@ -246,6 +256,7 @@ def compute_variant_weight(
 # MULTIPLE TESTING CORRECTION
 # =============================================================================
 
+
 @dataclass
 class FDRResult:
     """
@@ -260,6 +271,7 @@ class FDRResult:
         ci_lower: Lower bound of 95% CI for effect size
         ci_upper: Upper bound of 95% CI for effect size
     """
+
     pathway: str
     p_value: float
     q_value: float
@@ -420,6 +432,7 @@ def _compute_f_statistic(values: np.ndarray, groups: np.ndarray) -> float:
 # EFFECT SIZE CALCULATIONS
 # =============================================================================
 
+
 def compute_cohens_d(
     group1: np.ndarray,
     group2: np.ndarray,
@@ -482,7 +495,7 @@ def compute_pathway_effect_sizes(
 
         # Compute max pairwise effect size
         for i, c1 in enumerate(unique_clusters):
-            for c2 in unique_clusters[i + 1:]:
+            for c2 in unique_clusters[i + 1 :]:
                 group1 = scores[cluster_labels == c1]
                 group2 = scores[cluster_labels == c2]
                 d = abs(compute_cohens_d(group1, group2))
@@ -534,7 +547,7 @@ def bootstrap_effect_size_ci(
         # Compute effect size
         max_d = 0.0
         for i, c1 in enumerate(unique_clusters):
-            for c2 in unique_clusters[i + 1:]:
+            for c2 in unique_clusters[i + 1 :]:
                 g1_mask = boot_labels == c1
                 g2_mask = boot_labels == c2
 
@@ -555,6 +568,7 @@ def bootstrap_effect_size_ci(
 # =============================================================================
 # PATHWAY SIZE NORMALIZATION
 # =============================================================================
+
 
 class PathwayNormalization(Enum):
     """Pathway aggregation and normalization methods."""
@@ -630,6 +644,7 @@ def aggregate_pathway_scores(
 # =============================================================================
 # COMPREHENSIVE STATISTICAL ANALYSIS
 # =============================================================================
+
 
 @dataclass
 class StatisticalRigorResult:
@@ -707,11 +722,13 @@ class StatisticalRigorResult:
                 f"{r.effect_size:.2f} | {ci} | {sig} |"
             )
 
-        lines.extend([
-            "",
-            "### Citations",
-            "",
-        ])
+        lines.extend(
+            [
+                "",
+                "### Citations",
+                "",
+            ]
+        )
 
         for citation in self.weight_citations:
             lines.append(f"- {citation}")
@@ -752,9 +769,7 @@ def run_statistical_analysis(
 
     # Compute p-values via permutation test
     logger.info(f"  Computing permutation p-values (n={n_permutations})...")
-    p_values = compute_pathway_pvalues(
-        pathway_scores, cluster_labels, n_permutations, seed
-    )
+    p_values = compute_pathway_pvalues(pathway_scores, cluster_labels, n_permutations, seed)
 
     # Apply FDR correction
     pathways = list(p_values.keys())
@@ -771,20 +786,24 @@ def run_statistical_analysis(
 
     for i, pathway in enumerate(pathways):
         ci_lower, ci_upper = bootstrap_effect_size_ci(
-            pathway_scores, cluster_labels, pathway,
+            pathway_scores,
+            cluster_labels,
+            pathway,
             n_bootstrap=n_bootstrap,
-            seed=seed + i if seed else None
+            seed=seed + i if seed else None,
         )
 
-        results.append(FDRResult(
-            pathway=pathway,
-            p_value=raw_p[i],
-            q_value=q_values[i],
-            significant=q_values[i] < fdr_alpha,
-            effect_size=effect_sizes[pathway],
-            ci_lower=ci_lower,
-            ci_upper=ci_upper,
-        ))
+        results.append(
+            FDRResult(
+                pathway=pathway,
+                p_value=raw_p[i],
+                q_value=q_values[i],
+                significant=q_values[i] < fdr_alpha,
+                effect_size=effect_sizes[pathway],
+                ci_lower=ci_lower,
+                ci_upper=ci_upper,
+            )
+        )
 
     n_significant = sum(1 for r in results if r.significant)
 
@@ -804,6 +823,7 @@ def run_statistical_analysis(
 # =============================================================================
 # SENSITIVITY ANALYSIS
 # =============================================================================
+
 
 @dataclass
 class SensitivityResult:

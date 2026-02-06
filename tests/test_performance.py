@@ -341,9 +341,7 @@ class TestMemoryEstimation:
 
     def test_basic_estimation(self):
         """Test basic memory estimation."""
-        estimate = estimate_memory_usage(
-            n_samples=100, n_variants=1000, n_genes=500, n_pathways=50
-        )
+        estimate = estimate_memory_usage(n_samples=100, n_variants=1000, n_genes=500, n_pathways=50)
 
         assert "total_estimated_mb" in estimate
         assert estimate["total_estimated_mb"] > 0

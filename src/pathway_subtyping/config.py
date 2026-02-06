@@ -16,7 +16,9 @@ logger = logging.getLogger(__name__)
 class ConfigValidationError(ValueError):
     """Exception raised for configuration validation errors."""
 
-    def __init__(self, message: str, field: Optional[str] = None, suggestions: Optional[List[str]] = None):
+    def __init__(
+        self, message: str, field: Optional[str] = None, suggestions: Optional[List[str]] = None
+    ):
         self.field = field
         self.suggestions = suggestions or []
         super().__init__(self._format_message(message))
@@ -254,7 +256,9 @@ def validate_gmt_file(gmt_path: str) -> Dict[str, List[str]]:
 
             parts = line.split("\t")
             if len(parts) < 3:
-                errors.append(f"Line {line_num}: Expected at least 3 tab-separated fields, got {len(parts)}")
+                errors.append(
+                    f"Line {line_num}: Expected at least 3 tab-separated fields, got {len(parts)}"
+                )
                 continue
 
             pathway_name = parts[0]

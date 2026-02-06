@@ -15,11 +15,9 @@ Research use only. Not for clinical decision-making.
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
-from scipy.cluster.hierarchy import fcluster, linkage
 from sklearn.cluster import AgglomerativeClustering, KMeans, SpectralClustering
 from sklearn.metrics import (
     adjusted_rand_score,
@@ -399,7 +397,7 @@ def cross_validate_clustering(
     for train_idx, test_idx in kf.split(data):
         # Cluster on training fold
         train_data = data[train_idx]
-        train_result = run_clustering(train_data, n_clusters, algorithm, seed)
+        run_clustering(train_data, n_clusters, algorithm, seed)
 
         # Create cluster model and predict on test
         if algorithm == ClusteringAlgorithm.GMM:
@@ -446,9 +444,7 @@ class AlgorithmComparisonResult:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "algorithms": {
-                name: result.to_dict() for name, result in self.results.items()
-            },
+            "algorithms": {name: result.to_dict() for name, result in self.results.items()},
             "pairwise_ari": {k: round(v, 4) for k, v in self.pairwise_ari.items()},
             "most_stable_algorithm": self.most_stable_algorithm,
         }
@@ -496,7 +492,7 @@ def compare_algorithms(
     algo_names = list(labels.keys())
 
     for i, name1 in enumerate(algo_names):
-        for name2 in algo_names[i + 1:]:
+        for name2 in algo_names[i + 1 :]:
             ari = adjusted_rand_score(labels[name1], labels[name2])
             pairwise_ari[f"{name1}_vs_{name2}"] = ari
 

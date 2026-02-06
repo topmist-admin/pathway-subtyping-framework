@@ -376,9 +376,7 @@ chr1\t200\tv2\tC\tT\t99\tPASS\tGENE=B;CONSEQUENCE=stop;CADD=35\tGT\t0/0\t0/1\t0/
 
     def test_validate_valid_vcf(self, valid_vcf):
         """Test validation passes for valid VCF."""
-        is_valid, report, suggestions = validate_vcf_for_pipeline(
-            str(valid_vcf), verbose=False
-        )
+        is_valid, report, suggestions = validate_vcf_for_pipeline(str(valid_vcf), verbose=False)
 
         assert is_valid is True
         assert report.is_usable is True

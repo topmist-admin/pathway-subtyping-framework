@@ -53,7 +53,8 @@ class TestRunClustering:
         data, _ = clustered_data
 
         result = run_clustering(
-            data, n_clusters=3,
+            data,
+            n_clusters=3,
             algorithm=ClusteringAlgorithm.GMM,
             seed=42,
         )
@@ -69,7 +70,8 @@ class TestRunClustering:
         data, _ = clustered_data
 
         result = run_clustering(
-            data, n_clusters=3,
+            data,
+            n_clusters=3,
             algorithm=ClusteringAlgorithm.KMEANS,
             seed=42,
         )
@@ -83,7 +85,8 @@ class TestRunClustering:
         data, _ = clustered_data
 
         result = run_clustering(
-            data, n_clusters=3,
+            data,
+            n_clusters=3,
             algorithm=ClusteringAlgorithm.HIERARCHICAL,
         )
 
@@ -95,7 +98,8 @@ class TestRunClustering:
         data, _ = clustered_data
 
         result = run_clustering(
-            data, n_clusters=3,
+            data,
+            n_clusters=3,
             algorithm=ClusteringAlgorithm.SPECTRAL,
             seed=42,
         )
@@ -176,7 +180,8 @@ class TestModelSelection:
         data, _ = clustered_data
 
         result = select_n_clusters(
-            data, k_range=[2, 3, 4],
+            data,
+            k_range=[2, 3, 4],
             method="silhouette",
         )
 
@@ -203,7 +208,8 @@ class TestCrossValidation:
         data, _ = clustered_data
 
         result = cross_validate_clustering(
-            data, n_clusters=3,
+            data,
+            n_clusters=3,
             n_folds=5,
             seed=42,
         )
@@ -217,7 +223,8 @@ class TestCrossValidation:
         data, _ = clustered_data
 
         result = cross_validate_clustering(
-            data, n_clusters=3,
+            data,
+            n_clusters=3,
             n_folds=5,
             seed=42,
         )
@@ -230,7 +237,8 @@ class TestCrossValidation:
         data, _ = clustered_data
 
         result = cross_validate_clustering(
-            data, n_clusters=3,
+            data,
+            n_clusters=3,
             algorithm=ClusteringAlgorithm.GMM,
             seed=42,
         )
@@ -268,7 +276,8 @@ class TestAlgorithmComparison:
         data, _ = clustered_data
 
         result = compare_algorithms(
-            data, n_clusters=3,
+            data,
+            n_clusters=3,
             algorithms=[
                 ClusteringAlgorithm.GMM,
                 ClusteringAlgorithm.KMEANS,
@@ -302,7 +311,8 @@ class TestAlgorithmComparison:
         data, _ = clustered_data
 
         result = compare_algorithms(
-            data, n_clusters=3,
+            data,
+            n_clusters=3,
             algorithms=[ClusteringAlgorithm.GMM, ClusteringAlgorithm.KMEANS],
             seed=42,
         )
@@ -316,7 +326,8 @@ class TestAlgorithmComparison:
         data, _ = clustered_data
 
         result = compare_algorithms(
-            data, 3,
+            data,
+            3,
             algorithms=[ClusteringAlgorithm.GMM, ClusteringAlgorithm.KMEANS],
             seed=42,
         )
@@ -333,10 +344,12 @@ class TestEdgeCases:
     def test_two_clusters(self):
         """Test with only 2 clusters."""
         np.random.seed(42)
-        data = np.vstack([
-            np.random.normal([0, 0], 0.5, (30, 2)),
-            np.random.normal([3, 3], 0.5, (30, 2)),
-        ])
+        data = np.vstack(
+            [
+                np.random.normal([0, 0], 0.5, (30, 2)),
+                np.random.normal([3, 3], 0.5, (30, 2)),
+            ]
+        )
 
         result = run_clustering(data, n_clusters=2, seed=42)
         assert len(np.unique(result.labels)) == 2

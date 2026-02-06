@@ -18,15 +18,15 @@ Research use only. Not for clinical decision-making.
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
+from sklearn.cluster import AgglomerativeClustering, KMeans, SpectralClustering
+from sklearn.metrics import adjusted_rand_score
 from sklearn.mixture import GaussianMixture
-from sklearn.cluster import KMeans, AgglomerativeClustering, SpectralClustering
 
 logger = logging.getLogger(__name__)
 
@@ -87,9 +87,7 @@ class ParameterVariationResult:
             "configurations": self.configurations,
             "mean_pairwise_ari": round(self.mean_ari, 4),
             "min_pairwise_ari": round(self.min_ari, 4),
-            "reference_ari": {
-                k: round(v, 4) for k, v in self.reference_ari.items()
-            },
+            "reference_ari": {k: round(v, 4) for k, v in self.reference_ari.items()},
         }
 
 
@@ -121,9 +119,7 @@ class SensitivityAnalysisResult:
             "robustness_threshold": self.robustness_threshold,
             "most_sensitive_parameter": self.most_sensitive_parameter,
             "least_sensitive_parameter": self.least_sensitive_parameter,
-            "parameters": {
-                k: v.to_dict() for k, v in self.parameter_results.items()
-            },
+            "parameters": {k: v.to_dict() for k, v in self.parameter_results.items()},
         }
 
     def format_report(self) -> str:
@@ -150,8 +146,7 @@ class SensitivityAnalysisResult:
         return [
             "Hennig C. Cluster-wise assessment of cluster stability. "
             "Comput Stat Data Anal. 2007;52(1):258-271.",
-            "von Luxburg U. A tutorial on spectral clustering. "
-            "Stat Comput. 2007;17(4):395-416.",
+            "von Luxburg U. A tutorial on spectral clustering. " "Stat Comput. 2007;17(4):395-416.",
         ]
 
 
@@ -179,9 +174,7 @@ def vary_clustering_algorithm(
     Returns:
         ParameterVariationResult with algorithm comparison.
     """
-    logger.info(
-        "[Sensitivity] Varying clustering algorithm with k=%d", n_clusters
-    )
+    logger.info("[Sensitivity] Varying clustering algorithm with k=%d", n_clusters)
 
     algorithms = {
         "GMM": lambda: GaussianMixture(
@@ -191,12 +184,8 @@ def vary_clustering_algorithm(
             reg_covar=1e-6,
             random_state=seed,
         ),
-        "KMeans": lambda: KMeans(
-            n_clusters=n_clusters, n_init=10, random_state=seed
-        ),
-        "Hierarchical": lambda: AgglomerativeClustering(
-            n_clusters=n_clusters
-        ),
+        "KMeans": lambda: KMeans(n_clusters=n_clusters, n_init=10, random_state=seed),
+        "Hierarchical": lambda: AgglomerativeClustering(n_clusters=n_clusters),
     }
 
     # Only include spectral if n_samples > n_clusters
@@ -222,9 +211,7 @@ def vary_clustering_algorithm(
                 labels = model.fit_predict(data)
             labels_per_config[name] = labels
         except Exception as e:
-            logger.warning(
-                "[Sensitivity] Algorithm %s failed: %s", name, str(e)
-            )
+            logger.warning("[Sensitivity] Algorithm %s failed: %s", name, str(e))
 
     return _build_variation_result(
         SensitivityParameter.CLUSTERING_ALGORITHM,
@@ -252,9 +239,7 @@ def vary_n_clusters(
         ParameterVariationResult with cluster count comparison.
     """
     min_k, max_k = cluster_range
-    logger.info(
-        "[Sensitivity] Varying n_clusters from %d to %d", min_k, max_k
-    )
+    logger.info("[Sensitivity] Varying n_clusters from %d to %d", min_k, max_k)
 
     data = pathway_scores.values
     labels_per_config = {}
@@ -272,9 +257,7 @@ def vary_n_clusters(
             gmm.fit(data)
             labels_per_config[name] = gmm.predict(data)
         except Exception as e:
-            logger.warning(
-                "[Sensitivity] GMM with k=%d failed: %s", k, str(e)
-            )
+            logger.warning("[Sensitivity] GMM with k=%d failed: %s", k, str(e))
 
     return _build_variation_result(
         SensitivityParameter.N_CLUSTERS,
@@ -390,9 +373,7 @@ def vary_normalization(
             gmm.fit(normalized.values)
             labels_per_config[name] = gmm.predict(normalized.values)
         except Exception as e:
-            logger.warning(
-                "[Sensitivity] Normalization %s failed: %s", name, str(e)
-            )
+            logger.warning("[Sensitivity] Normalization %s failed: %s", name, str(e))
 
     return _build_variation_result(
         SensitivityParameter.NORMALIZATION,
@@ -435,28 +416,18 @@ def run_sensitivity_analysis(
 
     for param in parameters:
         if param == SensitivityParameter.CLUSTERING_ALGORITHM:
-            results[param.value] = vary_clustering_algorithm(
-                pathway_scores, n_clusters, seed
-            )
+            results[param.value] = vary_clustering_algorithm(pathway_scores, n_clusters, seed)
         elif param == SensitivityParameter.N_CLUSTERS:
             min_k = max(2, n_clusters - 1)
             max_k = n_clusters + 2
-            results[param.value] = vary_n_clusters(
-                pathway_scores, (min_k, max_k), seed
-            )
+            results[param.value] = vary_n_clusters(pathway_scores, (min_k, max_k), seed)
         elif param == SensitivityParameter.FEATURE_SUBSET:
-            results[param.value] = vary_feature_subset(
-                pathway_scores, n_clusters, seed
-            )
+            results[param.value] = vary_feature_subset(pathway_scores, n_clusters, seed)
         elif param == SensitivityParameter.NORMALIZATION:
-            results[param.value] = vary_normalization(
-                pathway_scores, n_clusters, seed
-            )
+            results[param.value] = vary_normalization(pathway_scores, n_clusters, seed)
 
     # Compute overall metrics
-    mean_aris = {
-        name: r.mean_ari for name, r in results.items()
-    }
+    mean_aris = {name: r.mean_ari for name, r in results.items()}
 
     if mean_aris:
         overall = np.mean(list(mean_aris.values()))
@@ -501,11 +472,9 @@ def _build_variation_result(
     pairwise = {}
     ari_values = []
     for i, c1 in enumerate(configs):
-        for c2 in configs[i + 1:]:
+        for c2 in configs[i + 1 :]:
             key = f"{c1}_vs_{c2}"
-            ari = adjusted_rand_score(
-                labels_per_config[c1], labels_per_config[c2]
-            )
+            ari = adjusted_rand_score(labels_per_config[c1], labels_per_config[c2])
             pairwise[key] = float(ari)
             ari_values.append(ari)
 
@@ -517,9 +486,7 @@ def _build_variation_result(
     if configs:
         ref_labels = labels_per_config[configs[0]]
         for c in configs:
-            reference_ari[c] = float(
-                adjusted_rand_score(ref_labels, labels_per_config[c])
-            )
+            reference_ari[c] = float(adjusted_rand_score(ref_labels, labels_per_config[c]))
 
     return ParameterVariationResult(
         parameter=parameter,

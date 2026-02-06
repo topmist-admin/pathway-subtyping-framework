@@ -20,9 +20,9 @@ Research use only. Not for clinical decision-making.
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -100,9 +100,7 @@ class BatchEffectReport:
             "n_significant_features": len(self.significant_features),
             "significant_features": self.significant_features,
             "overall_batch_effect": self.overall_batch_effect,
-            "mean_variance_explained": round(
-                np.mean(list(self.variance_explained.values())), 4
-            ),
+            "mean_variance_explained": round(np.mean(list(self.variance_explained.values())), 4),
             "significance_threshold": self.significance_threshold,
         }
 
@@ -169,9 +167,7 @@ class BatchCorrectionResult:
             "mean_post_correction_variance": round(
                 np.mean(list(self.post_correction_variance.values())), 4
             ),
-            "mean_variance_reduction": round(
-                np.mean(list(self.variance_reduction.values())), 4
-            ),
+            "mean_variance_reduction": round(np.mean(list(self.variance_reduction.values())), 4),
         }
 
     def format_report(self) -> str:
@@ -244,30 +240,22 @@ def detect_batch_effects(
     n_batches = len(unique_batches)
 
     if n_batches < 2:
-        raise ValueError(
-            f"Need at least 2 batches for detection, got {n_batches}"
-        )
+        raise ValueError(f"Need at least 2 batches for detection, got {n_batches}")
 
     logger.info(
-        "[BatchCorrection] Detecting batch effects across %d batches "
-        "for %d features",
+        "[BatchCorrection] Detecting batch effects across %d batches " "for %d features",
         n_batches,
         len(pathway_scores.columns),
     )
 
-    batch_sizes = {
-        str(b): int(np.sum(batch_labels == b)) for b in unique_batches
-    }
+    batch_sizes = {str(b): int(np.sum(batch_labels == b)) for b in unique_batches}
 
     f_statistics = {}
     p_values = {}
     variance_explained = {}
 
     for col in pathway_scores.columns:
-        groups = [
-            pathway_scores.loc[batch_labels == b, col].values
-            for b in unique_batches
-        ]
+        groups = [pathway_scores.loc[batch_labels == b, col].values for b in unique_batches]
         # Filter out empty groups
         groups = [g for g in groups if len(g) > 0]
 
@@ -289,9 +277,7 @@ def detect_batch_effects(
         # Compute eta-squared (variance explained by batch)
         values = pathway_scores[col].values
         grand_mean = np.mean(values)
-        ss_between = sum(
-            len(g) * (np.mean(g) - grand_mean) ** 2 for g in groups
-        )
+        ss_between = sum(len(g) * (np.mean(g) - grand_mean) ** 2 for g in groups)
         ss_total = np.sum((values - grand_mean) ** 2)
         eta_sq = ss_between / ss_total if ss_total > 0 else 0.0
         variance_explained[col] = float(eta_sq)
@@ -304,10 +290,7 @@ def detect_batch_effects(
         adjusted = min(1.0, p_values[col] * n_tests / rank)
         adjusted_pvals[col] = adjusted
 
-    significant = [
-        col for col in sorted_cols
-        if adjusted_pvals[col] < significance_threshold
-    ]
+    significant = [col for col in sorted_cols if adjusted_pvals[col] < significance_threshold]
 
     overall = len(significant) > 0
 
@@ -363,13 +346,10 @@ def correct_batch_effects(
     n_batches = len(unique_batches)
 
     if n_batches < 2:
-        raise ValueError(
-            f"Need at least 2 batches for correction, got {n_batches}"
-        )
+        raise ValueError(f"Need at least 2 batches for correction, got {n_batches}")
 
     logger.info(
-        "[BatchCorrection] Correcting batch effects using %s "
-        "across %d batches",
+        "[BatchCorrection] Correcting batch effects using %s " "across %d batches",
         method.value,
         n_batches,
     )
@@ -379,9 +359,7 @@ def correct_batch_effects(
 
     # Apply correction
     if method == BatchCorrectionMethod.COMBAT:
-        corrected = _combat_correction(
-            pathway_scores, batch_labels, preserve_biological
-        )
+        corrected = _combat_correction(pathway_scores, batch_labels, preserve_biological)
     elif method == BatchCorrectionMethod.MEAN_CENTER:
         corrected = _mean_center_correction(pathway_scores, batch_labels)
     elif method == BatchCorrectionMethod.STANDARDIZE:
@@ -466,9 +444,7 @@ def validate_batch_correction(
     # Correlation between original and corrected
     correlations = []
     for col in original_scores.columns:
-        r, _ = stats.pearsonr(
-            original_scores[col].values, corrected_scores[col].values
-        )
+        r, _ = stats.pearsonr(original_scores[col].values, corrected_scores[col].values)
         correlations.append(r)
     result["mean_correlation_with_original"] = round(np.mean(correlations), 4)
 
@@ -480,9 +456,7 @@ def validate_batch_correction(
 # =============================================================================
 
 
-def _compute_batch_variance(
-    scores: pd.DataFrame, batch_labels: np.ndarray
-) -> Dict[str, float]:
+def _compute_batch_variance(scores: pd.DataFrame, batch_labels: np.ndarray) -> Dict[str, float]:
     """Compute eta-squared (batch-explained variance) per feature."""
     unique_batches = np.unique(batch_labels)
     result = {}
@@ -493,9 +467,7 @@ def _compute_batch_variance(
         groups = [values[batch_labels == b] for b in unique_batches]
         groups = [g for g in groups if len(g) > 0]
 
-        ss_between = sum(
-            len(g) * (np.mean(g) - grand_mean) ** 2 for g in groups
-        )
+        ss_between = sum(len(g) * (np.mean(g) - grand_mean) ** 2 for g in groups)
         ss_total = np.sum((values - grand_mean) ** 2)
         eta_sq = ss_between / ss_total if ss_total > 0 else 0.0
         result[col] = float(eta_sq)
@@ -518,7 +490,6 @@ def _combat_correction(
     Based on Johnson WE, Li C, Rabinovic A (2007).
     """
     unique_batches = np.unique(batch_labels)
-    n_batches = len(unique_batches)
     corrected = scores.copy()
 
     # Step 1: Estimate grand mean and batch means
@@ -554,12 +525,8 @@ def _combat_correction(
 
     # Step 4: Empirical Bayes shrinkage of batch parameters
     # Shrink gamma (location) toward zero
-    gamma_bar = np.mean(
-        [gamma_hat[b].values for b in unique_batches], axis=0
-    )
-    tau_sq = np.var(
-        [gamma_hat[b].values for b in unique_batches], axis=0, ddof=1
-    )
+    gamma_bar = np.mean([gamma_hat[b].values for b in unique_batches], axis=0)
+    tau_sq = np.var([gamma_hat[b].values for b in unique_batches], axis=0, ddof=1)
 
     gamma_star = {}
     for batch in unique_batches:
@@ -570,16 +537,13 @@ def _combat_correction(
         shrink_weight = tau_sq / (tau_sq + batch_var / n_b)
         shrink_weight = np.where(np.isnan(shrink_weight), 0.5, shrink_weight)
         gamma_star[batch] = pd.Series(
-            shrink_weight * gamma_hat[batch].values
-            + (1 - shrink_weight) * gamma_bar,
+            shrink_weight * gamma_hat[batch].values + (1 - shrink_weight) * gamma_bar,
             index=scores.columns,
         )
 
     # Shrink delta (scale) toward pooled variance
     delta_star = {}
-    delta_values = np.array(
-        [delta_hat[b].values for b in unique_batches]
-    )
+    delta_values = np.array([delta_hat[b].values for b in unique_batches])
     delta_bar = np.mean(delta_values, axis=0)
 
     for batch in unique_batches:
@@ -606,9 +570,7 @@ def _combat_correction(
     return corrected
 
 
-def _mean_center_correction(
-    scores: pd.DataFrame, batch_labels: np.ndarray
-) -> pd.DataFrame:
+def _mean_center_correction(scores: pd.DataFrame, batch_labels: np.ndarray) -> pd.DataFrame:
     """Remove batch-specific mean shift from each feature."""
     unique_batches = np.unique(batch_labels)
     corrected = scores.copy()
@@ -622,9 +584,7 @@ def _mean_center_correction(
     return corrected
 
 
-def _standardize_correction(
-    scores: pd.DataFrame, batch_labels: np.ndarray
-) -> pd.DataFrame:
+def _standardize_correction(scores: pd.DataFrame, batch_labels: np.ndarray) -> pd.DataFrame:
     """Per-batch Z-score standardization then re-pool."""
     unique_batches = np.unique(batch_labels)
     corrected = scores.copy()

@@ -115,12 +115,8 @@ class TestGenerateSyntheticData:
         # High effect should have better cluster separation (higher silhouette)
         # Note: Z-score normalization sets variance=1, so we measure
         # true label separation instead of raw variance
-        low_silhouette = silhouette_score(
-            low_data.pathway_scores.values, low_data.true_labels
-        )
-        high_silhouette = silhouette_score(
-            high_data.pathway_scores.values, high_data.true_labels
-        )
+        low_silhouette = silhouette_score(low_data.pathway_scores.values, low_data.true_labels)
+        high_silhouette = silhouette_score(high_data.pathway_scores.values, high_data.true_labels)
 
         assert high_silhouette > low_silhouette
 

@@ -18,7 +18,6 @@ from pathway_subtyping.ancestry import (
     stratified_analysis,
 )
 
-
 # =============================================================================
 # FIXTURES
 # =============================================================================
@@ -174,9 +173,7 @@ class TestComputeAncestryPCs:
     def test_reproducibility(self, genotype_matrix_3pop):
         r1 = compute_ancestry_pcs(genotype_matrix_3pop, n_components=5, seed=42)
         r2 = compute_ancestry_pcs(genotype_matrix_3pop, n_components=5, seed=42)
-        np.testing.assert_array_almost_equal(
-            r1.components.values, r2.components.values
-        )
+        np.testing.assert_array_almost_equal(r1.components.values, r2.components.values)
 
     def test_different_seeds(self, genotype_matrix_3pop):
         r1 = compute_ancestry_pcs(genotype_matrix_3pop, n_components=5, seed=42)
@@ -227,16 +224,12 @@ class TestAdjustPathwayScores:
         assert result.adjusted_scores.shape == confounded_pathway_scores.shape
 
     def test_r_squared_in_range(self, confounded_pathway_scores, ancestry_pcs_3pop):
-        result = adjust_pathway_scores(
-            confounded_pathway_scores, ancestry_pcs_3pop
-        )
+        result = adjust_pathway_scores(confounded_pathway_scores, ancestry_pcs_3pop)
         for pathway, r2 in result.r_squared_per_pathway.items():
             assert 0.0 <= r2 <= 1.0, f"R^2 for {pathway} out of range: {r2}"
 
     def test_confounded_pathways_detected(self, confounded_pathway_scores, ancestry_pcs_3pop):
-        result = adjust_pathway_scores(
-            confounded_pathway_scores, ancestry_pcs_3pop
-        )
+        result = adjust_pathway_scores(confounded_pathway_scores, ancestry_pcs_3pop)
         # Pathways 0, 1, 2 should have higher R^2 since they're confounded
         assert len(result.highly_confounded_pathways) > 0
 
@@ -281,16 +274,12 @@ class TestAdjustPathwayScores:
             adjust_pathway_scores(scores, ancestry_pcs_3pop)
 
     def test_n_pcs_parameter(self, confounded_pathway_scores, ancestry_pcs_3pop):
-        result = adjust_pathway_scores(
-            confounded_pathway_scores, ancestry_pcs_3pop, n_pcs=2
-        )
+        result = adjust_pathway_scores(confounded_pathway_scores, ancestry_pcs_3pop, n_pcs=2)
         assert result.n_pcs_used == 2
 
     def test_adjusted_scores_normalized(self, confounded_pathway_scores, ancestry_pcs_3pop):
         """Adjusted scores should be approximately z-normalized."""
-        result = adjust_pathway_scores(
-            confounded_pathway_scores, ancestry_pcs_3pop
-        )
+        result = adjust_pathway_scores(confounded_pathway_scores, ancestry_pcs_3pop)
         means = result.adjusted_scores.mean()
         stds = result.adjusted_scores.std()
         for pathway in means.index:
@@ -335,9 +324,7 @@ class TestAncestryIndependence:
 
     def test_n_pcs_to_test(self, ancestry_pcs_3pop):
         labels = np.array([0] * 20 + [1] * 20 + [2] * 20)
-        report = check_ancestry_independence(
-            labels, ancestry_pcs_3pop, n_pcs_to_test=2
-        )
+        report = check_ancestry_independence(labels, ancestry_pcs_3pop, n_pcs_to_test=2)
         assert len(report.independence_test_pvalues) == 2
 
     def test_to_dict(self, ancestry_pcs_3pop):
@@ -410,24 +397,18 @@ class TestAncestryCorrelation:
     """Tests for compute_ancestry_correlation function."""
 
     def test_output_shape(self, confounded_pathway_scores, ancestry_pcs_3pop):
-        corr = compute_ancestry_correlation(
-            confounded_pathway_scores, ancestry_pcs_3pop, n_pcs=3
-        )
+        corr = compute_ancestry_correlation(confounded_pathway_scores, ancestry_pcs_3pop, n_pcs=3)
         assert corr.shape == (5, 3)  # 5 pathways x 3 PCs
 
     def test_values_in_range(self, confounded_pathway_scores, ancestry_pcs_3pop):
-        corr = compute_ancestry_correlation(
-            confounded_pathway_scores, ancestry_pcs_3pop
-        )
+        corr = compute_ancestry_correlation(confounded_pathway_scores, ancestry_pcs_3pop)
         assert (corr.abs() <= 1.0).all().all()
 
     def test_confounded_pathways_high_correlation(
         self, confounded_pathway_scores, ancestry_pcs_3pop
     ):
         """Confounded pathways should show higher correlation with ancestry PCs."""
-        corr = compute_ancestry_correlation(
-            confounded_pathway_scores, ancestry_pcs_3pop
-        )
+        corr = compute_ancestry_correlation(confounded_pathway_scores, ancestry_pcs_3pop)
         # At least one pathway should have |r| > 0.3 with at least one PC
         max_abs_corr = corr.abs().max().max()
         assert max_abs_corr > 0.3
@@ -535,27 +516,17 @@ class TestEndToEnd:
         self, confounded_pathway_scores, ancestry_pcs_3pop
     ):
         """After correction, pathway-ancestry correlations should decrease."""
-        corr_before = compute_ancestry_correlation(
-            confounded_pathway_scores, ancestry_pcs_3pop
-        )
-        result = adjust_pathway_scores(
-            confounded_pathway_scores, ancestry_pcs_3pop
-        )
-        corr_after = compute_ancestry_correlation(
-            result.adjusted_scores, ancestry_pcs_3pop
-        )
+        corr_before = compute_ancestry_correlation(confounded_pathway_scores, ancestry_pcs_3pop)
+        result = adjust_pathway_scores(confounded_pathway_scores, ancestry_pcs_3pop)
+        corr_after = compute_ancestry_correlation(result.adjusted_scores, ancestry_pcs_3pop)
         # Mean absolute correlation should decrease
         mean_before = corr_before.abs().mean().mean()
         mean_after = corr_after.abs().mean().mean()
         assert mean_after < mean_before
 
-    def test_non_confounded_not_harmed(
-        self, non_confounded_pathway_scores, ancestry_pcs_3pop
-    ):
+    def test_non_confounded_not_harmed(self, non_confounded_pathway_scores, ancestry_pcs_3pop):
         """Correction on non-confounded data should not destroy signal."""
-        result = adjust_pathway_scores(
-            non_confounded_pathway_scores, ancestry_pcs_3pop
-        )
+        result = adjust_pathway_scores(non_confounded_pathway_scores, ancestry_pcs_3pop)
         # Variance should still exist after correction
         stds = result.adjusted_scores.std()
         assert (stds > 0.5).all()

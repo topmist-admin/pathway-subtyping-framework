@@ -215,9 +215,7 @@ class TestPathwayNormalization:
     def test_mean_aggregation(self, gene_burdens):
         """Test mean aggregation."""
         genes = ["GENE_0", "GENE_1", "GENE_2"]
-        scores = aggregate_pathway_scores(
-            gene_burdens, genes, PathwayNormalization.MEAN
-        )
+        scores = aggregate_pathway_scores(gene_burdens, genes, PathwayNormalization.MEAN)
 
         assert len(scores) == 50
         expected = gene_burdens[genes].mean(axis=1)
@@ -226,9 +224,7 @@ class TestPathwayNormalization:
     def test_median_aggregation(self, gene_burdens):
         """Test median aggregation."""
         genes = ["GENE_0", "GENE_1", "GENE_2"]
-        scores = aggregate_pathway_scores(
-            gene_burdens, genes, PathwayNormalization.MEDIAN
-        )
+        scores = aggregate_pathway_scores(gene_burdens, genes, PathwayNormalization.MEDIAN)
 
         assert len(scores) == 50
         expected = gene_burdens[genes].median(axis=1)
@@ -237,9 +233,7 @@ class TestPathwayNormalization:
     def test_size_normalized(self, gene_burdens):
         """Test size-normalized aggregation."""
         genes = ["GENE_0", "GENE_1", "GENE_2"]
-        scores = aggregate_pathway_scores(
-            gene_burdens, genes, PathwayNormalization.SIZE_NORMALIZED
-        )
+        scores = aggregate_pathway_scores(gene_burdens, genes, PathwayNormalization.SIZE_NORMALIZED)
 
         assert len(scores) == 50
         # Should be mean / sqrt(3)
@@ -249,9 +243,7 @@ class TestPathwayNormalization:
     def test_pca_aggregation(self, gene_burdens):
         """Test PCA aggregation."""
         genes = ["GENE_0", "GENE_1", "GENE_2", "GENE_3", "GENE_4"]
-        scores = aggregate_pathway_scores(
-            gene_burdens, genes, PathwayNormalization.PCA
-        )
+        scores = aggregate_pathway_scores(gene_burdens, genes, PathwayNormalization.PCA)
 
         assert len(scores) == 50
         # PCA scores should have zero mean (centered)
@@ -260,9 +252,7 @@ class TestPathwayNormalization:
     def test_missing_genes(self, gene_burdens):
         """Test handling of genes not in data."""
         genes = ["GENE_0", "GENE_MISSING", "GENE_1"]
-        scores = aggregate_pathway_scores(
-            gene_burdens, genes, PathwayNormalization.MEAN
-        )
+        scores = aggregate_pathway_scores(gene_burdens, genes, PathwayNormalization.MEAN)
 
         assert len(scores) == 50
         # Should use available genes only
@@ -298,9 +288,7 @@ class TestPathwayPvalues:
         """Test p-value for pathway with real signal."""
         scores, labels = clustered_data
 
-        p_values = compute_pathway_pvalues(
-            scores, labels, n_permutations=100, seed=42
-        )
+        p_values = compute_pathway_pvalues(scores, labels, n_permutations=100, seed=42)
 
         # Signal pathway should have low p-value
         assert p_values["PATHWAY_SIGNAL"] < 0.1
@@ -309,9 +297,7 @@ class TestPathwayPvalues:
         """Test p-value for noise pathway."""
         scores, labels = clustered_data
 
-        p_values = compute_pathway_pvalues(
-            scores, labels, n_permutations=100, seed=42
-        )
+        p_values = compute_pathway_pvalues(scores, labels, n_permutations=100, seed=42)
 
         # Noise pathway should have higher p-value
         assert p_values["PATHWAY_NOISE"] > p_values["PATHWAY_SIGNAL"]
@@ -337,14 +323,18 @@ class TestStatisticalAnalysis:
         n_samples = 60
 
         scores = pd.DataFrame(index=[f"SAMPLE_{i}" for i in range(n_samples)])
-        scores["PATHWAY_1"] = np.concatenate([
-            np.random.normal(0, 1, 30),
-            np.random.normal(1.5, 1, 30),
-        ])
-        scores["PATHWAY_2"] = np.concatenate([
-            np.random.normal(0, 1, 30),
-            np.random.normal(0.5, 1, 30),
-        ])
+        scores["PATHWAY_1"] = np.concatenate(
+            [
+                np.random.normal(0, 1, 30),
+                np.random.normal(1.5, 1, 30),
+            ]
+        )
+        scores["PATHWAY_2"] = np.concatenate(
+            [
+                np.random.normal(0, 1, 30),
+                np.random.normal(0.5, 1, 30),
+            ]
+        )
         scores["PATHWAY_3"] = np.random.normal(0, 1, n_samples)
 
         labels = np.array([0] * 30 + [1] * 30)
@@ -356,7 +346,8 @@ class TestStatisticalAnalysis:
         scores, labels = analysis_data
 
         result = run_statistical_analysis(
-            scores, labels,
+            scores,
+            labels,
             n_permutations=50,
             n_bootstrap=50,
             seed=42,
@@ -372,7 +363,8 @@ class TestStatisticalAnalysis:
         scores, labels = analysis_data
 
         result = run_statistical_analysis(
-            scores, labels,
+            scores,
+            labels,
             n_permutations=50,
             n_bootstrap=50,
             seed=42,
@@ -389,7 +381,8 @@ class TestStatisticalAnalysis:
         scores, labels = analysis_data
 
         result = run_statistical_analysis(
-            scores, labels,
+            scores,
+            labels,
             fdr_alpha=0.1,  # More lenient for test
             n_permutations=100,
             n_bootstrap=50,

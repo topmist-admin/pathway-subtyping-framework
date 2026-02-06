@@ -96,8 +96,7 @@ class SimulatedData:
                 "seed": self.config.seed,
             },
             "subtype_sizes": {
-                int(k): int(v) for k, v in
-                zip(*np.unique(self.true_labels, return_counts=True))
+                int(k): int(v) for k, v in zip(*np.unique(self.true_labels, return_counts=True))
             },
         }
         if self.ancestry_labels is not None:
@@ -136,9 +135,7 @@ def generate_synthetic_data(config: SimulationConfig) -> SimulatedData:
         remaining -= n_i
     n_per_subtype.append(remaining)
 
-    true_labels = np.concatenate([
-        np.full(n, i) for i, n in enumerate(n_per_subtype)
-    ])
+    true_labels = np.concatenate([np.full(n, i) for i, n in enumerate(n_per_subtype)])
 
     # Shuffle to avoid ordering effects
     shuffle_idx = rng.permutation(config.n_samples)
@@ -438,9 +435,7 @@ class PowerAnalysisResult:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "effect_sizes": self.effect_sizes,
-            "power_at_threshold": {
-                str(k): round(v, 3) for k, v in self.power_at_threshold.items()
-            },
+            "power_at_threshold": {str(k): round(v, 3) for k, v in self.power_at_threshold.items()},
             "threshold": self.threshold,
             "recommended_effect_size": self.recommended_effect_size,
         }
@@ -753,7 +748,8 @@ def _simulate_ancestry(
             continue
 
         ancestry_genes = rng.choice(
-            gene_burdens.columns, size=min(n_ancestry_genes, len(gene_burdens.columns)),
+            gene_burdens.columns,
+            size=min(n_ancestry_genes, len(gene_burdens.columns)),
             replace=False,
         )
         for gene in ancestry_genes:

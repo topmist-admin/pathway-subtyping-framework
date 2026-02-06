@@ -159,9 +159,7 @@ class ValidationGates:
 
         # Negative Control 3: Ancestry Independence (if ancestry PCs available)
         if ancestry_pcs is not None:
-            nc3_result = self.negative_control_ancestry_independence(
-                cluster_labels, ancestry_pcs
-            )
+            nc3_result = self.negative_control_ancestry_independence(cluster_labels, ancestry_pcs)
             results.append(nc3_result)
             logger.info(
                 f"  - {nc3_result.name}: {nc3_result.status} "
@@ -453,7 +451,6 @@ class ValidationGates:
                 "interpretation": "Clustering should be stable across bootstrap samples",
             },
         )
-
 
     def negative_control_ancestry_independence(
         self,

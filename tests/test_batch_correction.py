@@ -13,7 +13,6 @@ from pathway_subtyping.batch_correction import (
     validate_batch_correction,
 )
 
-
 # =============================================================================
 # FIXTURES
 # =============================================================================
@@ -139,22 +138,14 @@ class TestDetectBatchEffects:
 
     def test_custom_threshold(self, pathway_scores_with_batch):
         scores, batch_labels = pathway_scores_with_batch
-        strict = detect_batch_effects(
-            scores, batch_labels, significance_threshold=0.001
-        )
-        lenient = detect_batch_effects(
-            scores, batch_labels, significance_threshold=0.5
-        )
+        strict = detect_batch_effects(scores, batch_labels, significance_threshold=0.001)
+        lenient = detect_batch_effects(scores, batch_labels, significance_threshold=0.5)
 
-        assert len(strict.significant_features) <= len(
-            lenient.significant_features
-        )
+        assert len(strict.significant_features) <= len(lenient.significant_features)
 
     def test_custom_batch_variable_name(self, pathway_scores_with_batch):
         scores, batch_labels = pathway_scores_with_batch
-        report = detect_batch_effects(
-            scores, batch_labels, batch_variable="sequencing_site"
-        )
+        report = detect_batch_effects(scores, batch_labels, batch_variable="sequencing_site")
         assert report.batch_variable == "sequencing_site"
 
 
@@ -166,18 +157,14 @@ class TestDetectBatchEffects:
 class TestCorrectBatchEffects:
     def test_combat_reduces_batch_variance(self, pathway_scores_with_batch):
         scores, batch_labels = pathway_scores_with_batch
-        result = correct_batch_effects(
-            scores, batch_labels, method=BatchCorrectionMethod.COMBAT
-        )
+        result = correct_batch_effects(scores, batch_labels, method=BatchCorrectionMethod.COMBAT)
 
         assert isinstance(result, BatchCorrectionResult)
         mean_pre = np.mean(list(result.pre_correction_variance.values()))
         mean_post = np.mean(list(result.post_correction_variance.values()))
         assert mean_post < mean_pre
 
-    def test_mean_center_reduces_batch_variance(
-        self, pathway_scores_with_batch
-    ):
+    def test_mean_center_reduces_batch_variance(self, pathway_scores_with_batch):
         scores, batch_labels = pathway_scores_with_batch
         result = correct_batch_effects(
             scores, batch_labels, method=BatchCorrectionMethod.MEAN_CENTER
@@ -187,9 +174,7 @@ class TestCorrectBatchEffects:
         mean_post = np.mean(list(result.post_correction_variance.values()))
         assert mean_post < mean_pre
 
-    def test_standardize_reduces_batch_variance(
-        self, pathway_scores_with_batch
-    ):
+    def test_standardize_reduces_batch_variance(self, pathway_scores_with_batch):
         scores, batch_labels = pathway_scores_with_batch
         result = correct_batch_effects(
             scores, batch_labels, method=BatchCorrectionMethod.STANDARDIZE
@@ -210,12 +195,8 @@ class TestCorrectBatchEffects:
     def test_no_nan_in_output(self, pathway_scores_with_batch):
         scores, batch_labels = pathway_scores_with_batch
         for method in BatchCorrectionMethod:
-            result = correct_batch_effects(
-                scores, batch_labels, method=method
-            )
-            assert not result.corrected_scores.isna().any().any(), (
-                f"NaN in {method.value} output"
-            )
+            result = correct_batch_effects(scores, batch_labels, method=method)
+            assert not result.corrected_scores.isna().any().any(), f"NaN in {method.value} output"
 
     def test_mismatched_lengths(self, pathway_scores_with_batch):
         scores, _ = pathway_scores_with_batch
@@ -225,9 +206,7 @@ class TestCorrectBatchEffects:
     def test_single_batch_error(self, pathway_scores_with_batch):
         scores, _ = pathway_scores_with_batch
         with pytest.raises(ValueError, match="at least 2"):
-            correct_batch_effects(
-                scores, np.zeros(len(scores), dtype=int)
-            )
+            correct_batch_effects(scores, np.zeros(len(scores), dtype=int))
 
     def test_variance_reduction_dict(self, pathway_scores_with_batch):
         scores, batch_labels = pathway_scores_with_batch
@@ -249,9 +228,7 @@ class TestValidateBatchCorrection:
         scores, batch_labels = pathway_scores_with_batch
         result = correct_batch_effects(scores, batch_labels)
 
-        validation = validate_batch_correction(
-            scores, result.corrected_scores, batch_labels
-        )
+        validation = validate_batch_correction(scores, result.corrected_scores, batch_labels)
 
         assert "batch_variance_before" in validation
         assert "batch_variance_after" in validation
@@ -262,17 +239,13 @@ class TestValidateBatchCorrection:
         scores, batch_labels = pathway_scores_with_batch
         result = correct_batch_effects(scores, batch_labels)
 
-        validation = validate_batch_correction(
-            scores, result.corrected_scores, batch_labels
-        )
+        validation = validate_batch_correction(scores, result.corrected_scores, batch_labels)
 
         assert validation["batch_variance_reduced"]
 
     def test_with_biological_labels(self, pathway_scores_with_batch):
         scores, batch_labels = pathway_scores_with_batch
-        bio_labels = np.array(
-            [0] * 15 + [1] * 15 + [0] * 15 + [1] * 15 + [0] * 15 + [1] * 15
-        )
+        bio_labels = np.array([0] * 15 + [1] * 15 + [0] * 15 + [1] * 15 + [0] * 15 + [1] * 15)
         result = correct_batch_effects(scores, batch_labels)
 
         validation = validate_batch_correction(
@@ -287,9 +260,7 @@ class TestValidateBatchCorrection:
         scores, batch_labels = pathway_scores_with_batch
         result = correct_batch_effects(scores, batch_labels)
 
-        validation = validate_batch_correction(
-            scores, result.corrected_scores, batch_labels
-        )
+        validation = validate_batch_correction(scores, result.corrected_scores, batch_labels)
 
         assert validation["mean_correlation_with_original"] > 0
 
@@ -310,9 +281,7 @@ class TestDataclasses:
         assert "n_significant_features" in d
         assert "overall_batch_effect" in d
 
-    def test_batch_effect_report_format_report(
-        self, pathway_scores_with_batch
-    ):
+    def test_batch_effect_report_format_report(self, pathway_scores_with_batch):
         scores, batch_labels = pathway_scores_with_batch
         report = detect_batch_effects(scores, batch_labels)
 
@@ -389,9 +358,7 @@ class TestEdgeCases:
 
     def test_string_batch_labels(self, pathway_scores_with_batch):
         scores, _ = pathway_scores_with_batch
-        batch_labels = np.array(
-            ["site_A"] * 30 + ["site_B"] * 30 + ["site_C"] * 30
-        )
+        batch_labels = np.array(["site_A"] * 30 + ["site_B"] * 30 + ["site_C"] * 30)
 
         report = detect_batch_effects(scores, batch_labels)
         assert report.n_batches == 3
@@ -401,11 +368,13 @@ class TestEdgeCases:
 
     def test_zero_variance_column(self):
         np.random.seed(42)
-        scores = pd.DataFrame({
-            "A": np.random.normal(0, 1, 40),
-            "B": np.zeros(40),
-            "C": np.random.normal(0, 1, 40),
-        })
+        scores = pd.DataFrame(
+            {
+                "A": np.random.normal(0, 1, 40),
+                "B": np.zeros(40),
+                "C": np.random.normal(0, 1, 40),
+            }
+        )
         batch_labels = np.array([0] * 20 + [1] * 20)
 
         # Should not crash

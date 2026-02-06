@@ -35,7 +35,9 @@ class TestCLIVersion:
         runner = CliRunner()
         result = runner.invoke(main, ["--version"])
 
-        assert "pathway-subtyping-framework" in result.output.lower() or __version__ in result.output
+        assert (
+            "pathway-subtyping-framework" in result.output.lower() or __version__ in result.output
+        )
 
 
 class TestCLIHelp:
@@ -191,9 +193,7 @@ chr1\t100\tv1\tA\tG\t99\tPASS\t.\tGT\t0/1
 
         runner = CliRunner()
         # Run with output override - may fail on pipeline but should parse args
-        result = runner.invoke(
-            main, ["--config", str(config_path), "--output", str(custom_output)]
-        )
+        result = runner.invoke(main, ["--config", str(config_path), "--output", str(custom_output)])
 
         # Check that the output dir was attempted
         # (Pipeline may fail, but args should be parsed)
@@ -280,7 +280,8 @@ class TestCLIExitCodes:
 """
         for i in range(20):
             gene = "SHANK3" if i % 2 == 0 else "CHD8"
-            vcf_content += f"chr1\t{100+i*10}\tv{i}\tA\tG\t99\tPASS\tGENE={gene};CONSEQUENCE=missense;CADD=25\tGT\t"
+            info = f"GENE={gene};CONSEQUENCE=missense;CADD=25"
+            vcf_content += f"chr1\t{100+i*10}\tv{i}\tA\tG\t99\tPASS\t{info}\tGT\t"
             vcf_content += "\t".join(["0/1" if j % 3 == i % 3 else "0/0" for j in range(15)])
             vcf_content += "\n"
 

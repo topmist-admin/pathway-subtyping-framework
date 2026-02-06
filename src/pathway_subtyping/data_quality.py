@@ -12,10 +12,9 @@ Week 4 deliverable for v0.2 roadmap.
 
 import gzip
 import logging
-import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import pandas as pd
 
@@ -120,11 +119,15 @@ class DataQualityReport:
             f"Skipped variants: {self.skipped_variants}",
             "",
             "Annotation Coverage:",
-            f"  GENE: {self.gene_coverage:.1f}% ({self.variants_with_gene}/{self.parsed_variants})",
-            f"  CONSEQUENCE: {self.consequence_coverage:.1f}% ({self.variants_with_consequence}/{self.parsed_variants})",
-            f"  CADD: {self.cadd_coverage:.1f}% ({self.variants_with_cadd}/{self.parsed_variants})",
+            f"  GENE: {self.gene_coverage:.1f}%"
+            f" ({self.variants_with_gene}/{self.parsed_variants})",
+            f"  CONSEQUENCE: {self.consequence_coverage:.1f}%"
+            f" ({self.variants_with_consequence}/{self.parsed_variants})",
+            f"  CADD: {self.cadd_coverage:.1f}%"
+            f" ({self.variants_with_cadd}/{self.parsed_variants})",
             "",
-            f"Multi-allelic variants: {self.multi_allelic_variants} (expanded to {self.multi_allelic_expanded})",
+            f"Multi-allelic variants: {self.multi_allelic_variants}"
+            f" (expanded to {self.multi_allelic_expanded})",
             f"Missing genotypes: {self.missing_genotypes}",
             f"Malformed genotypes: {self.malformed_genotypes}",
         ]
@@ -162,7 +165,9 @@ class VCFDataQualityError(Exception):
         ]
 
         if self.report.gene_coverage < 50:
-            lines.append(f"  - Only {self.report.gene_coverage:.1f}% of variants have GENE annotation")
+            lines.append(
+                f"  - Only {self.report.gene_coverage:.1f}% of variants have GENE annotation"
+            )
 
         if self.report.warnings:
             for w in self.report.warnings[:3]:  # Show first 3 warnings
@@ -411,8 +416,9 @@ def load_vcf_with_quality_check(
                     parts = line.split("\t")
                     if len(parts) < 10:
                         report.add_error(
-                            f"VCF header has fewer than 10 columns. "
-                            f"Expected: #CHROM POS ID REF ALT QUAL FILTER INFO FORMAT <samples>"
+                            "VCF header has fewer than 10 columns. "
+                            "Expected: #CHROM POS ID REF ALT QUAL FILTER"
+                            " INFO FORMAT <samples>"
                         )
                         continue
                     samples = parts[9:]
@@ -564,16 +570,17 @@ def load_vcf_with_quality_check(
     # Check if data is usable
     if strict and not report.is_usable:
         fix_suggestions = [
-            "Annotate your VCF with VEP: "
-            "`vep -i input.vcf -o annotated.vcf --symbol --pick`",
+            "Annotate your VCF with VEP: " "`vep -i input.vcf -o annotated.vcf --symbol --pick`",
             "Or use ANNOVAR: "
-            "`table_annovar.pl input.vcf humandb/ -buildver hg38 -out output -protocol refGene -operation g`",
+            "`table_annovar.pl input.vcf humandb/ -buildver hg38"
+            " -out output -protocol refGene -operation g`",
             "Use the provided annotation helper: "
-            "`python scripts/annotate_vcf.py input.vcf output.vcf --vep-tsv vep_output.tsv`",
+            "`python scripts/annotate_vcf.py input.vcf output.vcf"
+            " --vep-tsv vep_output.tsv`",
             "See troubleshooting guide: docs/troubleshooting.md#data-issues",
         ]
         raise VCFDataQualityError(
-            f"VCF data quality is insufficient for analysis",
+            "VCF data quality is insufficient for analysis",
             report,
             fix_suggestions,
         )
@@ -647,14 +654,10 @@ def validate_vcf_for_pipeline(
 
     # Generate fix suggestions based on issues
     if report.gene_coverage < 50:
-        fix_suggestions.append(
-            "Annotate variants with gene symbols using VEP or ANNOVAR"
-        )
+        fix_suggestions.append("Annotate variants with gene symbols using VEP or ANNOVAR")
 
     if report.consequence_coverage < 50:
-        fix_suggestions.append(
-            "Add consequence annotations (missense, frameshift, etc.)"
-        )
+        fix_suggestions.append("Add consequence annotations (missense, frameshift, etc.)")
 
     if report.cadd_coverage < 30:
         fix_suggestions.append(

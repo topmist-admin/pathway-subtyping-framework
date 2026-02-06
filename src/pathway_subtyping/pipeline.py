@@ -246,7 +246,8 @@ class DemoPipeline:
                 f"  3. Encoding issues (try UTF-8)\n\n"
                 f"To validate your VCF:\n"
                 f"  bcftools view -h {vcf_path} | head -20\n"
-                f"  python -c \"from pathway_subtyping.data_quality import validate_vcf_for_pipeline; "
+                f'  python -c "from pathway_subtyping.data_quality '
+                f"import validate_vcf_for_pipeline; "
                 f"validate_vcf_for_pipeline('{vcf_path}')\""
             ) from e
 
@@ -300,9 +301,7 @@ class DemoPipeline:
             n_components=n_components,
             sample_ids=list(pcs_df.index),
         )
-        logger.info(
-            f"[Ancestry] Loaded {n_components} ancestry PCs for {len(pcs_df)} samples"
-        )
+        logger.info(f"[Ancestry] Loaded {n_components} ancestry PCs for {len(pcs_df)} samples")
 
     def _adjust_for_ancestry(self) -> None:
         """Apply ancestry correction to pathway scores."""
@@ -365,7 +364,9 @@ class DemoPipeline:
                                 cadd_score = 20.0  # Moderate impact default
                             else:
                                 cadd_score = 10.0  # Low impact default
-                            logger.debug(f"Missing CADD for {var['id']}, using default {cadd_score}")
+                            logger.debug(
+                                f"Missing CADD for {var['id']}, using default {cadd_score}"
+                            )
                         # Cap CADD at 40 to prevent normalization issues
                         cadd_normalized = min(cadd_score, 40.0) / 40.0
                         burden += gt * weight * cadd_normalized
@@ -409,9 +410,11 @@ class DemoPipeline:
 
         if self.pathway_scores.empty or len(self.pathway_scores.columns) < 2:
             raise ValueError(
-                f"Insufficient pathways after filtering: {len(self.pathway_scores.columns)} remaining. "
-                f"Need at least 2 pathways with non-zero variance for clustering. "
-                f"Check that your VCF contains variants in pathway genes."
+                f"Insufficient pathways after filtering: "
+                f"{len(self.pathway_scores.columns)} remaining. "
+                f"Need at least 2 pathways with non-zero variance "
+                f"for clustering. Check that your VCF contains "
+                f"variants in pathway genes."
             )
 
         # Z-score normalize with numerical stability (epsilon prevents div-by-zero)
@@ -575,9 +578,8 @@ class DemoPipeline:
         # Store ancestry report if available
         if self.ancestry_pcs is not None:
             from .ancestry import check_ancestry_independence
-            self.ancestry_report = check_ancestry_independence(
-                cluster_labels, self.ancestry_pcs
-            )
+
+            self.ancestry_report = check_ancestry_independence(cluster_labels, self.ancestry_pcs)
 
         # Log summary
         status = "PASS" if self.validation_result.all_passed else "FAIL"
