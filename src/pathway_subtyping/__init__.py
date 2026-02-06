@@ -19,6 +19,15 @@ from .ancestry import (
     compute_ancestry_pcs,
     stratified_analysis,
 )
+from .benchmark import (
+    BenchmarkComparisonResult,
+    BenchmarkMethod,
+    BenchmarkResult,
+    BenchmarkSweepResult,
+    run_benchmark_comparison,
+    run_benchmark_sweep,
+    run_single_benchmark,
+)
 from .batch_correction import (
     BatchCorrectionMethod,
     BatchCorrectionResult,
@@ -143,6 +152,14 @@ __all__ = [
     "run_power_analysis",
     "run_sample_size_analysis",
     "validate_framework",
+    # Benchmark comparison
+    "BenchmarkComparisonResult",
+    "BenchmarkMethod",
+    "BenchmarkResult",
+    "BenchmarkSweepResult",
+    "run_benchmark_comparison",
+    "run_benchmark_sweep",
+    "run_single_benchmark",
     # Batch correction
     "BatchCorrectionMethod",
     "BatchCorrectionResult",
