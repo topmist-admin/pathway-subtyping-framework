@@ -57,24 +57,30 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/topmist-admin/pathway-subtyping-framework
-cd pathway-subtyping-framework
-
-# Create virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # or `venv\Scripts\activate` on Windows
-
-# Install the package
-pip install -e .
-
-# Verify installation
-psf --version
+pip install pathway-subtyping
 ```
+
+For VCF file processing, install with the `vcf` extra:
+
+```bash
+pip install pathway-subtyping[vcf]
+```
+
+### Try in Browser (No Installation)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/00_quick_demo.ipynb)
+
+**60-second demo** — generates a synthetic cohort, discovers subtypes, validates them, and visualizes results. No data needed.
+
+**Full tutorial**: [01_getting_started.ipynb](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/01_getting_started.ipynb)
 
 ### Run with Sample Data
 
 ```bash
+# Clone for sample data and configs
+git clone https://github.com/topmist-admin/pathway-subtyping-framework
+cd pathway-subtyping-framework
+
 # Run the pipeline with synthetic test data
 psf --config configs/test_synthetic.yaml
 
@@ -91,10 +97,6 @@ cp configs/example_autism.yaml configs/my_analysis.yaml
 # Edit paths in my_analysis.yaml, then run
 psf --config configs/my_analysis.yaml
 ```
-
-### Try in Browser (No Installation)
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/01_getting_started.ipynb)
 
 ### Docker
 
@@ -187,7 +189,7 @@ pathway-subtyping-framework/
 │   ├── METHODS.md             # Statistical methods documentation
 │   └── guides/                # User guides
 ├── examples/notebooks/        # Jupyter tutorials
-├── tests/                     # Test suite (347 tests)
+├── tests/                     # Test suite (383 tests)
 ├── Dockerfile                 # Container support
 └── docker-compose.yml         # Easy orchestration
 ```
@@ -195,8 +197,8 @@ pathway-subtyping-framework/
 ## Development
 
 ```bash
-# Install with dev dependencies
-pip install -e ".[dev]"
+# Install with dev dependencies (from cloned repo)
+pip install -e ".[dev,vcf]"
 
 # Run tests
 pytest tests/ -v

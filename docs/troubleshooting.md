@@ -46,6 +46,38 @@ ERROR: Cannot install pathway-subtyping because these package versions have conf
    pip install pathway-subtyping
    ```
 
+### Google Colab installation
+
+**Symptom:**
+```
+ValueError: numpy.dtype size changed, may indicate binary incompatibility
+```
+
+**Cause:**
+This happens when an older version of the package (< 0.2.2) is installed. Versions before 0.2.2 included `pysam` as a required dependency, which forced NumPy to downgrade from 2.x to 1.x, breaking Colab's pre-compiled scipy/scikit-learn binaries.
+
+**Solution:**
+Install version 0.2.2 or later:
+```bash
+pip install pathway-subtyping>=0.2.2
+```
+
+If you see `v0.2.0` in the install output, force the latest:
+```bash
+pip install pathway-subtyping==0.2.2
+```
+
+No runtime restart is needed with v0.2.2+.
+
+### VCF processing with pysam
+
+**Note:** As of v0.2.2, `pysam` is an optional dependency. Install it when you need to process VCF files:
+```bash
+pip install pathway-subtyping[vcf]
+```
+
+The core framework (simulation, clustering, validation, benchmarks) works without pysam.
+
 ### Missing system dependencies on Linux
 
 **Symptom:**
