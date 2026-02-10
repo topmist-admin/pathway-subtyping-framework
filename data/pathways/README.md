@@ -133,4 +133,36 @@ Most pathway databases offer GMT export. Look for "Download" → "GMT format" op
 
 ---
 
+## Data Provenance
+
+**All pathway files in this directory contain only gene symbol lists curated from publicly available, peer-reviewed scientific sources.** No proprietary, commercial, or patient data is included.
+
+### Sources
+
+| Source | URL | License | Data Type |
+|--------|-----|---------|-----------|
+| SFARI Gene | https://gene.sfari.org/ | Open access | Autism gene scoring |
+| KEGG | https://www.kegg.jp/ | Academic use | Biological pathways |
+| Reactome | https://reactome.org/ | CC BY 4.0 | Peer-reviewed pathways |
+| MSigDB | https://www.gsea-msigdb.org/ | CC BY 4.0 | Gene set collections |
+| Gene Ontology | http://geneontology.org/ | CC BY 4.0 | Gene annotations |
+
+### What These Files Contain
+
+Each GMT file contains **standard HGNC gene symbols** (e.g., SHANK3, CHD8, NRXN1, SCN1A) organized into named pathway groups. These gene symbols are:
+- Standard scientific identifiers used in thousands of published research papers
+- Publicly available in any genomics textbook or database
+- Not proprietary, confidential, or restricted information
+
+### What These Files Do NOT Contain
+
+- No patient data, clinical data, or sample-level information
+- No variant calls, genotypes, or allele frequencies
+- No data from any employer, client, or commercial entity
+- No data obtained under any Data Use Agreement
+
+For full provenance details, see [DISCLAIMER.md](../../DISCLAIMER.md).
+
+---
+
 See also: [Pathway Curation Guide](../docs/guides/pathway-curation-guide.md)

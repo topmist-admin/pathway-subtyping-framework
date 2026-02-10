@@ -458,6 +458,34 @@ Recommended plots:
 - BIC/silhouette curves for K selection
 - Bootstrap ARI distribution
 
+## Data Provenance
+
+### External Reference Data
+
+The framework references the following publicly available databases for variant annotation and filtering. **No data from these databases is stored in this repository** — they are referenced at runtime only when users supply their own data.
+
+| Database | Use in Framework | Access | License |
+|----------|-----------------|--------|---------|
+| gnomAD | MAF filtering threshold (< 1%) | Open (https://gnomad.broadinstitute.org/) | ODC-ODbL |
+| CADD | Variant pathogenicity scoring | Open (https://cadd.gs.washington.edu/) | Non-commercial |
+| ClinVar | Validation of pathway gene lists | Open (https://www.ncbi.nlm.nih.gov/clinvar/) | Public domain |
+| Reactome | Cross-reference for pathway validation | Open (https://reactome.org/) | CC BY 4.0 |
+
+### Data Shipped with This Repository
+
+All data files in this repository are either **computationally generated** (synthetic VCF, phenotypes, test fixtures) or **curated from public literature** (pathway GMT gene lists). No real patient data, proprietary data, or commercially licensed data is included. See [DISCLAIMER.md](../DISCLAIMER.md) for the complete data provenance statement.
+
+### Pathway Gene Lists
+
+The GMT files in `data/pathways/` contain gene symbols curated from:
+- **SFARI Gene** (https://gene.sfari.org/) — autism gene scoring, open access
+- **KEGG** (https://www.kegg.jp/) — curated biological pathways
+- **Reactome** (https://reactome.org/) — peer-reviewed pathway database
+- **MSigDB** (https://www.gsea-msigdb.org/) — gene set collections
+- **Gene Ontology** (http://geneontology.org/) — standardized gene annotations
+
+Gene symbols (e.g., SHANK3, CHD8, NRXN1) are standard HGNC identifiers used in thousands of published research papers and are not proprietary information.
+
 ## References
 
 - Benjamini Y, Hochberg Y (1995). Controlling the false discovery rate. J R Stat Soc B.
@@ -470,7 +498,10 @@ Recommended plots:
 - Johnson WE, Li C, Rabinovic A (2007). Adjusting batch effects in microarray expression data using empirical Bayes methods. Biostatistics.
 - Leek JT, et al. (2010). Tackling the widespread and critical impact of batch effects in high-throughput data. Nat Rev Genet.
 - Strehl A, Ghosh J (2002). Cluster ensembles. J Mach Learn Res.
+- Landrum MJ et al. (2020). ClinVar: improvements to accessing data. Nucleic Acids Res.
+- Gillespie M et al. (2022). The Reactome Pathway Knowledgebase 2022. Nucleic Acids Res.
+- Karczewski KJ et al. (2020). The mutational constraint spectrum quantified from variation in 141,456 humans. Nature.
 
 ---
 
-*Document version: 0.2.0 | Last updated: February 2026*
+*Document version: 0.2.2 | Last updated: February 2026*

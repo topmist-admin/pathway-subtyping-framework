@@ -72,3 +72,18 @@ Document benchmark results here for tracking:
 | Date | Version | Benchmark | ARI | Validation | Notes |
 |------|---------|-----------|-----|------------|-------|
 | 2026-01-29 | 0.1.0 | synthetic_4subtype | 1.000 | PASS | Initial release |
+
+---
+
+## Data Provenance
+
+**All benchmark data is computationally generated using the `SyntheticDataGenerator` class with fixed random seeds.** No real patient, clinical, or proprietary data is used in any benchmark.
+
+- The synthetic VCF files contain **randomly generated variant calls** with no connection to real individuals
+- The synthetic phenotype CSVs contain **randomly assigned sample metadata** (no real clinical information)
+- Gene symbols in the data (e.g., SHANK3, CHD8) are standard HGNC identifiers used as labels only
+- All benchmark results are fully reproducible from the random seed alone
+
+**No data from any employer, client, institution, or commercial entity was used to create these benchmarks.**
+
+For full provenance details, see [DISCLAIMER.md](../../DISCLAIMER.md).

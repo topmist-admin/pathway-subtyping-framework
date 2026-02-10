@@ -167,6 +167,20 @@ See [docs/METHODS.md](docs/METHODS.md) for full statistical methodology.
 
 **Your data stays on your infrastructure.** The framework runs locally or in your cloud environment.
 
+## Data Provenance and Integrity
+
+**This project contains zero proprietary, commercial, or third-party customer data.**
+
+Every data file in this repository was either:
+
+1. **Computationally generated** — The synthetic VCF and phenotype files in `data/sample/` were created by our `SyntheticDataGenerator` using random number generators with fixed seeds. They contain no real patient or clinical data whatsoever.
+2. **Curated from public scientific literature** — The pathway GMT files in `data/pathways/` contain gene symbol lists assembled exclusively from publicly available, peer-reviewed sources: [SFARI Gene](https://gene.sfari.org/), [KEGG](https://www.kegg.jp/), [Reactome](https://reactome.org/), [MSigDB](https://www.gsea-msigdb.org/), and [Gene Ontology](http://geneontology.org/). Gene symbols (e.g., SHANK3, CHD8) are standard scientific identifiers published in thousands of research papers.
+3. **Open-source code only** — All algorithms are original implementations or standard open-source libraries (scikit-learn, scipy, numpy, pandas). No proprietary software, commercial code, or licensed algorithms were used.
+
+**No data from any employer, client, institution, or commercial entity was used at any stage of this project** — not in development, testing, validation, or documentation. The framework is designed so that users supply their own data; it does not ship with, embed, or depend on any private or restricted datasets.
+
+For full details, see [DISCLAIMER.md](DISCLAIMER.md) and [docs/contributor-kit/04-research-compliance.md](docs/contributor-kit/04-research-compliance.md).
+
 ## Project Structure
 
 ```

@@ -404,6 +404,20 @@ config = PipelineConfig(**raw)
 
 ---
 
+## Data Provenance
+
+**All example data referenced in this document is synthetic.** The VCF snippets, phenotype CSVs, and pathway GMT examples shown above use:
+
+- **Standard HGNC gene symbols** (SHANK3, CHD8, NRXN1, etc.) — publicly available scientific identifiers
+- **Fabricated sample IDs and genotypes** — no connection to real individuals
+- **Randomly generated coordinates and scores** — not derived from any real dataset
+
+The sample data files shipped with the framework (in `data/sample/`) are produced by the `SyntheticDataGenerator` class with fixed random seeds. No real patient, clinical, or proprietary data is included in this repository. Users are expected to supply their own data in the formats described above.
+
+For full provenance details, see [DISCLAIMER.md](../DISCLAIMER.md).
+
+---
+
 ## See Also
 
 - [Quickstart Guide](quickstart.md) - Getting started

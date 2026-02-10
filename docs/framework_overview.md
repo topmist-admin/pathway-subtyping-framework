@@ -469,6 +469,20 @@ for chunk in chunked_vcf_reader(vcf_path, chunk_size=1000):
 
 ---
 
+## Data Provenance
+
+**This framework contains zero proprietary, commercial, or third-party patient data.** All data shipped with the repository is either:
+
+1. **Computationally generated** — Synthetic VCF and phenotype files created by `SyntheticDataGenerator` using random number generators with fixed seeds. They contain no real patient or clinical data.
+2. **Curated from public scientific literature** — Pathway GMT files contain standard HGNC gene symbols from publicly available databases (SFARI Gene, KEGG, Reactome, MSigDB, Gene Ontology).
+3. **Open-source code only** — All algorithms are original implementations or use standard open-source libraries (scikit-learn, scipy, numpy, pandas).
+
+**No data from any employer, client, institution, or commercial entity was used at any stage of this project.** The framework is designed so that users supply their own data; it does not depend on any private or restricted datasets.
+
+For full details, see [DISCLAIMER.md](../DISCLAIMER.md).
+
+---
+
 ## See Also
 
 - [Quickstart Guide](quickstart.md) - Getting started
