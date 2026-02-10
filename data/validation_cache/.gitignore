@@ -1,0 +1,3 @@
+# Cached public dataset downloads - do not commit
+*
+!.gitignore

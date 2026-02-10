@@ -1,0 +1,118 @@
+"""
+Pathway Subtyping Framework — Snakemake Workflow
+
+A minimal Snakemake pipeline for pathway-based molecular subtype
+discovery and characterization.
+
+Usage:
+    snakemake --cores 4 --use-conda \
+        --config vcf=data/cohort.vcf.gz \
+                 phenotypes=data/phenotypes.csv \
+                 pathways=data/pathways/autism_pathways.gmt
+
+Requirements:
+    - Snakemake >= 7.0
+    - Conda (for --use-conda) or pathway-subtyping pre-installed
+"""
+
+
+# -----------------------------------------------------------------------
+# Configuration
+# -----------------------------------------------------------------------
+
+VCF        = config.get("vcf", "data/cohort.vcf.gz")
+PHENOTYPES = config.get("phenotypes", "data/phenotypes.csv")
+PATHWAYS   = config.get("pathways", "data/pathways/autism_pathways.gmt")
+OUTDIR     = config.get("outdir", "results")
+SEED       = config.get("seed", 42)
+N_CLUSTERS = config.get("n_clusters", None)
+
+
+# -----------------------------------------------------------------------
+# Target rule
+# -----------------------------------------------------------------------
+
+rule all:
+    input:
+        f"{OUTDIR}/pipeline/report.json",
+        f"{OUTDIR}/characterization/subtype_summary.csv",
+        f"{OUTDIR}/characterization/subtype_heatmap.png",
+
+
+# -----------------------------------------------------------------------
+# Rules
+# -----------------------------------------------------------------------
+
+rule generate_config:
+    """Generate pipeline YAML config from Snakemake parameters."""
+    output:
+        config_yaml = f"{OUTDIR}/config.yaml",
+    params:
+        name = "snakemake_run",
+        pipeline_outdir = f"{OUTDIR}/pipeline",
+    run:
+        import yaml
+
+        pipeline_config = {
+            "pipeline": {
+                "name": params.name,
+                "output_dir": params.pipeline_outdir,
+                "seed": SEED,
+            },
+            "data": {
+                "vcf_path": VCF,
+                "phenotype_path": PHENOTYPES,
+                "pathway_db": PATHWAYS,
+            },
+            "clustering": {
+                "n_clusters": N_CLUSTERS,
+            },
+            "output": {
+                "disclaimer": "Research use only. Not for clinical decision-making.",
+            },
+        }
+        with open(output.config_yaml, "w") as f:
+            yaml.dump(pipeline_config, f, default_flow_style=False)
+
+
+rule subtype_discovery:
+    """Run the pathway subtyping pipeline."""
+    input:
+        config_yaml = f"{OUTDIR}/config.yaml",
+        vcf = VCF,
+        phenotypes = PHENOTYPES,
+        pathways = PATHWAYS,
+    output:
+        report = f"{OUTDIR}/pipeline/report.json",
+        assignments = f"{OUTDIR}/pipeline/cluster_assignments.csv",
+        scores = f"{OUTDIR}/pipeline/pathway_scores.csv",
+    conda:
+        "environment.yaml"
+    shell:
+        """
+        python3 -m pathway_subtyping.cli run --config {input.config_yaml}
+        """
+
+
+rule characterize:
+    """Characterize discovered subtypes."""
+    input:
+        scores = f"{OUTDIR}/pipeline/pathway_scores.csv",
+        assignments = f"{OUTDIR}/pipeline/cluster_assignments.csv",
+    output:
+        summary = f"{OUTDIR}/characterization/subtype_summary.csv",
+        enrichment = f"{OUTDIR}/characterization/pathway_enrichment.csv",
+        heatmap = f"{OUTDIR}/characterization/subtype_heatmap.png",
+        report_json = f"{OUTDIR}/characterization/characterization.json",
+    params:
+        outdir = f"{OUTDIR}/characterization",
+    conda:
+        "environment.yaml"
+    script:
+        "scripts/characterize.py"
+
+
+# -----------------------------------------------------------------------
+# Helper script (referenced by characterize rule)
+# -----------------------------------------------------------------------
+# The script is at: examples/workflows/snakemake/scripts/characterize.py

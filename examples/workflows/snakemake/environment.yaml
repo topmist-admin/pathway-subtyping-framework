@@ -1,0 +1,10 @@
+name: pathway-subtyping
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.9,<3.13
+  - pip
+  - pip:
+    - pathway-subtyping>=0.2.2
+    - pyyaml

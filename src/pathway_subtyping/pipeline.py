@@ -24,6 +24,12 @@ from .data_quality import (
     load_vcf_with_quality_check,
 )
 from .utils.seed import get_rng, set_global_seed
+from .characterization import (
+    CharacterizationResult,
+    characterize_subtypes,
+    export_characterization,
+    generate_subtype_heatmap,
+)
 from .validation import ValidationGates, ValidationGatesResult
 
 # Configure logging
@@ -123,6 +129,9 @@ class DemoPipeline:
         self.ancestry_pcs = None
         self.ancestry_adjustment = None
         self.ancestry_report = None
+
+        # Characterization
+        self.characterization_result: Optional[CharacterizationResult] = None
 
         # Timing
         self.start_time: Optional[datetime] = None
@@ -586,6 +595,44 @@ class DemoPipeline:
         logger.info(f"Validation Gates: {status}")
         logger.info(f"  {self.validation_result.summary}")
 
+    def characterize(self) -> None:
+        """Run subtype characterization analysis."""
+        logger.info("Running subtype characterization...")
+
+        cluster_labels = self.cluster_assignments["cluster_id"].values
+
+        # Build cluster names from label mapping
+        cluster_names = {}
+        for _, row in self.cluster_assignments.drop_duplicates("cluster_id").iterrows():
+            cluster_names[int(row["cluster_id"])] = row["cluster_label"]
+
+        # Confidence scores (if available)
+        confidence = None
+        if "confidence" in self.cluster_assignments.columns:
+            confidence = self.cluster_assignments["confidence"].values
+
+        self.characterization_result = characterize_subtypes(
+            pathway_scores=self.pathway_scores,
+            cluster_labels=cluster_labels,
+            gene_burdens=self.gene_burdens,
+            pathways=self.pathways if self.pathways else None,
+            cluster_names=cluster_names,
+            confidence_scores=confidence,
+            seed=self.config.seed,
+        )
+
+        # Generate characterization heatmap
+        heatmap_path = self.output_dir / "figures" / "subtype_heatmap.png"
+        generate_subtype_heatmap(
+            self.characterization_result, output_path=str(heatmap_path)
+        )
+
+        # Export characterization CSV files
+        char_dir = self.output_dir / "characterization"
+        export_characterization(self.characterization_result, str(char_dir))
+
+        logger.info("Subtype characterization complete")
+
     def generate_outputs(self) -> None:
         """Generate all output artifacts."""
         logger.info("Generating outputs...")
@@ -740,6 +787,11 @@ class DemoPipeline:
             "ancestry_correction": ancestry_info,
             "ground_truth_validation": ground_truth_validation,
             "validation_gates": validation_gates,
+            "characterization": (
+                self.characterization_result.to_dict()
+                if self.characterization_result
+                else {}
+            ),
             "disclaimer": self.config.disclaimer,
         }
 
@@ -879,6 +931,11 @@ class DemoPipeline:
                 ]
             )
 
+        # Subtype characterization
+        if self.characterization_result:
+            lines.append("")
+            lines.append(self.characterization_result.format_report())
+
         # Ground truth validation (planted subtypes)
         lines.extend(["", "## Ground Truth Validation", ""])
 
@@ -989,6 +1046,15 @@ class DemoPipeline:
 
             self.cluster_samples()
             self.run_validation_gates()
+
+            # Characterization is best-effort — never block the core pipeline
+            try:
+                self.characterize()
+            except Exception as e:
+                logger.warning(
+                    f"[Characterization] Skipped due to error: {e}"
+                )
+
             self.generate_outputs()
 
             self.end_time = datetime.now()

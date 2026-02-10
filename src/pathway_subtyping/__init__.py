@@ -19,6 +19,18 @@ from .ancestry import (
     compute_ancestry_pcs,
     stratified_analysis,
 )
+from .characterization import (
+    CharacterizationResult,
+    GeneContribution,
+    PathwayEnrichment,
+    SubtypeProfile,
+    characterize_subtypes,
+    export_characterization,
+    gene_contribution_scores,
+    generate_gene_heatmap,
+    generate_subtype_heatmap,
+    pathway_enrichment_analysis,
+)
 from .benchmark import (
     BenchmarkComparisonResult,
     BenchmarkMethod,
@@ -99,6 +111,22 @@ from .statistical_rigor import (
     run_statistical_analysis,
 )
 from .validation import ValidationGates, ValidationGatesResult, ValidationResult
+from .validation_datasets import (
+    DATASETS,
+    BiologicalPlausibilityResult,
+    ClinVarGeneSummary,
+    DatasetInfo,
+    PathwayCoverageResult,
+    ValidationReport,
+    download_dataset,
+    generate_disease_realistic_synthetic,
+    load_clinvar_gene_summary,
+    load_reactome_pathways,
+    run_biological_plausibility_check,
+    run_full_validation,
+    validate_pathway_against_reactome,
+    validate_pathway_coverage,
+)
 
 __all__ = [
     # Pipeline
@@ -186,6 +214,32 @@ __all__ = [
     "compute_ancestry_correlation",
     "compute_ancestry_pcs",
     "stratified_analysis",
+    # Subtype characterization
+    "CharacterizationResult",
+    "GeneContribution",
+    "PathwayEnrichment",
+    "SubtypeProfile",
+    "characterize_subtypes",
+    "export_characterization",
+    "gene_contribution_scores",
+    "generate_gene_heatmap",
+    "generate_subtype_heatmap",
+    "pathway_enrichment_analysis",
+    # Public dataset validation
+    "DATASETS",
+    "BiologicalPlausibilityResult",
+    "ClinVarGeneSummary",
+    "DatasetInfo",
+    "PathwayCoverageResult",
+    "ValidationReport",
+    "download_dataset",
+    "generate_disease_realistic_synthetic",
+    "load_clinvar_gene_summary",
+    "load_reactome_pathways",
+    "run_biological_plausibility_check",
+    "run_full_validation",
+    "validate_pathway_against_reactome",
+    "validate_pathway_coverage",
     # Meta
     "__version__",
 ]
