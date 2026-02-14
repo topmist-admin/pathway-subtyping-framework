@@ -1,4 +1,4 @@
-# Pathway Subtyping Framework: v0.1 → v0.4 Roadmap
+# Pathway Subtyping Framework: v0.1 → v0.5 Roadmap
 
 This document outlines the project milestones for the Pathway Subtyping Framework,
 modeled after the successful Autism Pathway Framework 90-day plan.
@@ -567,6 +567,110 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 
 ---
 
+## Phase 6: v0.5 Knowledge Graph & Network Biology (Weeks 30-33)
+
+**Rationale:** Flat GMT pathway files treat pathways as unordered gene bags with no internal structure, no cross-pathway connections, and no cross-omics entity linking. Knowledge graphs transform the framework from set-based to topology-aware analysis, enabling network propagation, pathway crosstalk quantification, hierarchical pathway resolution, and drug target discovery. This phase follows the proven architecture from the [autism-pathway-framework](https://github.com/topmist-admin/autism-pathway-framework), which uses a NetworkX-based heterogeneous knowledge graph powering embeddings, GNNs, and causal inference.
+
+**3-Layer Architecture:**
+
+| Layer | Dependencies | What It Adds |
+|-------|-------------|--------------|
+| **Core** (existing) | None extra | GMT-based pathway scoring, GMM clustering, validation gates |
+| **Graph** (new `[graph]` extra) | `networkx` (already transitive dep) | Topology-aware scoring, PPI network propagation, pathway crosstalk |
+| **KG-ML** (new `[kg]` extra) | `pykeen`, `torch-geometric` | Graph embeddings, GNN subtyping, link prediction, drug targets |
+
+### [Week 30] Pathway Topology and Network Propagation
+
+**Theme:** PPI-augmented pathway scoring via network signal diffusion
+
+**Deliverables:**
+- [ ] PPI network loader (STRING TSV format) into NetworkX graph
+- [ ] Network propagation: Random Walk with Restart, heat diffusion, personalized PageRank
+- [ ] Topology-weighted pathway scoring: gene contributions weighted by network centrality
+- [ ] Pathway crosstalk quantification: shared genes and inter-pathway edge density
+- [ ] Crosstalk-aware subtype characterization: co-dysregulated pathway modules per subtype
+
+**Acceptance Criteria:**
+- Network-propagated scores improve ARI on synthetic data with weak signals
+- Pathway crosstalk identifies biologically meaningful modules
+- Falls back to standard GMT scoring when no PPI data provided
+- Documentation with network propagation tutorial
+
+**GitHub Issue:** #45
+
+---
+
+### [Week 31] Biological Knowledge Graph Builder
+
+**Theme:** Unified graph structure connecting genes, pathways, GO terms, proteins, metabolites, and drugs
+
+**Deliverables:**
+- [ ] `KnowledgeGraph` class wrapping `nx.MultiDiGraph` with typed nodes and edges
+- [ ] Node types: Gene, Pathway, GO_Term, Protein, Metabolite, Drug
+- [ ] Edge types: gene_in_pathway, gene_interacts (PPI), gene_has_go, go_is_a, go_part_of, gene_encodes_protein, protein_catalyzes_metabolite, drug_targets_gene
+- [ ] `KnowledgeGraphBuilder` with chained ingestion from GMT, STRING, GO (OBO), HMDB, Reactome
+- [ ] Hierarchical pathway queries and cross-omics entity resolution
+- [ ] Subgraph extraction and serialization (JSON/pickle)
+
+**Acceptance Criteria:**
+- KG builds from GMT + STRING + GO without errors
+- Hierarchical queries return correct sub-pathways
+- Cross-omics entity resolution works for gene-protein-metabolite chains
+- Full backward compatibility with existing GMT-only workflows
+- Documentation with KG construction tutorial
+
+**GitHub Issue:** #46
+
+---
+
+### [Week 32] Graph Embeddings and GNN Subtyping (Experimental)
+
+**Theme:** Learned biological representations and drug target discovery via knowledge graph ML
+
+**Deliverables:**
+- [ ] KG-to-triples converter for PyKEEN (TransE, RotatE, ComplEx)
+- [ ] Gene similarity and link prediction via trained embeddings
+- [ ] Export KG to PyG HeteroData for heterogeneous GNN
+- [ ] GNN-derived patient embeddings as alternative GMM features
+- [ ] Drug-gene-pathway traversal for therapeutic hypothesis generation
+- [ ] `[kg]` optional dependency extra (pykeen, torch-geometric)
+
+**Acceptance Criteria:**
+- Gene similarity produces biologically meaningful results
+- Link prediction recovers held-out edges above random baseline
+- GNN-based subtypes pass bootstrap validation gate
+- Drug target discovery produces ranked list with pathway justification
+- All features optional: framework fully functional without `[kg]`
+- Marked as experimental/beta
+
+**GitHub Issue:** #47
+
+---
+
+### [Week 33] v0.5 Release
+
+**Theme:** Ship v0.5
+
+**Deliverables:**
+- [ ] Update CHANGELOG.md for v0.5
+- [ ] Create GitHub release `v0.5.0`
+- [ ] Update PyPI package with `[graph]` and `[kg]` optional extras
+- [ ] Update Zenodo DOI
+- [ ] Colab notebooks: KG construction + network propagation, embeddings + drug targets
+- [ ] Announce on LinkedIn, Substack, Twitter/X
+
+**Acceptance Criteria:**
+- All Phase 6 features merged and tested
+- 3-layer architecture operational (Core / Graph / KG-ML)
+- Network propagation improves subtyping on benchmarks
+- Drug target discovery functional
+- GNN features marked as experimental/beta
+- Full documentation with tutorials
+
+**GitHub Issue:** #48
+
+---
+
 ## Community Feedback: LinkedIn Poll (2026-02-02)
 
 **Question:** Preferred feature for pathway-subtyping framework?
@@ -601,17 +705,18 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 
 ## Success Metrics
 
-| Metric | v0.1 Target | v0.2 Actual | v0.3 Target | v0.4 Target |
-|--------|-------------|-------------|-------------|-------------|
-| GitHub Stars | 10 | — | 100 | 250 |
-| PyPI Downloads | 100 | — | 2,000 | 10,000 |
-| External Collaborators | 1 | 4 responding | 10 | 20 |
-| Disease Pathways | 4 | 6 | 6+ | 7+ (+ MitoCarta) |
-| Issues Closed | 80% | ~70% | 80% | 85% |
-| Test Coverage | 64 tests | 716 tests | 750 tests | 900 tests |
-| Input Modalities | 1 (VCF) | 1 (VCF) | 4 (VCF, bulk RNA, scRNA, spatial) | 6 (+ proteomics, metabolomics) |
-| Validation Gates | 3 | 4 | 5 (+ cross-modal) | 5 (+ multi-omics QC) |
-| Integration Methods | 1 (GMM) | 1 (GMM) | 1 (GMM) | 2 (GMM + MOFA) |
+| Metric | v0.1 Target | v0.2 Actual | v0.3 Target | v0.4 Target | v0.5 Target |
+|--------|-------------|-------------|-------------|-------------|-------------|
+| GitHub Stars | 10 | — | 100 | 250 | 500 |
+| PyPI Downloads | 100 | — | 2,000 | 10,000 | 25,000 |
+| External Collaborators | 1 | 4 responding | 10 | 20 | 30 |
+| Disease Pathways | 4 | 6 | 6+ | 7+ (+ MitoCarta) | 7+ (+ KG-derived) |
+| Issues Closed | 80% | ~70% | 80% | 85% | 90% |
+| Test Coverage | 64 tests | 716 tests | 750 tests | 900 tests | 1,050 tests |
+| Input Modalities | 1 (VCF) | 1 (VCF) | 4 (VCF, bulk RNA, scRNA, spatial) | 6 (+ proteomics, metabolomics) | 6 (+ network topology) |
+| Validation Gates | 3 | 4 | 5 (+ cross-modal) | 5 (+ multi-omics QC) | 5 (+ network-propagated) |
+| Integration Methods | 1 (GMM) | 1 (GMM) | 1 (GMM) | 2 (GMM + MOFA) | 4 (+ KG embeddings + GNN) |
+| Architecture Layers | 1 (Core) | 1 (Core) | 1 (Core) | 1 (Core) | 3 (Core / Graph / KG-ML) |
 
 ---
 
