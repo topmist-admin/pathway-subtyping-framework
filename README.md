@@ -50,6 +50,8 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 | **Statistical Rigor** | FDR correction, effect sizes, confidence intervals |
 | **Power Analysis** | Sample size recommendations, Type I error estimation |
 | **Simulation** | Synthetic data generation with ground truth for validation |
+| **Cross-Cohort Validation** | Transfer learning and projection-based replication testing |
+| **Performance** | tqdm progress bars, chunked VCF processing, 10K+ sample support |
 | **Reproducibility** | Deterministic execution, pinned dependencies, Docker |
 | **Config-Driven** | YAML configuration for all parameters |
 
@@ -196,6 +198,8 @@ pathway-subtyping-framework/
 │   ├── ancestry.py            # Population stratification correction
 │   ├── batch_correction.py    # Batch effect detection & correction
 │   ├── sensitivity.py         # Parameter sensitivity analysis
+│   ├── cross_cohort.py        # Cross-cohort validation
+│   ├── expression.py          # Bulk RNA-seq pathway scoring
 │   └── data_quality.py        # VCF quality checks
 ├── configs/                   # Example YAML configurations
 ├── data/
@@ -205,7 +209,7 @@ pathway-subtyping-framework/
 │   ├── METHODS.md             # Statistical methods documentation
 │   └── guides/                # User guides
 ├── examples/notebooks/        # Jupyter tutorials
-├── tests/                     # Test suite (599 tests)
+├── tests/                     # Test suite (620 tests)
 ├── Dockerfile                 # Container support
 └── docker-compose.yml         # Easy orchestration
 ```
@@ -236,7 +240,7 @@ pre-commit install
 
 Contributions welcome! Areas where help is needed:
 - Additional disease pathway definitions
-- Performance optimization for large cohorts
+- Advanced visualization (interactive HTML reports)
 - Documentation and tutorials
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

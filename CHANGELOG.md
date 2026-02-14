@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Cross-Cohort Validation Enhancements (#7)
+- **CohortResult.to_dict()**: Serialize cohort results to dictionary
+- **CrossCohortResult methods**: Added `.to_dict()`, `.format_report()`, `.get_citations()` for publication-ready output
+- **`generate_synthetic_cohort_pair()`**: Convenience function for creating matched synthetic cohort pairs for testing and demos
+- **Cross-cohort example script** (`scripts/cross_cohort_example.py`): CLI example with argparse
+- **Cross-cohort user guide** (`docs/guides/cross-cohort-validation.md`): Interpretation tables, real-world workflow, common pitfalls
+- **Cross-cohort API reference** (`docs/api/cross_cohort.md`): Full API documentation
+- 12 new tests for cross-cohort enhancements
+
+#### Performance Optimization (#8)
+- **tqdm progress bars**: Added to validation gates (label shuffle, random gene sets, bootstrap stability), simulation analysis (Type I error, power analysis, sample size analysis), expression scoring (ssGSEA, GSVA), and sensitivity analysis (feature LOO)
+- **`show_progress` parameter**: Added to `ValidationGates`, `estimate_type_i_error()`, `run_power_analysis()`, `run_sample_size_analysis()`, `score_pathways_from_expression()`, `vary_feature_subset()`, `run_sensitivity_analysis()`
+- **Chunked processing**: `PipelineConfig` now accepts `use_chunked_processing` and `chunk_size` options, delegating to existing `compute_gene_burdens_chunked()` for large VCF files
+- **Benchmark script** (`scripts/benchmark_performance.py`): Measures wall-clock time and peak memory via `tracemalloc`, reports pass/fail against targets (30 min, 8 GB for 10K samples)
+- **Hardware guide** (`docs/guides/performance-and-hardware.md`): Recommended hardware table, memory estimation, chunked processing guide, Colab constraints, performance tips
+- 9 new tests for performance parameters
+
 #### Data-Driven Validation Threshold Calibration (#19)
 - **Threshold calibration module** (`threshold_calibration.py`): Replaces hard-coded validation thresholds with data-driven values that adjust for sample size and number of clusters
   - `CalibratedThresholds`: Dataclass with null ARI threshold, stability threshold, calibration method, interpolation flag (with `.to_dict()`, `.format_report()`, `.get_citations()`)
@@ -263,6 +280,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.2.3 | 2026-02-14 | Cross-cohort validation, performance optimization, threshold calibration, expression scoring |
 | 0.2.0 | 2026-02-09 | Scientific rigor, ancestry/batch correction, benchmarks, sensitivity analysis |
 | 0.1.0 | 2026-01-29 | First public release with full pipeline |
 | 0.0.1 | 2026-01-29 | Initial project setup |

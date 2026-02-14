@@ -116,15 +116,17 @@ modeled after the successful Autism Pathway Framework 90-day plan.
 **Theme:** Compare subtypes across datasets
 
 **Deliverables:**
-- [ ] Document cross-cohort validation workflow
-- [ ] Add example with synthetic cohorts
-- [ ] Validation report template
-- [ ] Guidance on interpreting transfer ARI
+- [x] Document cross-cohort validation workflow
+- [x] Add example with synthetic cohorts
+- [x] Validation report template
+- [x] Guidance on interpreting transfer ARI
 
 **Acceptance Criteria:**
 - Cross-cohort tutorial in notebook
 - Clear criteria for "replicable subtypes"
 - Example report generated
+
+**Status: COMPLETED** (Feb 14, 2026) — Added `to_dict()`, `format_report()`, `get_citations()` to dataclasses, `generate_synthetic_cohort_pair()`, CLI example script, user guide, API reference. 12 new tests.
 
 ---
 
@@ -133,15 +135,17 @@ modeled after the successful Autism Pathway Framework 90-day plan.
 **Theme:** Scale to 10,000+ samples
 
 **Deliverables:**
-- [ ] Benchmark on large synthetic dataset
-- [ ] Optimize memory usage for chunked processing
-- [ ] Add progress bars for long operations
-- [ ] Document recommended hardware specs
+- [x] Benchmark on large synthetic dataset
+- [x] Optimize memory usage for chunked processing
+- [x] Add progress bars for long operations
+- [x] Document recommended hardware specs
 
 **Acceptance Criteria:**
 - 10,000 sample cohort processes in <30 minutes
 - Memory stays under 8GB
 - Clear guidance on resource requirements
+
+**Status: COMPLETED** (Feb 14, 2026) — Added tqdm progress bars to 4 modules, chunked VCF processing in pipeline, benchmark script, hardware guide. 9 new tests. 620 total tests passing.
 
 ---
 
@@ -433,7 +437,7 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 | External Collaborators | 1 | 4 responding | 10 |
 | Disease Pathways | 4 | 6 | 6+ |
 | Issues Closed | 80% | ~70% | 80% |
-| Test Coverage | 64 tests | 599 tests | 700 tests |
+| Test Coverage | 64 tests | 620 tests | 700 tests |
 | Input Modalities | 1 (VCF) | 1 (VCF) | 4 (VCF, bulk RNA, scRNA, spatial) |
 | Validation Gates | 3 | 4 | 5 (+ cross-modal) |
 
@@ -454,4 +458,4 @@ gh project create "Pathway Subtyping Framework: v0.2 Roadmap" \
 
 ---
 
-*Last updated: 2026-02-13*
+*Last updated: 2026-02-14*
