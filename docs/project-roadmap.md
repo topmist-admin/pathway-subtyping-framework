@@ -437,7 +437,7 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 | External Collaborators | 1 | 4 responding | 10 |
 | Disease Pathways | 4 | 6 | 6+ |
 | Issues Closed | 80% | ~70% | 80% |
-| Test Coverage | 64 tests | 620 tests | 700 tests |
+| Test Coverage | 64 tests | 660 tests | 700 tests |
 | Input Modalities | 1 (VCF) | 1 (VCF) | 4 (VCF, bulk RNA, scRNA, spatial) |
 | Validation Gates | 3 | 4 | 5 (+ cross-modal) |
 

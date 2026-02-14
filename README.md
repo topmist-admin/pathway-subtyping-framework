@@ -46,6 +46,7 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 | **Batch Correction** | ComBat-style batch effect detection and correction |
 | **Sensitivity Analysis** | Parameter robustness testing across algorithms, features, normalization |
 | **Threshold Calibration** | Data-driven validation thresholds that adjust for sample size and cluster count |
+| **Variant QC** | QUAL, call rate, HWE, MAF filters before burden computation |
 | **Validation Gates** | Negative controls + bootstrap stability + ancestry independence testing |
 | **Statistical Rigor** | FDR correction, effect sizes, confidence intervals |
 | **Power Analysis** | Sample size recommendations, Type I error estimation |
@@ -200,6 +201,7 @@ pathway-subtyping-framework/
 │   ├── sensitivity.py         # Parameter sensitivity analysis
 │   ├── cross_cohort.py        # Cross-cohort validation
 │   ├── expression.py          # Bulk RNA-seq pathway scoring
+│   ├── variant_qc.py          # Variant quality control (QUAL, HWE, MAF, call rate)
 │   └── data_quality.py        # VCF quality checks
 ├── configs/                   # Example YAML configurations
 ├── data/
@@ -209,7 +211,7 @@ pathway-subtyping-framework/
 │   ├── METHODS.md             # Statistical methods documentation
 │   └── guides/                # User guides
 ├── examples/notebooks/        # Jupyter tutorials
-├── tests/                     # Test suite (620 tests)
+├── tests/                     # Test suite (660 tests)
 ├── Dockerfile                 # Container support
 └── docker-compose.yml         # Easy orchestration
 ```

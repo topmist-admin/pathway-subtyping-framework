@@ -159,6 +159,12 @@ pipeline:
 clustering:
   n_clusters_range: [2, 8]
 
+variant_qc:                    # Optional but recommended
+  enabled: true
+  min_qual: 30
+  min_call_rate: 0.95
+  max_maf: 0.01
+
 validation:
   run_validation: true
 ```

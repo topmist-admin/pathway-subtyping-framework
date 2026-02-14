@@ -46,6 +46,17 @@ Variants → Genes → Pathways → Subtypes
          │                │                    │
          ▼                ▼                    │
 ┌─────────────────────────────────────────────────────────────────┐
+│              VARIANT QUALITY CONTROL (optional)                  │
+├─────────────────────────────────────────────────────────────────┤
+│  • Filter by QUAL score (default ≥ 30)                          │
+│  • Remove low call rate variants (default ≥ 90%)                │
+│  • Test Hardy-Weinberg equilibrium (chi-squared)                │
+│  • Filter by minor allele frequency (default ≤ 1%)              │
+│  • Apply per-genotype GQ/DP filters (optional)                  │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
 │                   GENE BURDEN SCORING                            │
 ├─────────────────────────────────────────────────────────────────┤
 │  • Parse VCF variants                                            │
@@ -137,7 +148,28 @@ Variants → Genes → Pathways → Subtypes
 | `load_pathways()` | GMT file | Dict[pathway → genes] |
 | `load_phenotypes()` | CSV file | Phenotype DataFrame |
 
-### 2. Pipeline (`pipeline.py`)
+### 2. Variant QC (`variant_qc.py`)
+
+**Purpose**: Remove technical artifacts and common variants before burden computation.
+
+**Filters** (applied sequentially):
+- QUAL score filtering
+- Per-variant call rate
+- Hardy-Weinberg equilibrium test (chi-squared, 1 df)
+- Minor allele frequency (MAF) filtering
+- Per-genotype GQ/DP masking (optional)
+
+```python
+from pathway_subtyping import VariantQCConfig, filter_variants
+
+config = VariantQCConfig(min_qual=30, min_call_rate=0.95, max_maf=0.01)
+filtered_variants, filtered_genotypes, result = filter_variants(
+    variants_df, genotypes_df, config
+)
+print(result.format_report())
+```
+
+### 3. Pipeline (`pipeline.py`)
 
 **Purpose**: Orchestrate the analysis workflow.
 
@@ -388,6 +420,13 @@ pipeline:
 clustering:
   n_clusters_range: [2, 8]
   covariance_type: full
+
+variant_qc:
+  enabled: true
+  min_qual: 30
+  min_call_rate: 0.95
+  hwe_p_threshold: 1e-6
+  max_maf: 0.01
 
 validation:
   run_validation: true

@@ -5,17 +5,31 @@ This document provides detailed statistical methodology for the Pathway Subtypin
 ## Overview
 
 The Pathway Subtyping Framework identifies molecular subtypes in genetically heterogeneous diseases by:
-1. Computing gene-level burden scores from rare variant data
-2. Aggregating burdens into pathway-level scores
-3. Correcting for population stratification (optional)
-4. Clustering samples based on pathway profiles
-5. Validating discoveries through rigorous statistical tests
+1. Applying variant quality control filters (optional)
+2. Computing gene-level burden scores from rare variant data
+3. Aggregating burdens into pathway-level scores
+4. Correcting for population stratification (optional)
+5. Clustering samples based on pathway profiles
+6. Validating discoveries through rigorous statistical tests
 
 ## Gene Burden Scoring
 
+### Variant Quality Control
+
+Before burden computation, an optional variant QC step removes technical artifacts and common variants that would dilute rare variant signal. Filters are applied sequentially:
+
+1. **QUAL score**: Variants with phred-scaled quality below threshold (default: 30) are removed
+2. **Call rate**: Variants with genotype missingness exceeding threshold (default: > 10%) are removed
+3. **Hardy-Weinberg equilibrium**: Variants deviating from HWE (chi-squared test, default p < 1e-6) are removed, as extreme deviation often indicates genotyping error
+4. **Minor Allele Frequency**: Variants with MAF above threshold (default: 1%) are removed to retain rare variants only
+
+Per-genotype filters (GQ, DP) may also be applied to mask low-confidence individual calls before the variant-level filters above.
+
+Reference: Anderson CA et al. Data quality control in genetic case-control association studies. *Nat Protoc*. 2010;5(9):1564-73.
+
 ### Variant Selection
 
-Qualifying variants are selected based on:
+After QC, qualifying variants are selected based on:
 - **Minor Allele Frequency (MAF)**: < 1% in gnomAD (configurable threshold)
 - **Consequence**: Loss-of-function (LoF) or missense variants
 - **Quality**: Standard VCF quality filters (PASS status)
@@ -535,6 +549,7 @@ Gene symbols (e.g., SHANK3, CHD8, NRXN1) are standard HGNC identifiers used in t
 
 ## References
 
+- Anderson CA et al. (2010). Data quality control in genetic case-control association studies. Nat Protoc.
 - Benjamini Y, Hochberg Y (1995). Controlling the false discovery rate. J R Stat Soc B.
 - Cohen J (1988). Statistical Power Analysis for the Behavioral Sciences.
 - Hubert L, Arabie P (1985). Comparing partitions. J Classif.
@@ -548,7 +563,8 @@ Gene symbols (e.g., SHANK3, CHD8, NRXN1) are standard HGNC identifiers used in t
 - Landrum MJ et al. (2020). ClinVar: improvements to accessing data. Nucleic Acids Res.
 - Gillespie M et al. (2022). The Reactome Pathway Knowledgebase 2022. Nucleic Acids Res.
 - Karczewski KJ et al. (2020). The mutational constraint spectrum quantified from variation in 141,456 humans. Nature.
+- Wigginton JE, Cutler DJ, Gravel A (2005). A note on exact tests of Hardy-Weinberg equilibrium. Am J Hum Genet.
 
 ---
 
-*Document version: 0.2.2 | Last updated: February 2026*
+*Document version: 0.2.3 | Last updated: February 2026*

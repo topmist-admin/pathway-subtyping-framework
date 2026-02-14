@@ -25,6 +25,13 @@ variant_filter:
     - "missense_variant"
   min_cadd: 15  # Lower threshold for synthetic data
 
+variant_qc:
+  enabled: false              # Disabled for synthetic data (already clean)
+  min_qual: 20                # Relaxed for synthetic data
+  min_call_rate: 0.9
+  hwe_p_threshold: 1e-6
+  max_maf: 0.01
+
 burden:
   lof_weight: 2.0
   missense_weight: 1.0

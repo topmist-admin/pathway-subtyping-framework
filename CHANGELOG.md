@@ -26,6 +26,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Hardware guide** (`docs/guides/performance-and-hardware.md`): Recommended hardware table, memory estimation, chunked processing guide, Colab constraints, performance tips
 - 9 new tests for performance parameters
 
+#### Variant Quality Control (#26)
+- **Variant QC module** (`variant_qc.py`): Standard genetic variant quality control filters applied before burden computation
+  - `VariantQCConfig`: Dataclass with min_qual, min_call_rate, hwe_p_threshold, max_maf, min_gq, min_dp (with `.to_dict()`)
+  - `VariantQCResult`: Dataclass with removal counts, per-variant metrics, retention rate (with `.to_dict()`, `.format_report()`, `.get_citations()`)
+  - `compute_call_rate()`: Per-variant genotype call rate
+  - `compute_maf()`: Minor allele frequency computation for diploid samples
+  - `check_hwe()`: Hardy-Weinberg equilibrium chi-squared test per variant
+  - `apply_genotype_filters()`: Per-genotype GQ/DP masking
+  - `filter_variants()`: Applies QUAL, call rate, HWE, MAF filters in sequence with per-filter removal tracking
+- **Pipeline integration**: `variant_qc_enabled` config option runs QC between data loading and burden computation
+  - `PipelineConfig`: Added `variant_qc_enabled`, `variant_qc_min_qual`, `variant_qc_min_call_rate`, `variant_qc_hwe_p_threshold`, `variant_qc_max_maf` fields
+  - `from_yaml()`: Now parses `variant_qc:` section
+  - QC results included in JSON and Markdown reports
+- **Config validation** (`config.py`): `_validate_variant_qc_section()` validates all QC parameter ranges
+- 40 new tests covering all QC functions, config validation, and package imports
+
 #### Data-Driven Validation Threshold Calibration (#19)
 - **Threshold calibration module** (`threshold_calibration.py`): Replaces hard-coded validation thresholds with data-driven values that adjust for sample size and number of clusters
   - `CalibratedThresholds`: Dataclass with null ARI threshold, stability threshold, calibration method, interpolation flag (with `.to_dict()`, `.format_report()`, `.get_citations()`)

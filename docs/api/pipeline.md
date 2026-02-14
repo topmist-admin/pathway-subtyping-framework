@@ -33,6 +33,11 @@ from pathway_subtyping.pipeline import PipelineConfig
 | `validation_null_ari_max` | `Optional[float]` | `None` | Null ARI threshold (None = auto-calibrate) |
 | `validation_calibrate` | `bool` | `True` | Enable auto-calibration when thresholds are None |
 | `validation_alpha` | `float` | `0.05` | Significance level for threshold calibration |
+| `variant_qc_enabled` | `bool` | `False` | Enable variant QC before burden computation |
+| `variant_qc_min_qual` | `float` | `30.0` | Minimum QUAL score |
+| `variant_qc_min_call_rate` | `float` | `0.9` | Minimum genotype call rate |
+| `variant_qc_hwe_p_threshold` | `float` | `1e-6` | HWE p-value threshold |
+| `variant_qc_max_maf` | `float` | `0.01` | Maximum minor allele frequency |
 
 #### Methods
 
@@ -67,6 +72,13 @@ data:
 clustering:
   n_clusters: null  # null = auto-select via BIC
   n_clusters_range: [2, 8]
+
+variant_qc:
+  enabled: true
+  min_qual: 30
+  min_call_rate: 0.95
+  hwe_p_threshold: 1e-6
+  max_maf: 0.01
 
 validation:
   run_gates: true
@@ -111,6 +123,7 @@ pipeline = DemoPipeline(config: PipelineConfig)
 | `pathway_scores` | `pd.DataFrame` | Pathway-level scores (z-normalized) |
 | `cluster_assignments` | `pd.DataFrame` | Final cluster assignments |
 | `n_clusters` | `int` | Number of clusters identified |
+| `variant_qc_result` | `Optional[VariantQCResult]` | Variant QC results (if enabled) |
 | `validation_result` | `ValidationGatesResult` | Validation test results |
 
 #### Methods
@@ -127,11 +140,12 @@ pipeline.run()
 This runs the following steps in order:
 1. `setup()` - Create output directories, configure logging
 2. `load_data()` - Load VCF, phenotypes, pathways
-3. `compute_gene_burdens()` - Calculate per-gene burden scores
-4. `compute_pathway_scores()` - Aggregate to pathway level
-5. `cluster_samples()` - GMM clustering with BIC selection
-6. `run_validation_gates()` - Execute validation tests
-7. `generate_outputs()` - Save results and reports
+3. `run_variant_qc()` - Apply variant QC filters (if `variant_qc_enabled`)
+4. `compute_gene_burdens()` - Calculate per-gene burden scores
+5. `compute_pathway_scores()` - Aggregate to pathway level
+6. `cluster_samples()` - GMM clustering with BIC selection
+7. `run_validation_gates()` - Execute validation tests
+8. `generate_outputs()` - Save results and reports
 
 **Raises:**
 - `FileNotFoundError` if input files don't exist
@@ -317,6 +331,10 @@ print("Setup complete")
 
 pipeline.load_data()
 print(f"Loaded {len(pipeline.samples)} samples")
+
+pipeline.run_variant_qc()
+if pipeline.variant_qc_result:
+    print(f"Variant QC: {pipeline.variant_qc_result.passed_variants}/{pipeline.variant_qc_result.total_variants} retained")
 
 pipeline.compute_gene_burdens()
 print(f"Computed burdens for {len(pipeline.gene_burdens.columns)} genes")

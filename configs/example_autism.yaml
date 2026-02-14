@@ -25,6 +25,13 @@ variant_filter:
     - "missense_variant"
   min_cadd: 25  # For missense variants
 
+variant_qc:
+  enabled: true
+  min_qual: 30
+  min_call_rate: 0.95
+  hwe_p_threshold: 1e-6
+  max_maf: 0.01
+
 burden:
   lof_weight: 2.0
   missense_weight: 1.0

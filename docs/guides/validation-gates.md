@@ -111,6 +111,19 @@ Resamples data with replacement and re-clusters. Robust subtypes should be stabl
 
 ---
 
+## Variant Quality Control and Validation
+
+Low-quality variants can produce spurious pathway scores that inflate false positives in validation. Enable variant QC (`variant_qc.enabled: true` in config) to filter variants by QUAL score, call rate, Hardy-Weinberg equilibrium, and MAF before burden computation.
+
+**Impact on validation gates:**
+- **Label shuffle**: Noisy variants increase chance ARI — QC reduces false passes
+- **Random gene sets**: Low-quality variants add noise to both real and random pathways
+- **Bootstrap stability**: Variants with low call rate cause inconsistent scores across resamples
+
+**Recommendation**: Always enable variant QC for real-world VCF data. Synthetic data (from the simulation module) is already clean and does not need QC.
+
+---
+
 ## Threshold Calibration
 
 ### Why Calibrate?

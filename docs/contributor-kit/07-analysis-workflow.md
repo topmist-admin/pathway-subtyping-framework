@@ -64,6 +64,31 @@ bcftools annotate \
     annotated.vcf.gz -Oz -o final.vcf.gz
 ```
 
+### 1.3b Variant Quality Control (Optional Pre-filtering)
+
+You can pre-filter your VCF with external tools, or let the framework handle it via the `variant_qc` config section:
+
+```bash
+# Check QUAL distribution before running the pipeline
+bcftools query -f '%QUAL\n' final.vcf.gz | sort -n | uniq -c | tail -20
+
+# Check call rate (fraction of non-missing genotypes)
+bcftools stats final.vcf.gz | grep "^SN"
+```
+
+**Pipeline-integrated QC** (recommended): Add to your config file:
+
+```yaml
+variant_qc:
+  enabled: true
+  min_qual: 30
+  min_call_rate: 0.95
+  hwe_p_threshold: 1e-6
+  max_maf: 0.01
+```
+
+This applies QUAL, call rate, HWE, and MAF filters automatically between data loading and burden computation. Results are reported in the pipeline output.
+
 ### 1.4 Prepare Phenotype File
 
 Create CSV with required columns:

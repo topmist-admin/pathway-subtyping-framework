@@ -73,6 +73,24 @@ vep -i your_cohort.vcf -o annotated.vcf \
     --plugin CADD,/path/to/cadd_scores.tsv.gz
 ```
 
+### 2.1b Variant Quality Control (Recommended)
+
+Enable variant QC in your config to remove technical artifacts before analysis:
+
+```yaml
+variant_qc:
+  enabled: true
+  min_qual: 30          # Filter low-confidence variant calls
+  min_call_rate: 0.95   # Remove variants missing in >5% of samples
+  hwe_p_threshold: 1e-6 # Remove likely genotyping errors (HWE violations)
+  max_maf: 0.01         # Keep rare variants only (MAF < 1%)
+```
+
+**When to adjust defaults:**
+- **Multi-ethnic cohorts**: Use a more lenient HWE threshold (e.g., `1e-10`) since population structure can cause HWE deviation
+- **Small cohorts (< 50)**: Lower `min_call_rate` to `0.8` to retain more variants
+- **Ultra-rare variant focus**: Set `max_maf: 0.001` for variants < 0.1%
+
 ### 2.2 Phenotype CSV Requirements
 
 Minimum:

@@ -162,6 +162,14 @@ clustering:
   n_clusters: null           # null = auto-select via BIC
   n_clusters_range: [2, 8]   # Range to test for BIC selection
 
+# Variant quality control (optional)
+variant_qc:
+  enabled: true
+  min_qual: 30
+  min_call_rate: 0.95
+  hwe_p_threshold: 1e-6
+  max_maf: 0.01
+
 # Output settings
 output:
   disclaimer: "Research use only. Not for clinical diagnosis."
@@ -233,6 +241,28 @@ Validation gate configuration. When thresholds are `null`, the pipeline auto-cal
 - `alpha` must be in (0, 1)
 - `n_permutations` must be a positive integer
 - `n_bootstrap` must be a positive integer
+
+### `variant_qc`
+
+Variant quality control filters. Applied between data loading and burden computation.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enabled` | boolean | `false` | Whether to apply variant QC filters |
+| `min_qual` | float | `30.0` | Minimum QUAL score (≥0) |
+| `min_call_rate` | float | `0.9` | Minimum fraction of non-missing genotypes (0.0–1.0) |
+| `hwe_p_threshold` | float | `1e-6` | HWE p-value threshold; variants below are removed (0 to disable) |
+| `max_maf` | float | `0.01` | Maximum minor allele frequency (0.0–1.0; 1.0 to disable) |
+| `min_gq` | integer/null | `null` | Minimum genotype quality; genotypes below are set to missing |
+| `min_dp` | integer/null | `null` | Minimum read depth; genotypes below are set to missing |
+
+**Validation checks (performed by `_validate_variant_qc_section()`):**
+- `min_qual` must be ≥ 0
+- `min_call_rate` must be in [0, 1]
+- `hwe_p_threshold` must be in [0, 1]
+- `max_maf` must be in [0, 1]
+- `min_gq` must be a non-negative integer (if provided)
+- `min_dp` must be a non-negative integer (if provided)
 
 ### `output`
 

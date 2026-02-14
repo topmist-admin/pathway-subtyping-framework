@@ -111,6 +111,11 @@ def validate_config(config: Dict[str, Any], check_files: bool = True) -> bool:
     if validation:
         _validate_validation_section(validation)
 
+    # Validate variant_qc section (optional)
+    variant_qc = config.get("variant_qc", {})
+    if variant_qc:
+        _validate_variant_qc_section(variant_qc)
+
     return True
 
 
@@ -298,6 +303,69 @@ def _validate_validation_section(data: Dict[str, Any]) -> None:
                 f"Invalid n_bootstrap: {n_boot} (must be positive integer)",
                 field="validation.n_bootstrap",
                 suggestions=["Use a positive integer, e.g., n_bootstrap: 50"],
+            )
+
+
+def _validate_variant_qc_section(data: Dict[str, Any]) -> None:
+    """Validate the variant_qc section of config."""
+    # Validate min_qual
+    min_qual = data.get("min_qual")
+    if min_qual is not None:
+        if not isinstance(min_qual, (int, float)) or min_qual < 0:
+            raise ConfigValidationError(
+                f"Invalid min_qual: {min_qual} (must be a non-negative number)",
+                field="variant_qc.min_qual",
+                suggestions=["Use a non-negative number, e.g., min_qual: 30.0"],
+            )
+
+    # Validate min_call_rate
+    min_call_rate = data.get("min_call_rate")
+    if min_call_rate is not None:
+        if not isinstance(min_call_rate, (int, float)) or min_call_rate < 0 or min_call_rate > 1:
+            raise ConfigValidationError(
+                f"Invalid min_call_rate: {min_call_rate} (must be in [0, 1])",
+                field="variant_qc.min_call_rate",
+                suggestions=["Use a value between 0 and 1, e.g., min_call_rate: 0.9"],
+            )
+
+    # Validate hwe_p_threshold
+    hwe_p = data.get("hwe_p_threshold")
+    if hwe_p is not None:
+        if not isinstance(hwe_p, (int, float)) or hwe_p < 0 or hwe_p > 1:
+            raise ConfigValidationError(
+                f"Invalid hwe_p_threshold: {hwe_p} (must be in [0, 1])",
+                field="variant_qc.hwe_p_threshold",
+                suggestions=["Use a value between 0 and 1, e.g., hwe_p_threshold: 1e-6"],
+            )
+
+    # Validate max_maf
+    max_maf = data.get("max_maf")
+    if max_maf is not None:
+        if not isinstance(max_maf, (int, float)) or max_maf < 0 or max_maf > 1:
+            raise ConfigValidationError(
+                f"Invalid max_maf: {max_maf} (must be in [0, 1])",
+                field="variant_qc.max_maf",
+                suggestions=["Use a value between 0 and 1, e.g., max_maf: 0.01"],
+            )
+
+    # Validate min_gq
+    min_gq = data.get("min_gq")
+    if min_gq is not None:
+        if not isinstance(min_gq, int) or min_gq < 0:
+            raise ConfigValidationError(
+                f"Invalid min_gq: {min_gq} (must be a non-negative integer)",
+                field="variant_qc.min_gq",
+                suggestions=["Use a non-negative integer, e.g., min_gq: 20"],
+            )
+
+    # Validate min_dp
+    min_dp = data.get("min_dp")
+    if min_dp is not None:
+        if not isinstance(min_dp, int) or min_dp < 0:
+            raise ConfigValidationError(
+                f"Invalid min_dp: {min_dp} (must be a non-negative integer)",
+                field="variant_qc.min_dp",
+                suggestions=["Use a non-negative integer, e.g., min_dp: 10"],
             )
 
 

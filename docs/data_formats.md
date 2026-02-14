@@ -45,6 +45,19 @@ chr1	12345	rs123	A	G	50	PASS	GENE=SHANK3;CONSEQUENCE=missense_variant;CADD=25.3	
 | AF | Float | Allele frequency | `AF=0.0001` |
 | gnomAD_AF | Float | gnomAD allele frequency | `gnomAD_AF=0.00005` |
 
+#### Quality Fields for Variant QC
+
+When variant QC is enabled (`variant_qc.enabled: true`), the following fields are used:
+
+| Field | Location | Description | Recommended |
+|-------|----------|-------------|-------------|
+| QUAL | Column 6 | Phred-scaled variant quality score | ≥ 30 |
+| GT | FORMAT | Genotype (used for call rate, MAF, HWE) | Always present |
+| GQ | FORMAT | Genotype quality (optional per-genotype filter) | ≥ 20 |
+| DP | FORMAT | Read depth (optional per-genotype filter) | ≥ 10 |
+
+The framework computes **call rate** (fraction of non-missing genotypes), **MAF** (minor allele frequency), and **HWE p-value** (chi-squared test) directly from the genotype data. These do not require additional INFO annotations.
+
 #### Supported Consequence Terms
 
 The framework recognizes VEP/Ensembl consequence terms:

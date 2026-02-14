@@ -7,6 +7,7 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 | Module | Description |
 |--------|-------------|
 | [`pipeline`](pipeline.md) | Main pipeline orchestrator and configuration |
+| [`variant_qc`](variant_qc.md) | Variant quality control filters (QUAL, HWE, MAF, call rate) |
 | [`validation`](validation.md) | Validation gates and stability testing |
 | [`threshold_calibration`](threshold_calibration.md) | Data-driven validation threshold calibration |
 | [`cross_cohort`](cross_cohort.md) | Cross-cohort validation and replication |

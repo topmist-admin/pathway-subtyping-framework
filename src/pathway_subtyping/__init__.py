@@ -130,6 +130,14 @@ from .threshold_calibration import (
     generate_calibration_table,
     get_default_thresholds,
 )
+from .variant_qc import (
+    VariantQCConfig,
+    VariantQCResult,
+    compute_call_rate,
+    compute_maf,
+    filter_variants,
+    check_hwe,
+)
 from .validation import ValidationGates, ValidationGatesResult, ValidationResult
 from .validation_datasets import (
     DATASETS,
@@ -272,6 +280,13 @@ __all__ = [
     "run_full_validation",
     "validate_pathway_against_reactome",
     "validate_pathway_coverage",
+    # Variant QC
+    "VariantQCConfig",
+    "VariantQCResult",
+    "compute_call_rate",
+    "compute_maf",
+    "filter_variants",
+    "check_hwe",
     # Threshold calibration
     "CalibratedThresholds",
     "CalibrationSimulationResult",

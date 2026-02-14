@@ -23,6 +23,7 @@ from .data_quality import (
     VCFDataQualityError,
     load_vcf_with_quality_check,
 )
+from .variant_qc import VariantQCConfig, VariantQCResult, filter_variants
 from .utils.seed import get_rng, set_global_seed
 from .characterization import (
     CharacterizationResult,
@@ -77,6 +78,13 @@ class PipelineConfig:
     validation_calibrate: bool = True
     validation_alpha: float = 0.05
 
+    # Variant QC
+    variant_qc_enabled: bool = False
+    variant_qc_min_qual: float = 30.0
+    variant_qc_min_call_rate: float = 0.9
+    variant_qc_hwe_p_threshold: float = 1e-6
+    variant_qc_max_maf: float = 0.01
+
     # Performance
     use_chunked_processing: bool = False
     chunk_size: int = 1000
@@ -96,6 +104,7 @@ class PipelineConfig:
         clustering = config_dict.get("clustering", {})
         output = config_dict.get("output", {})
         ancestry = config_dict.get("ancestry", {})
+        variant_qc = config_dict.get("variant_qc", {})
         validation = config_dict.get("validation", {})
 
         return cls(
@@ -118,6 +127,11 @@ class PipelineConfig:
             ancestry_pcs_path=ancestry.get("pcs_path"),
             ancestry_correction=ancestry.get("correction"),
             ancestry_n_pcs=ancestry.get("n_pcs", 10),
+            variant_qc_enabled=variant_qc.get("enabled", False),
+            variant_qc_min_qual=float(variant_qc.get("min_qual", 30.0)),
+            variant_qc_min_call_rate=float(variant_qc.get("min_call_rate", 0.9)),
+            variant_qc_hwe_p_threshold=float(variant_qc.get("hwe_p_threshold", 1e-6)),
+            variant_qc_max_maf=float(variant_qc.get("max_maf", 0.01)),
             validation_run_gates=validation.get("run_gates", True),
             validation_n_permutations=validation.get("n_permutations", 100),
             validation_n_bootstrap=validation.get("n_bootstrap", 50),
@@ -170,6 +184,9 @@ class DemoPipeline:
         # Expression data (for expression input mode)
         self.gene_expression: Optional[pd.DataFrame] = None
         self.expression_scoring_result = None
+
+        # Variant QC
+        self.variant_qc_result: Optional[VariantQCResult] = None
 
         # Threshold calibration
         self.calibrated_thresholds = None
@@ -400,6 +417,31 @@ class DemoPipeline:
             f"[Ancestry] Applied correction: {method.value} "
             f"({self.ancestry_adjustment.n_pcs_used} PCs, "
             f"{len(self.ancestry_adjustment.highly_confounded_pathways)} confounded pathways)"
+        )
+
+    def run_variant_qc(self) -> None:
+        """Apply variant QC filters if enabled."""
+        if not self.config.variant_qc_enabled:
+            return
+
+        if self.variants_df is None or self.genotypes_df is None:
+            logger.warning("[VariantQC] No variant data loaded, skipping QC")
+            return
+
+        qc_config = VariantQCConfig(
+            min_qual=self.config.variant_qc_min_qual,
+            min_call_rate=self.config.variant_qc_min_call_rate,
+            hwe_p_threshold=self.config.variant_qc_hwe_p_threshold,
+            max_maf=self.config.variant_qc_max_maf,
+        )
+
+        self.variants_df, self.genotypes_df, self.variant_qc_result = filter_variants(
+            self.variants_df, self.genotypes_df, qc_config
+        )
+
+        logger.info(
+            f"[VariantQC] Retained {self.variant_qc_result.passed_variants}/"
+            f"{self.variant_qc_result.total_variants} variants"
         )
 
     def compute_gene_burdens(self) -> None:
@@ -958,6 +1000,11 @@ class DemoPipeline:
             "summary": summary,
             "clusters": self.cluster_assignments["cluster_label"].value_counts().to_dict(),
             "data_quality": data_quality,
+            "variant_qc": (
+                self.variant_qc_result.to_dict()
+                if self.variant_qc_result
+                else {}
+            ),
             "ancestry_correction": ancestry_info,
             "ground_truth_validation": ground_truth_validation,
             "validation_gates": validation_gates,
@@ -1066,6 +1113,36 @@ class DemoPipeline:
                 lines.extend(["", "### Warnings", ""])
                 for warning in warnings:
                     lines.append(f"- {warning}")
+
+        # Variant QC section
+        variant_qc = report.get("variant_qc", {})
+        if variant_qc:
+            total = variant_qc.get("total_variants", 0)
+            passed = variant_qc.get("passed_variants", 0)
+            removed = variant_qc.get("removed_variants", 0)
+            retention = variant_qc.get("retention_rate", "N/A")
+            reasons = variant_qc.get("removal_reasons", {})
+
+            lines.extend(
+                [
+                    "",
+                    "## Variant QC",
+                    "",
+                    f"**Variants before QC:** {total}",
+                    f"**Variants after QC:** {passed}",
+                    f"**Removed:** {removed} ({retention} retained)",
+                    "",
+                ]
+            )
+            if reasons:
+                lines.extend(
+                    [
+                        "| Filter | Removed |",
+                        "|--------|---------|",
+                    ]
+                )
+                for reason, count in reasons.items():
+                    lines.append(f"| {reason} | {count} |")
 
         # Ancestry Correction section
         ancestry = report.get("ancestry_correction", {})
@@ -1263,6 +1340,7 @@ class DemoPipeline:
             if self.config.input_type == "expression":
                 self.compute_expression_pathway_scores()
             else:
+                self.run_variant_qc()
                 self.compute_gene_burdens()
                 self.compute_pathway_scores()
 
