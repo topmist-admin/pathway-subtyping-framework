@@ -30,6 +30,17 @@ class CohortResult:
     n_samples: int
     n_clusters: int
 
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize to dictionary."""
+        return {
+            "name": self.name,
+            "pathway_scores": self.pathway_scores.to_dict(),
+            "cluster_labels": self.cluster_labels.tolist(),
+            "cluster_names": {str(k): v for k, v in self.cluster_names.items()},
+            "n_samples": self.n_samples,
+            "n_clusters": self.n_clusters,
+        }
+
 
 @dataclass
 class CrossCohortResult:
@@ -42,6 +53,67 @@ class CrossCohortResult:
     pathway_correlation: float
     shared_subtypes: List[str]
     details: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize to dictionary."""
+        return {
+            "cohort_a": self.cohort_a,
+            "cohort_b": self.cohort_b,
+            "transfer_ari": round(self.transfer_ari, 4),
+            "projection_ari": round(self.projection_ari, 4),
+            "pathway_correlation": round(self.pathway_correlation, 4),
+            "shared_subtypes": self.shared_subtypes,
+            "details": self.details,
+        }
+
+    def format_report(self) -> str:
+        """Format a human-readable summary."""
+        lines = [
+            "Cross-Cohort Validation Report",
+            "=" * 40,
+            f"Cohort A: {self.cohort_a}",
+            f"Cohort B: {self.cohort_b}",
+            "",
+            "Metrics:",
+            f"  Transfer ARI:      {self.transfer_ari:.3f}",
+            f"  Projection ARI:    {self.projection_ari:.3f}",
+            f"  Pathway Correlation: {self.pathway_correlation:.3f}",
+            "",
+        ]
+
+        # Interpretation
+        if self.transfer_ari > 0.5:
+            lines.append("Transfer ARI > 0.5: Good replication of subtypes.")
+        elif self.transfer_ari > 0.3:
+            lines.append("Transfer ARI 0.3-0.5: Moderate replication (partially shared subtypes).")
+        else:
+            lines.append("Transfer ARI < 0.3: Weak replication.")
+
+        if self.pathway_correlation > 0.7:
+            lines.append("Pathway correlation > 0.7: Similar pathway importance across cohorts.")
+
+        if self.shared_subtypes:
+            lines.append(f"Shared subtype labels: {', '.join(self.shared_subtypes)}")
+        else:
+            lines.append("No shared subtype labels.")
+
+        if self.details:
+            lines.extend([
+                "",
+                "Details:",
+                f"  Common pathways:  {self.details.get('common_pathways', 'N/A')}",
+                f"  Cohort A samples: {self.details.get('cohort_a_samples', 'N/A')}",
+                f"  Cohort B samples: {self.details.get('cohort_b_samples', 'N/A')}",
+            ])
+
+        return "\n".join(lines)
+
+    def get_citations(self) -> List[str]:
+        """Return citations for methods used in cross-cohort validation."""
+        return [
+            "Hubert L, Arabie P. Comparing partitions. "
+            "J Classif. 1985;2(1):193-218.",
+        ]
 
 
 def load_cohort_result(output_dir: str) -> CohortResult:
@@ -255,6 +327,86 @@ def _find_shared_subtypes(
     labels_a = set(names_a.values())
     labels_b = set(names_b.values())
     return list(labels_a & labels_b)
+
+
+def generate_synthetic_cohort_pair(
+    n_samples_a: int = 100,
+    n_samples_b: int = 80,
+    n_subtypes: int = 2,
+    n_pathways: int = 10,
+    effect_size: float = 1.5,
+    seed: Optional[int] = None,
+) -> tuple:
+    """
+    Generate a pair of synthetic cohorts for cross-cohort validation demos.
+
+    Uses the simulation framework to create two cohorts with matching
+    subtype structure, suitable for testing compare_cohorts().
+
+    Args:
+        n_samples_a: Number of samples in cohort A
+        n_samples_b: Number of samples in cohort B
+        n_subtypes: Number of planted subtypes in both cohorts
+        n_pathways: Number of pathways
+        effect_size: Cohen's d effect size for subtype differences
+        seed: Random seed for reproducibility
+
+    Returns:
+        Tuple of (CohortResult, CohortResult) for cohorts A and B
+    """
+    from .simulation import SimulationConfig, generate_synthetic_data
+
+    seed_a = seed if seed is not None else None
+    seed_b = (seed + 1) if seed is not None else None
+
+    # Generate cohort A
+    config_a = SimulationConfig(
+        n_samples=n_samples_a,
+        n_pathways=n_pathways,
+        n_subtypes=n_subtypes,
+        effect_size=effect_size,
+        seed=seed_a,
+    )
+    data_a = generate_synthetic_data(config_a)
+
+    # Generate cohort B with different seed but same structure
+    config_b = SimulationConfig(
+        n_samples=n_samples_b,
+        n_pathways=n_pathways,
+        n_subtypes=n_subtypes,
+        effect_size=effect_size,
+        seed=seed_b,
+    )
+    data_b = generate_synthetic_data(config_b)
+
+    # Build cluster name mappings
+    cluster_names = {i: f"subtype_{i}" for i in range(n_subtypes)}
+
+    cohort_a = CohortResult(
+        name="synthetic_cohort_A",
+        pathway_scores=data_a.pathway_scores,
+        cluster_labels=data_a.true_labels,
+        cluster_names=cluster_names,
+        n_samples=n_samples_a,
+        n_clusters=n_subtypes,
+    )
+
+    cohort_b = CohortResult(
+        name="synthetic_cohort_B",
+        pathway_scores=data_b.pathway_scores,
+        cluster_labels=data_b.true_labels,
+        cluster_names=cluster_names,
+        n_samples=n_samples_b,
+        n_clusters=n_subtypes,
+    )
+
+    logger.info(
+        f"[CrossCohort] Generated synthetic pair: "
+        f"A={n_samples_a} samples, B={n_samples_b} samples, "
+        f"{n_subtypes} subtypes, {n_pathways} pathways"
+    )
+
+    return cohort_a, cohort_b
 
 
 def generate_cross_cohort_report(

@@ -72,6 +72,8 @@ from .cross_cohort import (
     CrossCohortResult,
     batch_compare_cohorts,
     compare_cohorts,
+    generate_cross_cohort_report,
+    generate_synthetic_cohort_pair,
     load_cohort_result,
 )
 from .data_quality import (
@@ -165,6 +167,8 @@ __all__ = [
     "compare_cohorts",
     "load_cohort_result",
     "batch_compare_cohorts",
+    "generate_cross_cohort_report",
+    "generate_synthetic_cohort_pair",
     "CohortResult",
     "CrossCohortResult",
     # Data quality

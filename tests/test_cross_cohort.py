@@ -32,6 +32,7 @@ from pathway_subtyping.cross_cohort import (
     batch_compare_cohorts,
     compare_cohorts,
     generate_cross_cohort_report,
+    generate_synthetic_cohort_pair,
     load_cohort_result,
 )
 
@@ -445,3 +446,154 @@ class TestGenerateCrossCohortReport:
         assert "cohort1" in content
         assert "0.75" in content
         assert "synaptic" in content
+
+
+class TestCohortResultToDict:
+    """Tests for CohortResult.to_dict() method."""
+
+    def test_to_dict(self):
+        """Test serialization of CohortResult."""
+        scores = pd.DataFrame(
+            {"pathway1": [1.0, 2.0], "pathway2": [0.5, 1.5]},
+            index=["S1", "S2"],
+        )
+        result = CohortResult(
+            name="test",
+            pathway_scores=scores,
+            cluster_labels=np.array([0, 1]),
+            cluster_names={0: "synaptic", 1: "chromatin"},
+            n_samples=2,
+            n_clusters=2,
+        )
+        d = result.to_dict()
+
+        assert d["name"] == "test"
+        assert d["n_samples"] == 2
+        assert d["n_clusters"] == 2
+        assert d["cluster_labels"] == [0, 1]
+        assert d["cluster_names"]["0"] == "synaptic"
+        assert isinstance(d["pathway_scores"], dict)
+
+
+class TestCrossCohortResultMethods:
+    """Tests for CrossCohortResult.to_dict(), format_report(), get_citations()."""
+
+    @pytest.fixture
+    def result(self):
+        return CrossCohortResult(
+            cohort_a="cohort1",
+            cohort_b="cohort2",
+            transfer_ari=0.65,
+            projection_ari=0.58,
+            pathway_correlation=0.82,
+            shared_subtypes=["synaptic"],
+            details={
+                "common_pathways": 10,
+                "cohort_a_samples": 100,
+                "cohort_b_samples": 80,
+            },
+        )
+
+    def test_to_dict(self, result):
+        """Test serialization of CrossCohortResult."""
+        d = result.to_dict()
+
+        assert d["cohort_a"] == "cohort1"
+        assert d["cohort_b"] == "cohort2"
+        assert d["transfer_ari"] == 0.65
+        assert d["projection_ari"] == 0.58
+        assert d["pathway_correlation"] == 0.82
+        assert d["shared_subtypes"] == ["synaptic"]
+        assert d["details"]["common_pathways"] == 10
+
+    def test_format_report_contains_metrics(self, result):
+        """Test that format_report includes key metrics."""
+        report = result.format_report()
+
+        assert "cohort1" in report
+        assert "cohort2" in report
+        assert "0.650" in report
+        assert "0.580" in report
+        assert "0.820" in report
+        assert "synaptic" in report
+
+    def test_format_report_good_replication(self, result):
+        """Test interpretation text for good replication."""
+        report = result.format_report()
+        assert "Good replication" in report
+
+    def test_format_report_moderate_replication(self):
+        """Test interpretation text for moderate replication."""
+        r = CrossCohortResult(
+            cohort_a="a", cohort_b="b",
+            transfer_ari=0.35, projection_ari=0.3,
+            pathway_correlation=0.5, shared_subtypes=[],
+        )
+        report = r.format_report()
+        assert "Moderate replication" in report
+
+    def test_format_report_weak_replication(self):
+        """Test interpretation text for weak replication."""
+        r = CrossCohortResult(
+            cohort_a="a", cohort_b="b",
+            transfer_ari=0.1, projection_ari=0.05,
+            pathway_correlation=0.2, shared_subtypes=[],
+        )
+        report = r.format_report()
+        assert "Weak replication" in report
+
+    def test_get_citations(self, result):
+        """Test citations list."""
+        citations = result.get_citations()
+        assert isinstance(citations, list)
+        assert len(citations) >= 1
+        assert "Hubert" in citations[0]
+        assert "Arabie" in citations[0]
+
+
+class TestGenerateSyntheticCohortPair:
+    """Tests for generate_synthetic_cohort_pair function."""
+
+    def test_returns_two_cohort_results(self):
+        """Test that it returns a tuple of two CohortResult objects."""
+        a, b = generate_synthetic_cohort_pair(seed=42)
+        assert isinstance(a, CohortResult)
+        assert isinstance(b, CohortResult)
+
+    def test_correct_sizes(self):
+        """Test that cohort sizes match requested parameters."""
+        a, b = generate_synthetic_cohort_pair(
+            n_samples_a=60, n_samples_b=40, n_subtypes=3, n_pathways=8, seed=42
+        )
+        assert a.n_samples == 60
+        assert b.n_samples == 40
+        assert a.n_clusters == 3
+        assert b.n_clusters == 3
+        assert len(a.pathway_scores.columns) == 8
+        assert len(b.pathway_scores.columns) == 8
+
+    def test_reproducible_with_seed(self):
+        """Test that same seed gives same results."""
+        a1, b1 = generate_synthetic_cohort_pair(seed=42)
+        a2, b2 = generate_synthetic_cohort_pair(seed=42)
+
+        np.testing.assert_array_equal(a1.cluster_labels, a2.cluster_labels)
+        np.testing.assert_array_equal(b1.cluster_labels, b2.cluster_labels)
+        pd.testing.assert_frame_equal(a1.pathway_scores, a2.pathway_scores)
+
+    def test_different_seeds_give_different_data(self):
+        """Test that different seeds produce different data."""
+        a1, _ = generate_synthetic_cohort_pair(seed=42)
+        a2, _ = generate_synthetic_cohort_pair(seed=99)
+
+        # Pathway scores should differ
+        assert not a1.pathway_scores.equals(a2.pathway_scores)
+
+    def test_compatible_with_compare_cohorts(self):
+        """Test that output can be passed directly to compare_cohorts."""
+        a, b = generate_synthetic_cohort_pair(seed=42)
+        result = compare_cohorts(a, b, seed=42)
+
+        assert isinstance(result, CrossCohortResult)
+        assert -1 <= result.transfer_ari <= 1
+        assert -1 <= result.projection_ari <= 1
