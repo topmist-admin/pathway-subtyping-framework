@@ -9,6 +9,7 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 | [`pipeline`](pipeline.md) | Main pipeline orchestrator and configuration |
 | [`validation`](validation.md) | Validation gates and stability testing |
 | [`threshold_calibration`](threshold_calibration.md) | Data-driven validation threshold calibration |
+| [`cross_cohort`](cross_cohort.md) | Cross-cohort validation and replication |
 | [`config`](config.md) | Configuration loading and validation utilities |
 | [`cli`](cli.md) | Command-line interface |
 
@@ -75,6 +76,14 @@ config = PipelineConfig(
     n_clusters_range=[2, 6],  # Test 2-6 clusters
 )
 ```
+
+## Guides
+
+| Guide | Description |
+|-------|-------------|
+| [Performance & Hardware](../guides/performance-and-hardware.md) | Hardware recommendations, memory estimation, chunked processing, benchmarking |
+| [Cross-Cohort Validation](../guides/cross-cohort-validation.md) | Comparing subtypes across independent cohorts |
+| [Validation Gates](../guides/validation-gates.md) | Understanding and configuring validation gates |
 
 ## Data Structures
 

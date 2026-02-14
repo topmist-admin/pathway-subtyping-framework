@@ -23,6 +23,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+from tqdm import tqdm
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering, KMeans, SpectralClustering
 from sklearn.metrics import adjusted_rand_score
@@ -269,6 +270,7 @@ def vary_feature_subset(
     pathway_scores: pd.DataFrame,
     n_clusters: int,
     seed: Optional[int] = None,
+    show_progress: bool = True,
 ) -> ParameterVariationResult:
     """
     Test sensitivity to pathway inclusion via leave-one-out.
@@ -303,7 +305,11 @@ def vary_feature_subset(
     labels_per_config["all_features"] = gmm.predict(pathway_scores.values)
 
     # Leave-one-out
-    for col in pathway_scores.columns:
+    for col in tqdm(
+        pathway_scores.columns,
+        desc="Feature LOO",
+        disable=not show_progress,
+    ):
         subset = pathway_scores.drop(columns=[col])
         if len(subset.columns) < 2:
             continue
@@ -387,6 +393,7 @@ def run_sensitivity_analysis(
     seed: Optional[int] = None,
     robustness_threshold: float = 0.7,
     parameters: Optional[List[SensitivityParameter]] = None,
+    show_progress: bool = True,
 ) -> SensitivityAnalysisResult:
     """
     Run comprehensive sensitivity analysis across multiple parameters.
@@ -422,7 +429,9 @@ def run_sensitivity_analysis(
             max_k = n_clusters + 2
             results[param.value] = vary_n_clusters(pathway_scores, (min_k, max_k), seed)
         elif param == SensitivityParameter.FEATURE_SUBSET:
-            results[param.value] = vary_feature_subset(pathway_scores, n_clusters, seed)
+            results[param.value] = vary_feature_subset(
+                pathway_scores, n_clusters, seed, show_progress=show_progress
+            )
         elif param == SensitivityParameter.NORMALIZATION:
             results[param.value] = vary_normalization(pathway_scores, n_clusters, seed)
 

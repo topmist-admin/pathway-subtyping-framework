@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+from tqdm import tqdm
 import pandas as pd
 from scipy import stats
 
@@ -430,6 +431,7 @@ def _score_ssgsea(
     pathways: Dict[str, List[str]],
     alpha: float = 0.25,
     min_genes: int = 2,
+    show_progress: bool = True,
 ) -> Tuple[pd.DataFrame, List[str]]:
     """
     Single-sample GSEA scoring.
@@ -462,7 +464,12 @@ def _score_ssgsea(
     scores = {}
     skipped = []
 
-    for pathway_name, pathway_genes in pathways.items():
+    for pathway_name, pathway_genes in tqdm(
+        pathways.items(),
+        desc="ssGSEA",
+        total=len(pathways),
+        disable=not show_progress,
+    ):
         common = [g for g in pathway_genes if g in all_genes]
         if len(common) < min_genes:
             skipped.append(pathway_name)
@@ -522,6 +529,7 @@ def _score_gsva(
     gene_expression: pd.DataFrame,
     pathways: Dict[str, List[str]],
     min_genes: int = 2,
+    show_progress: bool = True,
 ) -> Tuple[pd.DataFrame, List[str]]:
     """
     Simplified GSVA scoring.
@@ -548,7 +556,12 @@ def _score_gsva(
     scores = {}
     skipped = []
 
-    for pathway_name, pathway_genes in pathways.items():
+    for pathway_name, pathway_genes in tqdm(
+        pathways.items(),
+        desc="GSVA",
+        total=len(pathways),
+        disable=not show_progress,
+    ):
         common = [g for g in pathway_genes if g in all_genes]
         if len(common) < min_genes:
             skipped.append(pathway_name)
@@ -604,6 +617,7 @@ def score_pathways_from_expression(
     min_genes_per_pathway: int = 2,
     alpha: float = 0.25,
     seed: Optional[int] = None,
+    show_progress: bool = True,
 ) -> ExpressionScoringResult:
     """
     Compute pathway scores from a gene expression matrix.
@@ -618,6 +632,7 @@ def score_pathways_from_expression(
         min_genes_per_pathway: Skip pathways with fewer genes in data.
         alpha: Weight parameter for ssGSEA (ignored for other methods).
         seed: Random seed for reproducibility.
+        show_progress: Show tqdm progress bar for ssGSEA/GSVA scoring.
 
     Returns:
         ExpressionScoringResult with Z-normalized pathway scores.
@@ -665,10 +680,12 @@ def score_pathways_from_expression(
             pathways,
             alpha=alpha,
             min_genes=min_genes_per_pathway,
+            show_progress=show_progress,
         )
     elif method == ExpressionScoringMethod.GSVA:
         raw_scores, skipped = _score_gsva(
-            gene_expression, pathways, min_genes=min_genes_per_pathway
+            gene_expression, pathways, min_genes=min_genes_per_pathway,
+            show_progress=show_progress,
         )
     else:
         raise ValueError(f"Unknown scoring method: {method}")

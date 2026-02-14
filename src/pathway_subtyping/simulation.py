@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
 from sklearn.mixture import GaussianMixture
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -351,6 +352,7 @@ def estimate_type_i_error(
     ari_threshold: float = 0.15,
     n_simulations: int = 100,
     seed: Optional[int] = None,
+    show_progress: bool = True,
 ) -> TypeIErrorResult:
     """
     Estimate Type I error rate (false positive clustering).
@@ -365,6 +367,7 @@ def estimate_type_i_error(
         ari_threshold: ARI threshold for "finding structure"
         n_simulations: Number of null simulations
         seed: Random seed
+        show_progress: Show tqdm progress bar
 
     Returns:
         TypeIErrorResult with error rate estimate
@@ -372,7 +375,11 @@ def estimate_type_i_error(
     rng = np.random.RandomState(seed)
     null_aris = []
 
-    for i in range(n_simulations):
+    for i in tqdm(
+        range(n_simulations),
+        desc="Type I error sims",
+        disable=not show_progress,
+    ):
         # Generate random data with no structure
         null_config = SimulationConfig(
             n_samples=n_samples,
@@ -449,6 +456,7 @@ def run_power_analysis(
     ari_threshold: float = 0.8,
     n_simulations_per_effect: int = 50,
     seed: Optional[int] = None,
+    show_progress: bool = True,
 ) -> PowerAnalysisResult:
     """
     Run power analysis across effect sizes.
@@ -463,6 +471,7 @@ def run_power_analysis(
         ari_threshold: ARI threshold for "successful" recovery
         n_simulations_per_effect: Simulations per effect size
         seed: Random seed
+        show_progress: Show tqdm progress bar
 
     Returns:
         PowerAnalysisResult with power curves
@@ -475,7 +484,11 @@ def run_power_analysis(
 
     logger.info(f"Running power analysis for {len(effect_sizes)} effect sizes...")
 
-    for effect in effect_sizes:
+    for effect in tqdm(
+        effect_sizes,
+        desc="Power analysis",
+        disable=not show_progress,
+    ):
         logger.info(f"  Effect size = {effect}")
         aris = []
 
@@ -556,6 +569,7 @@ def run_sample_size_analysis(
     ari_threshold: float = 0.8,
     n_simulations: int = 50,
     seed: Optional[int] = None,
+    show_progress: bool = True,
 ) -> SampleSizeAnalysisResult:
     """
     Analyze power as a function of sample size.
@@ -568,6 +582,7 @@ def run_sample_size_analysis(
         ari_threshold: ARI threshold for success
         n_simulations: Simulations per sample size
         seed: Random seed
+        show_progress: Show tqdm progress bar
 
     Returns:
         SampleSizeAnalysisResult with power by sample size
@@ -579,7 +594,11 @@ def run_sample_size_analysis(
 
     logger.info(f"Running sample size analysis for {len(sample_sizes)} sizes...")
 
-    for n in sample_sizes:
+    for n in tqdm(
+        sample_sizes,
+        desc="Sample size analysis",
+        disable=not show_progress,
+    ):
         logger.info(f"  n = {n}")
         aris = []
 
@@ -681,6 +700,7 @@ def validate_framework(
         n_clusters=n_subtypes,
         n_simulations=50,
         seed=seed,
+        show_progress=False,
     )
 
     return {

@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import adjusted_rand_score
 from sklearn.mixture import GaussianMixture
+from tqdm import tqdm
 
 from .utils.seed import get_rng
 
@@ -82,6 +83,7 @@ class ValidationGates:
         n_bootstrap: int = 50,
         stability_threshold: float = 0.8,
         null_ari_max: float = 0.15,
+        show_progress: bool = True,
     ):
         """
         Initialize validation gates.
@@ -92,12 +94,14 @@ class ValidationGates:
             n_bootstrap: Number of bootstrap iterations for stability
             stability_threshold: Minimum ARI for stability test (default: 0.8)
             null_ari_max: Maximum expected ARI under null hypothesis (default: 0.15)
+            show_progress: Show tqdm progress bars for long-running loops
         """
         self.seed = seed
         self.n_permutations = n_permutations
         self.n_bootstrap = n_bootstrap
         self.stability_threshold = stability_threshold
         self.null_ari_max = null_ari_max
+        self.show_progress = show_progress
         self.rng = get_rng(seed, "validation")
 
     def run_all(
@@ -201,7 +205,11 @@ class ValidationGates:
         """
         ari_values = []
 
-        for i in range(self.n_permutations):
+        for i in tqdm(
+            range(self.n_permutations),
+            desc="Label shuffle",
+            disable=not self.show_progress,
+        ):
             # Shuffle labels
             shuffled_labels = self.rng.permutation(original_labels)
 
@@ -284,7 +292,11 @@ class ValidationGates:
         all_genes = list(gene_burdens.columns)
         ari_values = []
 
-        for i in range(self.n_permutations):
+        for i in tqdm(
+            range(self.n_permutations),
+            desc="Random gene sets",
+            disable=not self.show_progress,
+        ):
             # Create random pathways with same sizes
             random_pathway_scores = {}
 
@@ -381,7 +393,11 @@ class ValidationGates:
         n_samples = len(pathway_scores)
         ari_values = []
 
-        for i in range(self.n_bootstrap):
+        for i in tqdm(
+            range(self.n_bootstrap),
+            desc="Bootstrap stability",
+            disable=not self.show_progress,
+        ):
             # Bootstrap sample (with replacement)
             bootstrap_idx = self.rng.choice(n_samples, size=n_samples, replace=True)
 

@@ -77,6 +77,10 @@ class PipelineConfig:
     validation_calibrate: bool = True
     validation_alpha: float = 0.05
 
+    # Performance
+    use_chunked_processing: bool = False
+    chunk_size: int = 1000
+
     # Output settings
     disclaimer: str = "Research use only. Not medical advice."
 
@@ -400,6 +404,17 @@ class DemoPipeline:
 
     def compute_gene_burdens(self) -> None:
         """Compute gene-level burden scores for each sample."""
+        if self.config.use_chunked_processing and self.config.vcf_path:
+            from .utils.performance import compute_gene_burdens_chunked
+
+            logger.info("Computing gene burdens (chunked mode)...")
+            self.gene_burdens = compute_gene_burdens_chunked(
+                self.config.vcf_path,
+                chunk_size=self.config.chunk_size,
+            )
+            logger.info(f"Computed burdens for {len(self.gene_burdens.columns)} genes")
+            return
+
         logger.info("Computing gene burden scores...")
 
         # Get unique genes
@@ -695,6 +710,7 @@ class DemoPipeline:
             n_bootstrap=self.config.validation_n_bootstrap,
             stability_threshold=stability_threshold,
             null_ari_max=null_ari_max,
+            show_progress=self.config.verbose,
         )
 
         cluster_labels = self.cluster_assignments["cluster_id"].values
