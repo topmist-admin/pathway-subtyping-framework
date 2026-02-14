@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pathway-subtyping"
-version = "0.2.2"
+version = "0.2.3"
 description = "A disease-agnostic framework for identifying molecular subtypes through pathway-based analysis of rare genetic variants"
 readme = "README.md"
 license = {text = "MIT"}
