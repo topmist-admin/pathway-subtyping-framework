@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Data-Driven Validation Threshold Calibration (#19)
+- **Threshold calibration module** (`threshold_calibration.py`): Replaces hard-coded validation thresholds with data-driven values that adjust for sample size and number of clusters
+  - `CalibratedThresholds`: Dataclass with null ARI threshold, stability threshold, calibration method, interpolation flag (with `.to_dict()`, `.format_report()`, `.get_citations()`)
+  - `CalibrationSimulationResult`: Dataclass for simulation distributions
+  - `calibrate_thresholds(n_samples, n_clusters, ...)`: Auto-calibrate thresholds via lookup table, interpolation, or simulation fallback
+  - `get_default_thresholds()`: Returns legacy 0.15/0.8 values for backward compatibility
+  - `generate_calibration_table()`: Regenerate lookup tables from simulations
+  - Pre-computed lookup tables: 56-entry grid (8 sample sizes × 7 cluster counts) with empirically-derived 95th percentile null ARI and 5th percentile stability ARI
+  - Bilinear interpolation for intermediate configurations
+  - On-the-fly simulation fallback for out-of-range configurations
+- **Pipeline integration**: Auto-calibration in `run_validation_gates()` when thresholds are `null` in config
+  - `PipelineConfig`: Added `validation_calibrate`, `validation_stability_threshold`, `validation_null_ari_max`, `validation_alpha`, `validation_n_permutations`, `validation_n_bootstrap` fields
+  - `from_yaml()`: Now parses `validation:` section (previously ignored)
+  - Calibration info included in JSON and Markdown reports
+- **Config validation** (`config.py`): `_validate_validation_section()` validates threshold ranges, alpha, iteration counts
+- **Threshold calibration tests** (`tests/test_threshold_calibration.py`): 46 tests covering lookup tables, interpolation, simulation, calibration modes, reproducibility
+- **Table generation script** (`scripts/generate_calibration_table.py`): CLI script to regenerate lookup tables
+
+### Fixed
+
+#### ClinVar and Reactome Parser Updates
+- **ClinVar parser** (`validation_datasets.py`): Handle NCBI's updated `gene_specific_summary.txt` column format
+  - New format uses `Alleles_reported_Pathogenic_Likely_pathogenic` (combined column) instead of separate `Number_Pathogenic`/`Number_Likely_Pathogenic` columns
+  - Parser auto-detects format and handles both old and new column names
+  - Handles `Number_uncertain` (new) vs `Number_Uncertain_Significance` (old) column naming
+- **Reactome parser** (`validation_datasets.py`): Handle Reactome's updated GMT layout
+  - New format: `Pathway Name\tR-HSA-ID\tGenes` (R-HSA-ID moved to column 1)
+  - Old format: `R-HSA-ID\tHomo sapiens: Description\tGenes`
+  - Parser now checks species prefix in description field alongside existing name checks
+
 ## [0.2.0] - 2026-02-09
 
 ### Added

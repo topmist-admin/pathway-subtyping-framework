@@ -150,6 +150,22 @@ Landrum MJ, et al. (2024). "ClinVar: improvements to accessing data."
 Nucleic Acids Research 52(D1):D733-D741.
 ```
 
+## Known Format Changes
+
+### gene_specific_summary.txt Column Changes (2026)
+
+NCBI periodically updates the column format of `gene_specific_summary.txt`. Our parser (`validation_datasets.py`) handles both formats automatically:
+
+**Old format** (pre-2026):
+- Separate columns: `Number_Pathogenic`, `Number_Likely_Pathogenic`, `Number_Benign`, `Number_Likely_Benign`, `Number_Uncertain_Significance`
+
+**New format** (2026+):
+- Combined column: `Alleles_reported_Pathogenic_Likely_pathogenic`
+- Renamed: `Number_uncertain` (was `Number_Uncertain_Significance`)
+- Separate benign columns may be absent
+
+The parser auto-detects the format by checking which column names are present in the header row. No user action is required.
+
 ## Resources
 
 - **FTP**: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/

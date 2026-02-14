@@ -781,3 +781,184 @@ def _simulate_ancestry(
     )
 
     return ancestry_labels, ancestry_pcs_df
+
+
+# ---------------------------------------------------------------------------
+# Expression Data Simulation
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ExpressionSimulationConfig:
+    """
+    Configuration for synthetic expression data generation.
+
+    Attributes:
+        n_samples: Number of samples to generate.
+        n_genes: Total number of genes in expression matrix.
+        n_pathways: Number of pathways.
+        n_genes_per_pathway: Genes per pathway.
+        n_subtypes: Number of planted subtypes.
+        effect_size: Log2 fold-change for subtype-specific pathways.
+        noise_level: Standard deviation of background noise.
+        base_expression_mean: Mean expression in log2-scale.
+        base_expression_std: Std of baseline expression.
+        dropout_rate: Fraction of zeros (RNA-seq zero-inflation).
+        subtype_proportions: Relative sizes of subtypes.
+        seed: Random seed for reproducibility.
+    """
+
+    n_samples: int = 200
+    n_genes: int = 500
+    n_pathways: int = 15
+    n_genes_per_pathway: int = 20
+    n_subtypes: int = 3
+    effect_size: float = 1.5
+    noise_level: float = 1.0
+    base_expression_mean: float = 6.0
+    base_expression_std: float = 2.0
+    dropout_rate: float = 0.1
+    subtype_proportions: Optional[List[float]] = None
+    seed: Optional[int] = 42
+
+    def __post_init__(self):
+        if self.subtype_proportions is None:
+            self.subtype_proportions = [1.0 / self.n_subtypes] * self.n_subtypes
+        total = sum(self.subtype_proportions)
+        self.subtype_proportions = [p / total for p in self.subtype_proportions]
+
+
+@dataclass
+class SimulatedExpressionData:
+    """Container for simulated expression data with ground truth."""
+
+    gene_expression: pd.DataFrame
+    pathways: Dict[str, List[str]]
+    true_labels: np.ndarray
+    config: ExpressionSimulationConfig
+    subtype_pathway_effects: Dict[int, List[str]] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "n_samples": len(self.gene_expression),
+            "n_genes": len(self.gene_expression.columns),
+            "n_pathways": len(self.pathways),
+            "n_subtypes": self.config.n_subtypes,
+            "effect_size": self.config.effect_size,
+            "subtype_pathway_effects": {
+                str(k): v for k, v in self.subtype_pathway_effects.items()
+            },
+        }
+
+
+def generate_synthetic_expression_data(
+    config: ExpressionSimulationConfig,
+) -> SimulatedExpressionData:
+    """
+    Generate synthetic expression data with planted subtype structure.
+
+    Creates a gene expression matrix where:
+    - Baseline expression ~ Normal(base_mean, base_std) in log2 space
+    - Subtype-specific pathways have differential expression
+    - Effect size controls log2 fold-change magnitude
+    - Dropout simulates zero-inflation in RNA-seq
+
+    Args:
+        config: Simulation configuration.
+
+    Returns:
+        SimulatedExpressionData with expression matrix, pathways,
+        true labels, and subtype-pathway effect mapping.
+    """
+    rng = np.random.RandomState(config.seed)
+
+    # 1. Assign samples to subtypes
+    n_per_subtype = []
+    remaining = config.n_samples
+    for i, prop in enumerate(config.subtype_proportions[:-1]):
+        n_i = int(round(config.n_samples * prop))
+        n_per_subtype.append(n_i)
+        remaining -= n_i
+    n_per_subtype.append(remaining)
+
+    true_labels = np.concatenate(
+        [np.full(n, i) for i, n in enumerate(n_per_subtype)]
+    )
+    shuffle_idx = rng.permutation(config.n_samples)
+    true_labels = true_labels[shuffle_idx]
+
+    # 2. Generate pathway definitions
+    all_genes = [f"GENE_{j}" for j in range(config.n_genes)]
+    pathways = {}
+    gene_pool = list(range(config.n_genes))
+    rng.shuffle(gene_pool)
+
+    for i in range(config.n_pathways):
+        n_genes = min(
+            config.n_genes_per_pathway,
+            len(gene_pool) - i * config.n_genes_per_pathway,
+        )
+        start = i * config.n_genes_per_pathway
+        end = start + n_genes
+        if end > len(gene_pool):
+            # Wrap around for extra pathways
+            idxs = gene_pool[start:] + gene_pool[: end - len(gene_pool)]
+        else:
+            idxs = gene_pool[start:end]
+        pathways[f"PATHWAY_{i}"] = [all_genes[j] for j in idxs]
+
+    # 3. Generate baseline expression (log2-scale)
+    sample_ids = [f"SAMPLE_{i:04d}" for i in range(config.n_samples)]
+    expression = rng.normal(
+        config.base_expression_mean,
+        config.base_expression_std,
+        (config.n_samples, config.n_genes),
+    )
+
+    # 4. Add subtype-specific pathway effects
+    n_effect_pathways = max(2, config.n_pathways // config.n_subtypes)
+    subtype_effects: Dict[int, List[str]] = {}
+
+    pathway_names = list(pathways.keys())
+    for subtype in range(config.n_subtypes):
+        start = subtype * n_effect_pathways
+        end = min(start + n_effect_pathways, len(pathway_names))
+        effect_pw = pathway_names[start:end]
+        subtype_effects[subtype] = effect_pw
+
+        subtype_mask = true_labels == subtype
+        for pw_name in effect_pw:
+            for gene_name in pathways[pw_name]:
+                gene_idx = all_genes.index(gene_name)
+                expression[subtype_mask, gene_idx] += rng.normal(
+                    config.effect_size, 0.2, size=int(np.sum(subtype_mask))
+                )
+
+    # 5. Add noise
+    expression += rng.normal(0, config.noise_level * 0.3, expression.shape)
+
+    # 6. Apply dropout (zero-inflation)
+    if config.dropout_rate > 0:
+        dropout_mask = rng.random(expression.shape) < config.dropout_rate
+        expression[dropout_mask] = 0.0
+
+    # 7. Clip negatives (log2 values shouldn't be very negative)
+    expression = np.clip(expression, 0, None)
+
+    gene_expression = pd.DataFrame(
+        expression, index=sample_ids, columns=all_genes
+    )
+
+    logger.info(
+        f"[Simulation] Generated synthetic expression data: "
+        f"{config.n_samples} samples, {config.n_genes} genes, "
+        f"{config.n_subtypes} subtypes"
+    )
+
+    return SimulatedExpressionData(
+        gene_expression=gene_expression,
+        pathways=pathways,
+        true_labels=true_labels,
+        config=config,
+        subtype_pathway_effects=subtype_effects,
+    )

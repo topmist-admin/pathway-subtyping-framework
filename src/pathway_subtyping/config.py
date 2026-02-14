@@ -106,12 +106,22 @@ def validate_config(config: Dict[str, Any], check_files: bool = True) -> bool:
     if ancestry:
         _validate_ancestry_section(ancestry, check_files)
 
+    # Validate validation section (optional)
+    validation = config.get("validation", {})
+    if validation:
+        _validate_validation_section(validation)
+
     return True
 
 
 def _validate_data_section(data: Dict[str, Any], check_files: bool) -> None:
     """Validate the data section of config."""
-    required_fields = ["vcf_path", "phenotype_path", "pathway_db"]
+    input_type = data.get("input_type", "vcf")
+
+    if input_type == "expression":
+        required_fields = ["expression_path", "phenotype_path", "pathway_db"]
+    else:
+        required_fields = ["vcf_path", "phenotype_path", "pathway_db"]
 
     for field in required_fields:
         if not data.get(field):
@@ -133,6 +143,26 @@ def _validate_data_section(data: Dict[str, Any], check_files: bool) -> None:
                         f"Verify the file exists: ls -la {data[field]}",
                     ],
                 )
+
+    # Validate expression-specific fields
+    if input_type == "expression":
+        valid_input_types = ["counts", "tpm", "fpkm", "log2"]
+        expr_input_type = data.get("expression_input_type", "tpm")
+        if expr_input_type not in valid_input_types:
+            raise ConfigValidationError(
+                f"Invalid expression_input_type: {expr_input_type}",
+                field="data.expression_input_type",
+                suggestions=[f"Use one of: {', '.join(valid_input_types)}"],
+            )
+
+        valid_methods = ["mean_z", "ssgsea", "gsva"]
+        scoring_method = data.get("expression_scoring_method", "ssgsea")
+        if scoring_method not in valid_methods:
+            raise ConfigValidationError(
+                f"Invalid expression_scoring_method: {scoring_method}",
+                field="data.expression_scoring_method",
+                suggestions=[f"Use one of: {', '.join(valid_methods)}"],
+            )
 
 
 def _validate_pipeline_section(pipeline: Dict[str, Any]) -> None:
@@ -225,6 +255,50 @@ def _validate_ancestry_section(data: Dict[str, Any], check_files: bool) -> None:
             field="ancestry.n_pcs",
             suggestions=["Use a positive integer, typically 10"],
         )
+
+
+def _validate_validation_section(data: Dict[str, Any]) -> None:
+    """Validate the validation section of config."""
+    # Validate threshold values
+    for field_name in ["stability_threshold", "null_ari_max"]:
+        value = data.get(field_name)
+        if value is not None:
+            if not isinstance(value, (int, float)) or value < 0 or value > 1:
+                raise ConfigValidationError(
+                    f"Invalid {field_name}: {value} (must be a number in [0, 1])",
+                    field=f"validation.{field_name}",
+                    suggestions=[f"Use a value between 0 and 1, e.g., {field_name}: 0.8"],
+                )
+
+    # Validate alpha
+    alpha = data.get("alpha")
+    if alpha is not None:
+        if not isinstance(alpha, (int, float)) or alpha <= 0 or alpha >= 1:
+            raise ConfigValidationError(
+                f"Invalid alpha: {alpha} (must be in (0, 1))",
+                field="validation.alpha",
+                suggestions=["Use a value between 0 and 1 (exclusive), e.g., alpha: 0.05"],
+            )
+
+    # Validate n_permutations
+    n_perm = data.get("n_permutations")
+    if n_perm is not None:
+        if not isinstance(n_perm, int) or n_perm < 1:
+            raise ConfigValidationError(
+                f"Invalid n_permutations: {n_perm} (must be positive integer)",
+                field="validation.n_permutations",
+                suggestions=["Use a positive integer, e.g., n_permutations: 100"],
+            )
+
+    # Validate n_bootstrap
+    n_boot = data.get("n_bootstrap")
+    if n_boot is not None:
+        if not isinstance(n_boot, int) or n_boot < 1:
+            raise ConfigValidationError(
+                f"Invalid n_bootstrap: {n_boot} (must be positive integer)",
+                field="validation.n_bootstrap",
+                suggestions=["Use a positive integer, e.g., n_bootstrap: 50"],
+            )
 
 
 def validate_gmt_file(gmt_path: str) -> Dict[str, List[str]]:

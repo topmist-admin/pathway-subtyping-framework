@@ -38,11 +38,12 @@ clustering:
 
 validation:
   run_gates: true
-  label_shuffle_iterations: 100
-  random_genes_iterations: 100
-  bootstrap_iterations: 100
-  stability_threshold: 0.8
-  negative_control_threshold: 0.15
+  calibrate: true                  # Auto-calibrate thresholds based on sample size and cluster count
+  stability_threshold: null        # null = auto-calibrate (default 0.8 if calibrate: false)
+  null_ari_max: null               # null = auto-calibrate (default 0.15 if calibrate: false)
+  alpha: 0.05                      # Significance level for calibration
+  n_permutations: 100
+  n_bootstrap: 100
 
 output:
   save_pathway_scores: true

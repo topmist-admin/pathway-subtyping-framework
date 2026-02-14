@@ -160,6 +160,53 @@ Tests whether discovered subtypes are confounded by population structure:
 
 This gate only runs when ancestry principal components are provided. See [Ancestry Correction](#ancestry--population-stratification-correction) below.
 
+### Validation Threshold Calibration
+
+The default validation thresholds (0.15 for null ARI, 0.80 for stability) are fixed values that do not account for sample size or number of clusters. The threshold calibration module replaces these with data-driven values.
+
+#### Motivation
+
+- Under the null hypothesis, ARI distributions narrow as sample size increases (tighter convergence to zero)
+- Chance-level ARI increases with more clusters (more possible agreements by chance)
+- A single threshold is therefore either too permissive for small samples or too strict for large samples
+
+#### Pre-Computed Lookup Tables
+
+Thresholds are pre-computed via simulation across a grid of configurations:
+
+```
+n_samples ∈ {30, 50, 75, 100, 150, 200, 300, 500}
+n_clusters ∈ {2, 3, 4, 5, 6, 7, 8}
+```
+
+For each (n, k) pair, 500 simulations are run:
+
+**Null ARI table** (95th percentile):
+1. Generate random data (n samples, 15 pathways, no structure)
+2. Fit GMM with k clusters
+3. Compute ARI between random labels and GMM labels
+4. Record 95th percentile across 500 simulations
+
+**Stability table** (5th percentile):
+1. Generate structured data with k planted subtypes (effect size = 1.5)
+2. Bootstrap resample and re-cluster
+3. Compute ARI between bootstrap and original labels
+4. Record 5th percentile across 500 simulations
+
+#### Interpolation
+
+For (n_samples, n_clusters) values between grid points, bilinear interpolation is used:
+
+```
+threshold(n, k) = Σᵢ Σⱼ wᵢⱼ × table(nᵢ, kⱼ)
+```
+
+Where weights wᵢⱼ are inverse-distance based on the four nearest grid points.
+
+#### Fallback Simulation
+
+For configurations outside the table range, fresh simulations are run on-the-fly using the same methodology.
+
 ### Cross-Validation
 
 K-fold cross-validation for clustering stability:

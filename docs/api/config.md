@@ -213,6 +213,27 @@ Clustering algorithm parameters.
 | `n_clusters` | integer/null | `null` | Fixed cluster count (null = auto) |
 | `n_clusters_range` | list[int] | `[2, 8]` | Range for BIC selection |
 
+### `validation`
+
+Validation gate configuration. When thresholds are `null`, the pipeline auto-calibrates them based on sample size and cluster count.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `run_gates` | boolean | `true` | Whether to run validation gates |
+| `calibrate` | boolean | `true` | Auto-calibrate thresholds when null |
+| `stability_threshold` | float/null | `null` | Stability ARI threshold (null = auto) |
+| `null_ari_max` | float/null | `null` | Null ARI max threshold (null = auto) |
+| `alpha` | float | `0.05` | Significance level for calibration |
+| `n_permutations` | integer | `100` | Permutations for null tests |
+| `n_bootstrap` | integer | `50` | Bootstrap iterations for stability |
+
+**Validation checks (performed by `_validate_validation_section()`):**
+- `stability_threshold` must be in [0, 1] (if provided)
+- `null_ari_max` must be in [0, 1] (if provided)
+- `alpha` must be in (0, 1)
+- `n_permutations` must be a positive integer
+- `n_bootstrap` must be a positive integer
+
 ### `output`
 
 Output formatting options.

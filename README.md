@@ -45,6 +45,7 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 | **Ancestry Correction** | PCA-based population stratification correction with independence testing |
 | **Batch Correction** | ComBat-style batch effect detection and correction |
 | **Sensitivity Analysis** | Parameter robustness testing across algorithms, features, normalization |
+| **Threshold Calibration** | Data-driven validation thresholds that adjust for sample size and cluster count |
 | **Validation Gates** | Negative controls + bootstrap stability + ancestry independence testing |
 | **Statistical Rigor** | FDR correction, effect sizes, confidence intervals |
 | **Power Analysis** | Sample size recommendations, Type I error estimation |
@@ -191,6 +192,7 @@ pathway-subtyping-framework/
 │   ├── statistical_rigor.py   # FDR, effect sizes, burden weights
 │   ├── simulation.py          # Synthetic data & power analysis
 │   ├── validation.py          # Validation gates
+│   ├── threshold_calibration.py # Data-driven threshold calibration
 │   ├── ancestry.py            # Population stratification correction
 │   ├── batch_correction.py    # Batch effect detection & correction
 │   ├── sensitivity.py         # Parameter sensitivity analysis
@@ -203,7 +205,7 @@ pathway-subtyping-framework/
 │   ├── METHODS.md             # Statistical methods documentation
 │   └── guides/                # User guides
 ├── examples/notebooks/        # Jupyter tutorials
-├── tests/                     # Test suite (383 tests)
+├── tests/                     # Test suite (599 tests)
 ├── Dockerfile                 # Container support
 └── docker-compose.yml         # Easy orchestration
 ```

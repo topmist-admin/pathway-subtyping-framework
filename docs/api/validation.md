@@ -6,11 +6,13 @@ The `validation` module provides validation gates to verify clustering quality a
 
 The framework implements three mandatory validation tests:
 
-| Test | Purpose | Pass Criteria |
-|------|---------|---------------|
+| Test | Purpose | Pass Criteria (default) |
+|------|---------|------------------------|
 | **Label Shuffle** | Detect spurious clustering | ARI < 0.15 |
 | **Random Gene Sets** | Verify pathway biology matters | ARI < 0.15 |
 | **Bootstrap Stability** | Ensure robust clusters | ARI ≥ 0.80 |
+
+> **Threshold Calibration:** These default thresholds (0.15/0.8) can be automatically calibrated based on sample size and cluster count using the [`threshold_calibration`](threshold_calibration.md) module. Set `validation.stability_threshold: null` and `validation.null_ari_max: null` in your config to enable auto-calibration.
 
 ## Classes
 

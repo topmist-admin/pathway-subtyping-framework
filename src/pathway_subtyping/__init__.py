@@ -59,6 +59,14 @@ from .clustering import (
     run_clustering,
     select_n_clusters,
 )
+from .expression import (
+    ExpressionDataQualityReport,
+    ExpressionInputType,
+    ExpressionScoringMethod,
+    ExpressionScoringResult,
+    load_expression_matrix,
+    score_pathways_from_expression,
+)
 from .cross_cohort import (
     CohortResult,
     CrossCohortResult,
@@ -84,15 +92,18 @@ from .sensitivity import (
     vary_normalization,
 )
 from .simulation import (
+    ExpressionSimulationConfig,
     PowerAnalysisResult,
     RecoveryResult,
     SampleSizeAnalysisResult,
     SimulatedData,
+    SimulatedExpressionData,
     SimulationConfig,
     TypeIErrorResult,
     estimate_type_i_error,
     evaluate_recovery,
     generate_synthetic_data,
+    generate_synthetic_expression_data,
     run_power_analysis,
     run_sample_size_analysis,
     validate_framework,
@@ -109,6 +120,13 @@ from .statistical_rigor import (
     compute_pathway_effect_sizes,
     compute_pathway_pvalues,
     run_statistical_analysis,
+)
+from .threshold_calibration import (
+    CalibratedThresholds,
+    CalibrationSimulationResult,
+    calibrate_thresholds,
+    generate_calibration_table,
+    get_default_thresholds,
 )
 from .validation import ValidationGates, ValidationGatesResult, ValidationResult
 from .validation_datasets import (
@@ -136,6 +154,13 @@ __all__ = [
     "ValidationGates",
     "ValidationGatesResult",
     "ValidationResult",
+    # Expression scoring
+    "ExpressionDataQualityReport",
+    "ExpressionInputType",
+    "ExpressionScoringMethod",
+    "ExpressionScoringResult",
+    "load_expression_matrix",
+    "score_pathways_from_expression",
     # Cross-cohort
     "compare_cohorts",
     "load_cohort_result",
@@ -170,11 +195,14 @@ __all__ = [
     # Simulation
     "SimulationConfig",
     "SimulatedData",
+    "ExpressionSimulationConfig",
+    "SimulatedExpressionData",
     "RecoveryResult",
     "TypeIErrorResult",
     "PowerAnalysisResult",
     "SampleSizeAnalysisResult",
     "generate_synthetic_data",
+    "generate_synthetic_expression_data",
     "evaluate_recovery",
     "estimate_type_i_error",
     "run_power_analysis",
@@ -240,6 +268,12 @@ __all__ = [
     "run_full_validation",
     "validate_pathway_against_reactome",
     "validate_pathway_coverage",
+    # Threshold calibration
+    "CalibratedThresholds",
+    "CalibrationSimulationResult",
+    "calibrate_thresholds",
+    "generate_calibration_table",
+    "get_default_thresholds",
     # Meta
     "__version__",
 ]

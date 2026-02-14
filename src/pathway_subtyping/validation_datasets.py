@@ -512,12 +512,36 @@ def load_clinvar_gene_summary(
                 except (ValueError, TypeError):
                     return default
 
+            # Handle both old and new ClinVar column names.
+            # Old format: Number_Pathogenic, Number_Likely_Pathogenic, etc.
+            # New format (2025+): Alleles_reported_Pathogenic_Likely_pathogenic
+            #   (combined column, no separate benign columns)
+            if "Alleles_reported_Pathogenic_Likely_pathogenic" in row:
+                # New format: combined pathogenic + likely pathogenic count
+                combined = _safe_int(
+                    row.get("Alleles_reported_Pathogenic_Likely_pathogenic", "0")
+                )
+                n_pathogenic = combined
+                n_likely_pathogenic = 0
+            else:
+                # Old format: separate columns
+                n_pathogenic = _safe_int(row.get("Number_Pathogenic", "0"))
+                n_likely_pathogenic = _safe_int(
+                    row.get("Number_Likely_Pathogenic", "0")
+                )
+
+            # Number_uncertain exists in both old and new formats
+            n_uncertain = _safe_int(
+                row.get("Number_uncertain",
+                        row.get("Number_Uncertain_Significance", "0"))
+            )
+
             genes[symbol.upper()] = ClinVarGeneSummary(
                 symbol=symbol,
                 gene_id=_safe_int(row.get("GeneID", "0")),
-                n_pathogenic=_safe_int(row.get("Number_Pathogenic", "0")),
-                n_likely_pathogenic=_safe_int(row.get("Number_Likely_Pathogenic", "0")),
-                n_uncertain=_safe_int(row.get("Number_Uncertain_Significance", "0")),
+                n_pathogenic=n_pathogenic,
+                n_likely_pathogenic=n_likely_pathogenic,
+                n_uncertain=n_uncertain,
                 n_benign=_safe_int(row.get("Number_Benign", "0")),
                 n_likely_benign=_safe_int(row.get("Number_Likely_Benign", "0")),
             )
@@ -581,13 +605,23 @@ def load_reactome_pathways(
             description = parts[1]
             genes = [g.strip() for g in parts[2:] if g.strip()]
 
-            # Filter by species using description text or ID prefix
+            # Filter by species using description text or ID prefix.
+            # Reactome GMT files come in two layouts:
+            #   Old/mock: R-HSA-ID <TAB> "Homo sapiens: Description" <TAB> genes...
+            #   Current:  "Pathway Name" <TAB> R-HSA-ID <TAB> genes...
+            # Check both columns for species prefix and description text.
             if species:
-                desc_match = species.lower() in description.lower() if description else False
-                prefix_match = pathway_name.startswith(species_prefix) if species_prefix else False
+                desc_match = (
+                    species.lower() in description.lower() if description else False
+                )
+                name_has_prefix = (
+                    pathway_name.startswith(species_prefix) if species_prefix else False
+                )
+                desc_has_prefix = (
+                    description.startswith(species_prefix) if species_prefix else False
+                )
 
-                # If neither matches and species filter is active, skip
-                if not desc_match and not prefix_match:
+                if not desc_match and not name_has_prefix and not desc_has_prefix:
                     continue
 
             if genes:

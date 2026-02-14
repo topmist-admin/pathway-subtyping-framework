@@ -43,8 +43,28 @@ from .pipeline import DemoPipeline, PipelineConfig
     default=True,
     help="Enable/disable verbose output",
 )
+@click.option(
+    "--input-type",
+    "-t",
+    type=click.Choice(["vcf", "expression"]),
+    default=None,
+    help="Override input type from config",
+)
+@click.option(
+    "--expression-method",
+    type=click.Choice(["mean_z", "ssgsea", "gsva"]),
+    default=None,
+    help="Expression scoring method (only with --input-type expression)",
+)
 @click.version_option(version=__version__, prog_name="pathway-subtyping-framework")
-def main(config: str, output: str, seed: int, verbose: bool) -> None:
+def main(
+    config: str,
+    output: str,
+    seed: int,
+    verbose: bool,
+    input_type: str,
+    expression_method: str,
+) -> None:
     """
     Pathway Subtyping Framework - Genetic Subtype Analysis Pipeline
 
@@ -69,6 +89,10 @@ def main(config: str, output: str, seed: int, verbose: bool) -> None:
         if seed is not None:
             pipeline_config.seed = seed
         pipeline_config.verbose = verbose
+        if input_type:
+            pipeline_config.input_type = input_type
+        if expression_method:
+            pipeline_config.expression_scoring_method = expression_method
 
         # Run pipeline
         pipeline = DemoPipeline(pipeline_config)

@@ -162,6 +162,16 @@ Machine-readable summary for programmatic access.
   "ground_truth": {
     "ari": 0.92,
     "threshold_met": true
+  },
+  "threshold_calibration": {
+    "null_ari_threshold": 0.0823,
+    "stability_threshold": 0.7456,
+    "n_samples": 60,
+    "n_clusters": 4,
+    "n_pathways": 15,
+    "alpha": 0.05,
+    "calibration_method": "lookup",
+    "interpolated": false
   }
 }
 ```
@@ -177,6 +187,7 @@ Machine-readable summary for programmatic access.
 | clusters | Sample count and label per cluster |
 | validation | Results from validation gates |
 | ground_truth | ARI vs planted subtypes (if available) |
+| threshold_calibration | Calibrated validation thresholds and method used (present when auto-calibration is enabled) |
 
 ---
 
@@ -338,4 +349,4 @@ If you're unsure how to interpret an output, **do not guess**. Contact the devel
 
 ---
 
-*Last updated: January 2026 | Pathway Subtyping Framework v0.1*
+*Last updated: February 2026 | Pathway Subtyping Framework v0.2*

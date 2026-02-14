@@ -54,10 +54,28 @@ class PipelineConfig:
     n_clusters: Optional[int] = None
     n_clusters_range: List[int] = field(default_factory=lambda: [2, 8])
 
+    # Input type
+    input_type: str = "vcf"  # "vcf" or "expression"
+
+    # Expression-specific config
+    expression_path: str = ""
+    expression_input_type: str = "tpm"  # "counts", "tpm", "fpkm", "log2"
+    expression_scoring_method: str = "ssgsea"  # "mean_z", "ssgsea", "gsva"
+    ssgsea_alpha: float = 0.25
+
     # Ancestry correction (optional)
     ancestry_pcs_path: Optional[str] = None
     ancestry_correction: Optional[str] = None  # "regress_out", "covariate_aware"
     ancestry_n_pcs: int = 10
+
+    # Validation gates
+    validation_run_gates: bool = True
+    validation_n_permutations: int = 100
+    validation_n_bootstrap: int = 50
+    validation_stability_threshold: Optional[float] = None  # None = auto-calibrate
+    validation_null_ari_max: Optional[float] = None  # None = auto-calibrate
+    validation_calibrate: bool = True
+    validation_alpha: float = 0.05
 
     # Output settings
     disclaimer: str = "Research use only. Not medical advice."
@@ -74,6 +92,7 @@ class PipelineConfig:
         clustering = config_dict.get("clustering", {})
         output = config_dict.get("output", {})
         ancestry = config_dict.get("ancestry", {})
+        validation = config_dict.get("validation", {})
 
         return cls(
             name=pipeline.get("name", "demo_run"),
@@ -85,9 +104,23 @@ class PipelineConfig:
             pathway_db=data.get("pathway_db", ""),
             n_clusters=clustering.get("n_clusters"),
             n_clusters_range=clustering.get("n_clusters_range", [2, 8]),
+            input_type=data.get("input_type", "vcf"),
+            expression_path=data.get("expression_path", ""),
+            expression_input_type=data.get("expression_input_type", "tpm"),
+            expression_scoring_method=data.get(
+                "expression_scoring_method", "ssgsea"
+            ),
+            ssgsea_alpha=float(data.get("ssgsea_alpha", 0.25)),
             ancestry_pcs_path=ancestry.get("pcs_path"),
             ancestry_correction=ancestry.get("correction"),
             ancestry_n_pcs=ancestry.get("n_pcs", 10),
+            validation_run_gates=validation.get("run_gates", True),
+            validation_n_permutations=validation.get("n_permutations", 100),
+            validation_n_bootstrap=validation.get("n_bootstrap", 50),
+            validation_stability_threshold=validation.get("stability_threshold"),
+            validation_null_ari_max=validation.get("null_ari_max"),
+            validation_calibrate=validation.get("calibrate", True),
+            validation_alpha=float(validation.get("alpha", 0.05)),
             disclaimer=output.get("disclaimer", "Research use only."),
         )
 
@@ -130,6 +163,13 @@ class DemoPipeline:
         self.ancestry_adjustment = None
         self.ancestry_report = None
 
+        # Expression data (for expression input mode)
+        self.gene_expression: Optional[pd.DataFrame] = None
+        self.expression_scoring_result = None
+
+        # Threshold calibration
+        self.calibrated_thresholds = None
+
         # Characterization
         self.characterization_result: Optional[CharacterizationResult] = None
 
@@ -163,11 +203,13 @@ class DemoPipeline:
         logger.info(f"Output directory: {self.output_dir}")
 
     def load_data(self) -> None:
-        """Load VCF, phenotype, and pathway data."""
+        """Load input data based on input type."""
         logger.info("Loading input data...")
 
-        # Load VCF (simplified - parse INFO fields)
-        self._load_vcf()
+        if self.config.input_type == "expression":
+            self._load_expression()
+        else:
+            self._load_vcf()
 
         # Load phenotypes
         self._load_phenotypes()
@@ -175,11 +217,18 @@ class DemoPipeline:
         # Load pathways
         self._load_pathways()
 
-        logger.info(
-            f"Loaded: {len(self.variants_df)} variants, "
-            f"{len(self.phenotypes_df)} samples, "
-            f"{len(self.pathways)} pathways"
-        )
+        if self.config.input_type == "expression":
+            logger.info(
+                f"Loaded: {len(self.gene_expression.columns)} genes, "
+                f"{len(self.phenotypes_df)} samples, "
+                f"{len(self.pathways)} pathways"
+            )
+        else:
+            logger.info(
+                f"Loaded: {len(self.variants_df)} variants, "
+                f"{len(self.phenotypes_df)} samples, "
+                f"{len(self.pathways)} pathways"
+            )
 
     def _load_vcf(self) -> None:
         """Load and parse VCF file with data quality checking.
@@ -259,6 +308,25 @@ class DemoPipeline:
                 f"import validate_vcf_for_pipeline; "
                 f"validate_vcf_for_pipeline('{vcf_path}')\""
             ) from e
+
+    def _load_expression(self) -> None:
+        """Load expression matrix for expression input mode."""
+        from .expression import ExpressionInputType, load_expression_matrix
+
+        expr_path = Path(self.config.expression_path)
+        if not expr_path.exists():
+            raise FileNotFoundError(
+                f"Expression file not found: {expr_path}\n\n"
+                f"Expected: CSV/TSV with samples as rows and genes as columns\n"
+                f"(or genes as rows — auto-detected)\n\n"
+                f"Config path: {self.config.expression_path}"
+            )
+
+        input_type = ExpressionInputType(self.config.expression_input_type)
+        self.gene_expression, self.data_quality_report_expr = (
+            load_expression_matrix(str(expr_path), input_type=input_type)
+        )
+        self.samples = list(self.gene_expression.index)
 
     def _load_phenotypes(self) -> None:
         """Load phenotype CSV file."""
@@ -438,6 +506,31 @@ class DemoPipeline:
             f"(removed {len(zero_variance_pathways)} zero-variance)"
         )
 
+    def compute_expression_pathway_scores(self) -> None:
+        """Compute pathway scores from expression data."""
+        from .expression import ExpressionScoringMethod, score_pathways_from_expression
+
+        method = ExpressionScoringMethod(self.config.expression_scoring_method)
+        result = score_pathways_from_expression(
+            self.gene_expression,
+            self.pathways,
+            method=method,
+            alpha=self.config.ssgsea_alpha,
+            seed=self.config.seed,
+        )
+
+        self.pathway_scores = result.pathway_scores
+        self.expression_scoring_result = result
+
+        # For compatibility with validation gates and characterization,
+        # set gene_burdens to the expression matrix
+        self.gene_burdens = self.gene_expression
+
+        logger.info(
+            f"[Expression] Scored {result.n_pathways_scored} pathways "
+            f"via {method.value} (skipped {result.n_pathways_skipped})"
+        )
+
     def cluster_samples(self) -> None:
         """Cluster samples into subtypes using GMM."""
         logger.info("Clustering samples into subtypes...")
@@ -564,12 +657,44 @@ class DemoPipeline:
         """Run validation gates to verify clustering quality."""
         logger.info("Running validation gates...")
 
+        # Determine thresholds: explicit config > auto-calibration > defaults
+        stability_threshold = self.config.validation_stability_threshold
+        null_ari_max = self.config.validation_null_ari_max
+
+        if (stability_threshold is None or null_ari_max is None) and self.config.validation_calibrate:
+            from .threshold_calibration import calibrate_thresholds
+
+            n_samples = len(self.pathway_scores)
+            ct = calibrate_thresholds(
+                n_samples=n_samples,
+                n_clusters=self.n_clusters,
+                n_pathways=len(self.pathways),
+                alpha=self.config.validation_alpha,
+            )
+            self.calibrated_thresholds = ct
+            logger.info(
+                f"[Calibration] Auto-calibrated thresholds for n={n_samples}, "
+                f"k={self.n_clusters}: null_ari={ct.null_ari_threshold:.4f}, "
+                f"stability={ct.stability_threshold:.4f}"
+            )
+
+            if stability_threshold is None:
+                stability_threshold = ct.stability_threshold
+            if null_ari_max is None:
+                null_ari_max = ct.null_ari_threshold
+        else:
+            # Use explicit values or legacy defaults
+            if stability_threshold is None:
+                stability_threshold = 0.8
+            if null_ari_max is None:
+                null_ari_max = 0.15
+
         validator = ValidationGates(
             seed=self.config.seed,
-            n_permutations=100,
-            n_bootstrap=50,
-            stability_threshold=0.8,
-            null_ari_max=0.15,
+            n_permutations=self.config.validation_n_permutations,
+            n_bootstrap=self.config.validation_n_bootstrap,
+            stability_threshold=stability_threshold,
+            null_ari_max=null_ari_max,
         )
 
         cluster_labels = self.cluster_assignments["cluster_id"].values
@@ -765,28 +890,62 @@ class DemoPipeline:
         if self.ancestry_report:
             ancestry_info["independence_test"] = self.ancestry_report.to_dict()
 
+        # Build input-specific report sections
+        if self.config.input_type == "expression":
+            input_files = {
+                "expression": self.config.expression_path,
+                "phenotypes": self.config.phenotype_path,
+                "pathways": self.config.pathway_db,
+            }
+            summary = {
+                "input_type": "expression",
+                "scoring_method": self.config.expression_scoring_method,
+                "n_samples": len(self.samples),
+                "n_genes": (
+                    len(self.gene_expression.columns)
+                    if self.gene_expression is not None
+                    else 0
+                ),
+                "n_pathways": len(self.pathways),
+                "n_clusters": self.cluster_assignments["cluster_id"].nunique(),
+            }
+        else:
+            input_files = {
+                "vcf": self.config.vcf_path,
+                "phenotypes": self.config.phenotype_path,
+                "pathways": self.config.pathway_db,
+            }
+            summary = {
+                "input_type": "vcf",
+                "n_variants": len(self.variants_df),
+                "n_samples": len(self.samples),
+                "n_genes": (
+                    len(self.gene_burdens.columns)
+                    if self.gene_burdens is not None
+                    else 0
+                ),
+                "n_pathways": len(self.pathways),
+                "n_clusters": self.cluster_assignments["cluster_id"].nunique(),
+            }
+
+        # Threshold calibration results
+        calibration_info = {}
+        if self.calibrated_thresholds:
+            calibration_info = self.calibrated_thresholds.to_dict()
+
         # JSON report
         report = {
             "pipeline_name": self.config.name,
             "timestamp": datetime.now().isoformat(),
             "seed": self.config.seed,
-            "input_files": {
-                "vcf": self.config.vcf_path,
-                "phenotypes": self.config.phenotype_path,
-                "pathways": self.config.pathway_db,
-            },
-            "summary": {
-                "n_variants": len(self.variants_df),
-                "n_samples": len(self.samples),
-                "n_genes": len(self.gene_burdens.columns) if self.gene_burdens is not None else 0,
-                "n_pathways": len(self.pathways),
-                "n_clusters": self.cluster_assignments["cluster_id"].nunique(),
-            },
+            "input_files": input_files,
+            "summary": summary,
             "clusters": self.cluster_assignments["cluster_label"].value_counts().to_dict(),
             "data_quality": data_quality,
             "ancestry_correction": ancestry_info,
             "ground_truth_validation": ground_truth_validation,
             "validation_gates": validation_gates,
+            "threshold_calibration": calibration_info,
             "characterization": (
                 self.characterization_result.to_dict()
                 if self.characterization_result
@@ -822,10 +981,24 @@ class DemoPipeline:
             "",
             "| Metric | Value |",
             "|--------|-------|",
-            f"| Variants | {report['summary']['n_variants']} |",
-            f"| Samples | {report['summary']['n_samples']} |",
-            f"| Genes | {report['summary']['n_genes']} |",
-            f"| Pathways | {report['summary']['n_pathways']} |",
+        ]
+
+        if report["summary"].get("input_type") == "expression":
+            lines.extend([
+                f"| Input Type | expression ({report['summary'].get('scoring_method', 'ssgsea')}) |",
+                f"| Samples | {report['summary']['n_samples']} |",
+                f"| Genes | {report['summary']['n_genes']} |",
+                f"| Pathways | {report['summary']['n_pathways']} |",
+            ])
+        else:
+            lines.extend([
+                f"| Variants | {report['summary'].get('n_variants', 'N/A')} |",
+                f"| Samples | {report['summary']['n_samples']} |",
+                f"| Genes | {report['summary']['n_genes']} |",
+                f"| Pathways | {report['summary']['n_pathways']} |",
+            ])
+
+        lines.extend([
             "",
             "## Clustering Results",
             "",
@@ -833,7 +1006,7 @@ class DemoPipeline:
             "",
             "| Cluster | Samples |",
             "|---------|---------|",
-        ]
+        ])
 
         for cluster, count in report["clusters"].items():
             lines.append(f"| {cluster} | {count} |")
@@ -931,6 +1104,29 @@ class DemoPipeline:
                 ]
             )
 
+        # Threshold calibration section
+        calibration = report.get("threshold_calibration", {})
+        if calibration:
+            cal_method = calibration.get("calibration_method", "unknown")
+            cal_interp = calibration.get("interpolated", False)
+            method_str = cal_method
+            if cal_interp:
+                method_str += " (interpolated)"
+            lines.extend(
+                [
+                    "",
+                    "### Threshold Calibration",
+                    "",
+                    f"Thresholds were calibrated using the **{method_str}** method "
+                    f"for n={calibration.get('n_samples', '?')}, "
+                    f"k={calibration.get('n_clusters', '?')}.",
+                    "",
+                    f"- Null ARI threshold: {calibration.get('null_ari_threshold', '?')}",
+                    f"- Stability threshold: {calibration.get('stability_threshold', '?')}",
+                    f"- Significance level: {calibration.get('alpha', 0.05)}",
+                ]
+            )
+
         # Subtype characterization
         if self.characterization_result:
             lines.append("")
@@ -989,14 +1185,26 @@ class DemoPipeline:
             "timestamp": datetime.now().isoformat(),
             "git_commit": self._get_git_commit(),
             "random_seed": self.config.seed,
-            "input_files": {
-                "vcf": self.config.vcf_path,
-                "vcf_hash": file_hash(self.config.vcf_path),
-                "phenotypes": self.config.phenotype_path,
-                "phenotypes_hash": file_hash(self.config.phenotype_path),
-                "pathways": self.config.pathway_db,
-                "pathways_hash": file_hash(self.config.pathway_db),
-            },
+            "input_type": self.config.input_type,
+            "input_files": (
+                {
+                    "expression": self.config.expression_path,
+                    "expression_hash": file_hash(self.config.expression_path),
+                    "phenotypes": self.config.phenotype_path,
+                    "phenotypes_hash": file_hash(self.config.phenotype_path),
+                    "pathways": self.config.pathway_db,
+                    "pathways_hash": file_hash(self.config.pathway_db),
+                }
+                if self.config.input_type == "expression"
+                else {
+                    "vcf": self.config.vcf_path,
+                    "vcf_hash": file_hash(self.config.vcf_path),
+                    "phenotypes": self.config.phenotype_path,
+                    "phenotypes_hash": file_hash(self.config.phenotype_path),
+                    "pathways": self.config.pathway_db,
+                    "pathways_hash": file_hash(self.config.pathway_db),
+                }
+            ),
             "runtime_seconds": (
                 (self.end_time - self.start_time).total_seconds()
                 if self.end_time and self.start_time
@@ -1035,8 +1243,12 @@ class DemoPipeline:
         try:
             self.setup()
             self.load_data()
-            self.compute_gene_burdens()
-            self.compute_pathway_scores()
+
+            if self.config.input_type == "expression":
+                self.compute_expression_pathway_scores()
+            else:
+                self.compute_gene_burdens()
+                self.compute_pathway_scores()
 
             # Ancestry correction (optional)
             if self.config.ancestry_pcs_path:

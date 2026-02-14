@@ -14,6 +14,8 @@ Unsupervised clustering can always find "clusters" in data — the question is w
 
 All three must pass for subtypes to be considered robust.
 
+> **New in v0.3:** Validation thresholds can be **automatically calibrated** based on your dataset's sample size and cluster count, replacing the fixed defaults. See [Threshold Calibration](#threshold-calibration) below.
+
 ---
 
 ## Gate 1: Label Shuffle Test
@@ -109,26 +111,90 @@ Resamples data with replacement and re-clusters. Robust subtypes should be stabl
 
 ---
 
-## Running Validation
+## Threshold Calibration
 
-### Enable All Gates (Recommended)
+### Why Calibrate?
+
+The default thresholds (0.15 for null ARI, 0.8 for stability) don't account for sample size or number of clusters:
+
+- **Small samples** (n=30) produce noisier ARI distributions — 0.15 may be too permissive
+- **Large samples** (n=500) have tighter distributions — 0.15 may be too strict
+- **More clusters** inflate chance ARI — the same threshold is wrong for k=2 vs k=8
+
+### How It Works
+
+The framework uses **pre-computed lookup tables** derived from empirical simulations across a grid of (n_samples, n_clusters) configurations. At runtime:
+
+1. **Lookup**: If your (n, k) matches a grid point, use the pre-computed threshold
+2. **Interpolate**: If between grid points, bilinearly interpolate
+3. **Simulate**: If outside the grid range, run fresh simulations on-the-fly
+
+### Auto-Calibration (Recommended)
+
+Set thresholds to `null` in your config to enable automatic calibration:
+
 ```yaml
 validation:
   run_gates: true
-  label_shuffle_iterations: 100
-  random_genes_iterations: 100
-  bootstrap_iterations: 100
+  calibrate: true          # Enable auto-calibration (default: true)
+  stability_threshold: null  # null = auto-calibrate based on n_samples and n_clusters
+  null_ari_max: null         # null = auto-calibrate
+  alpha: 0.05               # Significance level for calibration
+  n_permutations: 100
+  n_bootstrap: 50
+```
+
+### Manual Override
+
+To use specific thresholds (disables auto-calibration for that threshold):
+
+```yaml
+validation:
+  stability_threshold: 0.85  # Explicit value overrides auto-calibration
+  null_ari_max: 0.10          # Stricter null threshold
+```
+
+### Programmatic Calibration
+
+```python
+from pathway_subtyping import calibrate_thresholds
+
+# Auto-calibrate for your data
+ct = calibrate_thresholds(n_samples=150, n_clusters=4)
+print(f"Null ARI threshold: {ct.null_ari_threshold:.4f}")
+print(f"Stability threshold: {ct.stability_threshold:.4f}")
+print(ct.format_report())
+```
+
+---
+
+## Running Validation
+
+### Enable All Gates with Auto-Calibration (Recommended)
+```yaml
+validation:
+  run_gates: true
+  calibrate: true
+  n_permutations: 100
+  n_bootstrap: 50
+```
+
+### Enable All Gates with Fixed Thresholds
+```yaml
+validation:
+  run_gates: true
   stability_threshold: 0.8
-  negative_control_threshold: 0.15
+  null_ari_max: 0.15
+  n_permutations: 100
+  n_bootstrap: 50
 ```
 
 ### Quick Validation (Development)
 ```yaml
 validation:
   run_gates: true
-  label_shuffle_iterations: 20
-  random_genes_iterations: 20
-  bootstrap_iterations: 20
+  n_permutations: 20
+  n_bootstrap: 20
 ```
 
 ### Skip Validation (Not Recommended)
@@ -255,3 +321,4 @@ PUBLISH  Merge clusters
 - Hubert & Arabie (1985). Comparing partitions. Journal of Classification.
 - Lange et al. (2004). Stability-based validation of clustering solutions. Neural Computation.
 - Hennig (2007). Cluster-wise assessment of cluster stability. Computational Statistics & Data Analysis.
+- Vinh NX, Epps J, Bailey J (2010). Information Theoretic Measures for Clusterings Comparison. J Mach Learn Res.

@@ -157,6 +157,15 @@ Complex models can:
 
 **Mitigation (v0.2):** Four validation gates guard against overfitting: label shuffle (clusters must outperform random), random gene sets (pathway biology must matter), bootstrap stability (clusters must be robust to resampling), and ancestry independence (clusters must not reflect population structure). `cross_validate_clustering()` provides additional K-fold stability assessment. `validate_framework()` runs comprehensive end-to-end validation on synthetic data.
 
+### 4. Fixed Validation Thresholds
+
+Hard-coded thresholds (0.15 for null ARI, 0.8 for stability) don't account for sample size or cluster count:
+- Small samples produce noisier ARI distributions (0.15 may be too permissive)
+- Large samples have tighter distributions (0.15 may be too strict)
+- More clusters inflate chance-level ARI
+
+**Mitigation:** The `threshold_calibration` module provides data-driven thresholds via pre-computed lookup tables, bilinear interpolation, and simulation fallback. Set `validation.stability_threshold: null` and `validation.null_ari_max: null` in config to auto-calibrate. See `calibrate_thresholds()` and the [Validation Gates Guide](guides/validation-gates.md#threshold-calibration).
+
 ---
 
 ## Interpretational Limitations
@@ -267,6 +276,7 @@ And inappropriate for:
 | Parameter sensitivity | `sensitivity` module: systematic parameter variation; `compare_algorithms()` |
 | Clustering instability | `clustering` module: BIC/silhouette model selection, cross-validation, algorithm comparison |
 | Overfitting | 4 validation gates + `cross_validate_clustering()` + `validate_framework()` |
+| Fixed thresholds | `threshold_calibration` module: data-driven thresholds via lookup + interpolation |
 | Replication | `cross_cohort` module: ARI comparison, transfer learning, batch comparison |
 | Representation bias | `ancestry` module: `stratified_analysis()` verifies cross-group consistency |
 | Interpretation | Require experimental validation; temper claims |

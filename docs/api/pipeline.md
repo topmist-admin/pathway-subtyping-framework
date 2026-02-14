@@ -26,6 +26,13 @@ from pathway_subtyping.pipeline import PipelineConfig
 | `n_clusters` | `Optional[int]` | `None` | Fixed number of clusters (None = auto-select) |
 | `n_clusters_range` | `List[int]` | `[2, 8]` | Range for automatic cluster selection |
 | `disclaimer` | `str` | `"Research use only..."` | Disclaimer text for reports |
+| `validation_run_gates` | `bool` | `True` | Whether to run validation gates |
+| `validation_n_permutations` | `int` | `100` | Permutations for null tests |
+| `validation_n_bootstrap` | `int` | `50` | Bootstrap iterations for stability |
+| `validation_stability_threshold` | `Optional[float]` | `None` | Stability threshold (None = auto-calibrate) |
+| `validation_null_ari_max` | `Optional[float]` | `None` | Null ARI threshold (None = auto-calibrate) |
+| `validation_calibrate` | `bool` | `True` | Enable auto-calibration when thresholds are None |
+| `validation_alpha` | `float` | `0.05` | Significance level for threshold calibration |
 
 #### Methods
 
@@ -60,6 +67,15 @@ data:
 clustering:
   n_clusters: null  # null = auto-select via BIC
   n_clusters_range: [2, 8]
+
+validation:
+  run_gates: true
+  calibrate: true             # Auto-calibrate thresholds
+  stability_threshold: null   # null = auto-calibrate
+  null_ari_max: null           # null = auto-calibrate
+  alpha: 0.05
+  n_permutations: 100
+  n_bootstrap: 50
 
 output:
   disclaimer: "Research use only. Not for clinical decisions."
@@ -215,11 +231,16 @@ After calling:
 
 ##### `run_validation_gates() -> None`
 
-Execute validation tests.
+Execute validation tests with auto-calibrated or explicit thresholds.
 
 ```python
 pipeline.run_validation_gates()
 ```
+
+Threshold determination (in priority order):
+1. **Explicit config values**: If `validation_stability_threshold` or `validation_null_ari_max` are set, use those
+2. **Auto-calibration**: If thresholds are `None` and `validation_calibrate=True`, call `calibrate_thresholds()` based on n_samples and n_clusters
+3. **Defaults**: Fall back to 0.15 (null ARI) and 0.8 (stability)
 
 Runs three tests:
 1. **Label Shuffle**: Ensure clustering doesn't find spurious patterns
@@ -228,6 +249,7 @@ Runs three tests:
 
 After calling:
 - `pipeline.validation_result` - `ValidationGatesResult` object
+- `pipeline.calibrated_thresholds` - `CalibratedThresholds` object (if auto-calibrated)
 
 ---
 

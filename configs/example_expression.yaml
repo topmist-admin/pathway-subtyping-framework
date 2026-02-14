@@ -1,0 +1,24 @@
+# Example configuration for expression-based pathway subtyping
+# Usage: python -m pathway_subtyping --config configs/example_expression.yaml
+
+pipeline:
+  name: "expression_analysis"
+  output_dir: "outputs/expression_run"
+  seed: 42
+  verbose: true
+
+data:
+  input_type: "expression"
+  expression_path: "data/sample/expression_matrix.csv"
+  expression_input_type: "tpm"           # counts, tpm, fpkm, log2
+  expression_scoring_method: "ssgsea"    # mean_z, ssgsea, gsva
+  ssgsea_alpha: 0.25
+  phenotype_path: "data/sample/phenotypes.csv"
+  pathway_db: "data/pathways/autism_pathways.gmt"
+
+clustering:
+  n_clusters: null       # Auto-select via BIC
+  n_clusters_range: [2, 8]
+
+output:
+  disclaimer: "Research use only. Not for clinical decision-making."

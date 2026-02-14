@@ -132,6 +132,31 @@ def sample_gene_burdens():
 
 
 @pytest.fixture
+def sample_expression_matrix():
+    """Generate a sample gene expression matrix (samples x genes)."""
+    np.random.seed(42)
+    n_samples = 60
+    n_genes = 100
+    sample_ids = [f"SAMPLE_{i:03d}" for i in range(1, n_samples + 1)]
+    gene_names = [f"GENE{i}" for i in range(1, n_genes + 1)]
+    expression = np.random.normal(6.0, 2.0, (n_samples, n_genes))
+    expression = np.clip(expression, 0, None)
+    return pd.DataFrame(expression, index=sample_ids, columns=gene_names)
+
+
+@pytest.fixture
+def sample_expression_pathways():
+    """Pathway definitions for expression testing."""
+    return {
+        "PATHWAY_A": [f"GENE{i}" for i in range(1, 21)],
+        "PATHWAY_B": [f"GENE{i}" for i in range(21, 41)],
+        "PATHWAY_C": [f"GENE{i}" for i in range(41, 61)],
+        "PATHWAY_D": [f"GENE{i}" for i in range(61, 81)],
+        "PATHWAY_E": [f"GENE{i}" for i in range(81, 101)],
+    }
+
+
+@pytest.fixture
 def minimal_vcf_content():
     """Return minimal VCF content for testing."""
     return """##fileformat=VCFv4.2

@@ -8,6 +8,7 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 |--------|-------------|
 | [`pipeline`](pipeline.md) | Main pipeline orchestrator and configuration |
 | [`validation`](validation.md) | Validation gates and stability testing |
+| [`threshold_calibration`](threshold_calibration.md) | Data-driven validation threshold calibration |
 | [`config`](config.md) | Configuration loading and validation utilities |
 | [`cli`](cli.md) | Command-line interface |
 

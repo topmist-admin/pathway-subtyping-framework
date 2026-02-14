@@ -816,6 +816,32 @@ Random gene sets produce similar cluster structure.
 2. Verify pathway database integrity
 3. This can fail on small datasets
 
+### Threshold too strict or too lenient for your dataset
+
+**Symptom:**
+Gates fail on reasonably structured data, or pass on clearly artifactual data.
+
+**Meaning:**
+The default thresholds (0.15/0.8) don't account for sample size and cluster count. Small datasets produce noisier ARI distributions, while more clusters inflate chance ARI.
+
+**Solution:**
+Enable auto-calibration in your config:
+```yaml
+validation:
+  calibrate: true
+  stability_threshold: null   # Auto-calibrate based on n_samples and n_clusters
+  null_ari_max: null           # Auto-calibrate
+```
+
+Or calibrate programmatically:
+```python
+from pathway_subtyping import calibrate_thresholds
+
+ct = calibrate_thresholds(n_samples=150, n_clusters=4)
+print(f"Recommended null ARI: {ct.null_ari_threshold:.4f}")
+print(f"Recommended stability: {ct.stability_threshold:.4f}")
+```
+
 ### Bootstrap Stability fails
 
 **Symptom:**
