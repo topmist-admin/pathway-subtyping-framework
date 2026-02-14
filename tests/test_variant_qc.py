@@ -4,17 +4,16 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from pathway_subtyping.config import ConfigValidationError, validate_config
 from pathway_subtyping.variant_qc import (
     VariantQCConfig,
     VariantQCResult,
     apply_genotype_filters,
+    check_hwe,
     compute_call_rate,
     compute_maf,
     filter_variants,
-    check_hwe,
 )
-from pathway_subtyping.config import ConfigValidationError, validate_config
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -159,9 +158,7 @@ class TestVariantQCResult:
         assert "DP >= 10" in report
 
     def test_get_citations(self):
-        result = VariantQCResult(
-            total_variants=0, passed_variants=0, removed_variants=0
-        )
+        result = VariantQCResult(total_variants=0, passed_variants=0, removed_variants=0)
         citations = result.get_citations()
         assert len(citations) == 2
         assert "Wigginton" in citations[0]
@@ -530,11 +527,12 @@ class TestImports:
         from pathway_subtyping import (
             VariantQCConfig,
             VariantQCResult,
+            check_hwe,
             compute_call_rate,
             compute_maf,
             filter_variants,
-            check_hwe,
         )
+
         assert VariantQCConfig is not None
         assert VariantQCResult is not None
         assert callable(compute_call_rate)

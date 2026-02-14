@@ -25,7 +25,6 @@ from pathway_subtyping.expression import (
     score_pathways_from_expression,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -255,9 +254,7 @@ class TestLoadExpressionMatrix:
         assert report.is_usable
 
     def test_load_counts(self, counts_csv_path):
-        df, report = load_expression_matrix(
-            counts_csv_path, input_type=ExpressionInputType.COUNTS
-        )
+        df, report = load_expression_matrix(counts_csv_path, input_type=ExpressionInputType.COUNTS)
         # Values should be log-transformed
         assert df.values.max() < 20  # log2(counts) should be much smaller than raw
 
@@ -272,9 +269,7 @@ class TestLoadExpressionMatrix:
             load_expression_matrix(str(path))
 
     def test_quality_report_populated(self, expression_csv_path):
-        _, report = load_expression_matrix(
-            expression_csv_path, input_type=ExpressionInputType.LOG2
-        )
+        _, report = load_expression_matrix(expression_csv_path, input_type=ExpressionInputType.LOG2)
         assert report.n_samples == 60
         assert report.n_genes > 0
         assert report.n_genes_before_filter == 100
@@ -282,9 +277,7 @@ class TestLoadExpressionMatrix:
         assert report.input_type == "log2"
 
     def test_quality_report_to_dict(self, expression_csv_path):
-        _, report = load_expression_matrix(
-            expression_csv_path, input_type=ExpressionInputType.LOG2
-        )
+        _, report = load_expression_matrix(expression_csv_path, input_type=ExpressionInputType.LOG2)
         d = report.to_dict()
         assert "n_samples" in d
         assert "n_genes" in d
@@ -386,12 +379,8 @@ class TestSsGSEAScoring:
         assert c0_mean > c2_mean
 
     def test_alpha_parameter(self, expression_matrix, expression_pathways):
-        scores_025, _ = _score_ssgsea(
-            expression_matrix, expression_pathways, alpha=0.25
-        )
-        scores_100, _ = _score_ssgsea(
-            expression_matrix, expression_pathways, alpha=1.0
-        )
+        scores_025, _ = _score_ssgsea(expression_matrix, expression_pathways, alpha=0.25)
+        scores_100, _ = _score_ssgsea(expression_matrix, expression_pathways, alpha=1.0)
         # Different alpha should produce different scores
         assert not np.allclose(scores_025.values, scores_100.values)
 
@@ -515,18 +504,12 @@ class TestScorePathwaysFromExpression:
         assert result.n_pathways_scored == 0
 
     def test_reproducibility_with_seed(self, expression_matrix, expression_pathways):
-        r1 = score_pathways_from_expression(
-            expression_matrix, expression_pathways, seed=42
-        )
-        r2 = score_pathways_from_expression(
-            expression_matrix, expression_pathways, seed=42
-        )
+        r1 = score_pathways_from_expression(expression_matrix, expression_pathways, seed=42)
+        r2 = score_pathways_from_expression(expression_matrix, expression_pathways, seed=42)
         pd.testing.assert_frame_equal(r1.pathway_scores, r2.pathway_scores)
 
     def test_quality_report_in_result(self, expression_matrix, expression_pathways):
-        result = score_pathways_from_expression(
-            expression_matrix, expression_pathways
-        )
+        result = score_pathways_from_expression(expression_matrix, expression_pathways)
         assert result.quality_report.n_samples == 60
         assert result.quality_report.n_pathways_total == 5
         assert result.quality_report.n_pathways_covered == 5
@@ -540,9 +523,7 @@ class TestScorePathwaysFromExpression:
 
 class TestExpressionScoringResult:
     def test_to_dict(self, expression_matrix, expression_pathways):
-        result = score_pathways_from_expression(
-            expression_matrix, expression_pathways
-        )
+        result = score_pathways_from_expression(expression_matrix, expression_pathways)
         d = result.to_dict()
         assert d["method"] == "ssgsea"
         assert d["n_samples"] == 60
@@ -551,9 +532,7 @@ class TestExpressionScoringResult:
         assert isinstance(d["pathway_names"], list)
 
     def test_format_report(self, expression_matrix, expression_pathways):
-        result = score_pathways_from_expression(
-            expression_matrix, expression_pathways
-        )
+        result = score_pathways_from_expression(expression_matrix, expression_pathways)
         report = result.format_report()
         assert "Expression Pathway Scoring Report" in report
         assert "ssgsea" in report

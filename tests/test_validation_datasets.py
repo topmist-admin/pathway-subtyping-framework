@@ -35,7 +35,6 @@ from pathway_subtyping.validation_datasets import (
     validate_pathway_coverage,
 )
 
-
 # =============================================================================
 # FIXTURES
 # =============================================================================
@@ -82,29 +81,49 @@ def sample_clinvar_genes():
     """Pre-parsed ClinVar gene summaries for testing."""
     return {
         "SHANK3": ClinVarGeneSummary(
-            symbol="SHANK3", gene_id=85358,
-            n_pathogenic=15, n_likely_pathogenic=8,
-            n_uncertain=10, n_benign=5, n_likely_benign=3,
+            symbol="SHANK3",
+            gene_id=85358,
+            n_pathogenic=15,
+            n_likely_pathogenic=8,
+            n_uncertain=10,
+            n_benign=5,
+            n_likely_benign=3,
         ),
         "CHD8": ClinVarGeneSummary(
-            symbol="CHD8", gene_id=57680,
-            n_pathogenic=12, n_likely_pathogenic=5,
-            n_uncertain=8, n_benign=3, n_likely_benign=2,
+            symbol="CHD8",
+            gene_id=57680,
+            n_pathogenic=12,
+            n_likely_pathogenic=5,
+            n_uncertain=8,
+            n_benign=3,
+            n_likely_benign=2,
         ),
         "NRXN1": ClinVarGeneSummary(
-            symbol="NRXN1", gene_id=9378,
-            n_pathogenic=8, n_likely_pathogenic=4,
-            n_uncertain=12, n_benign=6, n_likely_benign=4,
+            symbol="NRXN1",
+            gene_id=9378,
+            n_pathogenic=8,
+            n_likely_pathogenic=4,
+            n_uncertain=12,
+            n_benign=6,
+            n_likely_benign=4,
         ),
         "FAKE_GENE": ClinVarGeneSummary(
-            symbol="FAKE_GENE", gene_id=99999,
-            n_pathogenic=0, n_likely_pathogenic=0,
-            n_uncertain=2, n_benign=1, n_likely_benign=1,
+            symbol="FAKE_GENE",
+            gene_id=99999,
+            n_pathogenic=0,
+            n_likely_pathogenic=0,
+            n_uncertain=2,
+            n_benign=1,
+            n_likely_benign=1,
         ),
         "BRCA1": ClinVarGeneSummary(
-            symbol="BRCA1", gene_id=672,
-            n_pathogenic=80, n_likely_pathogenic=30,
-            n_uncertain=50, n_benign=20, n_likely_benign=10,
+            symbol="BRCA1",
+            gene_id=672,
+            n_pathogenic=80,
+            n_likely_pathogenic=30,
+            n_uncertain=50,
+            n_benign=20,
+            n_likely_benign=10,
         ),
     }
 
@@ -142,8 +161,10 @@ class TestDatasetInfo:
 
     def test_dataset_info_fields(self):
         ds = DatasetInfo(
-            name="Test", url="https://example.com/data.txt",
-            description="Test dataset", file_format="tsv",
+            name="Test",
+            url="https://example.com/data.txt",
+            description="Test dataset",
+            file_format="tsv",
             license_note="MIT",
         )
         d = ds.to_dict()
@@ -168,7 +189,9 @@ class TestDownloadDataset:
         cached_file = cache_dir / "gene_specific_summary.txt"
         cached_file.write_text("# cached data\nSHANK3\t85358\n")
 
-        with mock.patch("pathway_subtyping.validation_datasets.urllib.request.urlretrieve") as mock_dl:
+        with mock.patch(
+            "pathway_subtyping.validation_datasets.urllib.request.urlretrieve"
+        ) as mock_dl:
             result = download_dataset("clinvar_gene_summary", cache_dir=cache_dir)
             mock_dl.assert_not_called()
             assert result == cached_file
@@ -187,9 +210,7 @@ class TestDownloadDataset:
             "pathway_subtyping.validation_datasets.urllib.request.urlretrieve",
             side_effect=fake_download,
         ):
-            result = download_dataset(
-                "clinvar_gene_summary", cache_dir=cache_dir, force=True
-            )
+            result = download_dataset("clinvar_gene_summary", cache_dir=cache_dir, force=True)
             assert result.read_text().startswith("# new data")
 
     @pytest.mark.network
@@ -256,9 +277,7 @@ class TestLoadReactomePathways:
         assert len(pathways) == 3  # 3 Homo sapiens, Mouse excluded
 
     def test_species_filter(self, mock_reactome_gmt):
-        pathways = load_reactome_pathways(
-            file_path=mock_reactome_gmt, species="Homo sapiens"
-        )
+        pathways = load_reactome_pathways(file_path=mock_reactome_gmt, species="Homo sapiens")
         assert "R-MMU-1640170" not in pathways
 
     def test_gene_lists_correct(self, mock_reactome_gmt):
@@ -267,9 +286,7 @@ class TestLoadReactomePathways:
         assert "CTNNB1" in pathways["R-HSA-195721"]
 
     def test_no_species_filter(self, mock_reactome_gmt):
-        pathways = load_reactome_pathways(
-            file_path=mock_reactome_gmt, species=""
-        )
+        pathways = load_reactome_pathways(file_path=mock_reactome_gmt, species="")
         # All pathways loaded when species filter is empty
         assert len(pathways) == 4
 
@@ -373,9 +390,7 @@ class TestValidatePathwayAgainstReactome:
     def test_min_overlap_filter(self):
         curated = {"TEST": ["A", "B", "C", "D", "E"]}
         reactome = {"R_TEST": ["A", "F", "G", "H", "I"]}
-        results = validate_pathway_against_reactome(
-            curated, reactome, min_overlap=0.2
-        )
+        results = validate_pathway_against_reactome(curated, reactome, min_overlap=0.2)
         # Jaccard: 1/9 ≈ 0.11 < 0.2
         assert results["TEST"]["best_match"] is None
 
@@ -494,9 +509,7 @@ class TestGenerateDiseaseRealisticSynthetic:
 
     def test_empty_pathways_raises(self, sample_clinvar_genes):
         with pytest.raises(ValueError, match="No genes found"):
-            generate_disease_realistic_synthetic(
-                pathways={}, clinvar_genes=sample_clinvar_genes
-            )
+            generate_disease_realistic_synthetic(pathways={}, clinvar_genes=sample_clinvar_genes)
 
     def test_no_clinvar_still_works(self, sample_pathways):
         """Should work even without ClinVar data (all baseline weights)."""
@@ -675,9 +688,7 @@ class TestValidationReport:
 
 
 class TestRunFullValidation:
-    def test_full_validation_with_mock_data(
-        self, mock_clinvar_tsv, mock_reactome_gmt, tmp_path
-    ):
+    def test_full_validation_with_mock_data(self, mock_clinvar_tsv, mock_reactome_gmt, tmp_path):
         """Run full validation using mock data files, skip download."""
         # Create a small GMT for the "test" disease
         gmt_path = tmp_path / "test_pathways.gmt"

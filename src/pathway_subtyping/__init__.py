@@ -19,6 +19,23 @@ from .ancestry import (
     compute_ancestry_pcs,
     stratified_analysis,
 )
+from .batch_correction import (
+    BatchCorrectionMethod,
+    BatchCorrectionResult,
+    BatchEffectReport,
+    correct_batch_effects,
+    detect_batch_effects,
+    validate_batch_correction,
+)
+from .benchmark import (
+    BenchmarkComparisonResult,
+    BenchmarkMethod,
+    BenchmarkResult,
+    BenchmarkSweepResult,
+    run_benchmark_comparison,
+    run_benchmark_sweep,
+    run_single_benchmark,
+)
 from .characterization import (
     CharacterizationResult,
     GeneContribution,
@@ -31,23 +48,6 @@ from .characterization import (
     generate_subtype_heatmap,
     pathway_enrichment_analysis,
 )
-from .benchmark import (
-    BenchmarkComparisonResult,
-    BenchmarkMethod,
-    BenchmarkResult,
-    BenchmarkSweepResult,
-    run_benchmark_comparison,
-    run_benchmark_sweep,
-    run_single_benchmark,
-)
-from .batch_correction import (
-    BatchCorrectionMethod,
-    BatchCorrectionResult,
-    BatchEffectReport,
-    correct_batch_effects,
-    detect_batch_effects,
-    validate_batch_correction,
-)
 from .clustering import (
     AlgorithmComparisonResult,
     ClusteringAlgorithm,
@@ -58,14 +58,6 @@ from .clustering import (
     cross_validate_clustering,
     run_clustering,
     select_n_clusters,
-)
-from .expression import (
-    ExpressionDataQualityReport,
-    ExpressionInputType,
-    ExpressionScoringMethod,
-    ExpressionScoringResult,
-    load_expression_matrix,
-    score_pathways_from_expression,
 )
 from .cross_cohort import (
     CohortResult,
@@ -81,6 +73,14 @@ from .data_quality import (
     VCFDataQualityError,
     load_vcf_with_quality_check,
     validate_vcf_for_pipeline,
+)
+from .expression import (
+    ExpressionDataQualityReport,
+    ExpressionInputType,
+    ExpressionScoringMethod,
+    ExpressionScoringResult,
+    load_expression_matrix,
+    score_pathways_from_expression,
 )
 from .pipeline import DemoPipeline, PipelineConfig
 from .sensitivity import (
@@ -130,14 +130,6 @@ from .threshold_calibration import (
     generate_calibration_table,
     get_default_thresholds,
 )
-from .variant_qc import (
-    VariantQCConfig,
-    VariantQCResult,
-    compute_call_rate,
-    compute_maf,
-    filter_variants,
-    check_hwe,
-)
 from .validation import ValidationGates, ValidationGatesResult, ValidationResult
 from .validation_datasets import (
     DATASETS,
@@ -154,6 +146,14 @@ from .validation_datasets import (
     run_full_validation,
     validate_pathway_against_reactome,
     validate_pathway_coverage,
+)
+from .variant_qc import (
+    VariantQCConfig,
+    VariantQCResult,
+    check_hwe,
+    compute_call_rate,
+    compute_maf,
+    filter_variants,
 )
 
 __all__ = [

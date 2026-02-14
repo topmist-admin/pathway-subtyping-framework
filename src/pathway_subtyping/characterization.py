@@ -152,8 +152,7 @@ class SubtypeProfile:
             "enriched_pathways": [p.to_dict() for p in self.enriched_pathways],
             "top_genes": [g.to_dict() for g in self.top_genes],
             "pathway_score_means": {
-                k: round(float(v), 4)
-                for k, v in self.pathway_score_means.items()
+                k: round(float(v), 4) for k, v in self.pathway_score_means.items()
             },
         }
 
@@ -210,17 +209,14 @@ class CharacterizationResult:
                 [
                     f"### Subtype {profile.subtype_id}: {profile.subtype_label}",
                     "",
-                    f"- **Samples:** {profile.n_samples} "
-                    f"({profile.fraction * 100:.1f}%)",
+                    f"- **Samples:** {profile.n_samples} " f"({profile.fraction * 100:.1f}%)",
                     f"- **Mean confidence:** {profile.mean_confidence:.3f}",
                     "",
                 ]
             )
 
             # Enriched pathways table
-            sig_pathways = [
-                p for p in profile.enriched_pathways if p.significant
-            ]
+            sig_pathways = [p for p in profile.enriched_pathways if p.significant]
             if sig_pathways:
                 lines.extend(
                     [
@@ -356,10 +352,7 @@ def pathway_enrichment_analysis(
     # Compute Kruskal-Wallis p-values for each pathway (across all clusters)
     kw_pvalues = {}
     for pw in pathways:
-        groups = [
-            pathway_scores[pw].values[cluster_labels == cid]
-            for cid in unique_clusters
-        ]
+        groups = [pathway_scores[pw].values[cluster_labels == cid] for cid in unique_clusters]
         # Filter out groups with fewer than 2 samples
         valid_groups = [g for g in groups if len(g) >= 2]
         if len(valid_groups) < 2:
@@ -400,9 +393,7 @@ def pathway_enrichment_analysis(
             effect_size = _cohens_d(group_vals, rest_vals)
 
             p_values_list.append(kw_pvalues[pw])
-            enrichments_raw.append(
-                (pw, mean_score, overall_mean, fold_change, effect_size)
-            )
+            enrichments_raw.append((pw, mean_score, overall_mean, fold_change, effect_size))
 
         # FDR correction
         raw_p = np.array(p_values_list)
@@ -427,9 +418,7 @@ def pathway_enrichment_analysis(
         enrichments.sort(key=lambda x: abs(x.effect_size), reverse=True)
         result[int(cid)] = enrichments
 
-    n_sig_total = sum(
-        sum(1 for e in enrs if e.significant) for enrs in result.values()
-    )
+    n_sig_total = sum(sum(1 for e in enrs if e.significant) for enrs in result.values())
     logger.info(
         f"[Characterization] Found {n_sig_total} significant "
         f"pathway-subtype associations (FDR < {fdr_alpha})"
@@ -480,9 +469,7 @@ def gene_contribution_scores(
 
     genes_in_pathways = list(gene_to_pathway.keys())
     if not genes_in_pathways:
-        logger.warning(
-            "[Characterization] No pathway genes found in gene burden data"
-        )
+        logger.warning("[Characterization] No pathway genes found in gene burden data")
         return {int(cid): [] for cid in unique_clusters}
 
     result: Dict[int, List[GeneContribution]] = {}
@@ -578,17 +565,21 @@ def characterize_subtypes(
     if n_samples == 0:
         logger.warning("[Characterization] No samples — returning empty result")
         return CharacterizationResult(
-            n_subtypes=0, n_samples=0, n_pathways=0, n_genes=0,
+            n_subtypes=0,
+            n_samples=0,
+            n_pathways=0,
+            n_genes=0,
             fdr_alpha=fdr_alpha,
         )
 
     # Guard: empty pathway scores
     if pathway_scores is None or pathway_scores.empty:
-        logger.warning(
-            "[Characterization] No pathway scores — returning empty result"
-        )
+        logger.warning("[Characterization] No pathway scores — returning empty result")
         return CharacterizationResult(
-            n_subtypes=0, n_samples=n_samples, n_pathways=0, n_genes=0,
+            n_subtypes=0,
+            n_samples=n_samples,
+            n_pathways=0,
+            n_genes=0,
             fdr_alpha=fdr_alpha,
         )
 
@@ -602,22 +593,16 @@ def characterize_subtypes(
 
     # Default cluster names
     if cluster_names is None:
-        cluster_names = {
-            int(cid): f"Subtype_{cid}" for cid in unique_clusters
-        }
+        cluster_names = {int(cid): f"Subtype_{cid}" for cid in unique_clusters}
 
     # Pathway enrichment analysis
-    enrichment_results = pathway_enrichment_analysis(
-        pathway_scores, cluster_labels, fdr_alpha
-    )
+    enrichment_results = pathway_enrichment_analysis(pathway_scores, cluster_labels, fdr_alpha)
 
     # Gene contribution scores (if data available)
     gene_results: Dict[int, List[GeneContribution]] = {}
     n_genes = 0
     if gene_burdens is not None and pathways is not None:
-        gene_results = gene_contribution_scores(
-            gene_burdens, cluster_labels, pathways, top_n_genes
-        )
+        gene_results = gene_contribution_scores(gene_burdens, cluster_labels, pathways, top_n_genes)
         n_genes = len(gene_burdens.columns)
     elif gene_burdens is not None and pathways is None:
         logger.info(
@@ -689,10 +674,7 @@ def _build_heatmap_matrix(
         return np.array([[]]), [], []
 
     pathways = list(result.subtype_profiles[0].pathway_score_means.keys())
-    row_labels = [
-        f"{p.subtype_label} (n={p.n_samples})"
-        for p in result.subtype_profiles
-    ]
+    row_labels = [f"{p.subtype_label} (n={p.n_samples})" for p in result.subtype_profiles]
 
     matrix = np.zeros((len(result.subtype_profiles), len(pathways)))
     for i, profile in enumerate(result.subtype_profiles):
@@ -722,8 +704,7 @@ def generate_subtype_heatmap(
         import matplotlib.pyplot as plt
     except ImportError:
         logger.warning(
-            "[Characterization] matplotlib not installed — "
-            "skipping heatmap generation"
+            "[Characterization] matplotlib not installed — " "skipping heatmap generation"
         )
         return None
 
@@ -757,8 +738,13 @@ def generate_subtype_heatmap(
             val = matrix[i, j]
             color = "white" if abs(val) > vmax * 0.6 else "black"
             ax.text(
-                j, i, f"{val:.2f}",
-                ha="center", va="center", color=color, fontsize=8,
+                j,
+                i,
+                f"{val:.2f}",
+                ha="center",
+                va="center",
+                color=color,
+                fontsize=8,
             )
 
     ax.set_title("Subtype Pathway Profiles (Mean Z-scores)", fontsize=13)
@@ -795,8 +781,7 @@ def generate_gene_heatmap(
         import matplotlib.pyplot as plt
     except ImportError:
         logger.warning(
-            "[Characterization] matplotlib not installed — "
-            "skipping gene heatmap generation"
+            "[Characterization] matplotlib not installed — " "skipping gene heatmap generation"
         )
         return None
 
@@ -808,15 +793,10 @@ def generate_gene_heatmap(
                 all_genes.append(g.gene)
 
     if not all_genes:
-        logger.warning(
-            "[Characterization] No gene contributions available for heatmap"
-        )
+        logger.warning("[Characterization] No gene contributions available for heatmap")
         return None
 
-    row_labels = [
-        f"{p.subtype_label} (n={p.n_samples})"
-        for p in result.subtype_profiles
-    ]
+    row_labels = [f"{p.subtype_label} (n={p.n_samples})" for p in result.subtype_profiles]
 
     # Build effect size matrix
     matrix = np.zeros((len(result.subtype_profiles), len(all_genes)))
@@ -847,8 +827,13 @@ def generate_gene_heatmap(
             val = matrix[i, j]
             color = "white" if abs(val) > vmax * 0.6 else "black"
             ax.text(
-                j, i, f"{val:.1f}",
-                ha="center", va="center", color=color, fontsize=7,
+                j,
+                i,
+                f"{val:.1f}",
+                ha="center",
+                va="center",
+                color=color,
+                fontsize=7,
             )
 
     ax.set_title("Gene Contributions by Subtype (Cohen's d)", fontsize=13)
@@ -901,9 +886,7 @@ def export_characterization(
     summary_rows = []
     for p in result.subtype_profiles:
         n_sig = sum(1 for e in p.enriched_pathways if e.significant)
-        top_pw = (
-            p.enriched_pathways[0].pathway if p.enriched_pathways else "N/A"
-        )
+        top_pw = p.enriched_pathways[0].pathway if p.enriched_pathways else "N/A"
         summary_rows.append(
             {
                 "subtype_id": p.subtype_id,
@@ -946,9 +929,7 @@ def export_characterization(
     # 4. Pathway scores matrix
     matrix_data = {}
     for p in result.subtype_profiles:
-        matrix_data[p.subtype_label] = {
-            pw: round(v, 4) for pw, v in p.pathway_score_means.items()
-        }
+        matrix_data[p.subtype_label] = {pw: round(v, 4) for pw, v in p.pathway_score_means.items()}
     matrix_df = pd.DataFrame(matrix_data).T
     matrix_df.index.name = "subtype"
 
@@ -964,32 +945,20 @@ def export_characterization(
             df.to_csv(path, index=(name == "pathway_scores_matrix"))
             written_files.append(str(path))
 
-        logger.info(
-            f"[Characterization] Exported CSV files to {output_dir}"
-        )
+        logger.info(f"[Characterization] Exported CSV files to {output_dir}")
 
     # Export Excel
     if "excel" in formats:
         xlsx_path = output_path / "characterization_results.xlsx"
         try:
             with pd.ExcelWriter(xlsx_path, engine="openpyxl") as writer:
-                summary_df.to_excel(
-                    writer, sheet_name="Summary", index=False
-                )
-                enrichment_df.to_excel(
-                    writer, sheet_name="Pathway Enrichment", index=False
-                )
+                summary_df.to_excel(writer, sheet_name="Summary", index=False)
+                enrichment_df.to_excel(writer, sheet_name="Pathway Enrichment", index=False)
                 if not gene_df.empty:
-                    gene_df.to_excel(
-                        writer, sheet_name="Gene Contributions", index=False
-                    )
-                matrix_df.to_excel(
-                    writer, sheet_name="Scores Matrix", index=True
-                )
+                    gene_df.to_excel(writer, sheet_name="Gene Contributions", index=False)
+                matrix_df.to_excel(writer, sheet_name="Scores Matrix", index=True)
             written_files.append(str(xlsx_path))
-            logger.info(
-                f"[Characterization] Exported Excel: {xlsx_path}"
-            )
+            logger.info(f"[Characterization] Exported Excel: {xlsx_path}")
         except ImportError:
             logger.warning(
                 "[Characterization] openpyxl not installed — "

@@ -23,11 +23,11 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-from tqdm import tqdm
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering, KMeans, SpectralClustering
 from sklearn.metrics import adjusted_rand_score
 from sklearn.mixture import GaussianMixture
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 

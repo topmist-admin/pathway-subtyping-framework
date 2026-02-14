@@ -525,9 +525,12 @@ class TestCrossCohortResultMethods:
     def test_format_report_moderate_replication(self):
         """Test interpretation text for moderate replication."""
         r = CrossCohortResult(
-            cohort_a="a", cohort_b="b",
-            transfer_ari=0.35, projection_ari=0.3,
-            pathway_correlation=0.5, shared_subtypes=[],
+            cohort_a="a",
+            cohort_b="b",
+            transfer_ari=0.35,
+            projection_ari=0.3,
+            pathway_correlation=0.5,
+            shared_subtypes=[],
         )
         report = r.format_report()
         assert "Moderate replication" in report
@@ -535,9 +538,12 @@ class TestCrossCohortResultMethods:
     def test_format_report_weak_replication(self):
         """Test interpretation text for weak replication."""
         r = CrossCohortResult(
-            cohort_a="a", cohort_b="b",
-            transfer_ari=0.1, projection_ari=0.05,
-            pathway_correlation=0.2, shared_subtypes=[],
+            cohort_a="a",
+            cohort_b="b",
+            transfer_ari=0.1,
+            projection_ari=0.05,
+            pathway_correlation=0.2,
+            shared_subtypes=[],
         )
         report = r.format_report()
         assert "Weak replication" in report

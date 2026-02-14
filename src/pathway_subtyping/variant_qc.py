@@ -121,9 +121,7 @@ class VariantQCResult:
 
         if self.removal_reasons:
             lines.extend(["", "Removal reasons:"])
-            for reason, count in sorted(
-                self.removal_reasons.items(), key=lambda x: -x[1]
-            ):
+            for reason, count in sorted(self.removal_reasons.items(), key=lambda x: -x[1]):
                 lines.append(f"  {reason}: {count}")
 
         if self.config:
@@ -367,9 +365,7 @@ def filter_variants(
         if n_qual_fail > 0:
             removal_reasons["low_qual"] = int(n_qual_fail)
             keep_mask &= ~qual_fail
-            logger.info(
-                f"[VariantQC] QUAL < {config.min_qual}: {n_qual_fail} variants removed"
-            )
+            logger.info(f"[VariantQC] QUAL < {config.min_qual}: {n_qual_fail} variants removed")
         metrics["qual"] = variants_df["qual"]
 
     # 2. Call rate filter
@@ -383,8 +379,7 @@ def filter_variants(
             removal_reasons["low_call_rate"] = int(n_cr_fail)
             keep_mask &= ~cr_fail
             logger.info(
-                f"[VariantQC] Call rate < {config.min_call_rate}: "
-                f"{n_cr_fail} variants removed"
+                f"[VariantQC] Call rate < {config.min_call_rate}: " f"{n_cr_fail} variants removed"
             )
 
     # 3. HWE filter
@@ -397,8 +392,7 @@ def filter_variants(
             removal_reasons["hwe_violation"] = int(n_hwe_fail)
             keep_mask &= ~hwe_fail
             logger.info(
-                f"[VariantQC] HWE p < {config.hwe_p_threshold}: "
-                f"{n_hwe_fail} variants removed"
+                f"[VariantQC] HWE p < {config.hwe_p_threshold}: " f"{n_hwe_fail} variants removed"
             )
 
     # 4. MAF filter
@@ -410,9 +404,7 @@ def filter_variants(
         if n_maf_fail > 0:
             removal_reasons["high_maf"] = int(n_maf_fail)
             keep_mask &= ~maf_fail
-            logger.info(
-                f"[VariantQC] MAF > {config.max_maf}: {n_maf_fail} variants removed"
-            )
+            logger.info(f"[VariantQC] MAF > {config.max_maf}: {n_maf_fail} variants removed")
 
     # Build per-variant metrics DataFrame
     metrics_df = pd.DataFrame(metrics)
@@ -426,9 +418,9 @@ def filter_variants(
     removed = total - passed
 
     logger.info(
-        f"[VariantQC] Retained {passed}/{total} variants "
-        f"({100 * passed / total:.1f}%)" if total > 0 else
-        "[VariantQC] No variants to filter"
+        f"[VariantQC] Retained {passed}/{total} variants " f"({100 * passed / total:.1f}%)"
+        if total > 0
+        else "[VariantQC] No variants to filter"
     )
 
     result = VariantQCResult(

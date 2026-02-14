@@ -23,7 +23,6 @@ from pathway_subtyping.characterization import (
     pathway_enrichment_analysis,
 )
 
-
 # =============================================================================
 # FIXTURES
 # =============================================================================
@@ -163,26 +162,16 @@ class TestPathwayEnrichment:
         # All enrichments should have q_value >= p_value
         for cid, enrichments in result.items():
             for e in enrichments:
-                assert e.q_value >= e.p_value or np.isclose(
-                    e.q_value, e.p_value
-                )
+                assert e.q_value >= e.p_value or np.isclose(e.q_value, e.p_value)
 
     def test_custom_fdr_alpha(self, synthetic_data):
         pathway_scores, labels = synthetic_data
-        strict = pathway_enrichment_analysis(
-            pathway_scores, labels, fdr_alpha=0.001
-        )
-        lenient = pathway_enrichment_analysis(
-            pathway_scores, labels, fdr_alpha=0.5
-        )
+        strict = pathway_enrichment_analysis(pathway_scores, labels, fdr_alpha=0.001)
+        lenient = pathway_enrichment_analysis(pathway_scores, labels, fdr_alpha=0.5)
 
         # Lenient should have at least as many significant results
-        n_sig_strict = sum(
-            sum(1 for e in enrs if e.significant) for enrs in strict.values()
-        )
-        n_sig_lenient = sum(
-            sum(1 for e in enrs if e.significant) for enrs in lenient.values()
-        )
+        n_sig_strict = sum(sum(1 for e in enrs if e.significant) for enrs in strict.values())
+        n_sig_lenient = sum(sum(1 for e in enrs if e.significant) for enrs in lenient.values())
         assert n_sig_lenient >= n_sig_strict
 
     def test_sorted_by_effect_size(self, synthetic_data):
@@ -243,9 +232,7 @@ class TestGeneContributions:
 
     def test_custom_top_n(self, synthetic_data_with_genes):
         _, labels, gene_burdens, pathways = synthetic_data_with_genes
-        result = gene_contribution_scores(
-            gene_burdens, labels, pathways, top_n=5
-        )
+        result = gene_contribution_scores(gene_burdens, labels, pathways, top_n=5)
 
         for cid in result:
             assert len(result[cid]) <= 5
@@ -309,7 +296,8 @@ class TestCharacterizeSubtypes:
     def test_with_gene_data(self, synthetic_data_with_genes):
         pathway_scores, labels, gene_burdens, pathways = synthetic_data_with_genes
         result = characterize_subtypes(
-            pathway_scores, labels,
+            pathway_scores,
+            labels,
             gene_burdens=gene_burdens,
             pathways=pathways,
         )
@@ -321,7 +309,8 @@ class TestCharacterizeSubtypes:
     def test_with_confidence_scores(self, synthetic_data, confidence_scores):
         pathway_scores, labels = synthetic_data
         result = characterize_subtypes(
-            pathway_scores, labels,
+            pathway_scores,
+            labels,
             confidence_scores=confidence_scores,
         )
 
@@ -331,9 +320,7 @@ class TestCharacterizeSubtypes:
     def test_with_cluster_names(self, synthetic_data):
         pathway_scores, labels = synthetic_data
         names = {0: "Synaptic", 1: "Chromatin", 2: "Immune"}
-        result = characterize_subtypes(
-            pathway_scores, labels, cluster_names=names
-        )
+        result = characterize_subtypes(pathway_scores, labels, cluster_names=names)
 
         labels_set = {p.subtype_label for p in result.subtype_profiles}
         assert labels_set == {"Synaptic", "Chromatin", "Immune"}
@@ -371,24 +358,21 @@ class TestCharacterizeSubtypes:
             columns=[f"G{i}" for i in range(5)],
             index=pathway_scores.index,
         )
-        result = characterize_subtypes(
-            pathway_scores, labels, gene_burdens=gene_burdens
-        )
+        result = characterize_subtypes(pathway_scores, labels, gene_burdens=gene_burdens)
         # Should complete without error, but no gene contributions
         for p in result.subtype_profiles:
             assert p.top_genes == []
 
     def test_custom_fdr_alpha(self, synthetic_data):
         pathway_scores, labels = synthetic_data
-        result = characterize_subtypes(
-            pathway_scores, labels, fdr_alpha=0.001
-        )
+        result = characterize_subtypes(pathway_scores, labels, fdr_alpha=0.001)
         assert result.fdr_alpha == 0.001
 
     def test_custom_top_n_genes(self, synthetic_data_with_genes):
         pathway_scores, labels, gene_burdens, pathways = synthetic_data_with_genes
         result = characterize_subtypes(
-            pathway_scores, labels,
+            pathway_scores,
+            labels,
             gene_burdens=gene_burdens,
             pathways=pathways,
             top_n_genes=5,
@@ -416,7 +400,8 @@ class TestCharacterizationResult:
     def test_format_report(self, synthetic_data_with_genes):
         pathway_scores, labels, gene_burdens, pathways = synthetic_data_with_genes
         result = characterize_subtypes(
-            pathway_scores, labels,
+            pathway_scores,
+            labels,
             gene_burdens=gene_burdens,
             pathways=pathways,
         )
@@ -489,6 +474,7 @@ class TestHeatmaps:
         assert fig is not None
 
         import matplotlib.pyplot as plt
+
         plt.close(fig)
 
     def test_subtype_heatmap_saves_file(self, synthetic_data):
@@ -504,7 +490,8 @@ class TestHeatmaps:
     def test_gene_heatmap_returns_figure(self, synthetic_data_with_genes):
         pathway_scores, labels, gene_burdens, pathways = synthetic_data_with_genes
         result = characterize_subtypes(
-            pathway_scores, labels,
+            pathway_scores,
+            labels,
             gene_burdens=gene_burdens,
             pathways=pathways,
         )
@@ -512,12 +499,14 @@ class TestHeatmaps:
         assert fig is not None
 
         import matplotlib.pyplot as plt
+
         plt.close(fig)
 
     def test_gene_heatmap_saves_file(self, synthetic_data_with_genes):
         pathway_scores, labels, gene_burdens, pathways = synthetic_data_with_genes
         result = characterize_subtypes(
-            pathway_scores, labels,
+            pathway_scores,
+            labels,
             gene_burdens=gene_burdens,
             pathways=pathways,
         )
@@ -541,6 +530,7 @@ class TestHeatmaps:
         assert fig is not None
 
         import matplotlib.pyplot as plt
+
         plt.close(fig)
 
 
@@ -553,7 +543,8 @@ class TestExport:
     def test_csv_export(self, synthetic_data_with_genes):
         pathway_scores, labels, gene_burdens, pathways = synthetic_data_with_genes
         result = characterize_subtypes(
-            pathway_scores, labels,
+            pathway_scores,
+            labels,
             gene_burdens=gene_burdens,
             pathways=pathways,
         )
@@ -567,24 +558,18 @@ class TestExport:
                 assert f.endswith(".csv")
 
             # Check summary CSV
-            summary = pd.read_csv(
-                os.path.join(tmpdir, "subtype_summary.csv")
-            )
+            summary = pd.read_csv(os.path.join(tmpdir, "subtype_summary.csv"))
             assert len(summary) == 3
             assert "subtype_id" in summary.columns
             assert "n_samples" in summary.columns
 
             # Check enrichment CSV
-            enrichment = pd.read_csv(
-                os.path.join(tmpdir, "pathway_enrichment.csv")
-            )
+            enrichment = pd.read_csv(os.path.join(tmpdir, "pathway_enrichment.csv"))
             assert "effect_size" in enrichment.columns
             assert "q_value" in enrichment.columns
 
             # Check gene contributions CSV
-            genes = pd.read_csv(
-                os.path.join(tmpdir, "gene_contributions.csv")
-            )
+            genes = pd.read_csv(os.path.join(tmpdir, "gene_contributions.csv"))
             assert "gene" in genes.columns
             assert "pathway" in genes.columns
 
@@ -614,15 +599,14 @@ class TestExport:
 
         pathway_scores, labels, gene_burdens, pathways = synthetic_data_with_genes
         result = characterize_subtypes(
-            pathway_scores, labels,
+            pathway_scores,
+            labels,
             gene_burdens=gene_burdens,
             pathways=pathways,
         )
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            files = export_characterization(
-                result, tmpdir, formats=["excel"]
-            )
+            files = export_characterization(result, tmpdir, formats=["excel"])
             assert len(files) == 1
             assert files[0].endswith(".xlsx")
             assert os.path.exists(files[0])
@@ -635,9 +619,7 @@ class TestExport:
         result = characterize_subtypes(pathway_scores, labels)
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            files = export_characterization(
-                result, tmpdir, formats=["csv", "excel"]
-            )
+            files = export_characterization(result, tmpdir, formats=["csv", "excel"])
             csv_files = [f for f in files if f.endswith(".csv")]
             xlsx_files = [f for f in files if f.endswith(".xlsx")]
             assert len(csv_files) == 4
@@ -670,14 +652,14 @@ class TestExport:
 class TestEdgeCases:
     def test_two_clusters(self):
         rng = np.random.RandomState(42)
-        data = np.vstack([
-            rng.normal(2.0, 0.5, (20, 3)),
-            rng.normal(-2.0, 0.5, (20, 3)),
-        ])
-        labels = np.array([0] * 20 + [1] * 20)
-        pathway_scores = pd.DataFrame(
-            data, columns=["P0", "P1", "P2"]
+        data = np.vstack(
+            [
+                rng.normal(2.0, 0.5, (20, 3)),
+                rng.normal(-2.0, 0.5, (20, 3)),
+            ]
         )
+        labels = np.array([0] * 20 + [1] * 20)
+        pathway_scores = pd.DataFrame(data, columns=["P0", "P1", "P2"])
 
         result = characterize_subtypes(pathway_scores, labels)
         assert result.n_subtypes == 2
@@ -686,9 +668,7 @@ class TestEdgeCases:
         rng = np.random.RandomState(42)
         data = rng.normal(0, 1, (30, 3))
         labels = np.zeros(30, dtype=int)
-        pathway_scores = pd.DataFrame(
-            data, columns=["P0", "P1", "P2"]
-        )
+        pathway_scores = pd.DataFrame(data, columns=["P0", "P1", "P2"])
 
         result = characterize_subtypes(pathway_scores, labels)
         assert result.n_subtypes == 1
@@ -696,14 +676,14 @@ class TestEdgeCases:
 
     def test_unequal_cluster_sizes(self):
         rng = np.random.RandomState(42)
-        data = np.vstack([
-            rng.normal(2.0, 0.5, (50, 3)),
-            rng.normal(-2.0, 0.5, (10, 3)),
-        ])
-        labels = np.array([0] * 50 + [1] * 10)
-        pathway_scores = pd.DataFrame(
-            data, columns=["P0", "P1", "P2"]
+        data = np.vstack(
+            [
+                rng.normal(2.0, 0.5, (50, 3)),
+                rng.normal(-2.0, 0.5, (10, 3)),
+            ]
         )
+        labels = np.array([0] * 50 + [1] * 10)
+        pathway_scores = pd.DataFrame(data, columns=["P0", "P1", "P2"])
 
         result = characterize_subtypes(pathway_scores, labels)
         fracs = {p.subtype_id: p.fraction for p in result.subtype_profiles}
@@ -713,23 +693,21 @@ class TestEdgeCases:
     def test_many_clusters(self):
         rng = np.random.RandomState(42)
         n_clusters = 8
-        data = np.vstack([
-            rng.normal(i * 3, 0.5, (10, 4)) for i in range(n_clusters)
-        ])
+        data = np.vstack([rng.normal(i * 3, 0.5, (10, 4)) for i in range(n_clusters)])
         labels = np.repeat(range(n_clusters), 10)
-        pathway_scores = pd.DataFrame(
-            data, columns=[f"P{i}" for i in range(4)]
-        )
+        pathway_scores = pd.DataFrame(data, columns=[f"P{i}" for i in range(4)])
 
         result = characterize_subtypes(pathway_scores, labels)
         assert result.n_subtypes == 8
 
     def test_single_pathway(self):
         rng = np.random.RandomState(42)
-        data = np.vstack([
-            rng.normal(2, 0.5, (20, 1)),
-            rng.normal(-2, 0.5, (20, 1)),
-        ])
+        data = np.vstack(
+            [
+                rng.normal(2, 0.5, (20, 1)),
+                rng.normal(-2, 0.5, (20, 1)),
+            ]
+        )
         labels = np.array([0] * 20 + [1] * 20)
         pathway_scores = pd.DataFrame(data, columns=["P0"])
 
@@ -772,9 +750,11 @@ class TestEdgeCases:
     def test_to_dict_is_json_serializable(self, synthetic_data_with_genes):
         """Ensure to_dict output is JSON serializable (no numpy types)."""
         import json
+
         pathway_scores, labels, gene_burdens, pathways = synthetic_data_with_genes
         result = characterize_subtypes(
-            pathway_scores, labels,
+            pathway_scores,
+            labels,
             gene_burdens=gene_burdens,
             pathways=pathways,
         )

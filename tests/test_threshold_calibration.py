@@ -4,12 +4,12 @@ import numpy as np
 import pytest
 
 from pathway_subtyping.threshold_calibration import (
-    CalibratedThresholds,
-    CalibrationSimulationResult,
     _GRID_CLUSTERS,
     _GRID_SAMPLES,
     _NULL_ARI_TABLE,
     _STABILITY_TABLE,
+    CalibratedThresholds,
+    CalibrationSimulationResult,
     _interpolate_threshold,
     _simulate_null_distribution,
     _simulate_stability_distribution,
@@ -17,7 +17,6 @@ from pathway_subtyping.threshold_calibration import (
     generate_calibration_table,
     get_default_thresholds,
 )
-
 
 # =========================================================================
 # CalibratedThresholds dataclass
@@ -289,28 +288,20 @@ class TestCalibrateThresholds:
 
     def test_auto_falls_back_to_simulate(self):
         """Auto mode should simulate when out of range."""
-        ct = calibrate_thresholds(
-            15, 2, method="auto", n_simulations=5, seed=42
-        )
+        ct = calibrate_thresholds(15, 2, method="auto", n_simulations=5, seed=42)
         assert ct.calibration_method == "simulate"
 
     def test_simulate_mode(self):
         """Simulate mode should always run simulations."""
-        ct = calibrate_thresholds(
-            100, 3, method="simulate", n_simulations=5, seed=42
-        )
+        ct = calibrate_thresholds(100, 3, method="simulate", n_simulations=5, seed=42)
         assert ct.calibration_method == "simulate"
         assert ct.null_ari_threshold > 0
         assert ct.stability_threshold > 0
 
     def test_simulate_reproducibility(self):
         """Simulation with same seed should produce same results."""
-        ct1 = calibrate_thresholds(
-            50, 3, method="simulate", n_simulations=5, seed=42
-        )
-        ct2 = calibrate_thresholds(
-            50, 3, method="simulate", n_simulations=5, seed=42
-        )
+        ct1 = calibrate_thresholds(50, 3, method="simulate", n_simulations=5, seed=42)
+        ct2 = calibrate_thresholds(50, 3, method="simulate", n_simulations=5, seed=42)
         assert ct1.null_ari_threshold == ct2.null_ari_threshold
         assert ct1.stability_threshold == ct2.stability_threshold
 
@@ -406,8 +397,7 @@ class TestSimulateStabilityDistribution:
     def test_values_positive(self):
         """Stability ARI values should generally be positive for structured data."""
         values = _simulate_stability_distribution(
-            100, 10, 3, effect_size=2.0,
-            n_simulations=3, n_bootstrap_per_sim=5, seed=42
+            100, 10, 3, effect_size=2.0, n_simulations=3, n_bootstrap_per_sim=5, seed=42
         )
         if len(values) > 0:
             assert np.mean(values) > 0

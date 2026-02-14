@@ -865,9 +865,7 @@ class SimulatedExpressionData:
             "n_pathways": len(self.pathways),
             "n_subtypes": self.config.n_subtypes,
             "effect_size": self.config.effect_size,
-            "subtype_pathway_effects": {
-                str(k): v for k, v in self.subtype_pathway_effects.items()
-            },
+            "subtype_pathway_effects": {str(k): v for k, v in self.subtype_pathway_effects.items()},
         }
 
 
@@ -901,9 +899,7 @@ def generate_synthetic_expression_data(
         remaining -= n_i
     n_per_subtype.append(remaining)
 
-    true_labels = np.concatenate(
-        [np.full(n, i) for i, n in enumerate(n_per_subtype)]
-    )
+    true_labels = np.concatenate([np.full(n, i) for i, n in enumerate(n_per_subtype)])
     shuffle_idx = rng.permutation(config.n_samples)
     true_labels = true_labels[shuffle_idx]
 
@@ -965,9 +961,7 @@ def generate_synthetic_expression_data(
     # 7. Clip negatives (log2 values shouldn't be very negative)
     expression = np.clip(expression, 0, None)
 
-    gene_expression = pd.DataFrame(
-        expression, index=sample_ids, columns=all_genes
-    )
+    gene_expression = pd.DataFrame(expression, index=sample_ids, columns=all_genes)
 
     logger.info(
         f"[Simulation] Generated synthetic expression data: "

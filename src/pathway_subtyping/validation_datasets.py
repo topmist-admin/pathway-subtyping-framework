@@ -17,7 +17,6 @@ References:
 Research use only. Not for clinical decision-making.
 """
 
-import io
 import logging
 import urllib.error
 import urllib.request
@@ -203,9 +202,7 @@ class ValidationReport:
             "reactome_cross_ref": self.reactome_cross_ref,
             "synthetic_validation": self.synthetic_validation,
             "biological_plausibility": (
-                self.biological_plausibility.to_dict()
-                if self.biological_plausibility
-                else None
+                self.biological_plausibility.to_dict() if self.biological_plausibility else None
             ),
             "overall_pass": bool(self.overall_pass),
             "warnings": list(self.warnings),
@@ -238,7 +235,9 @@ class ValidationReport:
             lines.append(
                 "| Pathway | Genes | In ClinVar | With Pathogenic | Coverage | Pathogenic % |"
             )
-            lines.append("|---------|-------|------------|-----------------|----------|--------------|")
+            lines.append(
+                "|---------|-------|------------|-----------------|----------|--------------|"
+            )
             for pc in self.pathway_coverage:
                 lines.append(
                     f"| {pc.pathway_name} | {pc.total_genes} "
@@ -323,10 +322,7 @@ class ValidationReport:
 DATASETS = {
     "clinvar_gene_summary": DatasetInfo(
         name="ClinVar Gene-Specific Summary",
-        url=(
-            "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/"
-            "gene_specific_summary.txt"
-        ),
+        url=("https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/" "gene_specific_summary.txt"),
         description="Gene-level summary of ClinVar variant submissions per gene",
         file_format="tsv",
         license_note="Public domain (NCBI)",
@@ -375,8 +371,7 @@ def download_dataset(
     """
     if dataset_key not in DATASETS:
         raise KeyError(
-            f"Unknown dataset key: '{dataset_key}'. "
-            f"Available: {list(DATASETS.keys())}"
+            f"Unknown dataset key: '{dataset_key}'. " f"Available: {list(DATASETS.keys())}"
         )
 
     dataset = DATASETS[dataset_key]
@@ -400,11 +395,11 @@ def download_dataset(
     try:
         urllib.request.urlretrieve(dataset.url, str(local_path))
     except (urllib.error.URLError, urllib.error.HTTPError, OSError) as e:
-        raise urllib.error.URLError(
-            f"Failed to download {dataset.name}: {e}"
-        ) from e
+        raise urllib.error.URLError(f"Failed to download {dataset.name}: {e}") from e
 
-    logger.info("[ValidationDatasets] Downloaded to %s (%d bytes)", local_path, local_path.stat().st_size)
+    logger.info(
+        "[ValidationDatasets] Downloaded to %s (%d bytes)", local_path, local_path.stat().st_size
+    )
     return _decompress_if_needed(local_path, dataset.file_format)
 
 
@@ -518,22 +513,17 @@ def load_clinvar_gene_summary(
             #   (combined column, no separate benign columns)
             if "Alleles_reported_Pathogenic_Likely_pathogenic" in row:
                 # New format: combined pathogenic + likely pathogenic count
-                combined = _safe_int(
-                    row.get("Alleles_reported_Pathogenic_Likely_pathogenic", "0")
-                )
+                combined = _safe_int(row.get("Alleles_reported_Pathogenic_Likely_pathogenic", "0"))
                 n_pathogenic = combined
                 n_likely_pathogenic = 0
             else:
                 # Old format: separate columns
                 n_pathogenic = _safe_int(row.get("Number_Pathogenic", "0"))
-                n_likely_pathogenic = _safe_int(
-                    row.get("Number_Likely_Pathogenic", "0")
-                )
+                n_likely_pathogenic = _safe_int(row.get("Number_Likely_Pathogenic", "0"))
 
             # Number_uncertain exists in both old and new formats
             n_uncertain = _safe_int(
-                row.get("Number_uncertain",
-                        row.get("Number_Uncertain_Significance", "0"))
+                row.get("Number_uncertain", row.get("Number_Uncertain_Significance", "0"))
             )
 
             genes[symbol.upper()] = ClinVarGeneSummary(
@@ -611,9 +601,7 @@ def load_reactome_pathways(
             #   Current:  "Pathway Name" <TAB> R-HSA-ID <TAB> genes...
             # Check both columns for species prefix and description text.
             if species:
-                desc_match = (
-                    species.lower() in description.lower() if description else False
-                )
+                desc_match = species.lower() in description.lower() if description else False
                 name_has_prefix = (
                     pathway_name.startswith(species_prefix) if species_prefix else False
                 )
@@ -680,29 +668,35 @@ def validate_pathway_coverage(
                 has_pathogenic = cv.total_pathogenic > 0
                 if has_pathogenic:
                     with_pathogenic += 1
-                gene_details.append({
-                    "gene": gene,
-                    "in_clinvar": True,
-                    "total_pathogenic": int(cv.total_pathogenic),
-                })
+                gene_details.append(
+                    {
+                        "gene": gene,
+                        "in_clinvar": True,
+                        "total_pathogenic": int(cv.total_pathogenic),
+                    }
+                )
             else:
-                gene_details.append({
-                    "gene": gene,
-                    "in_clinvar": False,
-                    "total_pathogenic": 0,
-                })
+                gene_details.append(
+                    {
+                        "gene": gene,
+                        "in_clinvar": False,
+                        "total_pathogenic": 0,
+                    }
+                )
 
         total = len(genes) if genes else 1  # Avoid division by zero
 
-        results.append(PathwayCoverageResult(
-            pathway_name=pathway_name,
-            total_genes=len(genes),
-            genes_in_clinvar=in_clinvar,
-            genes_with_pathogenic=with_pathogenic,
-            coverage_fraction=in_clinvar / total,
-            pathogenic_fraction=with_pathogenic / total,
-            gene_details=gene_details,
-        ))
+        results.append(
+            PathwayCoverageResult(
+                pathway_name=pathway_name,
+                total_genes=len(genes),
+                genes_in_clinvar=in_clinvar,
+                genes_with_pathogenic=with_pathogenic,
+                coverage_fraction=in_clinvar / total,
+                pathogenic_fraction=with_pathogenic / total,
+                gene_details=gene_details,
+            )
+        )
 
     # Sort by pathogenic fraction (most covered first)
     results.sort(key=lambda r: r.pathogenic_fraction, reverse=True)
@@ -737,8 +731,7 @@ def validate_pathway_against_reactome(
 
     # Pre-compute Reactome gene sets (uppercase)
     reactome_sets = {
-        name: set(g.upper() for g in genes)
-        for name, genes in reactome_pathways.items()
+        name: set(g.upper() for g in genes) for name, genes in reactome_pathways.items()
     }
 
     results = {}
@@ -1000,9 +993,7 @@ def run_biological_plausibility_check(
             "subtype_top_pathways": subtype_top_pathways,
             "n_enriched_genes": len(enriched_genes),
             "n_genes_in_clinvar": (
-                sum(1 for g in enriched_genes if g in clinvar_upper)
-                if enriched_genes
-                else 0
+                sum(1 for g in enriched_genes if g in clinvar_upper) if enriched_genes else 0
             ),
         },
     )
@@ -1055,7 +1046,12 @@ def run_full_validation(
 
     # Resolve GMT path
     if gmt_path is None:
-        default_gmt = Path(__file__).parent.parent.parent / "data" / "pathways" / f"{disease_name}_pathways.gmt"
+        default_gmt = (
+            Path(__file__).parent.parent.parent
+            / "data"
+            / "pathways"
+            / f"{disease_name}_pathways.gmt"
+        )
         if default_gmt.exists():
             gmt_path = str(default_gmt)
         else:
@@ -1126,9 +1122,7 @@ def run_full_validation(
     # --- Step 4: Reactome cross-reference ---
     reactome_cross_ref = {}
     if reactome_pathways:
-        reactome_cross_ref = validate_pathway_against_reactome(
-            curated_pathways, reactome_pathways
-        )
+        reactome_cross_ref = validate_pathway_against_reactome(curated_pathways, reactome_pathways)
 
     # --- Step 5-6: Synthetic data + clustering ---
     synthetic_validation = {}

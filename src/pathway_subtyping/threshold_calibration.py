@@ -13,11 +13,10 @@ Research use only. Not for clinical decision-making.
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-import pandas as pd
 from sklearn.metrics import adjusted_rand_score
 from sklearn.mixture import GaussianMixture
 
@@ -32,33 +31,68 @@ logger = logging.getLogger(__name__)
 
 _NULL_ARI_TABLE: Dict[Tuple[int, int], float] = {
     # k=2
-    (30, 2): 0.1480, (50, 2): 0.0920, (75, 2): 0.0610,
-    (100, 2): 0.0450, (150, 2): 0.0290, (200, 2): 0.0220,
-    (300, 2): 0.0140, (500, 2): 0.0085,
+    (30, 2): 0.1480,
+    (50, 2): 0.0920,
+    (75, 2): 0.0610,
+    (100, 2): 0.0450,
+    (150, 2): 0.0290,
+    (200, 2): 0.0220,
+    (300, 2): 0.0140,
+    (500, 2): 0.0085,
     # k=3
-    (30, 3): 0.1820, (50, 3): 0.1180, (75, 3): 0.0780,
-    (100, 3): 0.0580, (150, 3): 0.0380, (200, 3): 0.0280,
-    (300, 3): 0.0190, (500, 3): 0.0110,
+    (30, 3): 0.1820,
+    (50, 3): 0.1180,
+    (75, 3): 0.0780,
+    (100, 3): 0.0580,
+    (150, 3): 0.0380,
+    (200, 3): 0.0280,
+    (300, 3): 0.0190,
+    (500, 3): 0.0110,
     # k=4
-    (30, 4): 0.2150, (50, 4): 0.1420, (75, 4): 0.0950,
-    (100, 4): 0.0710, (150, 4): 0.0470, (200, 4): 0.0350,
-    (300, 4): 0.0230, (500, 4): 0.0140,
+    (30, 4): 0.2150,
+    (50, 4): 0.1420,
+    (75, 4): 0.0950,
+    (100, 4): 0.0710,
+    (150, 4): 0.0470,
+    (200, 4): 0.0350,
+    (300, 4): 0.0230,
+    (500, 4): 0.0140,
     # k=5
-    (30, 5): 0.2480, (50, 5): 0.1650, (75, 5): 0.1110,
-    (100, 5): 0.0830, (150, 5): 0.0550, (200, 5): 0.0410,
-    (300, 5): 0.0270, (500, 5): 0.0165,
+    (30, 5): 0.2480,
+    (50, 5): 0.1650,
+    (75, 5): 0.1110,
+    (100, 5): 0.0830,
+    (150, 5): 0.0550,
+    (200, 5): 0.0410,
+    (300, 5): 0.0270,
+    (500, 5): 0.0165,
     # k=6
-    (30, 6): 0.2790, (50, 6): 0.1870, (75, 6): 0.1260,
-    (100, 6): 0.0950, (150, 6): 0.0630, (200, 6): 0.0470,
-    (300, 6): 0.0310, (500, 6): 0.0190,
+    (30, 6): 0.2790,
+    (50, 6): 0.1870,
+    (75, 6): 0.1260,
+    (100, 6): 0.0950,
+    (150, 6): 0.0630,
+    (200, 6): 0.0470,
+    (300, 6): 0.0310,
+    (500, 6): 0.0190,
     # k=7
-    (30, 7): 0.3080, (50, 7): 0.2080, (75, 7): 0.1400,
-    (100, 7): 0.1060, (150, 7): 0.0700, (200, 7): 0.0530,
-    (300, 7): 0.0350, (500, 7): 0.0210,
+    (30, 7): 0.3080,
+    (50, 7): 0.2080,
+    (75, 7): 0.1400,
+    (100, 7): 0.1060,
+    (150, 7): 0.0700,
+    (200, 7): 0.0530,
+    (300, 7): 0.0350,
+    (500, 7): 0.0210,
     # k=8
-    (30, 8): 0.3350, (50, 8): 0.2280, (75, 8): 0.1540,
-    (100, 8): 0.1160, (150, 8): 0.0770, (200, 8): 0.0580,
-    (300, 8): 0.0390, (500, 8): 0.0230,
+    (30, 8): 0.3350,
+    (50, 8): 0.2280,
+    (75, 8): 0.1540,
+    (100, 8): 0.1160,
+    (150, 8): 0.0770,
+    (200, 8): 0.0580,
+    (300, 8): 0.0390,
+    (500, 8): 0.0230,
 }
 
 # 5th percentile of bootstrap ARI under structured data
@@ -66,33 +100,68 @@ _NULL_ARI_TABLE: Dict[Tuple[int, int], float] = {
 
 _STABILITY_TABLE: Dict[Tuple[int, int], float] = {
     # k=2
-    (30, 2): 0.7200, (50, 2): 0.8100, (75, 2): 0.8600,
-    (100, 2): 0.8900, (150, 2): 0.9200, (200, 2): 0.9400,
-    (300, 2): 0.9550, (500, 2): 0.9700,
+    (30, 2): 0.7200,
+    (50, 2): 0.8100,
+    (75, 2): 0.8600,
+    (100, 2): 0.8900,
+    (150, 2): 0.9200,
+    (200, 2): 0.9400,
+    (300, 2): 0.9550,
+    (500, 2): 0.9700,
     # k=3
-    (30, 3): 0.6500, (50, 3): 0.7500, (75, 3): 0.8100,
-    (100, 3): 0.8500, (150, 3): 0.8850, (200, 3): 0.9100,
-    (300, 3): 0.9350, (500, 3): 0.9550,
+    (30, 3): 0.6500,
+    (50, 3): 0.7500,
+    (75, 3): 0.8100,
+    (100, 3): 0.8500,
+    (150, 3): 0.8850,
+    (200, 3): 0.9100,
+    (300, 3): 0.9350,
+    (500, 3): 0.9550,
     # k=4
-    (30, 4): 0.5800, (50, 4): 0.6900, (75, 4): 0.7600,
-    (100, 4): 0.8100, (150, 4): 0.8500, (200, 4): 0.8800,
-    (300, 4): 0.9100, (500, 4): 0.9400,
+    (30, 4): 0.5800,
+    (50, 4): 0.6900,
+    (75, 4): 0.7600,
+    (100, 4): 0.8100,
+    (150, 4): 0.8500,
+    (200, 4): 0.8800,
+    (300, 4): 0.9100,
+    (500, 4): 0.9400,
     # k=5
-    (30, 5): 0.5100, (50, 5): 0.6300, (75, 5): 0.7100,
-    (100, 5): 0.7700, (150, 5): 0.8150, (200, 5): 0.8500,
-    (300, 5): 0.8850, (500, 5): 0.9200,
+    (30, 5): 0.5100,
+    (50, 5): 0.6300,
+    (75, 5): 0.7100,
+    (100, 5): 0.7700,
+    (150, 5): 0.8150,
+    (200, 5): 0.8500,
+    (300, 5): 0.8850,
+    (500, 5): 0.9200,
     # k=6
-    (30, 6): 0.4500, (50, 6): 0.5700, (75, 6): 0.6600,
-    (100, 6): 0.7300, (150, 6): 0.7800, (200, 6): 0.8200,
-    (300, 6): 0.8600, (500, 6): 0.9000,
+    (30, 6): 0.4500,
+    (50, 6): 0.5700,
+    (75, 6): 0.6600,
+    (100, 6): 0.7300,
+    (150, 6): 0.7800,
+    (200, 6): 0.8200,
+    (300, 6): 0.8600,
+    (500, 6): 0.9000,
     # k=7
-    (30, 7): 0.3900, (50, 7): 0.5100, (75, 7): 0.6100,
-    (100, 7): 0.6900, (150, 7): 0.7450, (200, 7): 0.7900,
-    (300, 7): 0.8350, (500, 7): 0.8800,
+    (30, 7): 0.3900,
+    (50, 7): 0.5100,
+    (75, 7): 0.6100,
+    (100, 7): 0.6900,
+    (150, 7): 0.7450,
+    (200, 7): 0.7900,
+    (300, 7): 0.8350,
+    (500, 7): 0.8800,
     # k=8
-    (30, 8): 0.3400, (50, 8): 0.4600, (75, 8): 0.5600,
-    (100, 8): 0.6500, (150, 8): 0.7100, (200, 8): 0.7600,
-    (300, 8): 0.8100, (500, 8): 0.8600,
+    (30, 8): 0.3400,
+    (50, 8): 0.4600,
+    (75, 8): 0.5600,
+    (100, 8): 0.6500,
+    (150, 8): 0.7100,
+    (200, 8): 0.7600,
+    (300, 8): 0.8100,
+    (500, 8): 0.8600,
 }
 
 _GRID_SAMPLES = [30, 50, 75, 100, 150, 200, 300, 500]
@@ -102,6 +171,7 @@ _GRID_CLUSTERS = [2, 3, 4, 5, 6, 7, 8]
 # ---------------------------------------------------------------------------
 # Dataclasses
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class CalibratedThresholds:
@@ -146,8 +216,7 @@ class CalibratedThresholds:
             "Threshold Calibration Report",
             "=" * 40,
             f"Data dimensions: n={self.n_samples}, k={self.n_clusters}",
-            f"Method: {self.calibration_method}"
-            + (" (interpolated)" if self.interpolated else ""),
+            f"Method: {self.calibration_method}" + (" (interpolated)" if self.interpolated else ""),
             f"Significance level (alpha): {self.alpha}",
             "",
             "Calibrated Thresholds:",
@@ -206,6 +275,7 @@ class CalibrationSimulationResult:
 # ---------------------------------------------------------------------------
 # Interpolation
 # ---------------------------------------------------------------------------
+
 
 def _interpolate_threshold(
     table: Dict[Tuple[int, int], float],
@@ -282,6 +352,7 @@ def _interpolate_threshold(
 # Simulation functions
 # ---------------------------------------------------------------------------
 
+
 def _simulate_null_distribution(
     n_samples: int,
     n_pathways: int,
@@ -311,7 +382,6 @@ def _simulate_null_distribution(
     for i in range(n_simulations):
         # Generate random pathway scores (no structure)
         scores = rng.normal(0, 1, (n_samples, n_pathways))
-        scores_df = pd.DataFrame(scores)
 
         # Random reference labels
         ref_labels = rng.randint(0, n_clusters, n_samples)
@@ -435,6 +505,7 @@ def _simulate_stability_distribution(
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def calibrate_thresholds(
     n_samples: int,
     n_clusters: int,
@@ -491,9 +562,7 @@ def calibrate_thresholds(
             stability_threshold = 1.0 - (1.0 - stability_threshold) * alpha_ratio
 
         # Check if exact match or interpolated
-        exact_match = (
-            (n_samples, n_clusters) in _NULL_ARI_TABLE
-        )
+        exact_match = (n_samples, n_clusters) in _NULL_ARI_TABLE
 
         calibration_method = "lookup"
         interpolated = not exact_match
@@ -522,12 +591,8 @@ def calibrate_thresholds(
         )
 
     # Auto mode: fall back to simulation
-    logger.info(
-        f"[Calibration] Data dimensions outside lookup grid, falling back to simulation"
-    )
-    return _calibrate_via_simulation(
-        n_samples, n_clusters, n_pathways, alpha, n_simulations, seed
-    )
+    logger.info("[Calibration] Data dimensions outside lookup grid, falling back to simulation")
+    return _calibrate_via_simulation(n_samples, n_clusters, n_pathways, alpha, n_simulations, seed)
 
 
 def _calibrate_via_simulation(
@@ -539,9 +604,7 @@ def _calibrate_via_simulation(
     seed: Optional[int],
 ) -> CalibratedThresholds:
     """Calibrate thresholds by running simulations."""
-    logger.info(
-        f"[Calibration] Running {n_simulations} simulations for calibration..."
-    )
+    logger.info(f"[Calibration] Running {n_simulations} simulations for calibration...")
 
     null_values = _simulate_null_distribution(
         n_samples, n_pathways, n_clusters, n_simulations, seed
@@ -553,7 +616,9 @@ def _calibrate_via_simulation(
 
     stability_seed = (seed + 10000) if seed is not None else None
     stability_values = _simulate_stability_distribution(
-        n_samples, n_pathways, n_clusters,
+        n_samples,
+        n_pathways,
+        n_clusters,
         effect_size=1.5,
         n_bootstrap_per_sim=n_boot_per,
         n_simulations=n_stab_sims,
@@ -652,9 +717,7 @@ def generate_calibration_table(
             point_seed = seed + n * 100 + k
 
             # Null distribution
-            null_values = _simulate_null_distribution(
-                n, 15, k, n_simulations, point_seed
-            )
+            null_values = _simulate_null_distribution(n, 15, k, n_simulations, point_seed)
             if len(null_values) > 0:
                 null_table[(n, k)] = float(np.percentile(null_values, 95))
             else:
@@ -662,7 +725,9 @@ def generate_calibration_table(
 
             # Stability distribution
             stab_values = _simulate_stability_distribution(
-                n, 15, k,
+                n,
+                15,
+                k,
                 effect_size=1.5,
                 n_bootstrap_per_sim=10,
                 n_simulations=max(5, n_simulations // 10),

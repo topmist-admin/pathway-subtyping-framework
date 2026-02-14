@@ -98,21 +98,22 @@ class CrossCohortResult:
             lines.append("No shared subtype labels.")
 
         if self.details:
-            lines.extend([
-                "",
-                "Details:",
-                f"  Common pathways:  {self.details.get('common_pathways', 'N/A')}",
-                f"  Cohort A samples: {self.details.get('cohort_a_samples', 'N/A')}",
-                f"  Cohort B samples: {self.details.get('cohort_b_samples', 'N/A')}",
-            ])
+            lines.extend(
+                [
+                    "",
+                    "Details:",
+                    f"  Common pathways:  {self.details.get('common_pathways', 'N/A')}",
+                    f"  Cohort A samples: {self.details.get('cohort_a_samples', 'N/A')}",
+                    f"  Cohort B samples: {self.details.get('cohort_b_samples', 'N/A')}",
+                ]
+            )
 
         return "\n".join(lines)
 
     def get_citations(self) -> List[str]:
         """Return citations for methods used in cross-cohort validation."""
         return [
-            "Hubert L, Arabie P. Comparing partitions. "
-            "J Classif. 1985;2(1):193-218.",
+            "Hubert L, Arabie P. Comparing partitions. " "J Classif. 1985;2(1):193-218.",
         ]
 
 

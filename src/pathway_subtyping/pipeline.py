@@ -18,20 +18,20 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from .data_quality import (
-    DataQualityReport,
-    VCFDataQualityError,
-    load_vcf_with_quality_check,
-)
-from .variant_qc import VariantQCConfig, VariantQCResult, filter_variants
-from .utils.seed import get_rng, set_global_seed
 from .characterization import (
     CharacterizationResult,
     characterize_subtypes,
     export_characterization,
     generate_subtype_heatmap,
 )
+from .data_quality import (
+    DataQualityReport,
+    VCFDataQualityError,
+    load_vcf_with_quality_check,
+)
+from .utils.seed import get_rng, set_global_seed
 from .validation import ValidationGates, ValidationGatesResult
+from .variant_qc import VariantQCConfig, VariantQCResult, filter_variants
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -120,9 +120,7 @@ class PipelineConfig:
             input_type=data.get("input_type", "vcf"),
             expression_path=data.get("expression_path", ""),
             expression_input_type=data.get("expression_input_type", "tpm"),
-            expression_scoring_method=data.get(
-                "expression_scoring_method", "ssgsea"
-            ),
+            expression_scoring_method=data.get("expression_scoring_method", "ssgsea"),
             ssgsea_alpha=float(data.get("ssgsea_alpha", 0.25)),
             ancestry_pcs_path=ancestry.get("pcs_path"),
             ancestry_correction=ancestry.get("correction"),
@@ -251,6 +249,48 @@ class DemoPipeline:
                 f"{len(self.pathways)} pathways"
             )
 
+        # Check sample overlap between data sources and phenotypes
+        data_samples = set(self.samples)
+        pheno_samples = set(self.phenotypes_df.index)
+        overlap = data_samples & pheno_samples
+        data_only = data_samples - pheno_samples
+        pheno_only = pheno_samples - data_samples
+
+        if data_only:
+            logger.warning(
+                f"[Pipeline] {len(data_only)} sample(s) in data but not in phenotypes "
+                f"(will lack phenotype annotations)"
+            )
+        if pheno_only:
+            logger.warning(
+                f"[Pipeline] {len(pheno_only)} sample(s) in phenotypes but not in data "
+                f"(will be unused)"
+            )
+        if overlap:
+            logger.info(f"[Pipeline] {len(overlap)} samples with both data and phenotypes")
+
+        # Minimum sample size check
+        n_samples = len(self.samples)
+        max_k = (
+            self.config.n_clusters_range[1]
+            if self.config.n_clusters is None
+            else self.config.n_clusters
+        )
+        min_recommended = max_k * 5  # At least 5 samples per cluster
+
+        if n_samples < max_k * 2:
+            raise ValueError(
+                f"Too few samples ({n_samples}) for clustering into up to {max_k} clusters. "
+                f"Need at least {max_k * 2} samples (2 per cluster minimum). "
+                f"Reduce n_clusters or n_clusters_range, or add more samples."
+            )
+        elif n_samples < min_recommended:
+            logger.warning(
+                f"[Pipeline] Low sample count ({n_samples}) for up to {max_k} clusters. "
+                f"Recommend at least {min_recommended} samples (5 per cluster) "
+                f"for reliable subtype discovery."
+            )
+
     def _load_vcf(self) -> None:
         """Load and parse VCF file with data quality checking.
 
@@ -344,8 +384,8 @@ class DemoPipeline:
             )
 
         input_type = ExpressionInputType(self.config.expression_input_type)
-        self.gene_expression, self.data_quality_report_expr = (
-            load_expression_matrix(str(expr_path), input_type=input_type)
+        self.gene_expression, self.data_quality_report_expr = load_expression_matrix(
+            str(expr_path), input_type=input_type
         )
         self.samples = list(self.gene_expression.index)
 
@@ -355,7 +395,37 @@ class DemoPipeline:
         if not pheno_path.exists():
             raise FileNotFoundError(f"Phenotype file not found: {pheno_path}")
 
-        self.phenotypes_df = pd.read_csv(pheno_path)
+        try:
+            self.phenotypes_df = pd.read_csv(pheno_path)
+        except pd.errors.EmptyDataError:
+            raise ValueError(
+                f"Phenotype file is empty: {pheno_path}\n\n"
+                f"Expected: CSV with a 'sample_id' column and phenotype columns."
+            )
+
+        if self.phenotypes_df.empty:
+            raise ValueError(
+                f"Phenotype file is empty: {pheno_path}\n\n"
+                f"Expected: CSV with a 'sample_id' column and phenotype columns."
+            )
+
+        if "sample_id" not in self.phenotypes_df.columns:
+            raise ValueError(
+                f"Phenotype file missing required 'sample_id' column: {pheno_path}\n\n"
+                f"Found columns: {list(self.phenotypes_df.columns)}\n"
+                f"Expected: CSV with a 'sample_id' column as the sample identifier."
+            )
+
+        n_dupes = self.phenotypes_df["sample_id"].duplicated().sum()
+        if n_dupes > 0:
+            logger.warning(
+                f"[Pipeline] Phenotype file has {n_dupes} duplicate sample_id(s). "
+                f"Keeping first occurrence."
+            )
+            self.phenotypes_df = self.phenotypes_df.drop_duplicates(
+                subset="sample_id", keep="first"
+            )
+
         self.phenotypes_df.set_index("sample_id", inplace=True)
 
     def _load_pathways(self) -> None:
@@ -718,7 +788,9 @@ class DemoPipeline:
         stability_threshold = self.config.validation_stability_threshold
         null_ari_max = self.config.validation_null_ari_max
 
-        if (stability_threshold is None or null_ari_max is None) and self.config.validation_calibrate:
+        if (
+            stability_threshold is None or null_ari_max is None
+        ) and self.config.validation_calibrate:
             from .threshold_calibration import calibrate_thresholds
 
             n_samples = len(self.pathway_scores)
@@ -806,9 +878,7 @@ class DemoPipeline:
 
         # Generate characterization heatmap
         heatmap_path = self.output_dir / "figures" / "subtype_heatmap.png"
-        generate_subtype_heatmap(
-            self.characterization_result, output_path=str(heatmap_path)
-        )
+        generate_subtype_heatmap(self.characterization_result, output_path=str(heatmap_path))
 
         # Export characterization CSV files
         char_dir = self.output_dir / "characterization"
@@ -960,9 +1030,7 @@ class DemoPipeline:
                 "scoring_method": self.config.expression_scoring_method,
                 "n_samples": len(self.samples),
                 "n_genes": (
-                    len(self.gene_expression.columns)
-                    if self.gene_expression is not None
-                    else 0
+                    len(self.gene_expression.columns) if self.gene_expression is not None else 0
                 ),
                 "n_pathways": len(self.pathways),
                 "n_clusters": self.cluster_assignments["cluster_id"].nunique(),
@@ -977,11 +1045,7 @@ class DemoPipeline:
                 "input_type": "vcf",
                 "n_variants": len(self.variants_df),
                 "n_samples": len(self.samples),
-                "n_genes": (
-                    len(self.gene_burdens.columns)
-                    if self.gene_burdens is not None
-                    else 0
-                ),
+                "n_genes": (len(self.gene_burdens.columns) if self.gene_burdens is not None else 0),
                 "n_pathways": len(self.pathways),
                 "n_clusters": self.cluster_assignments["cluster_id"].nunique(),
             }
@@ -1000,19 +1064,13 @@ class DemoPipeline:
             "summary": summary,
             "clusters": self.cluster_assignments["cluster_label"].value_counts().to_dict(),
             "data_quality": data_quality,
-            "variant_qc": (
-                self.variant_qc_result.to_dict()
-                if self.variant_qc_result
-                else {}
-            ),
+            "variant_qc": (self.variant_qc_result.to_dict() if self.variant_qc_result else {}),
             "ancestry_correction": ancestry_info,
             "ground_truth_validation": ground_truth_validation,
             "validation_gates": validation_gates,
             "threshold_calibration": calibration_info,
             "characterization": (
-                self.characterization_result.to_dict()
-                if self.characterization_result
-                else {}
+                self.characterization_result.to_dict() if self.characterization_result else {}
             ),
             "disclaimer": self.config.disclaimer,
         }
@@ -1047,29 +1105,36 @@ class DemoPipeline:
         ]
 
         if report["summary"].get("input_type") == "expression":
-            lines.extend([
-                f"| Input Type | expression ({report['summary'].get('scoring_method', 'ssgsea')}) |",
-                f"| Samples | {report['summary']['n_samples']} |",
-                f"| Genes | {report['summary']['n_genes']} |",
-                f"| Pathways | {report['summary']['n_pathways']} |",
-            ])
+            lines.extend(
+                [
+                    f"| Input Type | expression"
+                    f" ({report['summary'].get('scoring_method', 'ssgsea')}) |",
+                    f"| Samples | {report['summary']['n_samples']} |",
+                    f"| Genes | {report['summary']['n_genes']} |",
+                    f"| Pathways | {report['summary']['n_pathways']} |",
+                ]
+            )
         else:
-            lines.extend([
-                f"| Variants | {report['summary'].get('n_variants', 'N/A')} |",
-                f"| Samples | {report['summary']['n_samples']} |",
-                f"| Genes | {report['summary']['n_genes']} |",
-                f"| Pathways | {report['summary']['n_pathways']} |",
-            ])
+            lines.extend(
+                [
+                    f"| Variants | {report['summary'].get('n_variants', 'N/A')} |",
+                    f"| Samples | {report['summary']['n_samples']} |",
+                    f"| Genes | {report['summary']['n_genes']} |",
+                    f"| Pathways | {report['summary']['n_pathways']} |",
+                ]
+            )
 
-        lines.extend([
-            "",
-            "## Clustering Results",
-            "",
-            f"**Number of clusters:** {report['summary']['n_clusters']}",
-            "",
-            "| Cluster | Samples |",
-            "|---------|---------|",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Clustering Results",
+                "",
+                f"**Number of clusters:** {report['summary']['n_clusters']}",
+                "",
+                "| Cluster | Samples |",
+                "|---------|---------|",
+            ]
+        )
 
         for cluster, count in report["clusters"].items():
             lines.append(f"| {cluster} | {count} |")
@@ -1357,9 +1422,7 @@ class DemoPipeline:
             try:
                 self.characterize()
             except Exception as e:
-                logger.warning(
-                    f"[Characterization] Skipped due to error: {e}"
-                )
+                logger.warning(f"[Characterization] Skipped due to error: {e}")
 
             self.generate_outputs()
 

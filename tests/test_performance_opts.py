@@ -9,20 +9,19 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pathway_subtyping.validation import ValidationGates
+from pathway_subtyping.expression import (
+    ExpressionScoringMethod,
+    score_pathways_from_expression,
+)
+from pathway_subtyping.pipeline import PipelineConfig
+from pathway_subtyping.sensitivity import vary_feature_subset
 from pathway_subtyping.simulation import (
     SimulationConfig,
     estimate_type_i_error,
     generate_synthetic_data,
     run_power_analysis,
 )
-from pathway_subtyping.expression import (
-    ExpressionScoringMethod,
-    score_pathways_from_expression,
-)
-from pathway_subtyping.sensitivity import vary_feature_subset
-from pathway_subtyping.pipeline import PipelineConfig
-
+from pathway_subtyping.validation import ValidationGates
 
 # -- Shared fixtures ----------------------------------------------------------
 

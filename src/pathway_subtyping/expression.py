@@ -23,9 +23,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-from tqdm import tqdm
 import pandas as pd
-from scipy import stats
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -74,9 +73,7 @@ class ExpressionDataQualityReport:
             "n_low_variance_genes": self.n_low_variance_genes,
             "n_pathways_covered": self.n_pathways_covered,
             "n_pathways_total": self.n_pathways_total,
-            "mean_pathway_gene_coverage": round(
-                float(self.mean_pathway_gene_coverage), 4
-            ),
+            "mean_pathway_gene_coverage": round(float(self.mean_pathway_gene_coverage), 4),
             "input_type": self.input_type,
             "orientation_detected": self.orientation_detected,
             "was_transposed": self.was_transposed,
@@ -126,9 +123,7 @@ class ExpressionScoringResult:
             for pw in self.skipped_pathways[:10]:
                 lines.append(f"- {pw}")
             if len(self.skipped_pathways) > 10:
-                lines.append(
-                    f"- ... and {len(self.skipped_pathways) - 10} more"
-                )
+                lines.append(f"- ... and {len(self.skipped_pathways) - 10} more")
             lines.append("")
         return "\n".join(lines)
 
@@ -334,9 +329,7 @@ def load_expression_matrix(
         logger.info(f"[Expression] Removed {len(zero_genes)} all-zero genes")
 
     # QC: remove low-occurrence genes
-    low_genes = gene_nonzero[
-        (gene_nonzero > 0) & (gene_nonzero < min_samples_per_gene)
-    ].index
+    low_genes = gene_nonzero[(gene_nonzero > 0) & (gene_nonzero < min_samples_per_gene)].index
     low_genes = [g for g in low_genes if g in df.columns]
     if len(low_genes) > 0:
         df = df.drop(columns=low_genes)
@@ -351,9 +344,7 @@ def load_expression_matrix(
     report.n_low_variance_genes = len(low_var_genes)
     if len(low_var_genes) > 0:
         df = df.drop(columns=low_var_genes)
-        logger.info(
-            f"[Expression] Removed {len(low_var_genes)} zero-variance genes"
-        )
+        logger.info(f"[Expression] Removed {len(low_var_genes)} zero-variance genes")
 
     report.n_samples = len(df)
     report.n_genes = len(df.columns)
@@ -368,9 +359,7 @@ def load_expression_matrix(
 
     if report.n_samples < 2:
         report.is_usable = False
-        report.warnings.append(
-            f"Only {report.n_samples} sample(s). Need at least 2."
-        )
+        report.warnings.append(f"Only {report.n_samples} sample(s). Need at least 2.")
 
     logger.info(
         f"[Expression] Loaded {report.n_samples} samples x "
@@ -665,9 +654,7 @@ def score_pathways_from_expression(
             if overlap >= min_genes_per_pathway:
                 n_covered += 1
     report.n_pathways_covered = n_covered
-    report.mean_pathway_gene_coverage = (
-        float(np.mean(coverages)) if coverages else 0.0
-    )
+    report.mean_pathway_gene_coverage = float(np.mean(coverages)) if coverages else 0.0
 
     # Dispatch to scoring method
     if method == ExpressionScoringMethod.MEAN_Z:
@@ -684,7 +671,9 @@ def score_pathways_from_expression(
         )
     elif method == ExpressionScoringMethod.GSVA:
         raw_scores, skipped = _score_gsva(
-            gene_expression, pathways, min_genes=min_genes_per_pathway,
+            gene_expression,
+            pathways,
+            min_genes=min_genes_per_pathway,
             show_progress=show_progress,
         )
     else:
@@ -716,9 +705,7 @@ def score_pathways_from_expression(
         skipped.extend(zero_var)
         n_skipped += len(zero_var)
         n_scored -= len(zero_var)
-        logger.info(
-            f"[Expression] Removed {len(zero_var)} zero-variance pathway(s)"
-        )
+        logger.info(f"[Expression] Removed {len(zero_var)} zero-variance pathway(s)")
 
     # Z-score normalize pathway scores
     if n_scored > 0:
