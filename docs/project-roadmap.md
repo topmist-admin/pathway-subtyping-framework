@@ -1,4 +1,4 @@
-# Pathway Subtyping Framework: v0.1 → v0.3 Roadmap
+# Pathway Subtyping Framework: v0.1 → v0.4 Roadmap
 
 This document outlines the project milestones for the Pathway Subtyping Framework,
 modeled after the successful Autism Pathway Framework 90-day plan.
@@ -398,6 +398,175 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 
 ---
 
+## Phase 5: v0.4 Deep Multi-Omics & Metabolic Disease (Weeks 22-29)
+
+**Rationale:** Phase 4 adds transcriptomics and spatial data. Phase 5 completes the multi-omics vision by adding proteomics, metabolomics, and advanced integration methods — enabling the framework to handle all five major data modalities (DNA, RNA, protein, metabolite, functional screens). This phase also adds domain-specific pathway databases for metabolic and mitochondrial diseases.
+
+### [Week 22] MitoCarta 3.0 Mitochondrial Pathway Database
+
+**Theme:** First-class support for mitochondrial disease research via the gold-standard MitoCarta 3.0 database
+
+**Deliverables:**
+- [ ] Parser for MitoCarta 3.0 MitoPathways (149 hierarchical pathways, 1,136 genes)
+- [ ] GMT export from 3-tier hierarchy (top-level → sub-pathway → individual complexes)
+- [ ] Pre-built `mitochondria_pathways.gmt` (OXPHOS I-V, TCA, ISC biogenesis, CoQ, mt-translation, dynamics)
+- [ ] Sub-organelle localization annotations (matrix, inner membrane, intermembrane space, outer membrane)
+- [ ] Example config and documentation
+
+**Acceptance Criteria:**
+- MitoCarta GMT files load in existing pipeline
+- At least 100 pathway gene sets from MitoCarta hierarchy
+- Documentation includes mitochondrial disease use case
+
+**GitHub Issue:** #37
+
+---
+
+### [Week 23] Proteomics Pathway Scoring Module
+
+**Theme:** Protein abundance as a pathway scoring input modality
+
+**Deliverables:**
+- [ ] Accept protein abundance matrix (label-free, TMT, DIA) as input type
+- [ ] Pathway scoring via existing aggregation engine (mean-Z, rank-based)
+- [ ] Missing value handling: MinProb, KNN, zero-fill with flagging
+- [ ] Normalization: median centering, quantile normalization, variance stabilization
+- [ ] Unified pathway score matrix across all modalities
+
+**Acceptance Criteria:**
+- `pipeline.run()` accepts `--input-type proteomics`
+- Handles 30-50% missingness without crashing
+- Pathway scores pass existing validation gates
+- Documentation with proteomics workflow
+
+**GitHub Issue:** #38
+
+---
+
+### [Week 24] Metabolomics Feature Integration
+
+**Theme:** Metabolite abundance as a pathway scoring input modality
+
+**Deliverables:**
+- [ ] Accept metabolite abundance matrix (LC-MS/MS, NMR) as input type
+- [ ] Map metabolites to pathways via HMDB or KEGG compound IDs
+- [ ] Metabolic pathway activity scoring (aggregate metabolite levels per pathway)
+- [ ] Support for targeted panels: TCA intermediates, redox cofactors, acylcarnitines, amino acids
+- [ ] Combined feature matrix: gene + protein + metabolite pathway scores
+
+**Acceptance Criteria:**
+- Pipeline accepts `--input-type metabolomics`
+- Metabolite-to-pathway mapping works for HMDB and KEGG identifiers
+- Combined feature matrix produces valid clustering
+- Documentation with metabolomics workflow example
+
+**GitHub Issue:** #39
+
+---
+
+### [Week 25] Multi-Omics Factor Analysis (MOFA) Integration
+
+**Theme:** Joint latent factor discovery across data modalities
+
+**Deliverables:**
+- [ ] Simplified latent factor model (or MOFA+ wrapper via mofapy2)
+- [ ] Accept 2+ modalities → extract shared and modality-specific factors
+- [ ] Use latent factors as features for GMM clustering
+- [ ] Variance decomposition: which modality drives which subtype
+- [ ] Compare factor-based vs pathway-score-based subtypes (ARI concordance)
+
+**Acceptance Criteria:**
+- Factor-based clustering passes bootstrap validation gate
+- Variance decomposition report shows per-modality contribution
+- Falls back gracefully with single modality
+- Documentation with multi-omics integration tutorial
+
+**GitHub Issue:** #40
+
+---
+
+### [Week 26] CRISPR Screen Functional Overlay
+
+**Theme:** Bridge computational subtypes with experimental gene essentiality
+
+**Deliverables:**
+- [ ] Import CRISPR screen results (MAGeCK, BAGEL, custom formats)
+- [ ] Annotate subtype-driving pathways with essentiality scores
+- [ ] Enrichment test: subtype pathways vs CRISPR hits (Fisher's exact, FDR)
+- [ ] Visualization: pathway enrichment vs essentiality scatterplot
+
+**Acceptance Criteria:**
+- Accepts standard MAGeCK gene_summary.txt format
+- Produces interpretable, FDR-corrected enrichment statistics
+- Documentation with example workflow
+
+**GitHub Issue:** #41
+
+---
+
+### [Week 27] Experimental Design Module
+
+**Theme:** Study planning tools for multi-omics subtyping experiments
+
+**Deliverables:**
+- [ ] Power calculator: samples needed per modality to detect k subtypes
+- [ ] Batch design optimizer: minimize confounding in sample-to-batch allocation
+- [ ] Modality cost-benefit analysis: incremental ARI gain per additional modality
+- [ ] Exportable study design report
+
+**Acceptance Criteria:**
+- Power calculator handles 1-5 input modalities
+- Integrates with existing simulation and batch correction modules
+- Documentation with study planning tutorial
+
+**GitHub Issue:** #42
+
+---
+
+### [Week 28] Multi-Omics QC Dashboard
+
+**Theme:** Unified quality control across all data modalities
+
+**Deliverables:**
+- [ ] RNA-seq QC: library size, gene detection rate, mitochondrial read fraction
+- [ ] Proteomics QC: missing value patterns, batch effects, normalization
+- [ ] Metabolomics QC: CV per metabolite, batch drift, left-censoring
+- [ ] Cross-modality: sample concordance, multi-modality outlier flagging
+- [ ] Self-contained HTML QC report
+
+**Acceptance Criteria:**
+- Runs on any combination of available modalities
+- Clear pass/warn/fail per sample per modality
+- Conservative outlier flagging (warns, does not auto-exclude)
+- Integration with existing variant QC module
+
+**GitHub Issue:** #43
+
+---
+
+### [Week 29] v0.4 Release
+
+**Theme:** Ship v0.4
+
+**Deliverables:**
+- [ ] Update CHANGELOG.md for v0.4
+- [ ] Create GitHub release `v0.4.0`
+- [ ] Update PyPI package
+- [ ] Update Zenodo DOI
+- [ ] Colab notebook: full multi-omics demo (5+ modalities)
+- [ ] Announce on LinkedIn, Substack, Twitter/X
+
+**Acceptance Criteria:**
+- All Phase 5 features merged and tested
+- 6 input modalities supported (VCF, bulk RNA, scRNA, spatial, proteomics, metabolomics)
+- Factor analysis, CRISPR overlay, experimental design operational
+- MitoCarta mitochondrial pathways included
+- Full documentation and examples
+
+**GitHub Issue:** #44
+
+---
+
 ## Community Feedback: LinkedIn Poll (2026-02-02)
 
 **Question:** Preferred feature for pathway-subtyping framework?
@@ -432,16 +601,17 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 
 ## Success Metrics
 
-| Metric | v0.1 Target | v0.2 Actual | v0.3 Target |
-|--------|-------------|-------------|-------------|
-| GitHub Stars | 10 | — | 100 |
-| PyPI Downloads | 100 | — | 2,000 |
-| External Collaborators | 1 | 4 responding | 10 |
-| Disease Pathways | 4 | 6 | 6+ |
-| Issues Closed | 80% | ~70% | 80% |
-| Test Coverage | 64 tests | 716 tests | 750 tests |
-| Input Modalities | 1 (VCF) | 1 (VCF) | 4 (VCF, bulk RNA, scRNA, spatial) |
-| Validation Gates | 3 | 4 | 5 (+ cross-modal) |
+| Metric | v0.1 Target | v0.2 Actual | v0.3 Target | v0.4 Target |
+|--------|-------------|-------------|-------------|-------------|
+| GitHub Stars | 10 | — | 100 | 250 |
+| PyPI Downloads | 100 | — | 2,000 | 10,000 |
+| External Collaborators | 1 | 4 responding | 10 | 20 |
+| Disease Pathways | 4 | 6 | 6+ | 7+ (+ MitoCarta) |
+| Issues Closed | 80% | ~70% | 80% | 85% |
+| Test Coverage | 64 tests | 716 tests | 750 tests | 900 tests |
+| Input Modalities | 1 (VCF) | 1 (VCF) | 4 (VCF, bulk RNA, scRNA, spatial) | 6 (+ proteomics, metabolomics) |
+| Validation Gates | 3 | 4 | 5 (+ cross-modal) | 5 (+ multi-omics QC) |
+| Integration Methods | 1 (GMM) | 1 (GMM) | 1 (GMM) | 2 (GMM + MOFA) |
 
 ---
 
@@ -460,4 +630,4 @@ gh project create "Pathway Subtyping Framework: v0.2 Roadmap" \
 
 ---
 
-*Last updated: 2026-02-14*
+*Last updated: 2026-02-15*
