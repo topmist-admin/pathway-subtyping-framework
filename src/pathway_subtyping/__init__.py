@@ -155,6 +155,21 @@ from .variant_qc import (
     compute_maf,
     filter_variants,
 )
+from .visualization import (
+    DimReductionMethod,
+    FigureFormat,
+    ReportConfig,
+    VisualizationResult,
+    compute_dim_reduction,
+    create_interactive_report,
+    export_figure,
+    generate_all_figures,
+    plot_cluster_distribution,
+    plot_interactive_heatmap,
+    plot_interactive_scatter,
+    plot_static_scatter,
+    plot_subtype_trajectories,
+)
 
 __all__ = [
     # Pipeline
@@ -293,6 +308,20 @@ __all__ = [
     "calibrate_thresholds",
     "generate_calibration_table",
     "get_default_thresholds",
+    # Visualization
+    "DimReductionMethod",
+    "FigureFormat",
+    "ReportConfig",
+    "VisualizationResult",
+    "compute_dim_reduction",
+    "create_interactive_report",
+    "export_figure",
+    "generate_all_figures",
+    "plot_cluster_distribution",
+    "plot_interactive_heatmap",
+    "plot_interactive_scatter",
+    "plot_static_scatter",
+    "plot_subtype_trajectories",
     # Meta
     "__version__",
 ]

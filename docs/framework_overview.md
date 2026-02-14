@@ -127,10 +127,21 @@ Variants → Genes → Pathways → Subtypes
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
+│              VISUALIZATION (optional)                             │
+├─────────────────────────────────────────────────────────────────┤
+│  • Interactive HTML report (Plotly) — scatter, heatmap, radar   │
+│  • UMAP / t-SNE / PCA dimensionality reduction                  │
+│  • Multi-format export (PNG, SVG, PDF, HTML)                    │
+│  • Static matplotlib fallback when Plotly unavailable            │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
 │                     OUTPUTS                                      │
 ├─────────────────────────────────────────────────────────────────┤
 │  pathway_scores.csv       subtype_assignments.csv               │
 │  report.json              report.md                              │
+│  interactive_report.html  figures/ (PNG, SVG, PDF)              │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -316,6 +327,36 @@ print(f"Robust: {result.is_robust}")
 print(f"Most sensitive: {result.most_sensitive_parameter}")
 ```
 
+### 9. Visualization (`visualization.py`)
+
+**Purpose**: Generate interactive and publication-quality visualizations.
+
+**Requires**: `pip install pathway-subtyping[viz]` for interactive features. Static matplotlib fallbacks work with base install.
+
+**Functions**:
+- `compute_dim_reduction()`: PCA, t-SNE, or UMAP dimensionality reduction
+- `plot_interactive_scatter()`: Plotly scatter plot of samples in reduced space
+- `plot_interactive_heatmap()`: Plotly heatmap of mean pathway Z-scores per subtype
+- `plot_cluster_distribution()`: Plotly bar chart of cluster sizes
+- `plot_subtype_trajectories()`: Plotly radar chart of subtype pathway profiles
+- `plot_static_scatter()`: Static matplotlib fallback
+- `export_figure()`: Multi-format export (PNG, SVG, PDF, HTML)
+- `create_interactive_report()`: Self-contained interactive HTML report
+- `generate_all_figures()`: Generate all visualizations at once
+
+```python
+from pathway_subtyping import create_interactive_report, ReportConfig, DimReductionMethod
+
+result = create_interactive_report(
+    pathway_scores=scores_df,
+    labels=labels,
+    output_path="report.html",
+    config=ReportConfig(dim_reduction=DimReductionMethod.UMAP),
+    seed=42,
+)
+# Open report.html in any browser — no server needed
+```
+
 ---
 
 ## Design Principles
@@ -384,6 +425,8 @@ Modular design allows customization:
 | `subtype_assignments.csv` | CSV | Cluster assignments |
 | `report.json` | JSON | Machine-readable summary |
 | `report.md` | Markdown | Human-readable report |
+| `figures/summary.png` | PNG | Static clustering visualization |
+| `figures/interactive_report.html` | HTML | Interactive Plotly report (optional) |
 
 ---
 

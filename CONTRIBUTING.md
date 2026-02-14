@@ -31,8 +31,8 @@ git remote add upstream https://github.com/topmist-admin/pathway-subtyping-frame
 python -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
 
-# Install with dev dependencies
-pip install -e ".[dev]"
+# Install with all dev dependencies
+pip install -e ".[dev,viz]"
 
 # Set up pre-commit hooks
 pre-commit install

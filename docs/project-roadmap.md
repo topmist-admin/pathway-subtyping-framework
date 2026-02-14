@@ -154,15 +154,17 @@ modeled after the successful Autism Pathway Framework 90-day plan.
 **Theme:** Interactive exploration
 
 **Deliverables:**
-- [ ] Interactive HTML report with Plotly
-- [ ] UMAP/t-SNE visualization option
-- [ ] Subtype trajectory visualization
-- [ ] Export figures in multiple formats
+- [x] Interactive HTML report with Plotly
+- [x] UMAP/t-SNE visualization option
+- [x] Subtype trajectory visualization
+- [x] Export figures in multiple formats
 
 **Acceptance Criteria:**
 - HTML report opens in browser
 - Figures are customizable
 - Publication-quality exports
+
+**Status: COMPLETED** (Feb 14, 2026) — New `visualization.py` module with Plotly interactive HTML reports, PCA/t-SNE/UMAP scatter plots, pathway heatmaps, radar charts, and multi-format export (PNG, SVG, PDF, HTML). Optional `[viz]` dependency group. Static matplotlib fallbacks. Pipeline integration via `generate_interactive_report` config. 53 new tests. 716 total tests passing.
 
 ---
 
@@ -437,7 +439,7 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 | External Collaborators | 1 | 4 responding | 10 |
 | Disease Pathways | 4 | 6 | 6+ |
 | Issues Closed | 80% | ~70% | 80% |
-| Test Coverage | 64 tests | 660 tests | 700 tests |
+| Test Coverage | 64 tests | 716 tests | 750 tests |
 | Input Modalities | 1 (VCF) | 1 (VCF) | 4 (VCF, bulk RNA, scRNA, spatial) |
 | Validation Gates | 3 | 4 | 5 (+ cross-modal) |
 

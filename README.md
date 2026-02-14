@@ -52,6 +52,7 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 | **Power Analysis** | Sample size recommendations, Type I error estimation |
 | **Simulation** | Synthetic data generation with ground truth for validation |
 | **Cross-Cohort Validation** | Transfer learning and projection-based replication testing |
+| **Visualization** | Interactive Plotly HTML reports, UMAP/t-SNE scatter plots, radar charts, multi-format export |
 | **Performance** | tqdm progress bars, chunked VCF processing, 10K+ sample support |
 | **Reproducibility** | Deterministic execution, pinned dependencies, Docker |
 | **Config-Driven** | YAML configuration for all parameters |
@@ -64,10 +65,11 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 pip install pathway-subtyping
 ```
 
-For VCF file processing, install with the `vcf` extra:
+Optional extras:
 
 ```bash
-pip install pathway-subtyping[vcf]
+pip install pathway-subtyping[vcf]   # VCF file processing (pysam)
+pip install pathway-subtyping[viz]   # Interactive visualizations (Plotly, UMAP)
 ```
 
 ### Try in Browser (No Installation)
@@ -201,6 +203,8 @@ pathway-subtyping-framework/
 │   ├── sensitivity.py         # Parameter sensitivity analysis
 │   ├── cross_cohort.py        # Cross-cohort validation
 │   ├── expression.py          # Bulk RNA-seq pathway scoring
+│   ├── visualization.py       # Interactive Plotly reports, UMAP/t-SNE, multi-format export
+│   ├── characterization.py    # Subtype profiling, heatmaps, gene contributions
 │   ├── variant_qc.py          # Variant quality control (QUAL, HWE, MAF, call rate)
 │   └── data_quality.py        # VCF quality checks
 ├── configs/                   # Example YAML configurations
@@ -211,7 +215,7 @@ pathway-subtyping-framework/
 │   ├── METHODS.md             # Statistical methods documentation
 │   └── guides/                # User guides
 ├── examples/notebooks/        # Jupyter tutorials
-├── tests/                     # Test suite (660 tests)
+├── tests/                     # Test suite (716 tests)
 ├── Dockerfile                 # Container support
 └── docker-compose.yml         # Easy orchestration
 ```
@@ -220,7 +224,7 @@ pathway-subtyping-framework/
 
 ```bash
 # Install with dev dependencies (from cloned repo)
-pip install -e ".[dev,vcf]"
+pip install -e ".[dev,vcf,viz]"
 
 # Run tests
 pytest tests/ -v
@@ -242,7 +246,7 @@ pre-commit install
 
 Contributions welcome! Areas where help is needed:
 - Additional disease pathway definitions
-- Advanced visualization (interactive HTML reports)
+- Multi-omic integration (scRNA-seq, spatial transcriptomics)
 - Documentation and tutorials
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

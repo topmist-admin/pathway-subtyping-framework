@@ -7,6 +7,7 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 | Module | Description |
 |--------|-------------|
 | [`pipeline`](pipeline.md) | Main pipeline orchestrator and configuration |
+| [`visualization`](#visualization) | Interactive Plotly reports, UMAP/t-SNE, multi-format export |
 | [`variant_qc`](variant_qc.md) | Variant quality control filters (QUAL, HWE, MAF, call rate) |
 | [`validation`](validation.md) | Validation gates and stability testing |
 | [`threshold_calibration`](threshold_calibration.md) | Data-driven validation threshold calibration |
@@ -86,6 +87,72 @@ config = PipelineConfig(
 | [Cross-Cohort Validation](../guides/cross-cohort-validation.md) | Comparing subtypes across independent cohorts |
 | [Validation Gates](../guides/validation-gates.md) | Understanding and configuring validation gates |
 
+## Visualization
+
+The visualization module (`pip install pathway-subtyping[viz]`) provides interactive Plotly charts and multi-format figure export. Static matplotlib fallbacks work with the base install.
+
+### Interactive HTML Report
+
+```python
+from pathway_subtyping import create_interactive_report, ReportConfig, DimReductionMethod
+
+# Generate a self-contained HTML report
+config = ReportConfig(
+    title="My Cohort Analysis",
+    dim_reduction=DimReductionMethod.UMAP,
+    disclaimer="Research use only.",
+)
+
+result = create_interactive_report(
+    pathway_scores=pathway_scores_df,
+    labels=cluster_labels,
+    output_path="outputs/report.html",
+    config=config,
+    seed=42,
+)
+# Open outputs/report.html in any browser
+```
+
+### Individual Charts
+
+```python
+from pathway_subtyping import (
+    plot_interactive_scatter,
+    plot_interactive_heatmap,
+    plot_subtype_trajectories,
+    plot_cluster_distribution,
+    export_figure,
+    FigureFormat,
+    DimReductionMethod,
+)
+
+# UMAP scatter plot
+fig = plot_interactive_scatter(
+    pathway_scores_df, labels,
+    method=DimReductionMethod.UMAP, seed=42,
+)
+
+# Export in multiple formats
+export_figure(fig, "outputs/scatter", [FigureFormat.PNG, FigureFormat.SVG, FigureFormat.HTML])
+
+# Subtype radar chart
+fig = plot_subtype_trajectories(pathway_scores_df, labels, top_n=8)
+export_figure(fig, "outputs/radar", [FigureFormat.HTML])
+```
+
+### Static Fallback (No Plotly Required)
+
+```python
+from pathway_subtyping import plot_static_scatter, DimReductionMethod
+
+fig = plot_static_scatter(
+    pathway_scores_df, labels,
+    method=DimReductionMethod.PCA,
+    output_path="outputs/scatter.png",
+    seed=42,
+)
+```
+
 ## Data Structures
 
 ### Input Formats
@@ -104,7 +171,8 @@ config = PipelineConfig(
 | `subtype_assignments.csv` | CSV | Cluster assignments with confidence scores |
 | `report.json` | JSON | Machine-readable analysis report |
 | `report.md` | Markdown | Human-readable analysis report |
-| `figures/summary.png` | PNG | Visualization of clustering results |
+| `figures/summary.png` | PNG | Static visualization of clustering results |
+| `figures/interactive_report.html` | HTML | Interactive Plotly report (when `generate_interactive_report: true`) |
 | `run_metadata.yaml` | YAML | Reproducibility metadata |
 
 ## Error Handling

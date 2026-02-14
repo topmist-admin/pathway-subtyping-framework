@@ -5,6 +5,48 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+#### Advanced Visualization (#9)
+- **Visualization module** (`visualization.py`): Interactive and publication-quality visualizations
+  - `DimReductionMethod`: Enum for PCA, t-SNE, UMAP dimensionality reduction
+  - `FigureFormat`: Enum for PNG, SVG, PDF, HTML export formats
+  - `ReportConfig`: Configuration dataclass for interactive report generation
+  - `VisualizationResult`: Result dataclass with output paths and metadata (with `.to_dict()`)
+  - `compute_dim_reduction()`: PCA, t-SNE, or UMAP embedding with metadata (explained variance, KL divergence, etc.)
+  - `plot_interactive_scatter()`: Plotly scatter plot of samples in reduced space (PCA/t-SNE/UMAP)
+  - `plot_interactive_heatmap()`: Plotly heatmap of mean pathway Z-scores per subtype
+  - `plot_cluster_distribution()`: Plotly bar chart of cluster sizes
+  - `plot_subtype_trajectories()`: Plotly radar chart of subtype pathway profiles
+  - `plot_static_scatter()`: Matplotlib fallback scatter plot (works without Plotly)
+  - `export_figure()`: Multi-format export (PNG, SVG, PDF, HTML) for both Plotly and matplotlib figures
+  - `create_interactive_report()`: Self-contained HTML report with all charts, summary statistics, and styling
+  - `generate_all_figures()`: Convenience function to generate all visualizations at once
+- **Optional `[viz]` dependency group**: `plotly>=5.15.0`, `umap-learn>=0.5.0`, `kaleido>=0.2.0`
+- **Pipeline integration**: `generate_interactive_report` and `interactive_dim_reduction` config options in `PipelineConfig`
+  - YAML config: `output.generate_interactive_report: true` and `output.interactive_dim_reduction: "umap"`
+  - Graceful fallback when Plotly not installed (warning + skip)
+- 53 new tests covering all visualization functions, dimensionality reduction, export formats, edge cases
+- All interactive features degrade gracefully to static matplotlib when `[viz]` extra not installed
+
+#### Pipeline Input Validation
+- **Phenotype file validation**: Checks for empty files, missing `sample_id` column, duplicate sample IDs
+- **Minimum sample size guard**: Error if samples < 2× max clusters, warning if < 5× max clusters
+- **Sample overlap reporting**: Logs overlap between data samples and phenotype samples
+- 6 new tests for pipeline input validation
+
+#### CI and Code Quality
+- Fixed all black/isort/flake8 lint issues across 16 files
+- Added `-m "not network"` to CI test commands to skip flaky network tests
+- Removed unused imports in expression.py, threshold_calibration.py, validation_datasets.py
+- Closed GitHub issues #7 (cross-cohort), #8 (performance), #26 (variant QC)
+- Created `py.typed` PEP 561 marker file
+
+### Changed
+- Total test count: 716 (up from 660)
+
 ## [0.2.3] - 2026-02-14
 
 ### Added
@@ -296,6 +338,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| (next) | Unreleased | Advanced visualization (Plotly, UMAP/t-SNE, interactive HTML reports), pipeline input validation |
 | 0.2.3 | 2026-02-14 | Cross-cohort validation, performance optimization, threshold calibration, expression scoring |
 | 0.2.0 | 2026-02-09 | Scientific rigor, ancestry/batch correction, benchmarks, sensitivity analysis |
 | 0.1.0 | 2026-01-29 | First public release with full pipeline |

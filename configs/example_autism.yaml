@@ -56,4 +56,6 @@ output:
   save_pathway_scores: true
   save_cluster_assignments: true
   generate_report: true
+  generate_interactive_report: true    # Interactive HTML with Plotly (requires [viz] extra)
+  interactive_dim_reduction: "pca"     # "pca", "tsne", or "umap"
   disclaimer: "Research use only. Not for clinical diagnosis."

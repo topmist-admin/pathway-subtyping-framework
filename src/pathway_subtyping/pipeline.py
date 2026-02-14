@@ -89,6 +89,10 @@ class PipelineConfig:
     use_chunked_processing: bool = False
     chunk_size: int = 1000
 
+    # Visualization
+    generate_interactive_report: bool = False
+    interactive_dim_reduction: str = "pca"  # "pca", "tsne", "umap"
+
     # Output settings
     disclaimer: str = "Research use only. Not medical advice."
 
@@ -137,6 +141,8 @@ class PipelineConfig:
             validation_null_ari_max=validation.get("null_ari_max"),
             validation_calibrate=validation.get("calibrate", True),
             validation_alpha=float(validation.get("alpha", 0.05)),
+            generate_interactive_report=output.get("generate_interactive_report", False),
+            interactive_dim_reduction=output.get("interactive_dim_reduction", "pca"),
             disclaimer=output.get("disclaimer", "Research use only."),
         )
 
@@ -899,6 +905,10 @@ class DemoPipeline:
         # 3. Summary figure
         self._generate_summary_figure()
 
+        # 3b. Interactive HTML report (if configured and plotly available)
+        if self.config.generate_interactive_report:
+            self._generate_interactive_report()
+
         # 4. Reports (JSON and Markdown)
         self._generate_reports()
 
@@ -986,6 +996,51 @@ class DemoPipeline:
             logger.warning(f"Could not generate figure (missing dependency): {e}")
         except Exception as e:
             logger.warning(f"Could not generate figure: {e}")
+
+    def _generate_interactive_report(self) -> None:
+        """Generate interactive HTML report with Plotly charts."""
+        try:
+            from .visualization import (
+                DimReductionMethod,
+                ReportConfig,
+                create_interactive_report,
+            )
+
+            dim_method_map = {
+                "pca": DimReductionMethod.PCA,
+                "tsne": DimReductionMethod.TSNE,
+                "umap": DimReductionMethod.UMAP,
+            }
+            dim_method = dim_method_map.get(
+                self.config.interactive_dim_reduction, DimReductionMethod.PCA
+            )
+
+            report_config = ReportConfig(
+                title=f"Pathway Subtyping Report: {self.config.name}",
+                dim_reduction=dim_method,
+                disclaimer=self.config.disclaimer,
+            )
+
+            labels = self.cluster_assignments["cluster_id"].values
+            output_path = self.output_dir / "figures" / "interactive_report.html"
+
+            create_interactive_report(
+                pathway_scores=self.pathway_scores,
+                labels=labels,
+                output_path=str(output_path),
+                config=report_config,
+                characterization_result=getattr(self, "characterization_result", None),
+                validation_result=getattr(self, "validation_result", None),
+                seed=self.config.seed,
+            )
+
+        except ImportError:
+            logger.warning(
+                "[Pipeline] Plotly not installed — skipping interactive report. "
+                "Install with: pip install pathway-subtyping[viz]"
+            )
+        except Exception as e:
+            logger.warning(f"[Pipeline] Could not generate interactive report: {e}")
 
     def _generate_reports(self) -> None:
         """Generate JSON and Markdown reports."""

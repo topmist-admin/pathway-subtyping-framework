@@ -21,6 +21,12 @@ Get the Pathway Subtyping Framework running in under 30 minutes.
 
 ```bash
 pip install pathway-subtyping
+
+# Optional: interactive visualizations (Plotly, UMAP)
+pip install pathway-subtyping[viz]
+
+# Optional: VCF file processing
+pip install pathway-subtyping[vcf]
 ```
 
 ### Option B: Install from Source
@@ -53,7 +59,7 @@ psf --help
 
 Expected output:
 ```
-pathway-subtyping 0.1.0
+pathway-subtyping 0.2.3
 ```
 
 ---
@@ -82,10 +88,14 @@ After the pipeline completes, outputs are in `outputs/synthetic_test/`:
 
 ```
 outputs/synthetic_test/
-├── pathway_scores.csv        # Sample x Pathway disruption scores
-├── subtype_assignments.csv   # Cluster assignments with confidence
-├── report.json               # Machine-readable results
-└── report.md                 # Human-readable summary
+├── pathway_scores.csv                    # Sample x Pathway disruption scores
+├── subtype_assignments.csv               # Cluster assignments with confidence
+├── report.json                           # Machine-readable results
+├── report.md                             # Human-readable summary
+├── figures/
+│   ├── summary.png                       # Static clustering visualization
+│   └── interactive_report.html           # Interactive Plotly report (if enabled)
+└── run_metadata.yaml                     # Reproducibility metadata
 ```
 
 ### Key Files to Review
@@ -167,6 +177,9 @@ variant_qc:                    # Optional but recommended
 
 validation:
   run_validation: true
+
+output:
+  generate_interactive_report: true  # Requires pip install pathway-subtyping[viz]
 ```
 
 ### Run Your Analysis
@@ -234,4 +247,4 @@ See [troubleshooting.md](troubleshooting.md) for more solutions.
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*

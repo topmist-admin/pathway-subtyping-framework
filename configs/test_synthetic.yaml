@@ -55,4 +55,6 @@ output:
   save_pathway_scores: true
   save_cluster_assignments: true
   generate_report: true
+  generate_interactive_report: false  # Set true if plotly installed (pip install pathway-subtyping[viz])
+  interactive_dim_reduction: "pca"    # "pca", "tsne", or "umap"
   disclaimer: "Synthetic data for demonstration purposes only."
