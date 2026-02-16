@@ -12,15 +12,19 @@ This guide covers common issues when running the Pathway Subtyping Framework and
 2. [Environment Setup](#environment-setup)
 3. [Pipeline Errors](#pipeline-errors)
 4. [Data Issues](#data-issues)
-5. [Ancestry Correction Issues](#ancestry-correction-issues)
-6. [Batch Correction Issues](#batch-correction-issues)
-7. [Sensitivity Analysis Issues](#sensitivity-analysis-issues)
-8. [Single-Cell Issues](#single-cell-issues)
-9. [Reproducibility Issues](#reproducibility-issues)
-10. [Performance Issues](#performance-issues)
-11. [Validation Gate Failures](#validation-gate-failures)
-12. [Platform-Specific Issues](#platform-specific-issues)
-13. [Getting Help](#getting-help)
+5. [Expression Scoring Issues](#expression-scoring-issues)
+6. [Multi-Omic Fusion Issues](#multi-omic-fusion-issues)
+7. [Deconvolution Issues](#deconvolution-issues)
+8. [Visualization Issues](#visualization-issues)
+9. [Ancestry Correction Issues](#ancestry-correction-issues)
+10. [Batch Correction Issues](#batch-correction-issues)
+11. [Sensitivity Analysis Issues](#sensitivity-analysis-issues)
+12. [Single-Cell Issues](#single-cell-issues)
+13. [Reproducibility Issues](#reproducibility-issues)
+14. [Performance Issues](#performance-issues)
+15. [Validation Gate Failures](#validation-gate-failures)
+16. [Platform-Specific Issues](#platform-specific-issues)
+17. [Getting Help](#getting-help)
 
 ---
 
@@ -506,6 +510,292 @@ Multi-allelic variants: 50 (expanded to 110)
 
 Data Quality Status: PASS
 ```
+
+---
+
+## Expression Scoring Issues
+
+### Wrong input type produces poor scores
+
+**Symptom:** Pathway scores are all near-zero or highly uniform across samples.
+
+**Cause:** The `input_type` parameter does not match your actual data. For example, passing raw counts as `ExpressionInputType.TPM` skips the log-transform that counts need.
+
+**Solution:**
+```python
+from pathway_subtyping import load_expression_matrix, ExpressionInputType
+
+# Match input_type to your data
+expr, qc = load_expression_matrix("data.csv", input_type=ExpressionInputType.COUNTS)
+# Options: COUNTS, TPM, FPKM, LOG2
+```
+
+Check the QC report for warnings:
+```python
+print(qc.format_report())
+```
+
+### ssGSEA or GSVA is slow on large datasets
+
+**Symptom:** `score_pathways_from_expression()` takes >10 minutes.
+
+**Cause:** ssGSEA and GSVA compute per-sample enrichment across all genes, which scales with `n_samples × n_genes × n_pathways`.
+
+**Solutions:**
+1. Use `MEAN_Z` for quick exploration, then ssGSEA for final results:
+   ```python
+   result = score_pathways_from_expression(expr, pathways, method=ExpressionScoringMethod.MEAN_Z, seed=42)
+   ```
+2. Filter to protein-coding genes before scoring
+3. Reduce pathway count (use curated sets, not the full MSigDB)
+
+### Few pathways scored from expression data
+
+**Symptom:**
+```
+WARNING: Only 3/20 pathways had gene overlap with expression matrix
+```
+
+**Cause:** Gene symbol mismatch between your expression matrix column names and pathway gene sets.
+
+**Solutions:**
+1. Verify gene symbol format:
+   ```python
+   print(expr.columns[:10])  # Should be HGNC symbols like 'TP53', 'BRCA1'
+   ```
+2. If using Ensembl IDs (ENSG...), convert to HGNC symbols first
+3. Check that pathway GMT uses the same gene symbol convention
+
+### Expression QC warnings
+
+**Symptom:**
+```
+WARNING: 45% of genes have zero variance across samples
+```
+
+**Explanation:** Genes with zero variance provide no discriminative signal and are excluded from scoring. This is common in filtered/subsetted datasets.
+
+**Solution:** This is informational — no action needed. If >80% of genes are zero-variance, verify your expression matrix isn't truncated or incorrectly formatted.
+
+---
+
+## Multi-Omic Fusion Issues
+
+### No shared samples between modalities
+
+**Symptom:**
+```
+ValueError: No shared samples between modalities
+```
+
+**Cause:** Sample IDs don't match between data sources (e.g., VCF uses `SAMPLE_001` while expression uses `sample_001`).
+
+**Solutions:**
+1. Check sample ID format in each modality:
+   ```python
+   print("VCF samples:", vcf_scores.index[:5].tolist())
+   print("Expr samples:", expr_scores.index[:5].tolist())
+   ```
+2. Harmonize before fusion:
+   ```python
+   vcf_scores.index = vcf_scores.index.str.upper()
+   expr_scores.index = expr_scores.index.str.upper()
+   ```
+
+### No shared pathways for weighted average
+
+**Symptom:**
+```
+ValueError: No shared pathways between modalities for WEIGHTED_AVERAGE
+```
+
+**Cause:** `WEIGHTED_AVERAGE` and `INTERSECTION_ONLY` require at least some pathway names to match between modalities.
+
+**Solution:**
+1. Use `CONCATENATE` strategy instead (no shared pathways required)
+2. Rename pathway columns to match:
+   ```python
+   # Check overlap
+   shared = set(vcf_scores.columns) & set(expr_scores.columns)
+   print(f"Shared pathways: {len(shared)}")
+   ```
+
+### Partial sample overlap warning
+
+**Symptom:**
+```
+WARNING: Only 80/120 samples shared between modalities
+```
+
+**Explanation:** Samples missing from one modality are handled by the `missing_strategy` parameter.
+
+**Solution:** This is informational. The default strategy (`impute_zero`) fills missing values with 0. Alternatives:
+```python
+result = fuse_modalities(
+    [vcf_mod, expr_mod],
+    strategy=FusionStrategy.CONCATENATE,
+    missing_strategy="drop",  # or "impute_mean"
+    seed=42,
+)
+```
+
+### Cross-modal validation (Gate 5) fails
+
+**Symptom:**
+```
+Cross-Modal Concordance: FAIL (ARI = 0.15)
+```
+
+**Meaning:** Subtypes found from each modality independently don't agree, suggesting the subtypes are modality-specific rather than biologically robust.
+
+**Investigation:**
+1. Check if one modality is much noisier than the other
+2. Verify both modalities were scored on the same pathway definitions
+3. Try `WEIGHTED_AVERAGE` fusion which down-weights discordant pathways
+
+---
+
+## Deconvolution Issues
+
+### Too few shared genes
+
+**Symptom:**
+```
+ValueError: Only 30 genes shared between bulk and reference (minimum: 50)
+```
+
+**Cause:** Gene symbols don't match between bulk expression and single-cell reference, or the datasets use different genome builds.
+
+**Solutions:**
+1. Check gene symbol overlap:
+   ```python
+   shared = set(bulk_expr.columns) & set(reference_profile.columns)
+   print(f"Shared genes: {len(shared)}")
+   ```
+2. Ensure both use HGNC gene symbols
+3. Lower `min_genes` if confident in the overlap quality:
+   ```python
+   result = deconvolve_bulk(bulk, reference, min_genes=30, seed=42)
+   ```
+
+### Poor proportion recovery
+
+**Symptom:** Estimated proportions don't correlate well with known truth (e.g., from synthetic data or flow cytometry).
+
+**Causes and solutions:**
+1. **Reference doesn't match tissue:** Use a reference from the same tissue type as your bulk data
+2. **Low gene coverage:** Increase gene overlap (>200 shared genes recommended)
+3. **Too few cell types in reference:** Missing cell types force NNLS to spread their signal across other types
+4. **Noisy bulk data:** Log-transform if using raw counts:
+   ```python
+   import numpy as np
+   bulk_log = np.log2(bulk_expr + 1)
+   ```
+
+### Cell type excluded from reference
+
+**Symptom:**
+```
+WARNING: Excluding cell types with < 5 cells: ['Platelets']
+```
+
+**Explanation:** Cell types with very few cells produce unreliable mean expression profiles.
+
+**Solution:**
+1. This is expected — rare cell types are excluded for stability
+2. Lower `min_cells_per_type` if needed:
+   ```python
+   reference = build_reference_profile(sc_expr, labels, min_cells_per_type=3)
+   ```
+
+### Combined features don't improve clustering
+
+**Symptom:** ARI is similar or worse after `combine_features()`.
+
+**Investigation:**
+1. Try adjusting `proportion_weight` — default 0.5 may overweight proportions:
+   ```python
+   combined = combine_features(pathway_scores, proportions, proportion_weight=0.2)
+   ```
+2. Check if cell-type proportions actually vary across subtypes
+3. If subtypes are purely pathway-driven, proportions may add noise
+
+---
+
+## Visualization Issues
+
+### Plotly not installed
+
+**Symptom:**
+```
+ImportError: plotly is required for interactive visualization. Install with: pip install pathway-subtyping[viz]
+```
+
+**Solution:**
+```bash
+pip install "pathway-subtyping[viz]"
+```
+
+Static matplotlib plots work without Plotly:
+```python
+from pathway_subtyping import plot_static_scatter
+fig = plot_static_scatter(scores, labels, method=DimReductionMethod.PCA, seed=42)
+```
+
+### UMAP not installed
+
+**Symptom:**
+```
+ImportError: umap-learn is required for UMAP. Install with: pip install umap-learn
+```
+
+**Solution:**
+```bash
+pip install umap-learn
+```
+
+Or use PCA/t-SNE instead (no extra dependencies):
+```python
+fig = plot_interactive_scatter(scores, labels, method=DimReductionMethod.PCA, seed=42)
+```
+
+### Export to PNG/SVG fails
+
+**Symptom:**
+```
+ValueError: Image export requires kaleido. Install with: pip install kaleido
+```
+
+**Solution:**
+```bash
+pip install kaleido
+```
+
+HTML export always works without kaleido:
+```python
+from pathway_subtyping import export_figure, FigureFormat
+export_figure(fig, "output", [FigureFormat.HTML])
+```
+
+### Interactive report is blank in Jupyter
+
+**Symptom:** `create_interactive_report()` saves a file but the inline display is empty.
+
+**Cause:** Plotly requires `plotly.offline.init_notebook_mode()` in Jupyter.
+
+**Solution:**
+```python
+import plotly.offline
+plotly.offline.init_notebook_mode(connected=True)
+```
+
+Or just open the saved HTML file in a browser — it's self-contained.
+
+### Charts look different in Colab vs local
+
+**Explanation:** Colab uses an older Plotly renderer. The HTML export is identical across environments.
+
+**Solution:** Use `fig.show(renderer="colab")` in Colab, or export to HTML and download.
 
 ---
 

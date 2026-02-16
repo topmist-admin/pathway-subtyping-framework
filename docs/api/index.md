@@ -7,9 +7,21 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 | Module | Description |
 |--------|-------------|
 | [`pipeline`](pipeline.md) | Main pipeline orchestrator and configuration |
+| [`expression`](expression.md) | Bulk RNA-seq pathway scoring (ssGSEA, GSVA, mean-Z) |
 | [`single_cell`](single_cell.md) | Single-cell scRNA-seq pathway scoring (pseudobulk + per-cell) |
-| [`visualization`](#visualization) | Interactive Plotly reports, UMAP/t-SNE, multi-format export |
+| [`multi_omic`](multi_omic.md) | Multi-omic pathway score fusion (concatenate, weighted, intersection) |
+| [`deconvolution`](deconvolution.md) | Bulk deconvolution for cell-type proportion estimation (NNLS) |
+| [`cross_modal_validation`](cross_modal_validation.md) | Cross-modal validation gate (Gate 5) for multi-omic analyses |
+| [`visualization`](visualization.md) | Interactive Plotly reports, UMAP/t-SNE, multi-format export |
 | [`variant_qc`](variant_qc.md) | Variant quality control filters (QUAL, HWE, MAF, call rate) |
+| [`clustering`](clustering.md) | Clustering algorithms (GMM, K-means, Hierarchical, Spectral) and model selection |
+| [`characterization`](characterization.md) | Subtype characterization, pathway enrichment, gene contributions |
+| [`statistical_rigor`](statistical_rigor.md) | FDR correction, permutation tests, effect sizes, burden weighting |
+| [`benchmark`](benchmark.md) | Method comparison (Pathway GMM vs NMF, PCA+K-means, gene-level) |
+| [`simulation`](simulation.md) | Synthetic data generation, power analysis, sample size estimation |
+| [`sensitivity`](sensitivity.md) | Parameter sensitivity analysis and robustness testing |
+| [`ancestry`](ancestry.md) | Ancestry PCA, population stratification correction, independence testing |
+| [`batch_correction`](batch_correction.md) | Batch effect detection, ComBat/mean-center/standardize correction |
 | [`validation`](validation.md) | Validation gates and stability testing |
 | [`threshold_calibration`](threshold_calibration.md) | Data-driven validation threshold calibration |
 | [`cross_cohort`](cross_cohort.md) | Cross-cohort validation and replication |
@@ -88,6 +100,32 @@ config = PipelineConfig(
 | [Cross-Cohort Validation](../guides/cross-cohort-validation.md) | Comparing subtypes across independent cohorts |
 | [Validation Gates](../guides/validation-gates.md) | Understanding and configuring validation gates |
 
+## Expression Pathway Scoring
+
+The expression module computes pathway scores from bulk RNA-seq gene expression matrices, producing the same `pathway_scores` DataFrame format as variant-based scoring.
+
+```python
+from pathway_subtyping import (
+    load_expression_matrix, score_pathways_from_expression,
+    ExpressionScoringMethod, ExpressionInputType,
+)
+
+# Load and score
+expr, qc = load_expression_matrix("expression.csv", input_type=ExpressionInputType.TPM)
+result = score_pathways_from_expression(expr, pathways, method=ExpressionScoringMethod.SSGSEA, seed=42)
+# result.pathway_scores: samples x pathways, Z-normalized
+```
+
+| Method | Speed | Best For |
+|--------|-------|----------|
+| `MEAN_Z` | Fast | Quick exploration |
+| `SSGSEA` | Medium | **Recommended default** |
+| `GSVA` | Medium | Alternative to ssGSEA |
+
+See [expression.md](expression.md) for full API reference.
+
+---
+
 ## Single-Cell Pathway Scoring
 
 The single-cell module (`pip install pathway-subtyping[sc]`) provides per-cell and pseudobulk pathway scoring from scRNA-seq data. Pseudobulk methods reuse expression.py internals, so ssGSEA/GSVA scoring is identical to bulk RNA-seq.
@@ -132,6 +170,71 @@ clustering = run_clustering(result.pathway_scores.values, n_clusters=3, seed=42)
 | `PSEUDOBULK_GSVA` | Cell-type | Medium | Alternative to ssGSEA |
 
 See [single_cell.md](single_cell.md) for full API reference.
+
+---
+
+## Multi-Omic Fusion
+
+Fuse pathway scores from multiple modalities into a unified feature matrix:
+
+```python
+from pathway_subtyping import (
+    ModalityType, FusionStrategy, prepare_modality, fuse_modalities,
+)
+
+vcf_mod = prepare_modality(ModalityType.VCF, vcf_scores, label="WES")
+expr_mod = prepare_modality(ModalityType.EXPRESSION, expr_scores, label="RNA-seq")
+result = fuse_modalities([vcf_mod, expr_mod], strategy=FusionStrategy.CONCATENATE, seed=42)
+# result.fused_pathway_scores: unified feature matrix
+# result.per_modality_scores: for cross-modal validation (Gate 5)
+```
+
+| Strategy | Description |
+|----------|-------------|
+| `CONCATENATE` | Column-bind with prefixes; preserves all info |
+| `WEIGHTED_AVERAGE` | Weighted mean of shared pathways |
+| `INTERSECTION_ONLY` | Restrict to shared samples and pathways |
+
+See [multi_omic.md](multi_omic.md) for full API reference.
+
+---
+
+## Bulk Deconvolution
+
+Estimate cell-type proportions from bulk RNA-seq using a single-cell reference:
+
+```python
+from pathway_subtyping import build_reference_profile, deconvolve_bulk, combine_features
+
+reference = build_reference_profile(sc_expression, cell_type_labels)
+result = deconvolve_bulk(bulk_expression, reference, seed=42)
+combined = combine_features(pathway_scores, result.cell_type_proportions, proportion_weight=0.5)
+```
+
+See [deconvolution.md](deconvolution.md) for full API reference.
+
+---
+
+## Cross-Modal Validation (Gate 5)
+
+Validates that subtypes are consistent across data modalities. Automatically included by `ValidationGates.run_all()` when `per_modality_scores` is provided:
+
+```python
+from pathway_subtyping import ValidationGates
+
+gates = ValidationGates(seed=42, n_permutations=100)
+result = gates.run_all(
+    pathway_scores=fused_scores,
+    cluster_labels=labels,
+    pathways=pathways,
+    gene_burdens=gene_data,
+    n_clusters=3,
+    per_modality_scores={"WES": vcf_scores, "RNA-seq": expr_scores},
+)
+# Gate 5 included automatically when >= 2 modalities
+```
+
+See [cross_modal_validation.md](cross_modal_validation.md) for full API reference.
 
 ---
 
@@ -200,6 +303,8 @@ fig = plot_static_scatter(
     seed=42,
 )
 ```
+
+See [visualization.md](visualization.md) for full API reference.
 
 ## Data Structures
 

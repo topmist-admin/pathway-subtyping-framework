@@ -142,6 +142,163 @@ All single-cell scoring methods produce a Z-normalized cell_types x pathways mat
 
 Reference: Squair JW et al. (2021). Confronting false discoveries in single-cell differential expression. *Nature Communications*.
 
+## Expression Pathway Scoring
+
+### Overview
+
+For bulk RNA-seq data, pathway scores are computed directly from gene expression without variant calling. Three methods are available, all producing Z-normalized samples x pathways matrices identical in format to VCF-based scores.
+
+### ssGSEA (Recommended)
+
+Single-sample Gene Set Enrichment Analysis (Barbie et al., 2009):
+
+1. For each sample, rank all genes by expression value
+2. Walk along the ranked list; for gene at rank *r*:
+   - If gene is in the pathway: step up by |r|^α
+   - If gene is not in the pathway: step down by 1/(N - n_pathway)
+3. Enrichment score = sum of the running statistic
+
+```
+ES_p,i = Σ_g∈pathway |rank(g)|^α / Σ_g∈pathway |rank(g)|^α  -  Σ_g∉pathway 1/(N - n_p)
+```
+
+Where α = 0.25 (default) controls the weight of the rank. Positive scores indicate pathway enrichment; negative scores indicate depletion.
+
+Reference: Barbie DA et al. (2009). Systematic RNA interference reveals that oncogenic KRAS-driven cancers require TBK1. *Nature*.
+
+### GSVA (Simplified)
+
+Gene Set Variation Analysis (Hänzelmann et al., 2013):
+
+1. Compute empirical CDF per gene across all samples
+2. Rank CDF values within each sample
+3. Compute KS-like statistic: maximum deviation between the distributions of CDF-ranked pathway genes vs non-pathway genes
+
+```
+GSVA_p,i = max_j |F_pathway(j) - F_non-pathway(j)|
+```
+
+For publication-grade GSVA, precompute scores using the R GSVA package and import with `input_type=LOG2`.
+
+Reference: Hänzelmann S et al. (2013). GSVA: gene set variation analysis for microarray and RNA-Seq data. *BMC Bioinformatics*.
+
+### Mean-Z
+
+Fast Z-score averaging:
+
+1. Z-score normalize each gene across samples: `z_g,i = (x_g,i - μ_g) / σ_g`
+2. For each pathway: compute mean of member gene Z-scores: `score_p,i = mean(z_g,i for g in pathway_p)`
+3. Z-normalize resulting pathway scores
+
+Best for quick exploration and very large datasets (>10,000 samples).
+
+### Input Preprocessing
+
+Expression matrices are preprocessed based on input type:
+
+| Input Type | Transformation |
+|-----------|----------------|
+| COUNTS | `log2(x + 1)` |
+| TPM/FPKM | `log2(x + 1)` if max > 20, else no-op |
+| LOG2 | None (already transformed) |
+
+Genes with all-zero expression, zero variance, or appearing in fewer than 3 samples are filtered.
+
+## Bulk Deconvolution
+
+### Overview
+
+Estimates cell-type proportions from bulk RNA-seq using a single-cell reference profile. Proportions can be combined with pathway scores for cell-type-aware subtype discovery.
+
+### NNLS Deconvolution
+
+Non-negative least squares (NNLS) is used because cell-type proportions are inherently non-negative. For each bulk sample *i*:
+
+```
+minimize  ||R^T × p_i - b_i||²
+subject to:  p_i ≥ 0
+```
+
+Where:
+- `R` = reference profile matrix (cell_types × genes)
+- `p_i` = proportion vector for sample *i* (length = n_cell_types)
+- `b_i` = bulk expression vector for sample *i*
+
+Post-processing: normalize proportions to sum to 1:
+
+```
+p_normalized = p / Σ(p)    if Σ(p) > 0
+p_normalized = 1/K         otherwise (uniform)
+```
+
+This approach is used in CIBERSORT (Newman et al., 2015) and MuSiC (Wang et al., 2019).
+
+### Reference Profile Construction
+
+From single-cell data, a reference profile is built by averaging expression per cell type:
+
+```
+reference_g,t = mean(expression_g,c)  for all cells c of type t
+```
+
+Cell types with fewer than `min_cells_per_type` (default: 5) cells are excluded.
+
+### Feature Combination
+
+Pathway scores and cell-type proportions are combined for clustering:
+
+```
+combined = [(1-w) × Z(pathway_scores) | w × Z(proportions)]
+```
+
+Where `w` is the proportion weight (default: 0.5) and `Z()` denotes Z-normalization. Cell-type columns are prefixed with `CELLTYPE:` to distinguish from pathway features.
+
+References:
+- Newman AM et al. (2015). Robust enumeration of cell subsets from tissue expression profiles. *Nature Methods*.
+- Wang X et al. (2019). Bulk tissue cell type deconvolution with multi-subject single-cell expression reference. *Nature Communications*.
+
+## Multi-Omic Fusion
+
+### Overview
+
+Fuses pathway scores from multiple data modalities (VCF, expression, single-cell, deconvolution) into a unified feature matrix for integrated subtype discovery.
+
+### Concatenation Strategy (Default)
+
+Column-binds all modality scores with label prefixes:
+
+```
+fused = [mod1:pathway1, mod1:pathway2, ..., mod2:pathway1, mod2:pathway2, ...]
+```
+
+Handles partial sample overlap via missing data strategies:
+- **IMPUTE_ZERO**: Fill missing values with 0
+- **IMPUTE_MEAN**: Fill with column mean
+- **DROP**: Drop samples missing from any modality
+
+After concatenation, columns are Z-normalized if `renormalize=True`.
+
+### Weighted Average Strategy
+
+For shared pathways only, computes a weighted mean:
+
+```
+fused_p = Σ_m (w_m × score_p,m)    where Σ w_m = 1
+```
+
+Weights default to uniform (1/n_modalities). Produces a matrix with the same dimensionality as a single modality.
+
+### Intersection Strategy
+
+Restricts to samples and pathways present in all modalities. No imputation needed. Conservative but avoids missing data assumptions.
+
+### Quality Metrics
+
+The fusion result includes a quality report with:
+- Sample overlap fraction (shared / total)
+- Pathway overlap count
+- Warnings for low overlap (<50% samples shared)
+
 ---
 
 ## Clustering Methodology

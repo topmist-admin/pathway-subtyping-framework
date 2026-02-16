@@ -106,12 +106,32 @@ Variants → Genes → Pathways → Subtypes
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   GMM CLUSTERING                                 │
+│              MULTI-OMIC FUSION (optional)                        │
 ├─────────────────────────────────────────────────────────────────┤
-│  • Fit Gaussian Mixture Models for K = 2..max_k                 │
-│  • Select optimal K by BIC                                       │
-│  • Assign samples to clusters                                    │
-│  • Calculate confidence (posterior probability)                  │
+│  • Combine VCF + expression + single-cell pathway scores        │
+│  • Strategies: concatenate, weighted average, intersection       │
+│  • Handle partial sample overlap (impute_zero/mean or drop)     │
+│  Output: unified samples × pathways matrix                       │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              BULK DECONVOLUTION (optional)                        │
+├─────────────────────────────────────────────────────────────────┤
+│  • Build reference profile from single-cell data                │
+│  • NNLS deconvolution: estimate cell-type proportions           │
+│  • Combine proportions + pathway scores for cell-type-aware     │
+│    subtype discovery                                             │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   CLUSTERING                                     │
+├─────────────────────────────────────────────────────────────────┤
+│  • GMM (default), K-means, Hierarchical, Spectral               │
+│  • Select optimal K by BIC (GMM) or cross-validation            │
+│  • Assign samples to clusters with confidence scores            │
+│  • Algorithm comparison with pairwise ARI                        │
 └────────────────────────┬────────────────────────────────────────┘
                          │
                          ▼
@@ -122,6 +142,8 @@ Variants → Genes → Pathways → Subtypes
 │  Gate 2: Random Gene Sets  → Verify pathways drive clustering   │
 │  Gate 3: Bootstrap         → Verify cluster stability           │
 │  Gate 4: Ancestry Indep.   → Verify no ancestry confounding     │
+│  Gate 5: Cross-Modal       → Verify subtypes replicate across   │
+│           Concordance        data modalities (multi-omic only)  │
 └────────────────────────┬────────────────────────────────────────┘
                          │
                          ▼
@@ -212,30 +234,36 @@ results = pipeline.run()
 - `PipelineConfig`: Configuration dataclass
 - `DemoPipeline`: Main pipeline orchestrator
 
-### 3. Clustering (`clustering.py`)
+### 4. Clustering (`clustering.py`)
 
-**Purpose**: Discover molecular subtypes via GMM.
+**Purpose**: Discover molecular subtypes via unsupervised clustering.
 
-**Algorithm**:
-1. Fit GMM for each K in range [min_k, max_k]
-2. Calculate BIC for each model
-3. Select K with lowest BIC
-4. Return hard assignments and soft probabilities
+**Algorithms**:
+- **GMM** (default): Soft assignments, automatic K selection via BIC
+- **K-means**: Fast, spherical clusters
+- **Hierarchical**: Dendrogram-based, no K required
+- **Spectral**: Nonlinear cluster boundaries
+
+**Workflow**:
+1. Fit models for each K in range [min_k, max_k]
+2. Select optimal K (BIC for GMM, silhouette or cross-validation for others)
+3. Return hard assignments, soft probabilities (GMM), and confidence scores
+4. Compare algorithms with pairwise ARI for robustness
 
 ```python
-from sklearn.mixture import GaussianMixture
+from pathway_subtyping import run_clustering, ClusteringMethod
 
-gmm = GaussianMixture(
-    n_components=k,
-    covariance_type='full',
-    random_state=seed
+result = run_clustering(
+    pathway_scores.values,
+    n_clusters=3,
+    method=ClusteringMethod.GMM,
+    seed=42,
 )
-gmm.fit(pathway_scores)
-labels = gmm.predict(pathway_scores)
-probabilities = gmm.predict_proba(pathway_scores)
+print(f"Labels: {result.labels}")
+print(f"BIC: {result.bic}")
 ```
 
-### 4. Validation (`validation.py`)
+### 5. Validation (`validation.py`)
 
 **Purpose**: Ensure clustering quality via statistical tests.
 
@@ -247,19 +275,25 @@ probabilities = gmm.predict_proba(pathway_scores)
 | Random Genes | Random gene sets, re-cluster | ARI < 0.1 |
 | Bootstrap | Resample, re-cluster | ARI >= 0.7 |
 | Ancestry Independence | Kruskal-Wallis per PC | No significant association (Bonferroni) |
+| Cross-Modal Concordance | Cluster each modality independently | ARI > null 95th percentile |
+
+Gate 5 (Cross-Modal Concordance) is automatically included when `per_modality_scores` is provided to `run_all()`.
 
 ```python
 from pathway_subtyping import ValidationGates
 
 gates = ValidationGates(seed=42)
-results = gates.run_all_gates(
+results = gates.run_all(
     pathway_scores=scores,
     cluster_labels=labels,
-    pathways=pathway_dict
+    pathways=pathway_dict,
+    gene_burdens=gene_data,
+    n_clusters=3,
+    per_modality_scores={"WES": vcf_scores, "RNA-seq": expr_scores},  # enables Gate 5
 )
 ```
 
-### 5. Cross-Cohort (`cross_cohort.py`)
+### 6. Cross-Cohort (`cross_cohort.py`)
 
 **Purpose**: Compare subtypes across independent cohorts.
 
@@ -267,7 +301,7 @@ results = gates.run_all_gates(
 - Direct comparison: Cluster both cohorts, compare with ARI
 - Transfer: Project cohort B onto cohort A's model
 
-### 6. Ancestry Correction (`ancestry.py`)
+### 7. Ancestry Correction (`ancestry.py`)
 
 **Purpose**: Detect and correct for population stratification confounding.
 
@@ -296,7 +330,7 @@ report = check_ancestry_independence(cluster_labels, pcs)
 print(f"Independent of ancestry: {report.passed}")
 ```
 
-### 7. Batch Correction (`batch_correction.py`)
+### 8. Batch Correction (`batch_correction.py`)
 
 **Purpose**: Detect and correct batch effects from multi-site or multi-run data.
 
@@ -317,7 +351,7 @@ result = correct_batch_effects(pathway_scores, batch_labels)
 corrected_scores = result.corrected_scores
 ```
 
-### 8. Sensitivity Analysis (`sensitivity.py`)
+### 9. Sensitivity Analysis (`sensitivity.py`)
 
 **Purpose**: Evaluate robustness of clustering results to parameter choices.
 
@@ -337,7 +371,7 @@ print(f"Robust: {result.is_robust}")
 print(f"Most sensitive: {result.most_sensitive_parameter}")
 ```
 
-### 9. Single-Cell Scoring (`single_cell.py`)
+### 10. Single-Cell Scoring (`single_cell.py`)
 
 **Purpose**: Score pathways from scRNA-seq data at per-cell or cell-type level.
 
@@ -362,7 +396,7 @@ result = score_single_cell_pathways(
 # result.pathway_scores: cell_types × pathways (Z-normalized)
 ```
 
-### 10. Visualization (`visualization.py`)
+### 11. Visualization (`visualization.py`)
 
 **Purpose**: Generate interactive and publication-quality visualizations.
 
@@ -390,6 +424,107 @@ result = create_interactive_report(
     seed=42,
 )
 # Open report.html in any browser — no server needed
+```
+
+### 12. Expression Scoring (`expression.py`)
+
+**Purpose**: Score pathways from bulk RNA-seq gene expression data.
+
+**Methods**:
+- **ssGSEA** (recommended): Rank-based single-sample gene set enrichment
+- **GSVA**: Gene Set Variation Analysis via empirical CDF + KS statistic
+- **Mean-Z**: Fast Z-score averaging per pathway (best for large datasets)
+
+**Key functions**:
+- `load_expression_matrix()`: Load CSV/TSV with auto-orientation detection and log transformation
+- `score_pathways_from_expression()`: Main scoring entry point — produces same Z-normalized pathway scores as VCF-based scoring
+
+```python
+from pathway_subtyping import (
+    load_expression_matrix, score_pathways_from_expression,
+    ExpressionScoringMethod, ExpressionInputType,
+)
+
+expr, qc = load_expression_matrix("expression.csv", input_type=ExpressionInputType.TPM)
+result = score_pathways_from_expression(expr, pathways, method=ExpressionScoringMethod.SSGSEA, seed=42)
+# result.pathway_scores: samples × pathways (Z-normalized)
+```
+
+### 13. Multi-Omic Fusion (`multi_omic.py`)
+
+**Purpose**: Fuse pathway scores from multiple data modalities (VCF, expression, single-cell, deconvolution) into a unified feature matrix.
+
+**Fusion strategies**:
+- **Concatenate** (default): Column-bind with modality prefixes (e.g., `WES:PATHWAY_1`)
+- **Weighted Average**: Weighted mean of shared pathway scores
+- **Intersection Only**: Restrict to shared samples and pathways
+
+**Key functions**:
+- `prepare_modality()`: Wrap a modality's scores into `ModalityInput`
+- `fuse_modalities()`: Fuse 2+ modalities with configurable strategy and missing data handling
+- `correlation_analysis()`: Pairwise pathway-level correlations between modalities
+
+```python
+from pathway_subtyping import (
+    ModalityType, FusionStrategy, prepare_modality, fuse_modalities,
+)
+
+vcf_mod = prepare_modality(ModalityType.VCF, vcf_scores, label="WES")
+expr_mod = prepare_modality(ModalityType.EXPRESSION, expr_scores, label="RNA-seq")
+fusion = fuse_modalities([vcf_mod, expr_mod], strategy=FusionStrategy.CONCATENATE, seed=42)
+# fusion.fused_pathway_scores: unified samples × pathways
+# fusion.per_modality_scores: dict for cross-modal validation (Gate 5)
+```
+
+### 14. Bulk Deconvolution (`deconvolution.py`)
+
+**Purpose**: Estimate cell-type proportions from bulk RNA-seq using a single-cell reference profile, then combine with pathway scores for cell-type-aware subtype discovery.
+
+**Algorithm**: Non-negative least squares (NNLS) — `scipy.optimize.nnls`. Biologically appropriate because cell-type proportions cannot be negative (used in CIBERSORT, MuSiC).
+
+**Key functions**:
+- `build_reference_profile()`: Aggregate single-cell expression to cell-type mean profiles
+- `deconvolve_bulk()`: NNLS deconvolution with quality checks
+- `combine_features()`: Merge pathway scores + cell-type proportions into unified feature matrix
+- `generate_synthetic_bulk()`: Create synthetic bulk expression from known proportions for testing
+
+```python
+from pathway_subtyping import build_reference_profile, deconvolve_bulk, combine_features
+
+reference = build_reference_profile(sc_expression, cell_type_labels)
+result = deconvolve_bulk(bulk_expression, reference, seed=42)
+combined = combine_features(pathway_scores, result.cell_type_proportions, proportion_weight=0.3)
+# combined: samples × (pathways + CELLTYPE:* columns), ready for clustering
+```
+
+### 15. Cross-Modal Validation (`cross_modal_validation.py`)
+
+**Purpose**: Test whether molecular subtypes are consistent across data modalities (Validation Gate 5).
+
+**How it works**:
+1. For each pair of modalities, cluster each independently using GMM
+2. Measure agreement via ARI and NMI (concordance)
+3. Test transfer: train on modality A, predict on modality B (and vice versa)
+4. Build null distribution by permuting labels across `n_permutations` runs
+5. Gate passes if observed ARI > 95th percentile of null distribution
+
+**Key functions**:
+- `cross_modal_concordance()`: Main entry point for cross-modal validation
+- `single_cell_composition_test()`: Test whether subtypes have distinct cell-type compositions
+- `generate_synthetic_multimodal_data()`: Generate synthetic multi-modal data with planted subtypes
+
+```python
+from pathway_subtyping import cross_modal_concordance
+
+result = cross_modal_concordance(
+    per_modality_scores={"WES": vcf_scores, "RNA-seq": expr_scores},
+    cluster_labels=fused_labels,
+    fused_sample_ids=list(fused_scores.index),
+    n_clusters=3,
+    seed=42,
+)
+print(f"Gate passed: {result.gate_passed}")
+print(result.format_report())
 ```
 
 ---

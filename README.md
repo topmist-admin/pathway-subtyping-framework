@@ -41,14 +41,17 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 | Feature | Description |
 |---------|-------------|
 | **Pathway Scoring** | Aggregate gene burdens across biological pathways |
+| **Expression Scoring** | Bulk RNA-seq pathway scoring via ssGSEA, GSVA, or mean-Z methods |
 | **Single-Cell Scoring** | Per-cell and pseudobulk pathway scoring from scRNA-seq (h5ad/CSV) |
+| **Multi-Omic Fusion** | Fuse VCF + expression + single-cell scores (concatenate, weighted, intersection) |
+| **Bulk Deconvolution** | Estimate cell-type proportions from bulk RNA-seq via NNLS; cell-type-aware subtypes |
 | **Multiple Clustering** | GMM, K-means, Hierarchical, Spectral with cross-validation |
 | **Ancestry Correction** | PCA-based population stratification correction with independence testing |
 | **Batch Correction** | ComBat-style batch effect detection and correction |
 | **Sensitivity Analysis** | Parameter robustness testing across algorithms, features, normalization |
 | **Threshold Calibration** | Data-driven validation thresholds that adjust for sample size and cluster count |
 | **Variant QC** | QUAL, call rate, HWE, MAF filters before burden computation |
-| **Validation Gates** | Negative controls + bootstrap stability + ancestry independence testing |
+| **Validation Gates** | 5 gates: negative controls, bootstrap stability, ancestry independence, cross-modal concordance |
 | **Statistical Rigor** | FDR correction, effect sizes, confidence intervals |
 | **Power Analysis** | Sample size recommendations, Type I error estimation |
 | **Simulation** | Synthetic data generation with ground truth for validation |
@@ -135,10 +138,11 @@ VCF / Expression / scRNA-seq → Pathway Scoring → [Ancestry Correction] → [
 ```
 
 ### 1. Pathway Scoring
-Rare damaging variants are aggregated into pathway-level disruption scores:
-- Loss-of-function variants weighted higher
-- Missense variants weighted by CADD score
-- Scores normalized across samples
+Multiple input modalities are supported, each producing the same Z-normalized pathway score matrix:
+- **VCF**: Rare damaging variants aggregated with LoF/CADD weights
+- **Expression**: Bulk RNA-seq scored via ssGSEA, GSVA, or mean-Z
+- **Single-cell**: Pseudobulk or per-cell scoring from scRNA-seq
+- **Multi-omic**: Fuse scores from multiple modalities for unified subtype discovery
 
 ### 2. Subtype Discovery
 Multiple clustering algorithms identify patient subgroups:
@@ -155,6 +159,7 @@ Built-in tests prevent overfitting:
 - **Random genes**: Fake pathways should NOT work (ARI < 0.15)
 - **Bootstrap**: Clusters should be stable under resampling (ARI > 0.8)
 - **Ancestry independence**: Clusters should not correlate with ancestry PCs (when provided)
+- **Cross-modal concordance**: Subtypes should replicate across data modalities (when multi-omic)
 
 ### 4. Statistical Rigor
 Publication-quality statistics:
@@ -195,34 +200,41 @@ For full details, see [DISCLAIMER.md](DISCLAIMER.md) and [docs/contributor-kit/0
 
 ```
 pathway-subtyping-framework/
-├── src/pathway_subtyping/     # Core Python package
-│   ├── pipeline.py            # Main pipeline
-│   ├── clustering.py          # Multiple clustering algorithms
-│   ├── statistical_rigor.py   # FDR, effect sizes, burden weights
-│   ├── simulation.py          # Synthetic data & power analysis
-│   ├── validation.py          # Validation gates
+├── src/pathway_subtyping/       # Core Python package
+│   ├── pipeline.py              # Main pipeline orchestrator
+│   ├── clustering.py            # GMM, K-means, Hierarchical, Spectral
+│   ├── validation.py            # Validation gates (5 gates)
+│   ├── statistical_rigor.py     # FDR, effect sizes, burden weights
+│   ├── simulation.py            # Synthetic data & power analysis
+│   ├── expression.py            # Bulk RNA-seq pathway scoring (ssGSEA, GSVA, mean-Z)
+│   ├── single_cell.py           # Single-cell scRNA-seq scoring (pseudobulk + per-cell)
+│   ├── multi_omic.py            # Multi-omic pathway score fusion
+│   ├── deconvolution.py         # Bulk deconvolution (NNLS cell-type proportions)
+│   ├── cross_modal_validation.py # Cross-modal concordance gate (Gate 5)
+│   ├── visualization.py         # Interactive Plotly reports, UMAP/t-SNE, export
+│   ├── characterization.py      # Subtype profiling, heatmaps, gene contributions
+│   ├── ancestry.py              # Population stratification correction
+│   ├── batch_correction.py      # Batch effect detection & correction
+│   ├── sensitivity.py           # Parameter sensitivity analysis
+│   ├── benchmark.py             # Method comparison benchmarks
+│   ├── cross_cohort.py          # Cross-cohort validation
 │   ├── threshold_calibration.py # Data-driven threshold calibration
-│   ├── ancestry.py            # Population stratification correction
-│   ├── batch_correction.py    # Batch effect detection & correction
-│   ├── sensitivity.py         # Parameter sensitivity analysis
-│   ├── cross_cohort.py        # Cross-cohort validation
-│   ├── expression.py          # Bulk RNA-seq pathway scoring
-│   ├── single_cell.py         # Single-cell scRNA-seq pathway scoring (pseudobulk + per-cell)
-│   ├── visualization.py       # Interactive Plotly reports, UMAP/t-SNE, multi-format export
-│   ├── characterization.py    # Subtype profiling, heatmaps, gene contributions
-│   ├── variant_qc.py          # Variant quality control (QUAL, HWE, MAF, call rate)
-│   └── data_quality.py        # VCF quality checks
-├── configs/                   # Example YAML configurations
+│   ├── variant_qc.py            # Variant QC (QUAL, HWE, MAF, call rate)
+│   ├── validation_datasets.py   # ClinVar/Reactome integration
+│   ├── data_quality.py          # VCF quality checks
+│   └── utils/                   # Performance, seeding, progress tracking
+├── configs/                     # Example YAML configurations
 ├── data/
-│   ├── pathways/              # Pathway GMT files (6 diseases)
-│   └── sample/                # Synthetic test data
+│   ├── pathways/                # Pathway GMT files (6 diseases)
+│   └── sample/                  # Synthetic test data
 ├── docs/
-│   ├── METHODS.md             # Statistical methods documentation
-│   └── guides/                # User guides
-├── examples/notebooks/        # Jupyter tutorials
-├── tests/                     # Test suite (768 tests)
-├── Dockerfile                 # Container support
-└── docker-compose.yml         # Easy orchestration
+│   ├── METHODS.md               # Statistical methods documentation
+│   ├── api/                     # API reference (13 modules)
+│   └── guides/                  # User guides
+├── examples/notebooks/          # Jupyter tutorials
+├── tests/                       # Test suite (912+ tests)
+├── Dockerfile                   # Container support
+└── docker-compose.yml           # Easy orchestration
 ```
 
 ## Development
