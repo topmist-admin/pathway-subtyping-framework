@@ -56,7 +56,7 @@ class PipelineConfig:
     n_clusters_range: List[int] = field(default_factory=lambda: [2, 8])
 
     # Input type
-    input_type: str = "vcf"  # "vcf" or "expression"
+    input_type: str = "vcf"  # "vcf", "expression", or "multi_omic"
 
     # Expression-specific config
     expression_path: str = ""
@@ -85,6 +85,13 @@ class PipelineConfig:
     variant_qc_hwe_p_threshold: float = 1e-6
     variant_qc_max_maf: float = 0.01
 
+    # Multi-omic config
+    multi_omic_modalities: List[Dict[str, Any]] = field(default_factory=list)
+    multi_omic_fusion_strategy: str = "concatenate"
+    multi_omic_missing_strategy: str = "impute_zero"
+    multi_omic_weights: Optional[Dict[str, float]] = None
+    multi_omic_renormalize: bool = True
+
     # Performance
     use_chunked_processing: bool = False
     chunk_size: int = 1000
@@ -110,6 +117,7 @@ class PipelineConfig:
         ancestry = config_dict.get("ancestry", {})
         variant_qc = config_dict.get("variant_qc", {})
         validation = config_dict.get("validation", {})
+        multi_omic = config_dict.get("multi_omic", {})
 
         return cls(
             name=pipeline.get("name", "demo_run"),
@@ -141,6 +149,11 @@ class PipelineConfig:
             validation_null_ari_max=validation.get("null_ari_max"),
             validation_calibrate=validation.get("calibrate", True),
             validation_alpha=float(validation.get("alpha", 0.05)),
+            multi_omic_modalities=multi_omic.get("modalities", []),
+            multi_omic_fusion_strategy=multi_omic.get("fusion_strategy", "concatenate"),
+            multi_omic_missing_strategy=multi_omic.get("missing_strategy", "impute_zero"),
+            multi_omic_weights=multi_omic.get("weights"),
+            multi_omic_renormalize=multi_omic.get("renormalize", True),
             generate_interactive_report=output.get("generate_interactive_report", False),
             interactive_dim_reduction=output.get("interactive_dim_reduction", "pca"),
             disclaimer=output.get("disclaimer", "Research use only."),
@@ -198,6 +211,9 @@ class DemoPipeline:
         # Characterization
         self.characterization_result: Optional[CharacterizationResult] = None
 
+        # Multi-omic fusion
+        self.multi_omic_result = None
+
         # Timing
         self.start_time: Optional[datetime] = None
         self.end_time: Optional[datetime] = None
@@ -231,7 +247,19 @@ class DemoPipeline:
         """Load input data based on input type."""
         logger.info("Loading input data...")
 
-        if self.config.input_type == "expression":
+        if self.config.input_type == "multi_omic":
+            # Multi-omic: load pathways first, then load/score each modality
+            self._load_pathways()
+            if self.config.phenotype_path:
+                self._load_phenotypes()
+            self._load_and_score_multi_omic()
+            logger.info(
+                f"Loaded multi-omic: {len(self.pathway_scores)} samples, "
+                f"{len(self.pathway_scores.columns)} fused pathways, "
+                f"{len(self.pathways)} pathways in GMT"
+            )
+            return
+        elif self.config.input_type == "expression":
             self._load_expression()
         else:
             self._load_vcf()
@@ -394,6 +422,119 @@ class DemoPipeline:
             str(expr_path), input_type=input_type
         )
         self.samples = list(self.gene_expression.index)
+
+    def _load_and_score_multi_omic(self) -> None:
+        """Load and score all modalities, then fuse pathway scores."""
+        from .expression import (
+            ExpressionInputType,
+            ExpressionScoringMethod,
+            load_expression_matrix,
+            score_pathways_from_expression,
+        )
+        from .multi_omic import (
+            FusionStrategy,
+            MissingStrategy,
+            ModalityType,
+            fuse_modalities,
+            prepare_modality,
+        )
+
+        modality_inputs = []
+        for mod_config in self.config.multi_omic_modalities:
+            mod_type = mod_config["type"]
+            mod_path = mod_config["path"]
+            mod_label = mod_config.get("label", mod_type)
+
+            if mod_type == "vcf":
+                logger.info(f"[MultiOmic] Loading VCF modality: {mod_label}")
+                # Temporarily set vcf_path and run VCF pipeline steps
+                orig_vcf = self.config.vcf_path
+                self.config.vcf_path = mod_path
+                self._load_vcf()
+                self.config.vcf_path = orig_vcf
+                self.compute_gene_burdens()
+                self.compute_pathway_scores()
+                modality_inputs.append(
+                    prepare_modality(
+                        ModalityType.VCF,
+                        self.pathway_scores,
+                        gene_data=self.gene_burdens,
+                        label=mod_label,
+                    )
+                )
+
+            elif mod_type == "expression":
+                logger.info(f"[MultiOmic] Loading expression modality: {mod_label}")
+                expr_input_type = ExpressionInputType(
+                    mod_config.get("expression_input_type", "tpm")
+                )
+                expr_method = ExpressionScoringMethod(
+                    mod_config.get("expression_scoring_method", "ssgsea")
+                )
+                gene_expr, _ = load_expression_matrix(mod_path, input_type=expr_input_type)
+                result = score_pathways_from_expression(
+                    gene_expr,
+                    self.pathways,
+                    method=expr_method,
+                    alpha=self.config.ssgsea_alpha,
+                    seed=self.config.seed,
+                )
+                modality_inputs.append(
+                    prepare_modality(
+                        ModalityType.EXPRESSION,
+                        result.pathway_scores,
+                        gene_data=gene_expr,
+                        label=mod_label,
+                    )
+                )
+
+            elif mod_type == "single_cell":
+                logger.info(f"[MultiOmic] Loading single-cell modality: {mod_label}")
+                from .single_cell import (
+                    SingleCellScoringMethod,
+                    load_single_cell_data,
+                    score_single_cell_pathways,
+                )
+
+                sc_method = SingleCellScoringMethod(
+                    mod_config.get("scoring_method", "pseudobulk_ssgsea")
+                )
+                cell_type_col = mod_config.get("cell_type_column", "cell_type")
+                adata, _ = load_single_cell_data(mod_path, cell_type_column=cell_type_col)
+                sc_result = score_single_cell_pathways(
+                    adata,
+                    self.pathways,
+                    cell_type_column=cell_type_col,
+                    method=sc_method,
+                    seed=self.config.seed,
+                )
+                modality_inputs.append(
+                    prepare_modality(
+                        ModalityType.SINGLE_CELL,
+                        sc_result.pathway_scores,
+                        gene_data=sc_result.pseudobulk_expression,
+                        label=mod_label,
+                    )
+                )
+            else:
+                raise ValueError(f"[MultiOmic] Unknown modality type: {mod_type}")
+
+        # Fuse modalities
+        fusion_strategy = FusionStrategy(self.config.multi_omic_fusion_strategy)
+        missing_strategy = MissingStrategy(self.config.multi_omic_missing_strategy)
+
+        self.multi_omic_result = fuse_modalities(
+            modality_inputs,
+            strategy=fusion_strategy,
+            weights=self.config.multi_omic_weights,
+            missing_strategy=missing_strategy,
+            renormalize=self.config.multi_omic_renormalize,
+            seed=self.config.seed,
+        )
+
+        self.pathway_scores = self.multi_omic_result.fused_pathway_scores
+        self.gene_burdens = self.multi_omic_result.fused_gene_data
+        self.samples = list(self.pathway_scores.index)
 
     def _load_phenotypes(self) -> None:
         """Load phenotype CSV file."""
@@ -835,6 +976,10 @@ class DemoPipeline:
 
         cluster_labels = self.cluster_assignments["cluster_id"].values
 
+        per_modality_scores = None
+        if self.multi_omic_result is not None:
+            per_modality_scores = self.multi_omic_result.per_modality_scores
+
         self.validation_result = validator.run_all(
             pathway_scores=self.pathway_scores,
             cluster_labels=cluster_labels,
@@ -843,6 +988,7 @@ class DemoPipeline:
             n_clusters=self.n_clusters,
             gmm_seed=self.config.seed,
             ancestry_pcs=self.ancestry_pcs,
+            per_modality_scores=per_modality_scores,
         )
 
         # Store ancestry report if available
@@ -1457,7 +1603,9 @@ class DemoPipeline:
             self.setup()
             self.load_data()
 
-            if self.config.input_type == "expression":
+            if self.config.input_type == "multi_omic":
+                pass  # Pathway scores already computed in _load_and_score_multi_omic
+            elif self.config.input_type == "expression":
                 self.compute_expression_pathway_scores()
             else:
                 self.run_variant_qc()

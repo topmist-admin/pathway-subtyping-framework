@@ -116,6 +116,11 @@ def validate_config(config: Dict[str, Any], check_files: bool = True) -> bool:
     if variant_qc:
         _validate_variant_qc_section(variant_qc)
 
+    # Validate multi_omic section (optional)
+    multi_omic = config.get("multi_omic", {})
+    if multi_omic:
+        _validate_multi_omic_section(multi_omic, check_files)
+
     return True
 
 
@@ -123,7 +128,10 @@ def _validate_data_section(data: Dict[str, Any], check_files: bool) -> None:
     """Validate the data section of config."""
     input_type = data.get("input_type", "vcf")
 
-    if input_type == "expression":
+    if input_type == "multi_omic":
+        # Multi-omic: individual paths come from multi_omic section
+        required_fields = ["pathway_db"]
+    elif input_type == "expression":
         required_fields = ["expression_path", "phenotype_path", "pathway_db"]
     else:
         required_fields = ["vcf_path", "phenotype_path", "pathway_db"]
@@ -367,6 +375,108 @@ def _validate_variant_qc_section(data: Dict[str, Any]) -> None:
                 field="variant_qc.min_dp",
                 suggestions=["Use a non-negative integer, e.g., min_dp: 10"],
             )
+
+
+def _validate_multi_omic_section(data: Dict[str, Any], check_files: bool) -> None:
+    """Validate the multi_omic section of config."""
+    modalities = data.get("modalities")
+    if not isinstance(modalities, list) or len(modalities) < 2:
+        raise ConfigValidationError(
+            "multi_omic.modalities must be a list with at least 2 entries",
+            field="multi_omic.modalities",
+            suggestions=["Add at least 2 modality entries under multi_omic.modalities"],
+        )
+
+    valid_types = ["vcf", "expression", "single_cell"]
+    labels_seen: List[str] = []
+    for i, mod in enumerate(modalities):
+        mod_type = mod.get("type")
+        if mod_type not in valid_types:
+            raise ConfigValidationError(
+                f"Invalid modality type at index {i}: {mod_type}",
+                field=f"multi_omic.modalities[{i}].type",
+                suggestions=[f"Use one of: {', '.join(valid_types)}"],
+            )
+
+        mod_path = mod.get("path")
+        if not mod_path:
+            raise ConfigValidationError(
+                f"Missing path for modality at index {i}",
+                field=f"multi_omic.modalities[{i}].path",
+                suggestions=["Add 'path: /path/to/data' for each modality"],
+            )
+
+        if check_files:
+            path = Path(mod_path)
+            if not path.exists():
+                raise ConfigValidationError(
+                    f"File not found for modality {i}: {mod_path}",
+                    field=f"multi_omic.modalities[{i}].path",
+                    suggestions=["Check the file path is correct"],
+                )
+
+        label = mod.get("label", mod_type)
+        labels_seen.append(label)
+
+        # Validate expression-specific fields
+        if mod_type == "expression":
+            expr_input = mod.get("expression_input_type", "tpm")
+            if expr_input not in ["counts", "tpm", "fpkm", "log2"]:
+                raise ConfigValidationError(
+                    f"Invalid expression_input_type for modality {i}: {expr_input}",
+                    field=f"multi_omic.modalities[{i}].expression_input_type",
+                    suggestions=["Use one of: counts, tpm, fpkm, log2"],
+                )
+            scoring = mod.get("expression_scoring_method", "ssgsea")
+            if scoring not in ["mean_z", "ssgsea", "gsva"]:
+                raise ConfigValidationError(
+                    f"Invalid expression_scoring_method for modality {i}: {scoring}",
+                    field=f"multi_omic.modalities[{i}].expression_scoring_method",
+                    suggestions=["Use one of: mean_z, ssgsea, gsva"],
+                )
+
+    # Validate fusion_strategy
+    strategy = data.get("fusion_strategy", "concatenate")
+    valid_strategies = ["concatenate", "weighted_average", "intersection_only"]
+    if strategy not in valid_strategies:
+        raise ConfigValidationError(
+            f"Invalid fusion_strategy: {strategy}",
+            field="multi_omic.fusion_strategy",
+            suggestions=[f"Use one of: {', '.join(valid_strategies)}"],
+        )
+
+    # Validate missing_strategy
+    missing = data.get("missing_strategy", "impute_zero")
+    valid_missing = ["impute_zero", "impute_mean", "drop"]
+    if missing not in valid_missing:
+        raise ConfigValidationError(
+            f"Invalid missing_strategy: {missing}",
+            field="multi_omic.missing_strategy",
+            suggestions=[f"Use one of: {', '.join(valid_missing)}"],
+        )
+
+    # Validate weights if provided
+    weights = data.get("weights")
+    if weights is not None:
+        if not isinstance(weights, dict):
+            raise ConfigValidationError(
+                "multi_omic.weights must be a dict mapping label -> weight",
+                field="multi_omic.weights",
+            )
+        weight_sum = sum(weights.values())
+        if abs(weight_sum - 1.0) > 0.01:
+            raise ConfigValidationError(
+                f"Weights must sum to 1.0, got {weight_sum:.4f}",
+                field="multi_omic.weights",
+                suggestions=["Ensure all weight values sum to 1.0"],
+            )
+        for label in labels_seen:
+            if label not in weights:
+                raise ConfigValidationError(
+                    f"Weight missing for modality '{label}'",
+                    field="multi_omic.weights",
+                    suggestions=[f"Add '{label}: <weight>' to the weights section"],
+                )
 
 
 def validate_gmt_file(gmt_path: str) -> Dict[str, List[str]]:

@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Cross-Modal Validation Gate (#33)
+- **Cross-modal validation module** (`cross_modal_validation.py`): Gate 5 — tests whether subtypes replicate across data modalities
+  - `CrossModalPairResult`: Per-pair concordance metrics (ARI, NMI, bidirectional transfer ARI)
+  - `CrossModalValidationResult`: Top-level result with gate pass/fail, null calibration, format_report/get_citations
+  - `SingleCellCompositionResult`: ANOVA-based test for distinct cell-type compositions across subtypes
+  - `cross_modal_concordance()`: Main entry point — independent clustering per modality, pairwise ARI/NMI, transfer validation, permutation null calibration
+  - `single_cell_composition_test()`: One-way ANOVA per cell type with Bonferroni correction
+  - `generate_synthetic_multimodal_data()`: Planted shared subtype structure for testing and calibration
+- **Validation integration**: Gate 5 added to `ValidationGates.run_all()` when `per_modality_scores` is provided (>= 2 modalities)
+- **Pipeline integration**: `run_validation_gates()` passes `per_modality_scores` from multi-omic fusion result
+
+#### Multi-Omic Pipeline Integration (#35)
+- **Multi-omic fusion module** (`multi_omic.py`): Fuse pathway scores from VCF, bulk RNA-seq, and scRNA-seq modalities
+  - `ModalityType`: Enum for VCF, expression, and single-cell modalities
+  - `FusionStrategy`: Enum for concatenate, weighted_average, intersection_only fusion strategies
+  - `MissingStrategy`: Enum for handling samples missing from some modalities (impute_zero, impute_mean, drop)
+  - `ModalityInput`: Dataclass wrapping a single modality's scored output with validation
+  - `SampleOverlapStats`: Statistics about sample overlap across modalities
+  - `MultiOmicFusionResult`: Result container with fused scores, per-modality scores, overlap stats (`.to_dict()`, `.format_report()`, `.get_citations()`)
+  - `MultiOmicQualityReport`: Per-modality quality reports, sample/pathway overlap statistics, warnings
+  - `prepare_modality()`: Validate and wrap modality output for fusion
+  - `fuse_modalities()`: Main entry point — concatenation (default), weighted average, or intersection-only fusion
+  - `compute_sample_overlap()`: Analyze sample overlap across modalities with pairwise statistics
+  - `correlation_analysis()`: Cross-modality pathway correlation (Pearson/Spearman)
+- **Pipeline integration**: `input_type: "multi_omic"` in YAML config with `multi_omic` section for modality list, fusion strategy, weights
+- **Config validation**: New `multi_omic` section validation with modality-type, path, weight, and strategy checks
+
 #### Single-Cell Pathway Scoring (#30)
 - **Single-cell module** (`single_cell.py`): Per-cell and pseudobulk pathway scoring from scRNA-seq data
   - `SingleCellScoringMethod`: Enum for per-cell mean_z and pseudobulk (mean_z, ssGSEA, GSVA) methods

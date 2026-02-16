@@ -113,6 +113,7 @@ class ValidationGates:
         n_clusters: int,
         gmm_seed: Optional[int] = None,
         ancestry_pcs=None,
+        per_modality_scores: Optional[Dict[str, pd.DataFrame]] = None,
     ) -> ValidationGatesResult:
         """
         Run all validation gates.
@@ -125,6 +126,8 @@ class ValidationGates:
             n_clusters: Number of clusters used
             gmm_seed: Seed for GMM clustering
             ancestry_pcs: Optional AncestryPCs for ancestry independence gate
+            per_modality_scores: Optional dict mapping modality label to pathway
+                score DataFrame for cross-modal concordance gate
 
         Returns:
             ValidationGatesResult with all test outcomes
@@ -168,6 +171,19 @@ class ValidationGates:
             logger.info(
                 f"  - {nc3_result.name}: {nc3_result.status} "
                 f"(p_min = {nc3_result.metric_value:.4f})"
+            )
+
+        # Gate 5: Cross-Modal Concordance (if multi-omic data available)
+        if per_modality_scores is not None and len(per_modality_scores) >= 2:
+            cm_result = self.cross_modal_concordance_gate(
+                per_modality_scores=per_modality_scores,
+                cluster_labels=cluster_labels,
+                fused_sample_ids=list(pathway_scores.index),
+                n_clusters=n_clusters,
+            )
+            results.append(cm_result)
+            logger.info(
+                f"  - {cm_result.name}: {cm_result.status} " f"(ARI = {cm_result.metric_value:.3f})"
             )
 
         # Aggregate results
@@ -514,6 +530,49 @@ class ValidationGates:
             },
         )
 
+    def cross_modal_concordance_gate(
+        self,
+        per_modality_scores: Dict[str, pd.DataFrame],
+        cluster_labels: np.ndarray,
+        fused_sample_ids: List[str],
+        n_clusters: int,
+    ) -> ValidationResult:
+        """
+        Gate 5: Cross-Modal Concordance (optional).
+
+        Tests whether subtypes are consistent across data modalities.
+        Clusters each modality independently and measures agreement.
+        Only runs when multi-omic data is available (>= 2 modalities).
+        """
+        from .cross_modal_validation import cross_modal_concordance
+
+        result = cross_modal_concordance(
+            per_modality_scores=per_modality_scores,
+            cluster_labels=cluster_labels,
+            fused_sample_ids=fused_sample_ids,
+            n_clusters=n_clusters,
+            n_permutations=self.n_permutations,
+            seed=self.seed,
+            show_progress=self.show_progress,
+        )
+
+        return ValidationResult(
+            name="Gate 5: Cross-Modal Concordance",
+            passed=result.gate_passed,
+            metric_name="mean_concordance_ARI",
+            metric_value=result.mean_concordance_ari,
+            threshold=result.null_ari_95th,
+            comparison=">",
+            details={
+                "mean_concordance_nmi": round(result.mean_concordance_nmi, 4),
+                "mean_transfer_ari": round(result.mean_transfer_ari, 4),
+                "null_ari_95th": round(result.null_ari_95th, 4),
+                "n_modality_pairs": len(result.pair_results),
+                "pair_results": [p.to_dict() for p in result.pair_results],
+                "interpretation": ("Subtypes should be consistent across data modalities"),
+            },
+        )
+
 
 def format_validation_report(result: ValidationGatesResult) -> str:
     """Format validation results for display in report."""
@@ -548,6 +607,10 @@ def format_validation_report(result: ValidationGatesResult) -> str:
             "",
             "- **Stability Test (Bootstrap)**: Tests if clusters are robust to resampling. "
             "PASS means clusters are stable features of the data.",
+            "",
+            "- **Cross-Modal Concordance (Gate 5)**: Tests if subtypes discovered from "
+            "fused data also appear when clustering each modality independently. "
+            "PASS means subtypes reflect shared biology, not modality-specific artifacts.",
             "",
         ]
     )

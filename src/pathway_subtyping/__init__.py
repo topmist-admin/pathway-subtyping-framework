@@ -68,6 +68,14 @@ from .cross_cohort import (
     generate_synthetic_cohort_pair,
     load_cohort_result,
 )
+from .cross_modal_validation import (
+    CrossModalPairResult,
+    CrossModalValidationResult,
+    SingleCellCompositionResult,
+    cross_modal_concordance,
+    generate_synthetic_multimodal_data,
+    single_cell_composition_test,
+)
 from .data_quality import (
     DataQualityReport,
     VCFDataQualityError,
@@ -82,15 +90,20 @@ from .expression import (
     load_expression_matrix,
     score_pathways_from_expression,
 )
-from .pipeline import DemoPipeline, PipelineConfig
-from .single_cell import (
-    SingleCellInputType,
-    SingleCellQualityReport,
-    SingleCellScoringMethod,
-    SingleCellScoringResult,
-    load_single_cell_data,
-    score_single_cell_pathways,
+from .multi_omic import (
+    FusionStrategy,
+    MissingStrategy,
+    ModalityInput,
+    ModalityType,
+    MultiOmicFusionResult,
+    MultiOmicQualityReport,
+    SampleOverlapStats,
+    compute_sample_overlap,
+    correlation_analysis,
+    fuse_modalities,
+    prepare_modality,
 )
+from .pipeline import DemoPipeline, PipelineConfig
 from .sensitivity import (
     ParameterVariationResult,
     SensitivityAnalysisResult,
@@ -117,6 +130,14 @@ from .simulation import (
     run_power_analysis,
     run_sample_size_analysis,
     validate_framework,
+)
+from .single_cell import (
+    SingleCellInputType,
+    SingleCellQualityReport,
+    SingleCellScoringMethod,
+    SingleCellScoringResult,
+    load_single_cell_data,
+    score_single_cell_pathways,
 )
 
 # Scientific rigor modules (v0.2)
@@ -194,6 +215,13 @@ __all__ = [
     "ExpressionScoringResult",
     "load_expression_matrix",
     "score_pathways_from_expression",
+    # Cross-modal validation
+    "CrossModalPairResult",
+    "CrossModalValidationResult",
+    "SingleCellCompositionResult",
+    "cross_modal_concordance",
+    "generate_synthetic_multimodal_data",
+    "single_cell_composition_test",
     # Cross-cohort
     "compare_cohorts",
     "load_cohort_result",
@@ -316,6 +344,18 @@ __all__ = [
     "calibrate_thresholds",
     "generate_calibration_table",
     "get_default_thresholds",
+    # Multi-omic fusion
+    "FusionStrategy",
+    "MissingStrategy",
+    "ModalityInput",
+    "ModalityType",
+    "MultiOmicFusionResult",
+    "MultiOmicQualityReport",
+    "SampleOverlapStats",
+    "compute_sample_overlap",
+    "correlation_analysis",
+    "fuse_modalities",
+    "prepare_modality",
     # Single-cell scoring
     "SingleCellInputType",
     "SingleCellQualityReport",
