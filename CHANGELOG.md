@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Bulk Deconvolution Integration (#31)
+- **Deconvolution module** (`deconvolution.py`): Estimate cell-type proportions from bulk RNA-seq
+  - `DeconvolutionMethod`: Enum for NNLS deconvolution
+  - `DeconvolutionQualityReport`: Reference coverage, proportion validation, gene overlap
+  - `DeconvolutionResult`: Cell-type proportion matrix with `.to_dict()`, `.format_report()`, `.get_citations()`
+  - `build_reference_profile()`: Aggregate single-cell reference to cell-type mean expression profiles
+  - `deconvolve_bulk()`: Main entry point — NNLS deconvolution with quality checks
+  - `combine_features()`: Merge pathway scores + cell-type proportions into unified feature matrix
+  - `generate_synthetic_bulk()`: Create synthetic bulk from known proportions for testing
+- **Multi-omic integration**: Added `ModalityType.DECONVOLUTION` for deconvolution-derived features
+
 #### Cross-Modal Validation Gate (#33)
 - **Cross-modal validation module** (`cross_modal_validation.py`): Gate 5 — tests whether subtypes replicate across data modalities
   - `CrossModalPairResult`: Per-pair concordance metrics (ARI, NMI, bidirectional transfer ARI)

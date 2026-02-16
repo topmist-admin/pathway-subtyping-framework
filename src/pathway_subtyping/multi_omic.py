@@ -43,6 +43,7 @@ class ModalityType(Enum):
     VCF = "vcf"
     EXPRESSION = "expression"
     SINGLE_CELL = "single_cell"
+    DECONVOLUTION = "deconvolution"
 
 
 class FusionStrategy(Enum):

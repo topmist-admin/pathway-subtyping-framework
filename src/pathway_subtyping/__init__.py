@@ -82,6 +82,15 @@ from .data_quality import (
     load_vcf_with_quality_check,
     validate_vcf_for_pipeline,
 )
+from .deconvolution import (
+    DeconvolutionMethod,
+    DeconvolutionQualityReport,
+    DeconvolutionResult,
+    build_reference_profile,
+    combine_features,
+    deconvolve_bulk,
+    generate_synthetic_bulk,
+)
 from .expression import (
     ExpressionDataQualityReport,
     ExpressionInputType,
@@ -230,6 +239,14 @@ __all__ = [
     "generate_synthetic_cohort_pair",
     "CohortResult",
     "CrossCohortResult",
+    # Deconvolution
+    "DeconvolutionMethod",
+    "DeconvolutionQualityReport",
+    "DeconvolutionResult",
+    "build_reference_profile",
+    "combine_features",
+    "deconvolve_bulk",
+    "generate_synthetic_bulk",
     # Data quality
     "DataQualityReport",
     "VCFDataQualityError",
