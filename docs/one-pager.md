@@ -66,7 +66,7 @@ Or try the **[Colab notebook](https://colab.research.google.com/github/topmist-a
 
 - **GitHub**: https://github.com/topmist-admin/pathway-subtyping-framework
 - **PyPI**: https://pypi.org/project/pathway-subtyping/
-- **DOI**: https://doi.org/10.5281/zenodo.14765212
+- **DOI**: https://doi.org/10.5281/zenodo.18442426
 - **Documentation**: https://github.com/topmist-admin/pathway-subtyping-framework/tree/main/docs
 
 ## Contact

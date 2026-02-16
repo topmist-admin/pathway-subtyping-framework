@@ -7,12 +7,13 @@ type: software
 authors:
   - family-names: Chauhan
     given-names: Rohit
+    orcid: 'https://orcid.org/0009-0003-9895-4629'
 repository-code: 'https://github.com/topmist-admin/pathway-subtyping-framework'
 url: 'https://github.com/topmist-admin/pathway-subtyping-framework'
 license: MIT
-version: 0.1.0
+version: 0.2.3
 date-released: '2026-01-31'
-doi: '10.5281/zenodo.18442427'
+doi: '10.5281/zenodo.18442426'
 keywords:
   - bioinformatics
   - genomics
