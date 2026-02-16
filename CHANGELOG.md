@@ -56,8 +56,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Closed GitHub issues #7 (cross-cohort), #8 (performance), #26 (variant QC)
 - Created `py.typed` PEP 561 marker file
 
+#### CI and Testing
+- Added `requires_plotly` and `requires_umap` skip markers in `test_visualization.py` so visualization tests skip gracefully when `[viz]` extras are not installed (fixes CI failures)
+- 49 new single-cell tests, 768 total tests passing
+
 ### Changed
-- Total test count: 716 (up from 660)
+- Total test count: 768 (up from 716)
 
 ## [0.2.3] - 2026-02-14
 
@@ -350,7 +354,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| (next) | Unreleased | Advanced visualization (Plotly, UMAP/t-SNE, interactive HTML reports), pipeline input validation |
+| (next) | Unreleased | Single-cell pathway scoring, advanced visualization, pipeline input validation, CI fixes |
 | 0.2.3 | 2026-02-14 | Cross-cohort validation, performance optimization, threshold calibration, expression scoring |
 | 0.2.0 | 2026-02-09 | Scientific rigor, ancestry/batch correction, benchmarks, sensitivity analysis |
 | 0.1.0 | 2026-01-29 | First public release with full pipeline |

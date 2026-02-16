@@ -7,6 +7,7 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 | Module | Description |
 |--------|-------------|
 | [`pipeline`](pipeline.md) | Main pipeline orchestrator and configuration |
+| [`single_cell`](single_cell.md) | Single-cell scRNA-seq pathway scoring (pseudobulk + per-cell) |
 | [`visualization`](#visualization) | Interactive Plotly reports, UMAP/t-SNE, multi-format export |
 | [`variant_qc`](variant_qc.md) | Variant quality control filters (QUAL, HWE, MAF, call rate) |
 | [`validation`](validation.md) | Validation gates and stability testing |
@@ -86,6 +87,53 @@ config = PipelineConfig(
 | [Performance & Hardware](../guides/performance-and-hardware.md) | Hardware recommendations, memory estimation, chunked processing, benchmarking |
 | [Cross-Cohort Validation](../guides/cross-cohort-validation.md) | Comparing subtypes across independent cohorts |
 | [Validation Gates](../guides/validation-gates.md) | Understanding and configuring validation gates |
+
+## Single-Cell Pathway Scoring
+
+The single-cell module (`pip install pathway-subtyping[sc]`) provides per-cell and pseudobulk pathway scoring from scRNA-seq data. Pseudobulk methods reuse expression.py internals, so ssGSEA/GSVA scoring is identical to bulk RNA-seq.
+
+### Quick Example
+
+```python
+from pathway_subtyping import (
+    load_single_cell_data,
+    score_single_cell_pathways,
+    SingleCellScoringMethod,
+    run_clustering,
+)
+
+# Load h5ad file with cell type annotations
+adata, qc_report = load_single_cell_data(
+    "data/pbmc_3k.h5ad",
+    cell_type_column="cell_type",
+)
+print(qc_report.format_report())  # QC summary
+
+# Score pathways (pseudobulk ssGSEA — recommended)
+result = score_single_cell_pathways(
+    adata,
+    pathways=pathway_dict,
+    cell_type_column="cell_type",
+    method=SingleCellScoringMethod.PSEUDOBULK_SSGSEA,
+    seed=42,
+)
+
+# Result is cell_types × pathways — directly compatible with clustering
+clustering = run_clustering(result.pathway_scores.values, n_clusters=3, seed=42)
+```
+
+### Scoring Methods
+
+| Method | Level | Speed | Best For |
+|--------|-------|-------|----------|
+| `MEAN_Z` | Per-cell | Fast | Large datasets, cell-level resolution |
+| `PSEUDOBULK_MEAN_Z` | Cell-type | Fast | Quick exploration |
+| `PSEUDOBULK_SSGSEA` | Cell-type | Medium | Recommended default |
+| `PSEUDOBULK_GSVA` | Cell-type | Medium | Alternative to ssGSEA |
+
+See [single_cell.md](single_cell.md) for full API reference.
+
+---
 
 ## Visualization
 

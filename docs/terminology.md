@@ -196,6 +196,29 @@ clustering:
   n_clusters_range: [2, 8]
 ```
 
+## Single-Cell Concepts
+
+### scRNA-seq (Single-Cell RNA Sequencing)
+High-throughput sequencing of mRNA from individual cells. Produces a cell x gene expression matrix, typically with high sparsity (60-95% zeros) due to dropout.
+
+### AnnData / h5ad
+The standard Python data structure and file format for single-cell data, used by Scanpy and many scRNA-seq tools. An h5ad file stores:
+- `.X`: Expression matrix (often sparse)
+- `.obs`: Cell-level metadata (cell type, sample, etc.)
+- `.var`: Gene-level metadata
+
+### Pseudobulk
+Aggregating single-cell expression within cell types to produce a cell_types x genes matrix. This matrix is structurally identical to a bulk expression matrix and can be scored using the same methods (ssGSEA, GSVA, mean-Z).
+
+### UMI (Unique Molecular Identifier)
+Short barcodes added during library prep to count individual mRNA molecules. UMI counts are the standard measure of expression in droplet-based scRNA-seq (10X Genomics).
+
+### Dropout
+The phenomenon where a gene expressed in a cell is not detected due to sampling limitations. Results in excess zeros in scRNA-seq data. The framework handles this via sparse matrix operations.
+
+### Cell Type
+A category of cells with shared transcriptomic profiles (e.g., T cells, B cells, neurons). Cell type annotations in `.obs` are used to group cells for pseudobulk aggregation.
+
 ## Abbreviations
 
 | Abbreviation | Full Term |
@@ -212,6 +235,8 @@ clustering:
 | LOEUF | Loss-of-function Observed/Expected Upper bound Fraction |
 | PCA | Principal Component Analysis |
 | QC | Quality Control |
+| scRNA-seq | Single-Cell RNA Sequencing |
+| UMI | Unique Molecular Identifier |
 | VCF | Variant Call Format |
 | VEP | Variant Effect Predictor |
 

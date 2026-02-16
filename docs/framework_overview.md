@@ -40,13 +40,23 @@ Variants → Genes → Pathways → Subtypes
 ┌─────────────────────────────────────────────────────────────────┐
 │                     INPUT DATA                                   │
 ├─────────────────────────────────────────────────────────────────┤
-│  VCF File          Pathways GMT       Phenotypes CSV            │
-│  (variants)        (gene sets)        (metadata)                │
-└────────┬────────────────┬────────────────────┬──────────────────┘
-         │                │                    │
-         ▼                ▼                    │
+│  VCF File     Expression CSV    scRNA-seq h5ad    Pathways GMT  │
+│  (variants)   (bulk RNA-seq)    (single-cell)     (gene sets)   │
+└────────┬────────────┬────────────────┬──────────────┬───────────┘
+         │                │                    │                │
+         ▼                ▼                    ▼                │
 ┌─────────────────────────────────────────────────────────────────┐
-│              VARIANT QUALITY CONTROL (optional)                  │
+│              PATHWAY SCORING (modality-specific)                 │
+├─────────────────────────────────────────────────────────────────┤
+│  VCF path:     Variant QC → Gene Burden → Pathway Aggregation   │
+│  Expression:   Load matrix → ssGSEA / GSVA / mean-Z scoring    │
+│  Single-cell:  Load h5ad → Pseudobulk or per-cell scoring       │
+│  Output:       samples/cell_types × pathways (Z-normalized)     │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              VARIANT QUALITY CONTROL (VCF path only)             │
 ├─────────────────────────────────────────────────────────────────┤
 │  • Filter by QUAL score (default ≥ 30)                          │
 │  • Remove low call rate variants (default ≥ 90%)                │
@@ -327,7 +337,32 @@ print(f"Robust: {result.is_robust}")
 print(f"Most sensitive: {result.most_sensitive_parameter}")
 ```
 
-### 9. Visualization (`visualization.py`)
+### 9. Single-Cell Scoring (`single_cell.py`)
+
+**Purpose**: Score pathways from scRNA-seq data at per-cell or cell-type level.
+
+**Requires**: `pip install pathway-subtyping[sc]` (anndata).
+
+**Methods**:
+- `load_single_cell_data()`: Load h5ad or CSV, auto-normalize raw counts, QC
+- `score_single_cell_pathways()`: Pseudobulk (ssGSEA, GSVA, mean-Z) or per-cell (mean-Z) scoring
+
+```python
+from pathway_subtyping import (
+    load_single_cell_data,
+    score_single_cell_pathways,
+    SingleCellScoringMethod,
+)
+
+adata, qc = load_single_cell_data("pbmc.h5ad", cell_type_column="cell_type")
+result = score_single_cell_pathways(
+    adata, pathways, cell_type_column="cell_type",
+    method=SingleCellScoringMethod.PSEUDOBULK_SSGSEA, seed=42,
+)
+# result.pathway_scores: cell_types × pathways (Z-normalized)
+```
+
+### 10. Visualization (`visualization.py`)
 
 **Purpose**: Generate interactive and publication-quality visualizations.
 
@@ -404,9 +439,13 @@ Modular design allows customization:
 
 | Data | Required | Format | Purpose |
 |------|----------|--------|---------|
-| Variants | Yes | VCF | Raw genetic data |
+| Variants | Yes* | VCF | Raw genetic data |
+| Expression | Yes* | CSV/TSV | Bulk RNA-seq gene expression |
+| Single-Cell | Yes* | h5ad/CSV | scRNA-seq data with cell types |
 | Pathways | Yes | GMT | Biological groupings |
 | Phenotypes | No | CSV | Sample metadata |
+
+*One input modality required (VCF, expression, or single-cell).
 
 ### Internal Representations
 

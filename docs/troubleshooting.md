@@ -15,11 +15,12 @@ This guide covers common issues when running the Pathway Subtyping Framework and
 5. [Ancestry Correction Issues](#ancestry-correction-issues)
 6. [Batch Correction Issues](#batch-correction-issues)
 7. [Sensitivity Analysis Issues](#sensitivity-analysis-issues)
-8. [Reproducibility Issues](#reproducibility-issues)
-7. [Performance Issues](#performance-issues)
-8. [Validation Gate Failures](#validation-gate-failures)
-9. [Platform-Specific Issues](#platform-specific-issues)
-10. [Getting Help](#getting-help)
+8. [Single-Cell Issues](#single-cell-issues)
+9. [Reproducibility Issues](#reproducibility-issues)
+10. [Performance Issues](#performance-issues)
+11. [Validation Gate Failures](#validation-gate-failures)
+12. [Platform-Specific Issues](#platform-specific-issues)
+13. [Getting Help](#getting-help)
 
 ---
 
@@ -679,6 +680,85 @@ print(report.format_report())
    )
    ```
 2. Reduce data size for exploratory analysis, then run full sensitivity on final dataset
+
+---
+
+## Single-Cell Issues
+
+### `ImportError: anndata` not installed
+
+**Symptom:**
+```
+ImportError: anndata is required for single-cell support. Install with: pip install pathway-subtyping[sc]
+```
+
+**Solution:**
+```bash
+pip install pathway-subtyping[sc]
+```
+
+### Low pathway coverage in scRNA-seq data
+
+**Symptom:**
+```
+WARNING: Only 3/15 pathways have gene coverage in single-cell data
+```
+
+**Cause:**
+scRNA-seq typically detects fewer genes per cell than bulk RNA-seq due to dropout. Pathways with lowly-expressed genes may have poor coverage.
+
+**Solution:**
+1. Use pseudobulk methods (`PSEUDOBULK_SSGSEA`) which aggregate across cells, improving gene detection
+2. Verify gene symbol format matches between pathways (HGNC symbols) and your h5ad var_names
+3. Lower `min_cells_per_gene` threshold when loading data
+
+### Cell type excluded due to min_cells filter
+
+**Symptom:**
+```
+WARNING: Excluding cell types with < 10 cells: ['Platelets', 'DC']
+```
+
+**Explanation:**
+Cell types with very few cells produce unreliable pseudobulk profiles. The default `min_cells_per_type=10` excludes them.
+
+**Solution:**
+1. This is expected — small cell types are excluded for statistical reliability
+2. Lower the threshold if needed: `score_single_cell_pathways(..., min_cells_per_type=5)`
+3. Merge related cell types before scoring if individual types are too small
+
+### Memory issues with large single-cell datasets
+
+**Symptom:** Out of memory when scoring 50K+ cells.
+
+**Solution:**
+1. For per-cell scoring, reduce chunk size:
+   ```python
+   result = score_single_cell_pathways(
+       adata, pathways, cell_type_column="cell_type",
+       method=SingleCellScoringMethod.MEAN_Z,
+       chunk_size=2000,  # Reduce from default 5000
+   )
+   ```
+2. Use pseudobulk methods (recommended) — they aggregate first, so memory scales with cell types, not cells
+3. Ensure your h5ad file stores `.X` as sparse (CSR) format
+
+### CSV loading for single-cell data
+
+**Symptom:** CSV takes very long to load or runs out of memory.
+
+**Solution:**
+Convert to h5ad first (much more efficient for large datasets):
+```python
+import anndata as ad
+import pandas as pd
+
+df = pd.read_csv("cells.csv", index_col=0)
+cell_types = df.pop("cell_type")
+adata = ad.AnnData(X=df.values, obs=pd.DataFrame({"cell_type": cell_types}, index=df.index))
+adata.var_names = df.columns.tolist()
+adata.write_h5ad("cells.h5ad")
+```
 
 ---
 

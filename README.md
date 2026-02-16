@@ -41,6 +41,7 @@ Originally developed for [autism research](https://github.com/topmist-admin/auti
 | Feature | Description |
 |---------|-------------|
 | **Pathway Scoring** | Aggregate gene burdens across biological pathways |
+| **Single-Cell Scoring** | Per-cell and pseudobulk pathway scoring from scRNA-seq (h5ad/CSV) |
 | **Multiple Clustering** | GMM, K-means, Hierarchical, Spectral with cross-validation |
 | **Ancestry Correction** | PCA-based population stratification correction with independence testing |
 | **Batch Correction** | ComBat-style batch effect detection and correction |
@@ -70,6 +71,7 @@ Optional extras:
 ```bash
 pip install pathway-subtyping[vcf]   # VCF file processing (pysam)
 pip install pathway-subtyping[viz]   # Interactive visualizations (Plotly, UMAP)
+pip install pathway-subtyping[sc]    # Single-cell support (AnnData)
 ```
 
 ### Try in Browser (No Installation)
@@ -129,7 +131,7 @@ See the full guide: [Adapting for Your Disease](docs/guides/adapting-for-your-di
 ## How It Works
 
 ```
-VCF Input → Variant Filter → Gene Burden → Pathway Aggregation → [Ancestry Correction] → [Batch Correction] → GMM Clustering → [Sensitivity Analysis] → Validation → Report
+VCF / Expression / scRNA-seq → Pathway Scoring → [Ancestry Correction] → [Batch Correction] → GMM Clustering → [Sensitivity Analysis] → Validation → Report
 ```
 
 ### 1. Pathway Scoring
@@ -168,6 +170,8 @@ See [docs/METHODS.md](docs/METHODS.md) for full statistical methodology.
 | Input | Format | Notes |
 |-------|--------|-------|
 | Variants | VCF | Annotated with gene symbols, consequences |
+| Bulk Expression | CSV/TSV | Gene expression matrix (samples x genes) |
+| Single-Cell | h5ad/CSV | AnnData or cell-by-gene matrix with cell type annotations |
 | Phenotypes | CSV | Sample IDs + clinical features |
 | Pathways | GMT | Gene sets for your disease |
 
@@ -203,6 +207,7 @@ pathway-subtyping-framework/
 │   ├── sensitivity.py         # Parameter sensitivity analysis
 │   ├── cross_cohort.py        # Cross-cohort validation
 │   ├── expression.py          # Bulk RNA-seq pathway scoring
+│   ├── single_cell.py         # Single-cell scRNA-seq pathway scoring (pseudobulk + per-cell)
 │   ├── visualization.py       # Interactive Plotly reports, UMAP/t-SNE, multi-format export
 │   ├── characterization.py    # Subtype profiling, heatmaps, gene contributions
 │   ├── variant_qc.py          # Variant quality control (QUAL, HWE, MAF, call rate)
@@ -215,7 +220,7 @@ pathway-subtyping-framework/
 │   ├── METHODS.md             # Statistical methods documentation
 │   └── guides/                # User guides
 ├── examples/notebooks/        # Jupyter tutorials
-├── tests/                     # Test suite (716 tests)
+├── tests/                     # Test suite (768 tests)
 ├── Dockerfile                 # Container support
 └── docker-compose.yml         # Easy orchestration
 ```
@@ -224,7 +229,7 @@ pathway-subtyping-framework/
 
 ```bash
 # Install with dev dependencies (from cloned repo)
-pip install -e ".[dev,vcf,viz]"
+pip install -e ".[dev,vcf,viz,sc]"
 
 # Run tests
 pytest tests/ -v
@@ -246,7 +251,7 @@ pre-commit install
 
 Contributions welcome! Areas where help is needed:
 - Additional disease pathway definitions
-- Multi-omic integration (scRNA-seq, spatial transcriptomics)
+- Multi-omic integration (spatial transcriptomics, proteomics)
 - Documentation and tutorials
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

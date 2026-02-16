@@ -27,6 +27,9 @@ pip install pathway-subtyping[viz]
 
 # Optional: VCF file processing
 pip install pathway-subtyping[vcf]
+
+# Optional: single-cell scRNA-seq support (AnnData)
+pip install pathway-subtyping[sc]
 ```
 
 ### Option B: Install from Source
@@ -229,12 +232,46 @@ See [troubleshooting.md](troubleshooting.md) for more solutions.
 
 ---
 
+## Quick Start: Single-Cell Data
+
+If you have scRNA-seq data (h5ad format), you can score pathways at the cell-type level:
+
+```python
+from pathway_subtyping import (
+    load_single_cell_data,
+    score_single_cell_pathways,
+    SingleCellScoringMethod,
+    run_clustering,
+)
+
+# Load single-cell data
+adata, qc = load_single_cell_data("data/pbmc.h5ad", cell_type_column="cell_type")
+print(f"Loaded {qc.n_cells} cells, {qc.n_cell_types} cell types")
+
+# Score pathways (pseudobulk ssGSEA)
+result = score_single_cell_pathways(
+    adata, pathways=pathway_dict,
+    cell_type_column="cell_type",
+    method=SingleCellScoringMethod.PSEUDOBULK_SSGSEA,
+    seed=42,
+)
+
+# Cluster cell types into subtypes
+clustering = run_clustering(result.pathway_scores.values, n_clusters=3, seed=42)
+print(f"Found {clustering.n_clusters} subtypes")
+```
+
+See the [Single-Cell API Reference](api/single_cell.md) for full documentation.
+
+---
+
 ## Next Steps
 
 | Resource | Description |
 |----------|-------------|
 | [Adapting for Your Disease](guides/adapting-for-your-disease.md) | Customize pathways for your condition |
 | [Validation Gates Guide](guides/validation-gates.md) | Understanding validation results |
+| [Single-Cell API](api/single_cell.md) | Single-cell pathway scoring |
 | [API Reference](api/index.md) | Python API documentation |
 | [Data Formats](data_formats.md) | Input/output specifications |
 

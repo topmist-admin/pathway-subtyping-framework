@@ -269,15 +269,17 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 **Theme:** Per-cell and per-cell-type pathway score computation
 
 **Deliverables:**
-- [ ] Accept AnnData (h5ad) or cell-by-gene matrix as input
-- [ ] Pathway scoring per cell and aggregated per cell-type
-- [ ] Cell-type-level pathway score matrix compatible with existing GMM clustering
-- [ ] Handle sparsity and dropout common in scRNA-seq
+- [x] Accept AnnData (h5ad) or cell-by-gene matrix as input
+- [x] Pathway scoring per cell and aggregated per cell-type
+- [x] Cell-type-level pathway score matrix compatible with existing GMM clustering
+- [x] Handle sparsity and dropout common in scRNA-seq
 
 **Acceptance Criteria:**
 - Framework clusters cell types into pathway-defined subtypes
 - Works on standard 10X Genomics-format data
 - Memory-efficient for datasets up to 50K cells
+
+**Status: COMPLETED** (Feb 16, 2026) — New `single_cell.py` module with 4 scoring methods (MEAN_Z, PSEUDOBULK_MEAN_Z, PSEUDOBULK_SSGSEA, PSEUDOBULK_GSVA), h5ad/CSV loading, sparse matrix support, chunked per-cell scoring. `[sc]` optional extra (anndata). Pseudobulk reuses expression.py internals. 49 new tests. 768 total tests passing.
 
 **GitHub Issue:** #30
 
@@ -712,8 +714,8 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 | External Collaborators | 1 | 4 responding | 10 | 20 | 30 |
 | Disease Pathways | 4 | 6 | 6+ | 7+ (+ MitoCarta) | 7+ (+ KG-derived) |
 | Issues Closed | 80% | ~70% | 80% | 85% | 90% |
-| Test Coverage | 64 tests | 716 tests | 750 tests | 900 tests | 1,050 tests |
-| Input Modalities | 1 (VCF) | 1 (VCF) | 4 (VCF, bulk RNA, scRNA, spatial) | 6 (+ proteomics, metabolomics) | 6 (+ network topology) |
+| Test Coverage | 64 tests | 768 tests | 800 tests | 950 tests | 1,100 tests |
+| Input Modalities | 1 (VCF) | 3 (VCF, bulk RNA, scRNA) | 4 (+ spatial) | 6 (+ proteomics, metabolomics) | 6 (+ network topology) |
 | Validation Gates | 3 | 4 | 5 (+ cross-modal) | 5 (+ multi-omics QC) | 5 (+ network-propagated) |
 | Integration Methods | 1 (GMM) | 1 (GMM) | 1 (GMM) | 2 (GMM + MOFA) | 4 (+ KG embeddings + GNN) |
 | Architecture Layers | 1 (Core) | 1 (Core) | 1 (Core) | 1 (Core) | 3 (Core / Graph / KG-ML) |
@@ -735,4 +737,4 @@ gh project create "Pathway Subtyping Framework: v0.2 Roadmap" \
 
 ---
 
-*Last updated: 2026-02-15*
+*Last updated: 2026-02-16*

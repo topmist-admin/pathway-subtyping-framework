@@ -196,6 +196,61 @@ except ConfigValidationError as e:
 
 ---
 
+### Single-Cell Data (AnnData h5ad)
+
+Single-cell RNA-seq data in AnnData format. Requires `pip install pathway-subtyping[sc]`.
+
+#### h5ad Format (Recommended)
+
+Standard AnnData h5ad file with:
+
+| Component | Description | Required |
+|-----------|-------------|----------|
+| `adata.X` | Cell x gene expression matrix (counts or log-normalized) | Yes |
+| `adata.var_names` | Gene symbols (HGNC) | Yes |
+| `adata.obs[cell_type_column]` | Cell type annotations | Yes |
+
+**Example loading:**
+```python
+from pathway_subtyping import load_single_cell_data, SingleCellInputType
+
+adata, qc = load_single_cell_data(
+    "data/pbmc_3k.h5ad",
+    cell_type_column="cell_type",
+    input_type=SingleCellInputType.H5AD,
+)
+```
+
+#### CSV/TSV Format (Alternative)
+
+For users without AnnData, a CSV/TSV with cells as rows and genes as columns:
+
+```csv
+cell_id,cell_type,GENE1,GENE2,GENE3,...
+CELL_001,T_cell,5.2,0.0,3.1,...
+CELL_002,B_cell,0.0,8.7,1.2,...
+```
+
+| Column | Type | Description |
+|--------|------|-------------|
+| cell_id | string | Cell barcode or identifier (index) |
+| cell_type | string | Cell type annotation (column name specified at load time) |
+| [gene_name] | float | Expression values |
+
+#### Sparse Matrix Support
+
+The framework handles sparse matrices (scipy CSR/CSC) throughout the pipeline. h5ad files with sparse `.X` are processed without densification, keeping memory usage low for large datasets (50K+ cells).
+
+#### Input Types
+
+| Input Type | Description | Processing |
+|------------|-------------|------------|
+| `RAW_COUNTS` | Raw UMI counts | Auto-normalized: `log1p(x / total * 10000)` |
+| `LOG_NORMALIZED` | Already log-normalized | Used directly |
+| `H5AD` | AnnData file | Auto-detected based on `.X` values |
+
+---
+
 ### Phenotypes CSV
 
 Sample metadata file (optional but recommended).

@@ -96,6 +96,54 @@ z_p,i = (x_p,i - μ_p) / σ_p
 
 This ensures equal contribution from each pathway regardless of scale.
 
+## Single-Cell Pathway Scoring
+
+### Pseudobulk Aggregation
+
+For scRNA-seq data, the framework computes pseudobulk expression profiles by averaging per-cell expression within each cell type:
+
+```
+pseudobulk_g,t = mean(expression_g,c)  for all cells c in cell type t
+```
+
+Where sparse matrices are handled via row-wise slicing to avoid densification. Cell types with fewer than `min_cells_per_type` (default: 10) cells are excluded.
+
+The resulting pseudobulk matrix (cell_types x genes) is structurally identical to a bulk expression matrix and is scored using the same methods (ssGSEA, GSVA, mean-Z) described in [Pathway Score Computation](#pathway-score-computation).
+
+### Per-Cell Scoring
+
+For cell-level resolution, per-cell mean-Z scoring computes pathway scores for each individual cell:
+
+```
+score_p,c = mean(z(expression_g,c))  for g in pathway_p
+```
+
+Per-cell scores are then aggregated per cell type:
+
+```
+score_p,t = mean(score_p,c)  for all cells c in cell type t
+```
+
+Per-cell scoring is performed in chunks (default: 5000 cells) for memory efficiency and supports sparse matrices natively.
+
+### Normalization
+
+Raw UMI counts are log-normalized before scoring:
+
+```
+normalized_g,c = log(1 + expression_g,c / total_c × 10000)
+```
+
+Where `total_c` is the total UMI count for cell `c`. This follows the standard Seurat/Scanpy normalization procedure.
+
+### Output
+
+All single-cell scoring methods produce a Z-normalized cell_types x pathways matrix, directly compatible with the same clustering, validation, and characterization tools used for VCF and bulk expression data.
+
+Reference: Squair JW et al. (2021). Confronting false discoveries in single-cell differential expression. *Nature Communications*.
+
+---
+
 ## Clustering Methodology
 
 ### Gaussian Mixture Model (Default)
@@ -564,7 +612,8 @@ Gene symbols (e.g., SHANK3, CHD8, NRXN1) are standard HGNC identifiers used in t
 - Gillespie M et al. (2022). The Reactome Pathway Knowledgebase 2022. Nucleic Acids Res.
 - Karczewski KJ et al. (2020). The mutational constraint spectrum quantified from variation in 141,456 humans. Nature.
 - Wigginton JE, Cutler DJ, Gravel A (2005). A note on exact tests of Hardy-Weinberg equilibrium. Am J Hum Genet.
+- Squair JW et al. (2021). Confronting false discoveries in single-cell differential expression. Nat Commun.
 
 ---
 
-*Document version: 0.2.3 | Last updated: February 2026*
+*Document version: 0.2.4-dev | Last updated: February 2026*
