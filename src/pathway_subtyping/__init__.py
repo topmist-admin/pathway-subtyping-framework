@@ -83,6 +83,14 @@ from .expression import (
     score_pathways_from_expression,
 )
 from .pipeline import DemoPipeline, PipelineConfig
+from .single_cell import (
+    SingleCellInputType,
+    SingleCellQualityReport,
+    SingleCellScoringMethod,
+    SingleCellScoringResult,
+    load_single_cell_data,
+    score_single_cell_pathways,
+)
 from .sensitivity import (
     ParameterVariationResult,
     SensitivityAnalysisResult,
@@ -308,6 +316,13 @@ __all__ = [
     "calibrate_thresholds",
     "generate_calibration_table",
     "get_default_thresholds",
+    # Single-cell scoring
+    "SingleCellInputType",
+    "SingleCellQualityReport",
+    "SingleCellScoringMethod",
+    "SingleCellScoringResult",
+    "load_single_cell_data",
+    "score_single_cell_pathways",
     # Visualization
     "DimReductionMethod",
     "FigureFormat",

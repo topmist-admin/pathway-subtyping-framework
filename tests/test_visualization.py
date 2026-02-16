@@ -1,5 +1,8 @@
 """
 Tests for the advanced visualization module.
+
+Tests requiring plotly or umap-learn are skipped when those packages
+are not installed (e.g., CI runs with only the [dev] extra).
 """
 
 import json
@@ -26,6 +29,24 @@ from pathway_subtyping.visualization import (
     plot_static_scatter,
     plot_subtype_trajectories,
 )
+
+# Optional dependency checks
+try:
+    import plotly  # noqa: F401
+
+    HAS_PLOTLY = True
+except ImportError:
+    HAS_PLOTLY = False
+
+try:
+    import umap  # noqa: F401
+
+    HAS_UMAP = True
+except ImportError:
+    HAS_UMAP = False
+
+requires_plotly = pytest.mark.skipif(not HAS_PLOTLY, reason="plotly not installed")
+requires_umap = pytest.mark.skipif(not HAS_UMAP, reason="umap-learn not installed")
 
 # =============================================================================
 # FIXTURES
@@ -150,6 +171,7 @@ class TestDimReduction:
         assert "kl_divergence" in meta
         assert meta["method"] == "tsne"
 
+    @requires_umap
     def test_umap(self, sample_data):
         scores, labels = sample_data
         embedding, meta = compute_dim_reduction(scores, DimReductionMethod.UMAP, seed=42)
@@ -171,6 +193,7 @@ class TestDimReduction:
         e2, _ = compute_dim_reduction(scores, DimReductionMethod.PCA, seed=42)
         np.testing.assert_array_equal(e1, e2)
 
+    @requires_umap
     def test_small_dataset(self):
         """Test with very small dataset (edge case for perplexity/neighbors)."""
         scores = pd.DataFrame(
@@ -190,6 +213,7 @@ class TestDimReduction:
 # =============================================================================
 
 
+@requires_plotly
 class TestInteractiveScatter:
     def test_basic(self, sample_data):
         scores, labels = sample_data
@@ -209,6 +233,7 @@ class TestInteractiveScatter:
         fig = plot_interactive_scatter(scores, labels, method=DimReductionMethod.TSNE, seed=42)
         assert fig is not None
 
+    @requires_umap
     def test_umap_method(self, sample_data):
         scores, labels = sample_data
         fig = plot_interactive_scatter(scores, labels, method=DimReductionMethod.UMAP, seed=42)
@@ -226,6 +251,7 @@ class TestInteractiveScatter:
         assert len(fig.data) == 3
 
 
+@requires_plotly
 class TestInteractiveHeatmap:
     def test_basic(self, sample_data):
         scores, labels = sample_data
@@ -246,6 +272,7 @@ class TestInteractiveHeatmap:
         assert fig.layout.title.text == "My Heatmap"
 
 
+@requires_plotly
 class TestClusterDistribution:
     def test_basic(self, sample_data):
         _, labels = sample_data
@@ -267,6 +294,7 @@ class TestClusterDistribution:
         assert fig.layout.title.text == "My Distribution"
 
 
+@requires_plotly
 class TestSubtypeTrajectories:
     def test_basic(self, sample_data):
         scores, labels = sample_data
@@ -318,6 +346,7 @@ class TestStaticScatter:
         assert isinstance(fig, plt.Figure)
         plt.close(fig)
 
+    @requires_umap
     def test_umap_method(self, sample_data):
         scores, labels = sample_data
         fig = plot_static_scatter(scores, labels, method=DimReductionMethod.UMAP, seed=42)
@@ -333,6 +362,7 @@ class TestStaticScatter:
 
 
 class TestExportFigure:
+    @requires_plotly
     def test_export_plotly_html(self, sample_data, output_dir):
         scores, labels = sample_data
         fig = plot_interactive_scatter(scores, labels, seed=42)
@@ -343,6 +373,7 @@ class TestExportFigure:
         content = Path(saved["html"]).read_text()
         assert "plotly" in content.lower()
 
+    @requires_plotly
     def test_export_plotly_png(self, sample_data, output_dir):
         scores, labels = sample_data
         fig = plot_interactive_scatter(scores, labels, seed=42)
@@ -351,6 +382,7 @@ class TestExportFigure:
         assert os.path.exists(saved["png"])
         assert os.path.getsize(saved["png"]) > 0
 
+    @requires_plotly
     def test_export_plotly_svg(self, sample_data, output_dir):
         scores, labels = sample_data
         fig = plot_interactive_scatter(scores, labels, seed=42)
@@ -369,6 +401,7 @@ class TestExportFigure:
 
         plt.close(fig)
 
+    @requires_plotly
     def test_export_multiple_formats(self, sample_data, output_dir):
         scores, labels = sample_data
         fig = plot_interactive_scatter(scores, labels, seed=42)
@@ -382,6 +415,7 @@ class TestExportFigure:
             assert fmt in saved
             assert os.path.exists(saved[fmt])
 
+    @requires_plotly
     def test_default_format_is_png(self, sample_data, output_dir):
         scores, labels = sample_data
         fig = plot_interactive_scatter(scores, labels, seed=42)
@@ -394,6 +428,7 @@ class TestExportFigure:
 # =============================================================================
 
 
+@requires_plotly
 class TestInteractiveReport:
     def test_basic_report(self, sample_data, output_dir):
         scores, labels = sample_data
@@ -458,6 +493,7 @@ class TestInteractiveReport:
         result = create_interactive_report(scores, labels, path, seed=42)
         assert os.path.exists(path)
 
+    @requires_umap
     def test_report_with_umap(self, sample_data, output_dir):
         scores, labels = sample_data
         path = os.path.join(output_dir, "report.html")
@@ -471,6 +507,7 @@ class TestInteractiveReport:
 # =============================================================================
 
 
+@requires_plotly
 class TestGenerateAllFigures:
     def test_basic(self, sample_data, output_dir):
         scores, labels = sample_data
@@ -507,6 +544,7 @@ class TestGenerateAllFigures:
 # =============================================================================
 
 
+@requires_plotly
 class TestEdgeCases:
     def test_single_cluster(self):
         """All samples in one cluster."""

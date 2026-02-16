@@ -77,13 +77,16 @@ viz = [
     "umap-learn>=0.5.0,<1.0.0",
     "kaleido>=0.2.0,<1.0.0",
 ]
+sc = [
+    "anndata>=0.9.0,<1.0.0",
+]
 docs = [
     "sphinx>=6.0.0",
     "sphinx-rtd-theme>=1.2.0",
     "myst-parser>=1.0.0",
 ]
 all = [
-    "pathway-subtyping[dev,notebooks,docs,vcf,viz]",
+    "pathway-subtyping[dev,notebooks,docs,vcf,viz,sc]",
 ]
 
 [project.scripts]

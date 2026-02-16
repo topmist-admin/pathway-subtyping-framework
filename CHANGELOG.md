@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Single-Cell Pathway Scoring (#30)
+- **Single-cell module** (`single_cell.py`): Per-cell and pseudobulk pathway scoring from scRNA-seq data
+  - `SingleCellScoringMethod`: Enum for per-cell mean_z and pseudobulk (mean_z, ssGSEA, GSVA) methods
+  - `SingleCellInputType`: Enum for raw counts, log-normalized, and h5ad input types
+  - `SingleCellQualityReport`: QC report with sparsity, cell counts, gene detection, pathway coverage
+  - `SingleCellScoringResult`: Result container with cell-type-level and optional per-cell scores (`.to_dict()`, `.format_report()`, `.get_citations()`)
+  - `load_single_cell_data()`: Load and validate h5ad or CSV/TSV single-cell data with auto-normalization
+  - `score_single_cell_pathways()`: Main scoring entry point; pseudobulk reuses expression.py internals
+  - Memory-efficient chunked per-cell scoring for datasets up to 50K cells
+  - Sparse matrix support (scipy CSR/CSC) throughout
+- **Optional `[sc]` dependency group**: `anndata>=0.9.0`
+
 #### Advanced Visualization (#9)
 - **Visualization module** (`visualization.py`): Interactive and publication-quality visualizations
   - `DimReductionMethod`: Enum for PCA, t-SNE, UMAP dimensionality reduction
