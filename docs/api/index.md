@@ -12,6 +12,7 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 | [`multi_omic`](multi_omic.md) | Multi-omic pathway score fusion (concatenate, weighted, intersection) |
 | [`deconvolution`](deconvolution.md) | Bulk deconvolution for cell-type proportion estimation (NNLS) |
 | [`cross_modal_validation`](cross_modal_validation.md) | Cross-modal validation gate (Gate 5) for multi-omic analyses |
+| [`signaling_databases`](signaling_databases.md) | Cell-cell signaling pathway databases (CellPhoneDB, CellChatDB) |
 | [`visualization`](visualization.md) | Interactive Plotly reports, UMAP/t-SNE, multi-format export |
 | [`variant_qc`](variant_qc.md) | Variant quality control filters (QUAL, HWE, MAF, call rate) |
 | [`clustering`](clustering.md) | Clustering algorithms (GMM, K-means, Hierarchical, Spectral) and model selection |

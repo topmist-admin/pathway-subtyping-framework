@@ -185,6 +185,15 @@ from .validation_datasets import (
     validate_pathway_against_reactome,
     validate_pathway_coverage,
 )
+from .signaling_databases import (
+    SignalingDatabase,
+    SignalingDatabaseResult,
+    SignalingInteraction,
+    convert_interactions_to_pathways,
+    load_cellchatdb,
+    load_cellphonedb,
+    merge_signaling_databases,
+)
 from .variant_qc import (
     VariantQCConfig,
     VariantQCResult,
@@ -348,6 +357,14 @@ __all__ = [
     "run_full_validation",
     "validate_pathway_against_reactome",
     "validate_pathway_coverage",
+    # Signaling databases
+    "SignalingDatabase",
+    "SignalingDatabaseResult",
+    "SignalingInteraction",
+    "convert_interactions_to_pathways",
+    "load_cellchatdb",
+    "load_cellphonedb",
+    "merge_signaling_databases",
     # Variant QC
     "VariantQCConfig",
     "VariantQCResult",

@@ -16,15 +16,16 @@ This guide covers common issues when running the Pathway Subtyping Framework and
 6. [Multi-Omic Fusion Issues](#multi-omic-fusion-issues)
 7. [Deconvolution Issues](#deconvolution-issues)
 8. [Visualization Issues](#visualization-issues)
-9. [Ancestry Correction Issues](#ancestry-correction-issues)
-10. [Batch Correction Issues](#batch-correction-issues)
-11. [Sensitivity Analysis Issues](#sensitivity-analysis-issues)
-12. [Single-Cell Issues](#single-cell-issues)
-13. [Reproducibility Issues](#reproducibility-issues)
-14. [Performance Issues](#performance-issues)
-15. [Validation Gate Failures](#validation-gate-failures)
-16. [Platform-Specific Issues](#platform-specific-issues)
-17. [Getting Help](#getting-help)
+9. [Signaling Database Issues](#signaling-database-issues)
+10. [Ancestry Correction Issues](#ancestry-correction-issues)
+11. [Batch Correction Issues](#batch-correction-issues)
+12. [Sensitivity Analysis Issues](#sensitivity-analysis-issues)
+13. [Single-Cell Issues](#single-cell-issues)
+14. [Reproducibility Issues](#reproducibility-issues)
+15. [Performance Issues](#performance-issues)
+16. [Validation Gate Failures](#validation-gate-failures)
+17. [Platform-Specific Issues](#platform-specific-issues)
+18. [Getting Help](#getting-help)
 
 ---
 
@@ -796,6 +797,87 @@ Or just open the saved HTML file in a browser — it's self-contained.
 **Explanation:** Colab uses an older Plotly renderer. The HTML export is identical across environments.
 
 **Solution:** Use `fig.show(renderer="colab")` in Colab, or export to HTML and download.
+
+---
+
+## Signaling Database Issues
+
+### CellPhoneDB download fails
+
+**Symptom:**
+```
+urllib.error.URLError: Failed to download cellphonedb_interaction_input.csv
+```
+
+**Solution:**
+1. Check network connectivity
+2. Download manually and pass file paths:
+   ```python
+   result = load_cellphonedb(
+       interactions_path="path/to/interaction_input.csv",
+       gene_path="path/to/gene_input.csv",
+       complex_path="path/to/complex_input.csv",
+   )
+   ```
+3. Use `force_download=True` if cached files may be corrupted
+4. If behind a proxy, set `HTTP_PROXY`/`HTTPS_PROXY` environment variables
+
+### CellChatDB: "Missing required columns"
+
+**Symptom:**
+```
+ValueError: Missing required columns in CellChatDB CSV: {'pathway_name'}
+```
+
+**Cause:** The CSV was not exported correctly from R, or column names differ.
+
+**Solution:** Export from R using the exact command:
+```r
+library(CellChat)
+write.csv(CellChatDB.human$interaction, "cellchatdb_human.csv", row.names = FALSE)
+```
+
+Required columns: `pathway_name`, `ligand`, `receptor`. Verify with:
+```python
+import pandas as pd
+df = pd.read_csv("cellchatdb_human.csv")
+print(df.columns.tolist())
+```
+
+### Few pathway gene sets returned
+
+**Symptom:** `load_cellphonedb()` returns fewer pathways than expected.
+
+**Causes:**
+1. **High `min_genes_per_pathway`**: Lowering the threshold includes smaller pathways
+2. **CellPhoneDB groups by `classification`**: Many interactions share the same classification, so you get ~50-100 distinct pathway groups
+
+**Solutions:**
+- Lower the threshold: `load_cellphonedb(min_genes_per_pathway=2)`
+- Group by annotation instead for finer granularity:
+  ```python
+  result = load_cellphonedb()
+  finer = convert_interactions_to_pathways(
+      result.interactions, group_by="annotation", min_genes=2,
+  )
+  ```
+- Merge CellPhoneDB + CellChatDB for broader coverage:
+  ```python
+  merged = merge_signaling_databases(cpdb_result, ccdb_result)
+  ```
+
+### Complex partners not resolved to genes
+
+**Symptom:** Some pathway gene sets contain UniProt accessions or complex names instead of gene symbols.
+
+**Cause:** The `gene_input.csv` file is missing mappings for some UniProt IDs used in complexes.
+
+**Solution:** This is rare with the default CellPhoneDB data. Unresolvable partners fall through to the gene name fallback. Check warnings in the result:
+```python
+result = load_cellphonedb()
+for w in result.warnings:
+    print(w)
+```
 
 ---
 

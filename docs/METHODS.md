@@ -96,6 +96,42 @@ z_p,i = (x_p,i - μ_p) / σ_p
 
 This ensures equal contribution from each pathway regardless of scale.
 
+## Signaling Pathway Databases
+
+### Cell-Cell Signaling as Pathway Gene Sets
+
+In addition to metabolic/disease pathway databases (Reactome, KEGG), cell-cell signaling interaction databases provide an alternative source of biologically meaningful gene sets. Ligand-receptor interactions are grouped by signaling pathway classification, and the union of all participating gene symbols forms the pathway gene set.
+
+### CellPhoneDB
+
+CellPhoneDB (Efremova et al., 2020) catalogs curated ligand-receptor interactions including multi-subunit complexes. The loading process:
+
+1. **Download** three CSV files: `interaction_input.csv`, `gene_input.csv`, `complex_input.csv`
+2. **Gene resolution**: Map UniProt accession IDs to HGNC gene symbols via `gene_input.csv`
+3. **Complex resolution**: Decompose multi-subunit complexes (e.g., `integrin_a2b1_complex`) into constituent gene symbols via `complex_input.csv` subunit columns
+4. **Pathway grouping**: Group interactions by their `classification` field (e.g., "WNT signaling", "Notch signaling")
+5. **Gene set construction**: For each group, collect the union of all ligand and receptor gene symbols
+
+### CellChatDB
+
+CellChatDB (Jin et al., 2021) provides ligand-receptor interactions with explicit `pathway_name` annotations. Since CellChatDB distributes data in R binary format (`.rda`), users export to CSV from R and the framework parses the `pathway_name`, `ligand`, and `receptor` columns directly.
+
+### Pathway Name Prefixing
+
+All signaling pathway gene sets are prefixed with `"Signaling: "` (e.g., `"Signaling: WNT signaling"`) to distinguish them from metabolic or disease pathways when merged into a unified pathway dictionary.
+
+### Merging Multiple Sources
+
+When gene sets from multiple databases share the same pathway name, their gene lists are unioned to maximize coverage:
+
+```
+merged_genes(p) = genes_CellPhoneDB(p) ∪ genes_CellChatDB(p)
+```
+
+References:
+- Efremova M, et al. CellPhoneDB: inferring cell-cell communication from combined expression of multi-subunit ligand-receptor complexes. *Nat Protoc*. 2020;15(4):1484-1506.
+- Jin S, et al. Inference and analysis of cell-cell communication using CellChat. *Nat Commun*. 2021;12(1):1088.
+
 ## Single-Cell Pathway Scoring
 
 ### Pseudobulk Aggregation

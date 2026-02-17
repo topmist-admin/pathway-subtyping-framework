@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Signaling Pathway Databases (#32)
+- **Signaling databases module** (`signaling_databases.py`): Load cell-cell signaling databases as pathway gene sets
+  - `SignalingDatabase`: Enum for CellPhoneDB and CellChatDB
+  - `SignalingInteraction`: Ligand-receptor interaction dataclass with gene resolution
+  - `SignalingDatabaseResult`: Result with pathway gene sets, citations (`.to_dict()`, `.format_report()`, `.get_citations()`)
+  - `load_cellphonedb()`: Auto-download from GitHub, resolve complexes to genes, group by signaling classification
+  - `load_cellchatdb()`: Load user-exported CellChatDB CSV (R binary not Python-readable)
+  - `convert_interactions_to_pathways()`: Group interactions into pathway gene sets
+  - `merge_signaling_databases()`: Merge gene sets from multiple databases
+- Signaling pathway gene sets directly compatible with `score_pathways_from_expression()`, `run_clustering()`, and validation gates
+
 #### Bulk Deconvolution Integration (#31)
 - **Deconvolution module** (`deconvolution.py`): Estimate cell-type proportions from bulk RNA-seq
   - `DeconvolutionMethod`: Enum for NNLS deconvolution

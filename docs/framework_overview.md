@@ -527,6 +527,31 @@ print(f"Gate passed: {result.gate_passed}")
 print(result.format_report())
 ```
 
+### 16. Signaling Databases (`signaling_databases.py`)
+
+**Purpose**: Load cell-cell signaling interaction databases and convert them into pathway gene sets for subtype discovery.
+
+**Data Sources**:
+- **CellPhoneDB**: Auto-download from GitHub — ligand-receptor interactions with complex resolution
+- **CellChatDB**: User-exported CSV from R — ligand-receptor interactions with pathway annotations
+
+**Key functions**:
+- `load_cellphonedb()`: Download and parse CellPhoneDB, resolve complexes to genes, group by classification
+- `load_cellchatdb()`: Parse user-exported CellChatDB CSV, group by pathway_name
+- `convert_interactions_to_pathways()`: Group interactions into pathway gene sets
+- `merge_signaling_databases()`: Merge gene sets from multiple databases
+
+```python
+from pathway_subtyping import load_cellphonedb, merge_signaling_databases
+
+# Load CellPhoneDB signaling pathways (auto-download)
+cpdb = load_cellphonedb(min_genes_per_pathway=3)
+signaling_pathways = cpdb.pathway_gene_sets
+# signaling_pathways: Dict[str, List[str]] — ready for scoring and clustering
+```
+
+Output is `Dict[str, List[str]]` — directly compatible with all scoring, clustering, and validation modules.
+
 ---
 
 ## Design Principles
