@@ -12,7 +12,7 @@ import scipy.sparse
 
 anndata = pytest.importorskip("anndata")
 
-from pathway_subtyping.single_cell import (
+from pathway_subtyping.single_cell import (  # noqa: E402
     SingleCellInputType,
     SingleCellQualityReport,
     SingleCellScoringMethod,

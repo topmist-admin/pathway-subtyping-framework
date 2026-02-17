@@ -19,7 +19,6 @@ from pathway_subtyping.signaling_databases import (
     merge_signaling_databases,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -304,8 +303,7 @@ class TestParseCellPhoneDBGenes:
 
     def test_hgnc_preferred_over_gene_name(self, tmp_path):
         content = (
-            "gene_name,uniprot,hgnc_symbol,ensembl\n"
-            "OldName,P00001,NewName,ENSG00000000000\n"
+            "gene_name,uniprot,hgnc_symbol,ensembl\n" "OldName,P00001,NewName,ENSG00000000000\n"
         )
         path = tmp_path / "gene.csv"
         path.write_text(content)
@@ -313,10 +311,7 @@ class TestParseCellPhoneDBGenes:
         assert mapping["P00001"] == "NewName"
 
     def test_fallback_to_gene_name(self, tmp_path):
-        content = (
-            "gene_name,uniprot,hgnc_symbol,ensembl\n"
-            "FallbackGene,P00002,,ENSG00000000000\n"
-        )
+        content = "gene_name,uniprot,hgnc_symbol,ensembl\n" "FallbackGene,P00002,,ENSG00000000000\n"
         path = tmp_path / "gene.csv"
         path.write_text(content)
         mapping = _parse_cellphonedb_genes(path)
@@ -335,13 +330,9 @@ class TestParseCellPhoneDBGenes:
 
 
 class TestParseCellPhoneDBComplexes:
-    def test_parse_complex_csv(
-        self, mock_cellphonedb_complex_csv, mock_cellphonedb_gene_csv
-    ):
+    def test_parse_complex_csv(self, mock_cellphonedb_complex_csv, mock_cellphonedb_gene_csv):
         gene_map = _parse_cellphonedb_genes(mock_cellphonedb_gene_csv)
-        complexes = _parse_cellphonedb_complexes(
-            mock_cellphonedb_complex_csv, gene_map
-        )
+        complexes = _parse_cellphonedb_complexes(mock_cellphonedb_complex_csv, gene_map)
         assert "complex_ABC" in complexes
         assert sorted(complexes["complex_ABC"]) == ["SUBU1", "SUBU2", "SUBU3"]
 
@@ -358,9 +349,7 @@ class TestParseCellPhoneDBComplexes:
 
     def test_empty_file(self, tmp_path):
         path = tmp_path / "complex.csv"
-        path.write_text(
-            "complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n"
-        )
+        path.write_text("complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n")
         complexes = _parse_cellphonedb_complexes(path, {})
         assert complexes == {}
 
@@ -372,15 +361,11 @@ class TestParseCellPhoneDBComplexes:
 
 class TestResolvePartnerGenes:
     def test_uniprot_lookup(self):
-        genes = _resolve_partner_genes(
-            "P12345", {"P12345": "CDH1"}, {}
-        )
+        genes = _resolve_partner_genes("P12345", {"P12345": "CDH1"}, {})
         assert genes == ["CDH1"]
 
     def test_complex_lookup(self):
-        genes = _resolve_partner_genes(
-            "my_complex", {}, {"my_complex": ["GENE1", "GENE2"]}
-        )
+        genes = _resolve_partner_genes("my_complex", {}, {"my_complex": ["GENE1", "GENE2"]})
         assert genes == ["GENE1", "GENE2"]
 
     def test_gene_name_fallback(self):
@@ -455,9 +440,7 @@ class TestLoadCellPhoneDB:
             complex_path=mock_cellphonedb_complex_csv,
         )
         # CPI-SS002 has complex_ABC as partner_b → should resolve to SUBU1-3
-        cadherin_genes = result.pathway_gene_sets.get(
-            "Signaling: Adhesion by Cadherin", []
-        )
+        cadherin_genes = result.pathway_gene_sets.get("Signaling: Adhesion by Cadherin", [])
         assert "SUBU1" in cadherin_genes or "SUBU2" in cadherin_genes
 
     def test_signaling_prefix(
@@ -503,8 +486,7 @@ class TestLoadCellPhoneDB:
         # With min_genes=10, most small pathways should be filtered out
         # Adhesion by Cadherin has CDH1, CDH2, SUBU1, SUBU2, SUBU3 = 5 genes
         assert result.n_pathways == 0 or all(
-            len(genes) >= 10
-            for genes in result.pathway_gene_sets.values()
+            len(genes) >= 10 for genes in result.pathway_gene_sets.values()
         )
 
     def test_download_with_mock(self, tmp_path):
@@ -522,9 +504,7 @@ class TestLoadCellPhoneDB:
             "GENE1,P11,GENE1,ENSG1\n"
             "GENE2,P22,GENE2,ENSG2\n"
         )
-        complexes = (
-            "complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n"
-        )
+        complexes = "complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n"
 
         def mock_urlretrieve(url, path):
             if "interaction" in url:
@@ -552,20 +532,11 @@ class TestLoadCellPhoneDB:
             "protein_name_b,annotation_strategy,source,is_ppi,classification\n"
             "CPI-001,P11,P22,A,B,curated,lit,True,CachedPathway\n"
         )
-        genes_content = (
-            "gene_name,uniprot,hgnc_symbol,ensembl\n"
-            "G1,P11,G1,E1\nG2,P22,G2,E2\n"
-        )
-        complexes_content = (
-            "complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n"
-        )
-        (cache_dir / "cellphonedb_interaction_input.csv").write_text(
-            interactions_content
-        )
+        genes_content = "gene_name,uniprot,hgnc_symbol,ensembl\n" "G1,P11,G1,E1\nG2,P22,G2,E2\n"
+        complexes_content = "complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n"
+        (cache_dir / "cellphonedb_interaction_input.csv").write_text(interactions_content)
         (cache_dir / "cellphonedb_gene_input.csv").write_text(genes_content)
-        (cache_dir / "cellphonedb_complex_input.csv").write_text(
-            complexes_content
-        )
+        (cache_dir / "cellphonedb_complex_input.csv").write_text(complexes_content)
 
         with mock.patch(
             "pathway_subtyping.signaling_databases.urllib.request.urlretrieve"
@@ -588,9 +559,7 @@ class TestLoadCellPhoneDB:
         gene_csv = tmp_path / "gene.csv"
         gene_csv.write_text("gene_name,uniprot,hgnc_symbol,ensembl\n")
         complex_csv = tmp_path / "complex.csv"
-        complex_csv.write_text(
-            "complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n"
-        )
+        complex_csv.write_text("complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n")
         with pytest.raises(ValueError, match="Missing required columns"):
             load_cellphonedb(
                 interactions_path=bad_csv,
@@ -607,9 +576,7 @@ class TestLoadCellPhoneDB:
         gene_csv = tmp_path / "gene.csv"
         gene_csv.write_text("gene_name,uniprot,hgnc_symbol,ensembl\n")
         complex_csv = tmp_path / "complex.csv"
-        complex_csv.write_text(
-            "complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n"
-        )
+        complex_csv.write_text("complex_name,uniprot_1,uniprot_2,uniprot_3,uniprot_4,uniprot_5\n")
         with pytest.raises(ValueError, match="No valid interactions"):
             load_cellphonedb(
                 interactions_path=interactions_csv,
@@ -668,19 +635,14 @@ class TestLoadCellChatDB:
 
     def test_empty_csv_raises(self, tmp_path):
         empty_csv = tmp_path / "empty.csv"
-        empty_csv.write_text(
-            "interaction_name,pathway_name,ligand,receptor,annotation\n"
-        )
+        empty_csv.write_text("interaction_name,pathway_name,ligand,receptor,annotation\n")
         with pytest.raises(ValueError, match="No valid interactions"):
             load_cellchatdb(empty_csv)
 
     def test_interactions_stored(self, mock_cellchatdb_csv):
         result = load_cellchatdb(mock_cellchatdb_csv)
         assert len(result.interactions) == 5
-        assert all(
-            i.source_database == SignalingDatabase.CELLCHATDB
-            for i in result.interactions
-        )
+        assert all(i.source_database == SignalingDatabase.CELLCHATDB for i in result.interactions)
 
 
 # ---------------------------------------------------------------------------
@@ -701,9 +663,7 @@ class TestConvertInteractionsToPathways:
         assert "curated" in pathways
 
     def test_min_genes_filter(self, sample_interactions):
-        pathways = convert_interactions_to_pathways(
-            sample_interactions, min_genes=3
-        )
+        pathways = convert_interactions_to_pathways(sample_interactions, min_genes=3)
         # WNT has 4 genes (WNT1, FZD1, WNT2, FZD2), Adhesion has 2
         assert "Signaling: WNT" in pathways
         assert "Signaling: Adhesion" not in pathways
@@ -718,16 +678,12 @@ class TestConvertInteractionsToPathways:
         assert pathways == {}
 
     def test_custom_prefix(self, sample_interactions):
-        pathways = convert_interactions_to_pathways(
-            sample_interactions, prefix="CellSignal"
-        )
+        pathways = convert_interactions_to_pathways(sample_interactions, prefix="CellSignal")
         for name in pathways:
             assert name.startswith("CellSignal: ")
 
     def test_no_prefix(self, sample_interactions):
-        pathways = convert_interactions_to_pathways(
-            sample_interactions, prefix=""
-        )
+        pathways = convert_interactions_to_pathways(sample_interactions, prefix="")
         assert "WNT" in pathways
         assert "Adhesion" in pathways
 

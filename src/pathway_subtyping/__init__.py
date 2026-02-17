@@ -123,6 +123,15 @@ from .sensitivity import (
     vary_n_clusters,
     vary_normalization,
 )
+from .signaling_databases import (
+    SignalingDatabase,
+    SignalingDatabaseResult,
+    SignalingInteraction,
+    convert_interactions_to_pathways,
+    load_cellchatdb,
+    load_cellphonedb,
+    merge_signaling_databases,
+)
 from .simulation import (
     ExpressionSimulationConfig,
     PowerAnalysisResult,
@@ -184,15 +193,6 @@ from .validation_datasets import (
     run_full_validation,
     validate_pathway_against_reactome,
     validate_pathway_coverage,
-)
-from .signaling_databases import (
-    SignalingDatabase,
-    SignalingDatabaseResult,
-    SignalingInteraction,
-    convert_interactions_to_pathways,
-    load_cellchatdb,
-    load_cellphonedb,
-    merge_signaling_databases,
 )
 from .variant_qc import (
     VariantQCConfig,

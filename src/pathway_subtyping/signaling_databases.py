@@ -40,12 +40,10 @@ CELLPHONEDB_INTERACTION_URL = (
     "master/data/interaction_input.csv"
 )
 CELLPHONEDB_GENE_URL = (
-    "https://raw.githubusercontent.com/ventolab/cellphonedb-data/"
-    "master/data/gene_input.csv"
+    "https://raw.githubusercontent.com/ventolab/cellphonedb-data/" "master/data/gene_input.csv"
 )
 CELLPHONEDB_COMPLEX_URL = (
-    "https://raw.githubusercontent.com/ventolab/cellphonedb-data/"
-    "master/data/complex_input.csv"
+    "https://raw.githubusercontent.com/ventolab/cellphonedb-data/" "master/data/complex_input.csv"
 )
 
 DEFAULT_CACHE_DIR = Path(__file__).parent.parent.parent / "data" / "validation_cache"
@@ -157,9 +155,7 @@ class SignalingDatabaseResult:
             "| Pathway | Genes |",
             "|---------|-------|",
         ]
-        sorted_pws = sorted(
-            self.pathway_gene_sets.items(), key=lambda x: len(x[1]), reverse=True
-        )
+        sorted_pws = sorted(self.pathway_gene_sets.items(), key=lambda x: len(x[1]), reverse=True)
         for name, genes in sorted_pws[:20]:
             lines.append(f"| {name} | {len(genes)} |")
         if len(sorted_pws) > 20:
@@ -170,11 +166,13 @@ class SignalingDatabaseResult:
             for w in self.warnings:
                 lines.append(f"- {w}")
 
-        lines.extend([
-            "",
-            "---",
-            "*Research use only. Not for clinical decision-making.*",
-        ])
+        lines.extend(
+            [
+                "",
+                "---",
+                "*Research use only. Not for clinical decision-making.*",
+            ]
+        )
         return "\n".join(lines)
 
     def get_citations(self) -> List[str]:
@@ -230,18 +228,14 @@ def _download_file(
     local_path = cache_dir / filename
 
     if local_path.exists() and local_path.stat().st_size > 0 and not force:
-        logger.info(
-            "[SignalingDatabases] Using cached %s: %s", filename, local_path
-        )
+        logger.info("[SignalingDatabases] Using cached %s: %s", filename, local_path)
         return local_path
 
     logger.info("[SignalingDatabases] Downloading %s from %s", filename, url)
     try:
         urllib.request.urlretrieve(url, str(local_path))
     except (urllib.error.URLError, urllib.error.HTTPError, OSError) as e:
-        raise urllib.error.URLError(
-            f"Failed to download {filename}: {e}"
-        ) from e
+        raise urllib.error.URLError(f"Failed to download {filename}: {e}") from e
 
     logger.info(
         "[SignalingDatabases] Downloaded %s (%d bytes)",
@@ -308,17 +302,18 @@ def _parse_cellphonedb_complexes(
                 continue
             genes: List[str] = []
             for col in [
-                "uniprot_1", "uniprot_2", "uniprot_3",
-                "uniprot_4", "uniprot_5",
+                "uniprot_1",
+                "uniprot_2",
+                "uniprot_3",
+                "uniprot_4",
+                "uniprot_5",
             ]:
                 uniprot = row.get(col, "").strip()
                 if uniprot and uniprot in uniprot_to_gene:
                     genes.append(uniprot_to_gene[uniprot])
             if genes:
                 complexes[complex_name] = genes
-    logger.info(
-        "[SignalingDatabases] Parsed %d complexes", len(complexes)
-    )
+    logger.info("[SignalingDatabases] Parsed %d complexes", len(complexes))
     return complexes
 
 
@@ -427,14 +422,14 @@ def load_cellphonedb(
     if interactions_path is not None:
         interactions_path = Path(interactions_path)
         if not interactions_path.exists():
-            raise FileNotFoundError(
-                f"Interactions file not found: {interactions_path}"
-            )
+            raise FileNotFoundError(f"Interactions file not found: {interactions_path}")
     else:
         interactions_path = _download_file(
-            CELLPHONEDB_INTERACTION_URL, cache_dir,
+            CELLPHONEDB_INTERACTION_URL,
+            cache_dir,
             "cellphonedb_interaction_input.csv",
-            force=force_download, timeout=timeout,
+            force=force_download,
+            timeout=timeout,
         )
 
     if gene_path is not None:
@@ -443,9 +438,11 @@ def load_cellphonedb(
             raise FileNotFoundError(f"Gene file not found: {gene_path}")
     else:
         gene_path = _download_file(
-            CELLPHONEDB_GENE_URL, cache_dir,
+            CELLPHONEDB_GENE_URL,
+            cache_dir,
             "cellphonedb_gene_input.csv",
-            force=force_download, timeout=timeout,
+            force=force_download,
+            timeout=timeout,
         )
 
     if complex_path is not None:
@@ -454,9 +451,11 @@ def load_cellphonedb(
             raise FileNotFoundError(f"Complex file not found: {complex_path}")
     else:
         complex_path = _download_file(
-            CELLPHONEDB_COMPLEX_URL, cache_dir,
+            CELLPHONEDB_COMPLEX_URL,
+            cache_dir,
             "cellphonedb_complex_input.csv",
-            force=force_download, timeout=timeout,
+            force=force_download,
+            timeout=timeout,
         )
 
     # Parse gene mappings and complexes
@@ -470,15 +469,11 @@ def load_cellphonedb(
     with open(interactions_path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         if reader.fieldnames is None:
-            raise ValueError(
-                f"Empty or invalid CSV: {interactions_path}"
-            )
+            raise ValueError(f"Empty or invalid CSV: {interactions_path}")
         required = {"partner_a", "partner_b"}
         missing = required - set(reader.fieldnames)
         if missing:
-            raise ValueError(
-                f"Missing required columns in interactions CSV: {missing}"
-            )
+            raise ValueError(f"Missing required columns in interactions CSV: {missing}")
 
         for row in reader:
             partner_a = row.get("partner_a", "").strip()
@@ -491,28 +486,25 @@ def load_cellphonedb(
                 n_skipped_no_classification += 1
                 continue
 
-            genes_a = _resolve_partner_genes(
-                partner_a, uniprot_to_gene, complexes
-            )
-            genes_b = _resolve_partner_genes(
-                partner_b, uniprot_to_gene, complexes
-            )
+            genes_a = _resolve_partner_genes(partner_a, uniprot_to_gene, complexes)
+            genes_b = _resolve_partner_genes(partner_b, uniprot_to_gene, complexes)
 
-            interactions.append(SignalingInteraction(
-                interaction_id=interaction_id,
-                partner_a=partner_a,
-                partner_b=partner_b,
-                genes_a=genes_a,
-                genes_b=genes_b,
-                pathway_name=classification,
-                source_database=SignalingDatabase.CELLPHONEDB,
-                annotation=annotation,
-            ))
+            interactions.append(
+                SignalingInteraction(
+                    interaction_id=interaction_id,
+                    partner_a=partner_a,
+                    partner_b=partner_b,
+                    genes_a=genes_a,
+                    genes_b=genes_b,
+                    pathway_name=classification,
+                    source_database=SignalingDatabase.CELLPHONEDB,
+                    annotation=annotation,
+                )
+            )
 
     if n_skipped_no_classification > 0:
         warnings.append(
-            f"Skipped {n_skipped_no_classification} interactions "
-            f"with empty classification"
+            f"Skipped {n_skipped_no_classification} interactions " f"with empty classification"
         )
 
     if not interactions:
@@ -547,7 +539,9 @@ def load_cellphonedb(
     logger.info(
         "[SignalingDatabases] Loaded %d CellPhoneDB interactions, "
         "%d signaling pathway gene sets (%d unique genes)",
-        result.n_interactions, result.n_pathways, result.n_unique_genes,
+        result.n_interactions,
+        result.n_pathways,
+        result.n_unique_genes,
     )
     return result
 
@@ -626,21 +620,21 @@ def load_cellchatdb(
             genes_a = [ligand] if ligand else []
             genes_b = [receptor] if receptor else []
 
-            interactions.append(SignalingInteraction(
-                interaction_id=interaction_name or f"{ligand}_{receptor}",
-                partner_a=ligand,
-                partner_b=receptor,
-                genes_a=genes_a,
-                genes_b=genes_b,
-                pathway_name=pathway_name,
-                source_database=SignalingDatabase.CELLCHATDB,
-                annotation=annotation,
-            ))
+            interactions.append(
+                SignalingInteraction(
+                    interaction_id=interaction_name or f"{ligand}_{receptor}",
+                    partner_a=ligand,
+                    partner_b=receptor,
+                    genes_a=genes_a,
+                    genes_b=genes_b,
+                    pathway_name=pathway_name,
+                    source_database=SignalingDatabase.CELLCHATDB,
+                    annotation=annotation,
+                )
+            )
 
     if not interactions:
-        raise ValueError(
-            f"No valid interactions found in CellChatDB CSV: {file_path}"
-        )
+        raise ValueError(f"No valid interactions found in CellChatDB CSV: {file_path}")
 
     # Convert to pathway gene sets
     pathway_gene_sets = convert_interactions_to_pathways(
@@ -668,8 +662,10 @@ def load_cellchatdb(
     logger.info(
         "[SignalingDatabases] Loaded %d CellChatDB interactions (%s), "
         "%d signaling pathway gene sets (%d unique genes)",
-        result.n_interactions, species,
-        result.n_pathways, result.n_unique_genes,
+        result.n_interactions,
+        species,
+        result.n_pathways,
+        result.n_unique_genes,
     )
     return result
 
