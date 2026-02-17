@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-02-16
+
 ### Added
 
 #### Signaling Pathway Databases (#32)
@@ -110,7 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 49 new single-cell tests, 768 total tests passing
 
 ### Changed
-- Total test count: 768 (up from 716)
+- Total test count: 971 (up from 716)
 
 ## [0.2.3] - 2026-02-14
 
@@ -403,13 +405,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| (next) | Unreleased | Single-cell pathway scoring, advanced visualization, pipeline input validation, CI fixes |
+| 0.3.0 | 2026-02-16 | Multi-omic integration: single-cell, deconvolution, signaling databases, cross-modal validation, fusion |
 | 0.2.3 | 2026-02-14 | Cross-cohort validation, performance optimization, threshold calibration, expression scoring |
 | 0.2.0 | 2026-02-09 | Scientific rigor, ancestry/batch correction, benchmarks, sensitivity analysis |
 | 0.1.0 | 2026-01-29 | First public release with full pipeline |
 | 0.0.1 | 2026-01-29 | Initial project setup |
 
-[Unreleased]: https://github.com/topmist-admin/pathway-subtyping-framework/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/topmist-admin/pathway-subtyping-framework/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/topmist-admin/pathway-subtyping-framework/compare/v0.2.3...v0.3.0
+[0.2.3]: https://github.com/topmist-admin/pathway-subtyping-framework/compare/v0.2.0...v0.2.3
 [0.2.0]: https://github.com/topmist-admin/pathway-subtyping-framework/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/topmist-admin/pathway-subtyping-framework/releases/tag/v0.1.0
 [0.0.1]: https://github.com/topmist-admin/pathway-subtyping-framework/releases/tag/v0.0.1

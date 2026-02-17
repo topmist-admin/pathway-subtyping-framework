@@ -5,7 +5,7 @@ A disease-agnostic framework for pathway-based molecular subtype discovery
 in genetically heterogeneous conditions.
 """
 
-__version__ = "0.2.3"
+__version__ = "0.3.0"
 __author__ = "Rohit Chauhan"
 
 from .ancestry import (
