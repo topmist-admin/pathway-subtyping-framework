@@ -85,6 +85,36 @@ pip install pathway-subtyping[sc]    # Single-cell support (AnnData)
 
 **Full tutorial**: [01_getting_started.ipynb](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/01_getting_started.ipynb)
 
+### Notebooks
+
+16 Jupyter notebooks covering tutorials through full manuscript reproduction. See [docs/notebook-guide.md](docs/notebook-guide.md) for execution order and dependencies.
+
+**Tutorials (00-09)** -- Synthetic data, standalone, any order:
+
+| # | Topic |
+|---|-------|
+| 00 | Quick demo (60 seconds) |
+| 01 | Getting started (installation, pipeline, validation) |
+| 02 | Expression scoring (ssGSEA, GSVA, mean-Z) |
+| 03 | Multi-omic fusion |
+| 04 | Cell-type deconvolution |
+| 05 | Visualization (PCA, t-SNE, UMAP, Plotly) |
+| 06 | Ancestry and batch correction |
+| 07 | Sensitivity analysis |
+| 08 | Subtype characterization |
+| 09 | Signaling database integration |
+
+**Real Data Validation (10-14)** -- GEO datasets, run in order (later notebooks use earlier outputs):
+
+| # | Dataset | Tissue | N | Manuscript Section |
+|---|---------|--------|---|-------------------|
+| 10 | GSE28521 | Brain (frontal + temporal cortex) | 79 | Section 5 |
+| 11 | GSE64018 | Brain (temporal cortex, RNA-seq) | 24 | Section 5.9 |
+| 12 | GSE80655 | Brain (3 regions, multi-diagnosis) | 281 | Section 6 |
+| 12b | GSE80655 | Null ARI permutation test | 141 | Section 6.5 |
+| 13 | GSE111175 | Blood + ADOS clinical scores | 141 | Section 6.10 |
+| 14 | GSE18123 | Blood (largest cohort, 2 platforms) | 285 | Section 6.10 |
+
 ### Run with Sample Data
 
 ```bash
