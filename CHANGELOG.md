@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Cross-platform projection from GSE80655 RNA-seq: ARI=0.319 (PASS)
   - Cross-disease ARI=0.792 (SCZ/ASD pathway convergence)
   - Multi-diagnosis pooled clustering: k=5, silhouette=0.450
+- **Notebook 16** (`16_knowledge_graph_analysis.ipynb`): Cross-disease knowledge graph & drug repurposing
+  - 336 genes from 21 unique pathways (15 ASD + 14 SCZ, 8 shared)
+  - STRING PPI network: 4,378 edges, 97.9% gene coverage
+  - 20 hub genes (11 cross-disease bridges) ranked by betweenness centrality
+  - DGIdb drug repurposing: 1,546 unique drugs targeting 44 hub/core genes
+  - 6 Louvain communities (all cross-disease), convergence subnetwork (260 genes)
+  - Manuscript-ready network figure, drug overlay, pathway crosstalk heatmap
 
 #### Documentation
 - Notebook execution guide with dependency diagram (`docs/notebook-guide.md`)

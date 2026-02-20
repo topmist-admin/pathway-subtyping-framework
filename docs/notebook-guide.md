@@ -1,6 +1,6 @@
 # Notebook Guide
 
-> Complete guide to the 17 analysis notebooks, their execution order, and how outputs flow between them.
+> Complete guide to the 18 analysis notebooks, their execution order, and how outputs flow between them.
 
 ---
 
@@ -36,13 +36,14 @@ These notebooks download real transcriptomics data from NCBI GEO and reproduce t
 | 13 | [geo_blood_ados](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/13_geo_blood_ados.ipynb) | GSE111175 | Blood (leukocytes) | 141 | Illumina BeadChip | **10** (optional) |
 | 14 | [geo_blood_large_cohort](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/14_geo_blood_large_cohort.ipynb) | GSE18123 | Blood | 285 | Affymetrix (2 platforms) | **13**, **10** (optional) |
 | 15 | [geo_scz_replication](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/15_geo_scz_replication.ipynb) | GSE53987 | Brain (3 regions) | 205 | Affymetrix microarray | **12** |
+| 16 | [knowledge_graph_analysis](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/16_knowledge_graph_analysis.ipynb) | Multi-dataset | KG (STRING + DGIdb) | 1,075 | Network analysis | **10-15** |
 
 ---
 
 ## Dependency Diagram
 
 ```
-Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-15)
+Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-16)
   All standalone                   Must follow arrows
   Any order                        ─────────────────────
 
@@ -63,6 +64,11 @@ Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-15)
                                15: GSE53987
                                SCZ Replication
                                (Affymetrix, needs 12)
+
+
+                    16: Knowledge Graph Analysis
+                    (uses results from 10-15;
+                     STRING PPI + DGIdb drug targets)
 ```
 
 **Arrow meaning:** The target notebook loads output files produced by the source notebook. If the source has not been run, the target will skip that analysis section (with a warning) or attempt to download pre-computed results from GitHub.
@@ -277,6 +283,50 @@ outputs/gse53987/
 - Cross-cohort projection ARI = 0.319 (PASS, threshold 0.3)
 - Cross-disease ARI = 0.792 (strong SCZ/ASD pathway convergence)
 - Multi-diagnosis pooled silhouette = 0.450 (k=5, diagnosis-independent)
+
+---
+
+### Step 8: Notebook 16 -- Knowledge Graph Analysis
+
+Cross-disease knowledge graph integrating gene contributions from all 6 datasets with STRING PPI network and DGIdb drug targets. Produces hub gene ranking, drug repurposing table, and manuscript-ready network figures.
+
+**Requires from Notebooks 10-15:**
+```
+research-results/GSE28521/gene_contributions.csv
+research-results/GSE64018/frontal-cortex/gene_contributions.csv
+research-results/GSE80655/gene_contributions.csv
+research-results/GSE53987/gene_contributions.csv
+research-results/GSE111175/gene_contributions.csv
+research-results/GSE18123/gene_contributions.csv
+data/pathways/autism_pathways.gmt
+data/pathways/schizophrenia_pathways.gmt
+```
+
+**Requires network access:** STRING API (string-db.org), DGIdb API (dgidb.org). Results are cached locally after first run.
+
+**Produces:**
+```
+outputs/knowledge_graph/
+├── kg_results_summary.json             # Complete metrics summary
+├── hub_genes_ranked.csv                # Top 20 hub genes by betweenness
+├── drug_repurposing_table.csv          # Ranked drug candidates
+├── community_analysis.csv             # Louvain communities with disease enrichment
+├── pathway_crosstalk_matrix.csv       # 21×21 PPI-based pathway crosstalk
+├── string_ppi_edges.csv               # Cached STRING PPI data
+├── dgidb_interactions.csv             # Cached DGIdb drug interactions
+├── cross_disease_network.graphml      # Full KG (importable to Cytoscape)
+├── convergence_subnetwork.graphml     # ASD↔SCZ bridge genes subnetwork
+├── network_figure.png / .pdf          # Manuscript-ready network (300 DPI)
+├── drug_network_figure.png            # Drug targets overlay
+├── pathway_crosstalk_heatmap.png      # Pathway crosstalk heatmap
+└── ppi_distributions.png              # PPI score and degree distributions
+```
+
+**Key results:**
+- 336 genes, 4,378 PPI edges, 97.9% coverage
+- 20 hub genes (11 cross-disease bridges: AKT1, CTNNB1, GSK3B, PTEN, etc.)
+- 1,546 unique drug candidates across 44 target genes
+- 6 Louvain communities (all cross-disease)
 
 ---
 

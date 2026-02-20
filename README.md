@@ -87,7 +87,7 @@ pip install pathway-subtyping[sc]    # Single-cell support (AnnData)
 
 ### Notebooks
 
-17 Jupyter notebooks covering tutorials through full manuscript reproduction. See [docs/notebook-guide.md](docs/notebook-guide.md) for execution order and dependencies.
+18 Jupyter notebooks covering tutorials through full manuscript reproduction. See [docs/notebook-guide.md](docs/notebook-guide.md) for execution order and dependencies.
 
 **Tutorials (00-09)** -- Synthetic data, standalone, any order:
 
@@ -104,7 +104,7 @@ pip install pathway-subtyping[sc]    # Single-cell support (AnnData)
 | 08 | Subtype characterization |
 | 09 | Signaling database integration |
 
-**Real Data Validation (10-15)** -- GEO datasets, run in order (later notebooks use earlier outputs):
+**Real Data Validation (10-16)** -- GEO datasets, run in order (later notebooks use earlier outputs):
 
 | # | Dataset | Tissue | N | Manuscript Section |
 |---|---------|--------|---|-------------------|
@@ -115,6 +115,7 @@ pip install pathway-subtyping[sc]    # Single-cell support (AnnData)
 | 13 | GSE111175 | Blood + ADOS clinical scores | 141 | Section 6.10 |
 | 14 | GSE18123 | Blood (largest cohort, 2 platforms) | 285 | Section 6.10 |
 | 15 | GSE53987 | Brain (3 regions, Affymetrix, 4 diagnoses) | 205 | Section 6.11 |
+| 16 | Multi-dataset | Knowledge graph (STRING PPI + DGIdb) | 1,075 | Section 7 |
 
 ### Run with Sample Data
 
