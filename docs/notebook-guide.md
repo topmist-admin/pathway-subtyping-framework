@@ -1,6 +1,6 @@
 # Notebook Guide
 
-> Complete guide to the 16 analysis notebooks, their execution order, and how outputs flow between them.
+> Complete guide to the 17 analysis notebooks, their execution order, and how outputs flow between them.
 
 ---
 
@@ -35,6 +35,7 @@ These notebooks download real transcriptomics data from NCBI GEO and reproduce t
 | 12b | [null_ari_permutation](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/12b_null_ari_permutation.ipynb) | GSE80655 | Brain (3 regions) | 141 | (reuses 12 outputs) | **12** |
 | 13 | [geo_blood_ados](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/13_geo_blood_ados.ipynb) | GSE111175 | Blood (leukocytes) | 141 | Illumina BeadChip | **10** (optional) |
 | 14 | [geo_blood_large_cohort](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/14_geo_blood_large_cohort.ipynb) | GSE18123 | Blood | 285 | Affymetrix (2 platforms) | **13**, **10** (optional) |
+| 15 | [geo_scz_replication](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/15_geo_scz_replication.ipynb) | GSE53987 | Brain (3 regions) | 205 | Affymetrix microarray | **12** |
 
 ---
 
@@ -57,6 +58,11 @@ Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-14)
                                        ▼        14: GSE18123
                                   12b: Null ARI Blood Large Cohort
                                   Permutation   (needs 13 + 10)
+                                       │
+                                       ▼
+                                  15: GSE53987
+                                  SCZ Replication
+                                  (Affymetrix, needs 12)
 ```
 
 **Arrow meaning:** The target notebook loads output files produced by the source notebook. If the source has not been run, the target will skip that analysis section (with a warning) or attempt to download pre-computed results from GitHub.
@@ -222,6 +228,56 @@ outputs/gse18123/
 
 **Key result:** Cross-cohort projection ARI = 0.374 (exceeds 0.3 replication threshold)
 
+### Step 7: Notebook 15 -- GSE53987 SCZ Replication (Affymetrix)
+
+Independent replication of SCZ pathway subtypes on a different platform (Affymetrix vs RNA-seq) and different brain regions. Tests cross-cohort projection from GSE80655 and cross-disease ARI with ASD pathways.
+
+**Requires from Notebook 12:**
+```
+outputs/gse80655/pathway_scores_scz.csv
+outputs/gse80655/sample_metadata_with_subtypes.csv
+```
+
+If Notebook 12 outputs are not found, checks `research-results/GSE80655/` as fallback.
+
+**Produces:**
+```
+outputs/gse53987/
+├── results_summary.json
+├── pathway_scores_scz_ctl.csv          # 103 SCZ+CTL samples x 14 SCZ pathways
+├── pathway_scores_asd.csv              # 103 samples x 15 ASD pathways
+├── sample_metadata_with_subtypes.csv
+├── pathway_enrichment.csv
+├── gene_contributions.csv
+├── subtype_summary.csv
+├── benchmark_results.csv
+├── subtype_heatmap.png
+├── gene_heatmap.png
+├── pca_scatter_subtypes.png
+├── benchmark_comparison.png
+├── algorithm_comparison.png
+├── model_selection.png
+├── regions/                            # Per-region subtyping
+│   ├── {region}_results.json
+│   ├── {region}_pathway_heatmap.png
+│   ├── cross_region_ari.json
+│   └── cross_region_ari.png
+├── cross_cohort/                       # GSE80655 → GSE53987 projection
+│   ├── cross_cohort_projection_results.json
+│   ├── centroid_correlation.csv
+│   ├── centroid_correlation.png
+│   └── cross_platform_comparison.csv
+└── cross_disease/                      # ASD pathway comparison
+    ├── multi_diagnosis_heatmap.png
+    ├── multi_diagnosis_results.json
+    └── shared_pathway_correlation.csv
+```
+
+**Key results:**
+- Cross-cohort projection ARI = 0.319 (PASS, threshold 0.3)
+- Cross-disease ARI = 0.792 (strong SCZ/ASD pathway convergence)
+- Multi-diagnosis pooled silhouette = 0.450 (k=5, diagnosis-independent)
+
 ---
 
 ## How to Run
@@ -282,7 +338,8 @@ examples/notebooks/
 │   ├── gse80655/           # Notebook 12
 │   ├── null_ari_permutation/ # Notebook 12b
 │   ├── gse111175/          # Notebook 13
-│   └── gse18123/           # Notebook 14
+│   ├── gse18123/           # Notebook 14
+│   └── gse53987/           # Notebook 15
 └── data/                   # Downloaded GEO SOFT files (cached)
 ```
 
@@ -298,6 +355,7 @@ cp -r examples/notebooks/outputs/gse80655/ research-results/GSE80655/
 cp -r examples/notebooks/outputs/null_ari_permutation/ research-results/GSE80655/null_ari_permutation/
 cp -r examples/notebooks/outputs/gse111175/ research-results/GSE111175/
 cp -r examples/notebooks/outputs/gse18123/ research-results/GSE18123/
+cp -r examples/notebooks/outputs/gse53987/ research-results/GSE53987/
 ```
 
 Later notebooks check both `outputs/` and `research-results/` when loading prior results.
@@ -320,6 +378,7 @@ Each Tier 2 notebook corresponds to a section in the manuscript:
 | 12b | Section 6.5 (Supplementary) | Permutation p < 0.001 |
 | 13 | Section 6.10 (Blood Validation) | ADOS-pathway correlation |
 | 14 | Section 6.10 (Blood Validation) | Cross-cohort replication ARI = 0.374 |
+| 15 | Section 6.11 (SCZ Replication) | Cross-platform ARI = 0.319, cross-disease ARI = 0.792 |
 
 ---
 
@@ -352,6 +411,7 @@ If you see warnings about gene symbol mapping, they are expected -- not all prob
 | 12b | ~4 GB |
 | 13 | ~4 GB |
 | 14 | ~6 GB |
+| 15 | ~4 GB |
 
 Use Colab Pro (25 GB RAM) or a machine with 16+ GB for notebooks 12 and 14.
 
