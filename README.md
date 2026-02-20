@@ -104,7 +104,7 @@ pip install pathway-subtyping[sc]    # Single-cell support (AnnData)
 | 08 | Subtype characterization |
 | 09 | Signaling database integration |
 
-**Real Data Validation (10-14)** -- GEO datasets, run in order (later notebooks use earlier outputs):
+**Real Data Validation (10-15)** -- GEO datasets, run in order (later notebooks use earlier outputs):
 
 | # | Dataset | Tissue | N | Manuscript Section |
 |---|---------|--------|---|-------------------|
@@ -263,7 +263,7 @@ pathway-subtyping-framework/
 │   ├── api/                     # API reference (13 modules)
 │   └── guides/                  # User guides
 ├── examples/notebooks/          # Jupyter tutorials
-├── tests/                       # Test suite (912+ tests)
+├── tests/                       # Test suite (968+ tests)
 ├── Dockerfile                   # Container support
 └── docker-compose.yml           # Easy orchestration
 ```

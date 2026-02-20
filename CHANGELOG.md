@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Notebooks
+- **Notebook 13** (`13_geo_blood_ados.ipynb`): GSE111175 blood transcriptomics with ADOS clinical correlation
+  - 141 blood leukocyte samples (28 ASD, 113 control), Illumina BeadChip
+  - Pathway subtypes detectable in peripheral tissue
+  - Synaptic transmission correlates with ADOS Social Affect (rho=-0.52, FDR p=0.032)
+- **Notebook 14** (`14_geo_blood_large_cohort.ipynb`): GSE18123 large blood cohort validation
+  - 285 blood samples (72 ASD, 213 control) across two Affymetrix platforms
+  - Cross-cohort projection from GSE111175 achieves ARI=0.374 (exceeds 0.3 threshold)
+  - Cross-tissue pathway correlation with brain subtypes (rho=0.371)
+- **Notebook 15** (`15_geo_scz_replication.ipynb`): GSE53987 SCZ replication on Affymetrix microarray
+  - 205 samples across 4 diagnoses (SCZ, BD, MDD, CTL), 3 brain regions
+  - Cross-platform projection from GSE80655 RNA-seq: ARI=0.319 (PASS)
+  - Cross-disease ARI=0.792 (SCZ/ASD pathway convergence)
+  - Multi-diagnosis pooled clustering: k=5, silhouette=0.450
+
+#### Documentation
+- Notebook execution guide with dependency diagram (`docs/notebook-guide.md`)
+- Notebook execution registry (`research-results/NOTEBOOK-EXECUTION-REGISTRY.md`)
+- Updated JOSS paper with all 6 validation datasets (1,075 samples)
+
 ## [0.3.0] - 2026-02-16
 
 ### Added

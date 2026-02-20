@@ -42,7 +42,7 @@ These notebooks download real transcriptomics data from NCBI GEO and reproduce t
 ## Dependency Diagram
 
 ```
-Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-14)
+Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-15)
   All standalone                   Must follow arrows
   Any order                        ─────────────────────
 
@@ -54,15 +54,15 @@ Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-14)
                     11: GSE64018  12: GSE80655  13: GSE111175  (optional
                     Cross-cohort  Schizophrenia Blood + ADOS    inputs)
                     validation    Brain              │
-                                       │             ▼
-                                       ▼        14: GSE18123
-                                  12b: Null ARI Blood Large Cohort
-                                  Permutation   (needs 13 + 10)
-                                       │
-                                       ▼
-                                  15: GSE53987
-                                  SCZ Replication
-                                  (Affymetrix, needs 12)
+                                    │    │           ▼
+                                    │    ▼      14: GSE18123
+                                    │  12b:    Blood Large Cohort
+                                    │  Null ARI (needs 13 + 10)
+                                    │  Permutation
+                                    ▼
+                               15: GSE53987
+                               SCZ Replication
+                               (Affymetrix, needs 12)
 ```
 
 **Arrow meaning:** The target notebook loads output files produced by the source notebook. If the source has not been run, the target will skip that analysis section (with a warning) or attempt to download pre-computed results from GitHub.
