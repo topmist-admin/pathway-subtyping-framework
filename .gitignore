@@ -69,6 +69,7 @@ autismenv/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*_executed.ipynb
 
 # macOS
 .DS_Store
@@ -97,6 +98,7 @@ data/cohorts/
 *.key
 credentials.json
 PyPI-Recovery-Codes*
+TestPyPI-Recovery-Codes*
 
 # Logs
 *.log
@@ -109,6 +111,10 @@ outreach/
 claude-session.md
 claude-results.md
 VULNERABILITY-MITIGATION-PLAN.md
+NOTEBOOK-*-IMPLEMENTATION-PLAN.md
+
+# Cached GEO data downloads
+examples/notebooks/data/
 
 # Research results (generated from Colab notebook runs)
 research-results/
