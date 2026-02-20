@@ -108,3 +108,10 @@ outreach/
 # Claude session files (local context)
 claude-session.md
 claude-results.md
+VULNERABILITY-MITIGATION-PLAN.md
+
+# Research results (generated from Colab notebook runs)
+research-results/
+
+# Manuscripts and analysis documents
+manuscripts/
