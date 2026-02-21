@@ -32,8 +32,18 @@ pip install pathway-subtyping[vcf]
 pip install pathway-subtyping[sc]
 
 # Optional: network analysis & Cytoscape visualization (NetworkX, py4cytoscape)
+# NOTE: Requires Cytoscape desktop app running — see below
 pip install pathway-subtyping[graph]
 ```
+
+> **Cytoscape Desktop Requirement:** The `[graph]` extra includes `py4cytoscape`,
+> which communicates with the [Cytoscape desktop application](https://cytoscape.org/download.html)
+> (v3.10+) via its CyREST API on `localhost:1234`. You must download, install,
+> and launch Cytoscape before running any network visualization scripts. Verify
+> the connection with:
+> ```bash
+> python -c "import py4cytoscape as p4c; print(p4c.cytoscape_ping())"
+> ```
 
 ### Option B: Install from Source
 

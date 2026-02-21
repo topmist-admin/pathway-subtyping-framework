@@ -78,6 +78,27 @@ pip install pathway-subtyping[sc]    # Single-cell support (AnnData)
 pip install pathway-subtyping[graph] # Network analysis (NetworkX, py4cytoscape)
 ```
 
+#### Network Visualization (Cytoscape)
+
+The `[graph]` extra enables publication-ready network figure generation via
+[Cytoscape](https://cytoscape.org), an open-source desktop application for
+network visualization. The `py4cytoscape` library communicates with Cytoscape's
+CyREST API on `localhost:1234`.
+
+**Setup:**
+
+1. Download and install [Cytoscape desktop](https://cytoscape.org/download.html) (v3.10+)
+2. Launch Cytoscape and wait for it to fully load
+3. Install the Python extra: `pip install pathway-subtyping[graph]`
+4. Verify the connection:
+   ```bash
+   python -c "import py4cytoscape as p4c; print(p4c.cytoscape_ping())"
+   ```
+5. Run the figure generator:
+   ```bash
+   python scripts/generate_cytoscape_figures.py
+   ```
+
 ### Try in Browser (No Installation)
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/00_quick_demo.ipynb)
