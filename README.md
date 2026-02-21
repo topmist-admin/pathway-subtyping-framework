@@ -75,6 +75,7 @@ Optional extras:
 pip install pathway-subtyping[vcf]   # VCF file processing (pysam)
 pip install pathway-subtyping[viz]   # Interactive visualizations (Plotly, UMAP)
 pip install pathway-subtyping[sc]    # Single-cell support (AnnData)
+pip install pathway-subtyping[graph] # Network analysis (NetworkX, py4cytoscape)
 ```
 
 ### Try in Browser (No Installation)
@@ -263,6 +264,10 @@ pathway-subtyping-framework/
 │   ├── METHODS.md               # Statistical methods documentation
 │   ├── api/                     # API reference (13 modules)
 │   └── guides/                  # User guides
+├── scripts/                     # Utility scripts
+│   ├── generate_cytoscape_figures.py  # Publication-ready network figures (requires [graph] + Cytoscape desktop)
+│   ├── validate_with_public_data.py   # ClinVar/Reactome validation
+│   └── benchmark_performance.py       # Performance benchmarks
 ├── examples/notebooks/          # Jupyter tutorials
 ├── tests/                       # Test suite (968+ tests)
 ├── Dockerfile                   # Container support

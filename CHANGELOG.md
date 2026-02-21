@@ -31,6 +31,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 6 Louvain communities (all cross-disease), convergence subnetwork (260 genes)
   - Manuscript-ready network figure, drug overlay, pathway crosstalk heatmap
 
+#### Scripts
+- **Cytoscape figure generator** (`scripts/generate_cytoscape_figures.py`): Publication-ready network figures via py4cytoscape
+  - Hub gene subnetwork (20 hubs + top neighbors, community-colored)
+  - Drug-hub target map (bipartite gene-drug network with interaction types)
+  - Community overview (336 nodes with community-aware layout)
+  - Requires `[graph]` extra + Cytoscape desktop app
+
+#### Dependencies
+- New `[graph]` optional extra: `networkx>=3.0`, `py4cytoscape>=1.0.0`
+- Updated `requirements.txt` to match `pyproject.toml` (removed stale `pysam` from core)
+
 #### Documentation
 - Notebook execution guide with dependency diagram (`docs/notebook-guide.md`)
 - Notebook execution registry (`research-results/NOTEBOOK-EXECUTION-REGISTRY.md`)

@@ -30,6 +30,9 @@ pip install pathway-subtyping[vcf]
 
 # Optional: single-cell scRNA-seq support (AnnData)
 pip install pathway-subtyping[sc]
+
+# Optional: network analysis & Cytoscape visualization (NetworkX, py4cytoscape)
+pip install pathway-subtyping[graph]
 ```
 
 ### Option B: Install from Source

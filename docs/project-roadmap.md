@@ -578,7 +578,7 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 | Layer | Dependencies | What It Adds |
 |-------|-------------|--------------|
 | **Core** (existing) | None extra | GMT-based pathway scoring, GMM clustering, validation gates |
-| **Graph** (new `[graph]` extra) | `networkx` (already transitive dep) | Topology-aware scoring, PPI network propagation, pathway crosstalk |
+| **Graph** (new `[graph]` extra) | `networkx`, `py4cytoscape` | Topology-aware scoring, PPI network propagation, Cytoscape visualization |
 | **KG-ML** (new `[kg]` extra) | `pykeen`, `torch-geometric` | Graph embeddings, GNN subtyping, link prediction, drug targets |
 
 ### [Week 30] Pathway Topology and Network Propagation

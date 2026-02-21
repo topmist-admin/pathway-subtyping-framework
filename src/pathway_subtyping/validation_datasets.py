@@ -1046,18 +1046,22 @@ def run_full_validation(
 
     # Resolve GMT path
     if gmt_path is None:
-        default_gmt = (
-            Path(__file__).parent.parent.parent
-            / "data"
-            / "pathways"
-            / f"{disease_name}_pathways.gmt"
-        )
-        if default_gmt.exists():
-            gmt_path = str(default_gmt)
+        gmt_filename = f"{disease_name}_pathways.gmt"
+        candidates = [
+            # 1. Bundled package data (works for pip install)
+            Path(__file__).parent / "data" / "pathways" / gmt_filename,
+            # 2. Source tree layout (works for editable install / running from repo root)
+            Path(__file__).parent.parent.parent / "data" / "pathways" / gmt_filename,
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                gmt_path = str(candidate)
+                break
         else:
             raise FileNotFoundError(
                 f"No GMT file found for disease '{disease_name}'. "
-                f"Expected: {default_gmt}. Pass --gmt-path explicitly."
+                f"Searched: {[str(c) for c in candidates]}. "
+                f"Pass --gmt-path explicitly."
             )
 
     # Load curated pathways
