@@ -71,7 +71,7 @@ Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-16)
                      STRING PPI + DGIdb drug targets)
 ```
 
-**Arrow meaning:** The target notebook loads output files produced by the source notebook. If the source has not been run, the target will skip that analysis section (with a warning) or attempt to download pre-computed results from GitHub.
+**Arrow meaning:** The target notebook loads output files produced by the source notebook. If the source has not been run, the target will skip that analysis section (with a warning) and proceed with available data.
 
 ---
 
@@ -172,7 +172,7 @@ outputs/gse28521/frontal_cortex/fc_pathway_scores.csv
 outputs/gse28521/frontal_cortex/fc_sample_metadata_with_subtypes.csv
 ```
 
-If Notebook 10 outputs are not found, the cross-tissue comparison section is skipped. The notebook also checks `research-results/GSE28521/frontal-cortex/` and a GitHub URL as fallbacks.
+If Notebook 10 outputs are not found, the cross-tissue comparison section is skipped. The notebook also checks `research-results/GSE28521/frontal-cortex/` as a fallback.
 
 **Produces:**
 ```
@@ -211,7 +211,7 @@ outputs/gse28521/frontal_cortex/fc_pathway_scores.csv
 outputs/gse28521/frontal_cortex/fc_sample_metadata_with_subtypes.csv
 ```
 
-If prior outputs are not found, cross-cohort/cross-tissue sections are skipped. The notebook checks `research-results/`, `../../research-results/`, `outputs/`, and GitHub URLs as fallbacks.
+If prior outputs are not found, cross-cohort/cross-tissue sections are skipped. The notebook checks `research-results/`, `../../research-results/`, and `outputs/` as fallbacks.
 
 **Produces:**
 ```
@@ -332,18 +332,30 @@ outputs/knowledge_graph/
 
 ## How to Run
 
-### Option A: Google Colab (Recommended for First Run)
+### Option A: Binder (Recommended for First Run)
 
-Each notebook has a "Open in Colab" badge at the top. Click it to run in your browser with no local setup.
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F00_quick_demo.ipynb)
 
-**Requirements:** Google account, Colab Pro recommended for Tier 2 notebooks (15+ min runtime, 8+ GB RAM for GEO downloads).
+Click the badge above (or any Binder link in the notebook tables) to launch a notebook in your browser with no local setup. Binder provides a free JupyterLab environment with all dependencies pre-installed.
 
-**Output handling on Colab:** Notebooks save outputs to `./outputs/<dataset>/`. To preserve outputs between sessions, mount Google Drive:
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-# Then copy outputs to Drive after execution
-```
+**Requirements:** None — just a web browser. Binder sessions are temporary; download any outputs before the session expires.
+
+**Binder links for individual notebooks:**
+
+| # | Binder Link |
+|---|-------------|
+| 00 | [quick_demo](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F00_quick_demo.ipynb) |
+| 01 | [getting_started](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F01_getting_started.ipynb) |
+| 02 | [expression_scoring](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F02_expression_scoring.ipynb) |
+| 03 | [multi_omic_fusion](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F03_multi_omic_fusion.ipynb) |
+| 04 | [deconvolution](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F04_deconvolution.ipynb) |
+| 05 | [visualization](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F05_visualization.ipynb) |
+| 06 | [ancestry_batch_correction](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F06_ancestry_batch_correction.ipynb) |
+| 07 | [sensitivity_analysis](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F07_sensitivity_analysis.ipynb) |
+| 08 | [characterization](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F08_characterization.ipynb) |
+| 09 | [signaling_databases](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F09_signaling_databases.ipynb) |
+
+> **Note:** Tier 2 notebooks (10-16) require GEO data downloads and 4-6 GB RAM, which may exceed Binder's free resource limits. Run those locally (Option B).
 
 ### Option B: Local Execution
 
@@ -463,14 +475,13 @@ If you see warnings about gene symbol mapping, they are expected -- not all prob
 | 14 | ~6 GB |
 | 15 | ~4 GB |
 
-Use Colab Pro (25 GB RAM) or a machine with 16+ GB for notebooks 12 and 14.
+Use a machine with 16+ GB RAM for notebooks 12 and 14.
 
 ### Missing Cross-Reference Data
 
 If a notebook cannot find outputs from a prior notebook, it will:
 1. Check multiple fallback paths (`outputs/`, `research-results/`, `../../research-results/`)
-2. Attempt to download from the GitHub repository URL
-3. If all fail, skip the dependent analysis section with a message
+2. If all local paths fail, skip the dependent analysis section with a message
 
 This means every notebook can run independently -- cross-references are optional enhancements, not hard requirements.
 

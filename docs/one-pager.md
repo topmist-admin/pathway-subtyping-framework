@@ -25,7 +25,7 @@ The **Pathway Subtyping Framework** shifts the unit of analysis from individual 
 | **Subtype Discovery** | GMM clustering with automatic cluster selection |
 | **Validation Gates** | Negative controls + bootstrap stability testing |
 | **Reproducibility** | Deterministic execution with pinned dependencies |
-| **Colab-Ready** | Run the demo in your browser—no installation |
+| **Binder-Ready** | Run the demo in your browser—no installation |
 
 ## Pre-Built Disease Pathways
 

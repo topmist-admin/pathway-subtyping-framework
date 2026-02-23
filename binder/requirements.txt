@@ -1,0 +1,3 @@
+# Binder environment for Pathway Subtyping Framework
+# Installs the package with visualization and notebook extras
+pathway-subtyping[viz,notebooks]==0.3.1

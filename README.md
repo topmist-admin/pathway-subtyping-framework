@@ -101,17 +101,11 @@ CyREST API on `localhost:1234`.
 
 ### Try in Browser (No Installation)
 
-**60-second demo** — generates a synthetic cohort, discovers subtypes, validates them, and visualizes results. No data needed.
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F00_quick_demo.ipynb)
 
-```bash
-# Clone and run locally
-git clone https://codeberg.org/pathways/pathway-subtyping-framework.git
-cd pathway-subtyping-framework
-pip install -e ".[notebooks,viz]"
-jupyter notebook examples/notebooks/00_quick_demo.ipynb
-```
+**60-second demo** — generates a synthetic cohort, discovers subtypes, validates them, and visualizes results. No data needed. Click the badge above to launch in Binder.
 
-**Full tutorial**: [01_getting_started.ipynb](examples/notebooks/01_getting_started.ipynb)
+**Full tutorial**: [01_getting_started.ipynb](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F01_getting_started.ipynb) (Binder) | [Local](examples/notebooks/01_getting_started.ipynb)
 
 ### Notebooks
 
