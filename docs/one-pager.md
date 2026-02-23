@@ -60,19 +60,19 @@ pip install pathway-subtyping
 pathway-subtyping run --config configs/your_disease.yaml
 ```
 
-Or try the **[Colab notebook](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/01_demo.ipynb)** (no installation required).
+Or try the **[demo notebook](examples/notebooks/01_demo.ipynb)** (no installation required).
 
 ## Links
 
-- **GitHub**: https://github.com/topmist-admin/pathway-subtyping-framework
+- **GitHub**: https://codeberg.org/pathways/pathway-subtyping-framework
 - **PyPI**: https://pypi.org/project/pathway-subtyping/
 - **DOI**: https://doi.org/10.5281/zenodo.18442426
-- **Documentation**: https://github.com/topmist-admin/pathway-subtyping-framework/tree/main/docs
+- **Documentation**: https://codeberg.org/pathways/pathway-subtyping-framework/tree/main/docs
 
 ## Contact
 
 **Rohit Chauhan**
-GitHub: [@topmist-admin](https://github.com/topmist-admin)
+GitHub: [@topmist-admin](https://codeberg.org/pathways)
 
 ---
 

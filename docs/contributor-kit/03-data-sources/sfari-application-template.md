@@ -91,7 +91,7 @@ Validation:
 - Bootstrap stability test (ARI > 0.8 required)
 
 Analysis Software: Pathway Subtyping Framework (open-source, 
-available at github.com/topmist-admin/pathway-subtyping-framework)
+available at codeberg.org/pathways/pathway-subtyping-framework)
 ```
 
 **Expected Outcomes:**

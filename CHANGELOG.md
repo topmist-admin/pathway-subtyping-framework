@@ -47,6 +47,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Notebook execution registry (`research-results/NOTEBOOK-EXECUTION-REGISTRY.md`)
 - Updated JOSS paper with all 6 validation datasets (1,075 samples)
 
+## [0.3.1] - 2026-02-23
+
+### Changed
+- Migrated all repository URLs from GitHub to Codeberg (GitHub account suspended Feb 22)
+- Updated PyPI metadata, CITATION.cff, README, CONTRIBUTING, CHANGELOG, and all docs
+- Replaced Colab notebook links with local notebook paths (Colab requires GitHub hosting)
+
 ## [0.3.0] - 2026-02-16
 
 ### Added
@@ -445,15 +452,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.3.1 | 2026-02-23 | Repository URL migration from GitHub to Codeberg |
 | 0.3.0 | 2026-02-16 | Multi-omic integration: single-cell, deconvolution, signaling databases, cross-modal validation, fusion |
 | 0.2.3 | 2026-02-14 | Cross-cohort validation, performance optimization, threshold calibration, expression scoring |
 | 0.2.0 | 2026-02-09 | Scientific rigor, ancestry/batch correction, benchmarks, sensitivity analysis |
 | 0.1.0 | 2026-01-29 | First public release with full pipeline |
 | 0.0.1 | 2026-01-29 | Initial project setup |
 
-[Unreleased]: https://github.com/topmist-admin/pathway-subtyping-framework/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/topmist-admin/pathway-subtyping-framework/compare/v0.2.3...v0.3.0
-[0.2.3]: https://github.com/topmist-admin/pathway-subtyping-framework/compare/v0.2.0...v0.2.3
-[0.2.0]: https://github.com/topmist-admin/pathway-subtyping-framework/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/topmist-admin/pathway-subtyping-framework/releases/tag/v0.1.0
-[0.0.1]: https://github.com/topmist-admin/pathway-subtyping-framework/releases/tag/v0.0.1
+[Unreleased]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.3.1...HEAD
+[0.3.1]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.3.0...v0.3.1
+[0.3.0]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.2.3...v0.3.0
+[0.2.3]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.2.0...v0.2.3
+[0.2.0]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.1.0...v0.2.0
+[0.1.0]: https://codeberg.org/pathways/pathway-subtyping-framework/releases/tag/v0.1.0
+[0.0.1]: https://codeberg.org/pathways/pathway-subtyping-framework/releases/tag/v0.0.1

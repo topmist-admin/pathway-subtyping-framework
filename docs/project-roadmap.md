@@ -571,7 +571,7 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 
 ## Phase 6: v0.5 Knowledge Graph & Network Biology (Weeks 30-33)
 
-**Rationale:** Flat GMT pathway files treat pathways as unordered gene bags with no internal structure, no cross-pathway connections, and no cross-omics entity linking. Knowledge graphs transform the framework from set-based to topology-aware analysis, enabling network propagation, pathway crosstalk quantification, hierarchical pathway resolution, and drug target discovery. This phase follows the proven architecture from the [autism-pathway-framework](https://github.com/topmist-admin/autism-pathway-framework), which uses a NetworkX-based heterogeneous knowledge graph powering embeddings, GNNs, and causal inference.
+**Rationale:** Flat GMT pathway files treat pathways as unordered gene bags with no internal structure, no cross-pathway connections, and no cross-omics entity linking. Knowledge graphs transform the framework from set-based to topology-aware analysis, enabling network propagation, pathway crosstalk quantification, hierarchical pathway resolution, and drug target discovery. This phase follows the proven architecture from the [autism-pathway-framework](https://codeberg.org/pathways/autism-pathway-framework), which uses a NetworkX-based heterogeneous knowledge graph powering embeddings, GNNs, and causal inference.
 
 **3-Layer Architecture:**
 

@@ -12,16 +12,16 @@ These notebooks use synthetic data bundled with the framework. They run independ
 
 | # | Notebook | Topic | Runtime |
 |---|----------|-------|---------|
-| 00 | [quick_demo](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/00_quick_demo.ipynb) | 60-second end-to-end demo | <1 min |
-| 01 | [getting_started](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/01_getting_started.ipynb) | Installation, basic pipeline, validation gates | 5 min |
-| 02 | [expression_scoring](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/02_expression_scoring.ipynb) | ssGSEA, GSVA, mean-Z scoring comparison | 5 min |
-| 03 | [multi_omic_fusion](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/03_multi_omic_fusion.ipynb) | Multi-modal data fusion (VCF + expression + scRNA-seq) | 5 min |
-| 04 | [deconvolution](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/04_deconvolution.ipynb) | Cell-type deconvolution from bulk RNA-seq | 5 min |
-| 05 | [visualization](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/05_visualization.ipynb) | PCA, t-SNE, UMAP, interactive Plotly reports | 5 min |
-| 06 | [ancestry_batch_correction](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/06_ancestry_batch_correction.ipynb) | Population stratification and batch effects | 5 min |
-| 07 | [sensitivity_analysis](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/07_sensitivity_analysis.ipynb) | Parameter robustness testing | 5 min |
-| 08 | [characterization](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/08_characterization.ipynb) | Subtype profiling, heatmaps, gene contributions | 5 min |
-| 09 | [signaling_databases](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/09_signaling_databases.ipynb) | CellPhoneDB and CellChatDB integration | 5 min |
+| 00 | [quick_demo](examples/notebooks/00_quick_demo.ipynb) | 60-second end-to-end demo | <1 min |
+| 01 | [getting_started](examples/notebooks/01_getting_started.ipynb) | Installation, basic pipeline, validation gates | 5 min |
+| 02 | [expression_scoring](examples/notebooks/02_expression_scoring.ipynb) | ssGSEA, GSVA, mean-Z scoring comparison | 5 min |
+| 03 | [multi_omic_fusion](examples/notebooks/03_multi_omic_fusion.ipynb) | Multi-modal data fusion (VCF + expression + scRNA-seq) | 5 min |
+| 04 | [deconvolution](examples/notebooks/04_deconvolution.ipynb) | Cell-type deconvolution from bulk RNA-seq | 5 min |
+| 05 | [visualization](examples/notebooks/05_visualization.ipynb) | PCA, t-SNE, UMAP, interactive Plotly reports | 5 min |
+| 06 | [ancestry_batch_correction](examples/notebooks/06_ancestry_batch_correction.ipynb) | Population stratification and batch effects | 5 min |
+| 07 | [sensitivity_analysis](examples/notebooks/07_sensitivity_analysis.ipynb) | Parameter robustness testing | 5 min |
+| 08 | [characterization](examples/notebooks/08_characterization.ipynb) | Subtype profiling, heatmaps, gene contributions | 5 min |
+| 09 | [signaling_databases](examples/notebooks/09_signaling_databases.ipynb) | CellPhoneDB and CellChatDB integration | 5 min |
 
 ### Tier 2: Real Data Validation (GEO Datasets)
 
@@ -29,14 +29,14 @@ These notebooks download real transcriptomics data from NCBI GEO and reproduce t
 
 | # | Notebook | Dataset | Tissue | N | Platform | Depends On |
 |---|----------|---------|--------|---|----------|------------|
-| 10 | [geo_autism_bulk](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/10_geo_autism_bulk.ipynb) | GSE28521 | Brain (frontal + temporal cortex) | 79 | Affymetrix microarray | None |
-| 11 | [geo_autism_validation](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/11_geo_autism_validation.ipynb) | GSE64018 | Brain (temporal cortex) | 24 | Illumina RNA-seq | **10** |
-| 12 | [geo_schizophrenia_bulk](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/12_geo_schizophrenia_bulk.ipynb) | GSE80655 | Brain (3 regions) | 281 | Illumina RNA-seq | **10** (optional) |
-| 12b | [null_ari_permutation](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/12b_null_ari_permutation.ipynb) | GSE80655 | Brain (3 regions) | 141 | (reuses 12 outputs) | **12** |
-| 13 | [geo_blood_ados](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/13_geo_blood_ados.ipynb) | GSE111175 | Blood (leukocytes) | 141 | Illumina BeadChip | **10** (optional) |
-| 14 | [geo_blood_large_cohort](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/14_geo_blood_large_cohort.ipynb) | GSE18123 | Blood | 285 | Affymetrix (2 platforms) | **13**, **10** (optional) |
-| 15 | [geo_scz_replication](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/15_geo_scz_replication.ipynb) | GSE53987 | Brain (3 regions) | 205 | Affymetrix microarray | **12** |
-| 16 | [knowledge_graph_analysis](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/16_knowledge_graph_analysis.ipynb) | Multi-dataset | KG (STRING + DGIdb) | 1,075 | Network analysis | **10-15** |
+| 10 | [geo_autism_bulk](examples/notebooks/10_geo_autism_bulk.ipynb) | GSE28521 | Brain (frontal + temporal cortex) | 79 | Affymetrix microarray | None |
+| 11 | [geo_autism_validation](examples/notebooks/11_geo_autism_validation.ipynb) | GSE64018 | Brain (temporal cortex) | 24 | Illumina RNA-seq | **10** |
+| 12 | [geo_schizophrenia_bulk](examples/notebooks/12_geo_schizophrenia_bulk.ipynb) | GSE80655 | Brain (3 regions) | 281 | Illumina RNA-seq | **10** (optional) |
+| 12b | [null_ari_permutation](examples/notebooks/12b_null_ari_permutation.ipynb) | GSE80655 | Brain (3 regions) | 141 | (reuses 12 outputs) | **12** |
+| 13 | [geo_blood_ados](examples/notebooks/13_geo_blood_ados.ipynb) | GSE111175 | Blood (leukocytes) | 141 | Illumina BeadChip | **10** (optional) |
+| 14 | [geo_blood_large_cohort](examples/notebooks/14_geo_blood_large_cohort.ipynb) | GSE18123 | Blood | 285 | Affymetrix (2 platforms) | **13**, **10** (optional) |
+| 15 | [geo_scz_replication](examples/notebooks/15_geo_scz_replication.ipynb) | GSE53987 | Brain (3 regions) | 205 | Affymetrix microarray | **12** |
+| 16 | [knowledge_graph_analysis](examples/notebooks/16_knowledge_graph_analysis.ipynb) | Multi-dataset | KG (STRING + DGIdb) | 1,075 | Network analysis | **10-15** |
 
 ---
 
@@ -349,7 +349,7 @@ drive.mount('/content/drive')
 
 ```bash
 # Clone and set up
-git clone https://github.com/topmist-admin/pathway-subtyping-framework
+git clone https://codeberg.org/pathways/pathway-subtyping-framework
 cd pathway-subtyping-framework
 python3 -m venv pathwayenv && source pathwayenv/bin/activate
 pip install -e ".[dev,viz]"

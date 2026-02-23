@@ -326,7 +326,7 @@ For incidental findings with clinical implications:
 ## Getting More Help
 
 ### Documentation
-- [GitHub README](https://github.com/topmist-admin/pathway-subtyping-framework)
+- [GitHub README](https://codeberg.org/pathways/pathway-subtyping-framework)
 - [Getting Started Guide](01-getting-started.md)
 - [Technical Setup](06-technical-setup.md)
 

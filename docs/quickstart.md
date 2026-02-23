@@ -49,7 +49,7 @@ pip install pathway-subtyping[graph]
 
 ```bash
 # Clone the repository
-git clone https://github.com/topmist-admin/pathway-subtyping-framework.git
+git clone https://codeberg.org/pathways/pathway-subtyping-framework.git
 cd pathway-subtyping-framework
 
 # Create virtual environment
@@ -75,7 +75,7 @@ psf --help
 
 Expected output:
 ```
-pathway-subtyping 0.3.0
+pathway-subtyping 0.3.1
 ```
 
 ---
@@ -293,8 +293,8 @@ See the [Single-Cell API Reference](api/single_cell.md) for full documentation.
 
 ## Getting Help
 
-- **Issues:** [GitHub Issues](https://github.com/topmist-admin/pathway-subtyping-framework/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/topmist-admin/pathway-subtyping-framework/discussions)
+- **Issues:** [GitHub Issues](https://codeberg.org/pathways/pathway-subtyping-framework/issues)
+- **Discussions:** [GitHub Discussions](https://codeberg.org/pathways/pathway-subtyping-framework/discussions)
 
 ---
 

@@ -1429,8 +1429,8 @@ When opening a GitHub issue, include:
 
 ### Community resources
 
-- **GitHub Issues:** [Report bugs](https://github.com/topmist-admin/pathway-subtyping-framework/issues)
-- **Discussions:** [Ask questions](https://github.com/topmist-admin/pathway-subtyping-framework/discussions)
+- **GitHub Issues:** [Report bugs](https://codeberg.org/pathways/pathway-subtyping-framework/issues)
+- **Discussions:** [Ask questions](https://codeberg.org/pathways/pathway-subtyping-framework/discussions)
 
 ---
 

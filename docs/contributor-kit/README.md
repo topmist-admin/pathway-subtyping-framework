@@ -38,8 +38,8 @@ This framework enables discovery of molecular subtypes in genetically heterogene
 ## Contact
 
 - **Project Lead**: Rohit Chauhan
-- **GitHub**: [pathway-subtyping-framework](https://github.com/topmist-admin/pathway-subtyping-framework)
-- **Issues**: [GitHub Issues](https://github.com/topmist-admin/pathway-subtyping-framework/issues)
+- **GitHub**: [pathway-subtyping-framework](https://codeberg.org/pathways/pathway-subtyping-framework)
+- **Issues**: [GitHub Issues](https://codeberg.org/pathways/pathway-subtyping-framework/issues)
 
 ---
 

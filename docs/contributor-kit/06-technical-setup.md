@@ -39,7 +39,7 @@ sudo apt install python3.11 python3.11-venv python3-pip
 ### Step 2: Clone Repository
 
 ```bash
-git clone https://github.com/topmist-admin/pathway-subtyping-framework.git
+git clone https://codeberg.org/pathways/pathway-subtyping-framework.git
 cd pathway-subtyping-framework
 ```
 
@@ -110,7 +110,7 @@ psf --config configs/test_synthetic.yaml
 
 No local setup needed. Open the notebook directly:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/01_getting_started.ipynb)
+Open the notebook directly: [examples/notebooks/01_getting_started.ipynb](examples/notebooks/01_getting_started.ipynb)
 
 ### AWS Setup
 
@@ -133,7 +133,7 @@ ssh -i your-key.pem ubuntu@ec2-xxx.compute.amazonaws.com
 sudo apt update && sudo apt install -y python3.11 python3.11-venv git
 
 # Clone and setup
-git clone https://github.com/topmist-admin/pathway-subtyping-framework.git
+git clone https://codeberg.org/pathways/pathway-subtyping-framework.git
 cd pathway-subtyping-framework
 python3.11 -m venv venv
 source venv/bin/activate

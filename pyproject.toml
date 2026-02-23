@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pathway-subtyping"
-version = "0.3.0"
+version = "0.3.1"
 description = "A disease-agnostic framework for identifying molecular subtypes through pathway-based analysis of rare genetic variants"
 readme = "README.md"
 license = {text = "MIT"}
@@ -98,11 +98,11 @@ pathway-subtyping = "pathway_subtyping.cli:main"
 psf = "pathway_subtyping.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/topmist-admin/pathway-subtyping-framework"
-Documentation = "https://github.com/topmist-admin/pathway-subtyping-framework#readme"
-Repository = "https://github.com/topmist-admin/pathway-subtyping-framework.git"
-Issues = "https://github.com/topmist-admin/pathway-subtyping-framework/issues"
-Changelog = "https://github.com/topmist-admin/pathway-subtyping-framework/releases"
+Homepage = "https://codeberg.org/pathways/pathway-subtyping-framework"
+Documentation = "https://codeberg.org/pathways/pathway-subtyping-framework#readme"
+Repository = "https://codeberg.org/pathways/pathway-subtyping-framework.git"
+Issues = "https://codeberg.org/pathways/pathway-subtyping-framework/issues"
+Changelog = "https://codeberg.org/pathways/pathway-subtyping-framework/releases"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

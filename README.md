@@ -4,7 +4,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18442426.svg)](https://doi.org/10.5281/zenodo.18442426)
 [![PyPI version](https://badge.fury.io/py/pathway-subtyping.svg)](https://pypi.org/project/pathway-subtyping/)
-[![CI](https://github.com/topmist-admin/pathway-subtyping-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/topmist-admin/pathway-subtyping-framework/actions/workflows/ci.yml)
+[![CI](https://codeberg.org/pathways/pathway-subtyping-framework/badges/workflows/ci.yml/badge.svg)](https://codeberg.org/pathways/pathway-subtyping-framework)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -19,7 +19,7 @@ The **Pathway Subtyping Framework** is an open-source computational tool for ide
 - Identification of biologically coherent patient subgroups
 - Cross-cohort validation of discovered subtypes
 
-Originally developed for [autism research](https://github.com/topmist-admin/autism-pathway-framework), this generalized version can be adapted for any disease with:
+Originally developed for [autism research](https://codeberg.org/pathways/autism-pathway-framework), this generalized version can be adapted for any disease with:
 - Genetic heterogeneity (many implicated genes)
 - Convergent pathway biology
 - Available exome/genome sequencing data
@@ -101,11 +101,17 @@ CyREST API on `localhost:1234`.
 
 ### Try in Browser (No Installation)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/00_quick_demo.ipynb)
-
 **60-second demo** — generates a synthetic cohort, discovers subtypes, validates them, and visualizes results. No data needed.
 
-**Full tutorial**: [01_getting_started.ipynb](https://colab.research.google.com/github/topmist-admin/pathway-subtyping-framework/blob/main/examples/notebooks/01_getting_started.ipynb)
+```bash
+# Clone and run locally
+git clone https://codeberg.org/pathways/pathway-subtyping-framework.git
+cd pathway-subtyping-framework
+pip install -e ".[notebooks,viz]"
+jupyter notebook examples/notebooks/00_quick_demo.ipynb
+```
+
+**Full tutorial**: [01_getting_started.ipynb](examples/notebooks/01_getting_started.ipynb)
 
 ### Notebooks
 
@@ -143,7 +149,7 @@ CyREST API on `localhost:1234`.
 
 ```bash
 # Clone for sample data and configs
-git clone https://github.com/topmist-admin/pathway-subtyping-framework
+git clone https://codeberg.org/pathways/pathway-subtyping-framework.git
 cd pathway-subtyping-framework
 
 # Run the pipeline with synthetic test data
@@ -315,7 +321,7 @@ pre-commit install
 
 ## Related Projects
 
-- **[Autism Pathway Framework](https://github.com/topmist-admin/autism-pathway-framework)** — The original autism-focused implementation with SFARI cohort validation
+- **[Autism Pathway Framework](https://codeberg.org/pathways/autism-pathway-framework)** — The original autism-focused implementation with SFARI cohort validation
 
 ## Contributing
 
@@ -333,7 +339,7 @@ If you use this framework, please cite:
 ```
 Chauhan R. Pathway Subtyping Framework. Zenodo. 2026.
 DOI: 10.5281/zenodo.18442426
-https://github.com/topmist-admin/pathway-subtyping-framework
+https://codeberg.org/pathways/pathway-subtyping-framework
 ```
 
 For autism-specific work, also cite:
@@ -350,7 +356,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 **Rohit Chauhan**
 - Email: info@topmist.com
-- GitHub: [@topmist-admin](https://github.com/topmist-admin)
+- Codeberg: [@pathways](https://codeberg.org/pathways)
 - ORCID: [0009-0003-9895-4629](https://orcid.org/0009-0003-9895-4629)
 
 ---

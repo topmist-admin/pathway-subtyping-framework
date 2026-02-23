@@ -70,7 +70,7 @@ Create a `.zenodo.json` file in the repository root:
   "access_right": "open",
   "related_identifiers": [
     {
-      "identifier": "https://github.com/topmist-admin/pathway-subtyping-framework",
+      "identifier": "https://codeberg.org/pathways/pathway-subtyping-framework",
       "relation": "isSupplementTo",
       "scheme": "url"
     }
@@ -201,8 +201,8 @@ authors:
   - family-names: Chauhan
     given-names: Rohit
     orcid: 'https://orcid.org/0000-0000-0000-0000'
-repository-code: 'https://github.com/topmist-admin/pathway-subtyping-framework'
-url: 'https://github.com/topmist-admin/pathway-subtyping-framework'
+repository-code: 'https://codeberg.org/pathways/pathway-subtyping-framework'
+url: 'https://codeberg.org/pathways/pathway-subtyping-framework'
 license: MIT
 version: 0.1.0
 date-released: '2026-01-29'

@@ -8,10 +8,10 @@ authors:
   - family-names: Chauhan
     given-names: Rohit
     orcid: 'https://orcid.org/0009-0003-9895-4629'
-repository-code: 'https://github.com/topmist-admin/pathway-subtyping-framework'
-url: 'https://github.com/topmist-admin/pathway-subtyping-framework'
+repository-code: 'https://codeberg.org/pathways/pathway-subtyping-framework'
+url: 'https://codeberg.org/pathways/pathway-subtyping-framework'
 license: MIT
-version: 0.3.0
+version: 0.3.1
 date-released: '2026-02-16'
 doi: '10.5281/zenodo.18442426'
 keywords:

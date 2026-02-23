@@ -26,7 +26,7 @@ All publications must acknowledge:
 Data for this study were obtained from [Repository Name] (accession: XXX). 
 We thank the study participants and investigators for contributing data.
 Analysis was performed using the Pathway Subtyping Framework 
-(github.com/topmist-admin/pathway-subtyping-framework). 
+(codeberg.org/pathways/pathway-subtyping-framework). 
 [Additional funding acknowledgments as required]
 ```
 
@@ -112,7 +112,7 @@ The genetic data used in this study are available through
 who agree to the data use terms. Summary statistics and 
 analysis code are available at [GitHub URL]. The Pathway 
 Subtyping Framework is available at 
-github.com/topmist-admin/pathway-subtyping-framework.
+codeberg.org/pathways/pathway-subtyping-framework.
 ```
 
 ### What CAN Be Shared
@@ -231,7 +231,7 @@ Allowed under most DUAs:
   author = {Chauhan, Rohit},
   title = {Pathway Subtyping Framework},
   year = {2026},
-  url = {https://github.com/topmist-admin/pathway-subtyping-framework}
+  url = {https://codeberg.org/pathways/pathway-subtyping-framework}
 }
 ```
 

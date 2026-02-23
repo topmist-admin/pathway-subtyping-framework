@@ -244,8 +244,8 @@ clustering:
 
 ## Getting Help
 
-- **Issues**: https://github.com/topmist-admin/pathway-subtyping-framework/issues
-- **Discussions**: https://github.com/topmist-admin/pathway-subtyping-framework/discussions
+- **Issues**: https://codeberg.org/pathways/pathway-subtyping-framework/issues
+- **Discussions**: https://codeberg.org/pathways/pathway-subtyping-framework/discussions
 - **Email**: info@topmist.com
 
 ---

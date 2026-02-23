@@ -21,7 +21,7 @@ Thank you for your interest in contributing! This document provides guidelines f
 # Fork via GitHub UI, then:
 git clone https://github.com/YOUR_USERNAME/pathway-subtyping-framework
 cd pathway-subtyping-framework
-git remote add upstream https://github.com/topmist-admin/pathway-subtyping-framework
+git remote add upstream https://codeberg.org/pathways/pathway-subtyping-framework
 ```
 
 ### 2. Set Up Development Environment

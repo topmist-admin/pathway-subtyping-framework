@@ -30,7 +30,7 @@ I'm reaching out regarding your work on [specific research area/recent publicati
 - Potential co-authorship on subtype discovery publications
 
 **Try it now:**
-- GitHub: https://github.com/topmist-admin/pathway-subtyping-framework
+- GitHub: https://codeberg.org/pathways/pathway-subtyping-framework
 - Colab demo (no installation): [Colab link]
 
 Would you be interested in a brief call to discuss whether this could be useful for your research? I'm happy to walk through the framework and answer any questions.
