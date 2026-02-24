@@ -328,8 +328,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Citation
 
-If you use this framework, please cite:
+If you use this framework in your research, please cite the preprint:
 
+```
+Chauhan R. Pathway-Based Molecular Subtyping Reveals a GABA-Collapsed Autism Subgroup
+and Cross-Disease Convergence with Schizophrenia in Human Cerebral Cortex.
+Research Square. 2026. DOI: 10.21203/rs.3.rs-8913089/v1
+https://www.researchsquare.com/article/rs-8913089/v1
+```
+
+To cite the software specifically:
 ```
 Chauhan R. Pathway Subtyping Framework. Zenodo. 2026.
 DOI: 10.5281/zenodo.18442426
