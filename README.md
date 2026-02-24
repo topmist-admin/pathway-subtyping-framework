@@ -109,7 +109,7 @@ CyREST API on `localhost:1234`.
 
 ### Notebooks
 
-18 Jupyter notebooks covering tutorials through full manuscript reproduction. See [docs/notebook-guide.md](docs/notebook-guide.md) for execution order and dependencies.
+19 Jupyter notebooks covering tutorials through full manuscript reproduction. See [docs/notebook-guide.md](docs/notebook-guide.md) for execution order and dependencies.
 
 **Tutorials (00-09)** -- Synthetic data, standalone, any order:
 
@@ -126,7 +126,7 @@ CyREST API on `localhost:1234`.
 | 08 | Subtype characterization |
 | 09 | Signaling database integration |
 
-**Real Data Validation (10-16)** -- GEO datasets, run in order (later notebooks use earlier outputs):
+**Real Data Validation (10-17)** -- GEO/TCGA datasets, run in order (later notebooks use earlier outputs):
 
 | # | Dataset | Tissue | N | Manuscript Section |
 |---|---------|--------|---|-------------------|
@@ -138,6 +138,7 @@ CyREST API on `localhost:1234`.
 | 14 | GSE18123 | Blood (largest cohort, 2 platforms) | 285 | Section 6.10 |
 | 15 | GSE53987 | Brain (3 regions, Affymetrix, 4 diagnoses) | 205 | Section 6.11 |
 | 16 | Multi-dataset | Knowledge graph (STRING PPI + DGIdb) | 1,075 | Section 7 |
+| 17 | TCGA-COAD | Colon adenocarcinoma (~450 tumors) | ~450 | Section 7 |
 
 ### Run with Sample Data
 

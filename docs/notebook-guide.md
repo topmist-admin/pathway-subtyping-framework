@@ -1,6 +1,6 @@
 # Notebook Guide
 
-> Complete guide to the 18 analysis notebooks, their execution order, and how outputs flow between them.
+> Complete guide to the 19 analysis notebooks, their execution order, and how outputs flow between them.
 
 ---
 
@@ -37,6 +37,7 @@ These notebooks download real transcriptomics data from NCBI GEO and reproduce t
 | 14 | [geo_blood_large_cohort](examples/notebooks/14_geo_blood_large_cohort.ipynb) | GSE18123 | Blood | 285 | Affymetrix (2 platforms) | **13**, **10** (optional) |
 | 15 | [geo_scz_replication](examples/notebooks/15_geo_scz_replication.ipynb) | GSE53987 | Brain (3 regions) | 205 | Affymetrix microarray | **12** |
 | 16 | [knowledge_graph_analysis](examples/notebooks/16_knowledge_graph_analysis.ipynb) | Multi-dataset | KG (STRING + DGIdb) | 1,075 | Network analysis | **10-15** |
+| 17 | [tcga_cancer_validation](examples/notebooks/17_tcga_cancer_validation.ipynb) | TCGA-COAD | Colon adenocarcinoma | ~450 | RNA-seq (UCSC Xena) | None (standalone) |
 
 ---
 
@@ -69,6 +70,11 @@ Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-16)
                     16: Knowledge Graph Analysis
                     (uses results from 10-15;
                      STRING PPI + DGIdb drug targets)
+
+                    17: TCGA-COAD Cancer Validation
+                    (standalone; UCSC Xena download;
+                     MSigDB Hallmark pathways;
+                     compares to CMS1-4 subtypes)
 ```
 
 **Arrow meaning:** The target notebook loads output files produced by the source notebook. If the source has not been run, the target will skip that analysis section (with a warning) and proceed with available data.
@@ -327,6 +333,43 @@ outputs/knowledge_graph/
 - 20 hub genes (11 cross-disease bridges: AKT1, CTNNB1, GSK3B, PTEN, etc.)
 - 1,546 unique drug candidates across 44 target genes
 - 6 Louvain communities (all cross-disease)
+
+---
+
+### Step 9: Notebook 17 -- TCGA-COAD Cancer Validation
+
+**Standalone notebook** — demonstrates disease-agnostic applicability by applying the framework to colorectal adenocarcinoma from TCGA. Downloads RNA-seq data from UCSC Xena, scores 50 MSigDB Hallmark cancer pathways, discovers molecular subtypes, and compares to the published CMS1-4 consensus subtypes.
+
+**No prior notebooks required.** Can be run independently.
+
+**Requires network access:** UCSC Xena (expression + clinical data), MSigDB Broad Institute server (Hallmark GMT). Results are cached locally after first run.
+
+**Produces:**
+```
+research-results/tcga/
+├── results_summary.json               # Complete metrics (k, silhouette, ARI vs CMS, etc.)
+├── sample_metadata_with_subtypes.csv  # Subtype assignments + all clinical variables
+├── pathway_scores.csv                 # 50 Hallmark pathway scores per sample
+├── gene_expression_processed.csv      # Cleaned RNA-seq matrix (log2 normalized)
+├── pathway_enrichment.csv             # Enriched pathways per subtype (FDR < 0.05)
+├── gene_contributions.csv             # Top genes per subtype (Cohen's d)
+├── subtype_summary.csv                # Subtype profile summary
+├── hallmark_score_distributions.png   # ssGSEA score distributions (top 12 pathways)
+├── model_selection.png                # BIC + silhouette curves for k selection
+├── pca_scatter.png                    # 3-panel PCA: our subtypes / CMS / MSI
+├── pathway_heatmap.png                # Subtype × pathway heatmap (top 25 pathways)
+├── subtype_pathway_heatmap.png        # Characterization pathway heatmap
+├── subtype_gene_heatmap.png           # Top genes per subtype
+├── benchmark_comparison.png           # Pathway-GMM vs NMF/PCA-Kmeans/Gene-Kmeans
+└── cms_msi_comparison.png             # Comparison to CMS1-4 and MSI status
+```
+
+**Key metrics (expected, pending first execution):**
+- ~450 TCGA-COAD primary tumors
+- 50 MSigDB Hallmark gene sets
+- k selected by BIC (expect k=3-5; CMS has 4)
+- ARI vs CMS1-4 (external validation)
+- ARI vs MSI status
 
 ---
 

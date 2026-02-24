@@ -30,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - DGIdb drug repurposing: 1,546 unique drugs targeting 44 hub/core genes
   - 6 Louvain communities (all cross-disease), convergence subnetwork (260 genes)
   - Manuscript-ready network figure, drug overlay, pathway crosstalk heatmap
+- **Notebook 17** (`17_tcga_cancer_validation.ipynb`): TCGA-COAD colorectal cancer subtyping
+  - ~450 primary tumor samples from UCSC Xena (pan-cancer normalized RNA-seq)
+  - 50 MSigDB Hallmark cancer pathway gene sets scored via ssGSEA
+  - BIC-selected GMM subtypes + 3 validation gates + benchmark comparison
+  - External validation: ARI vs CMS1-4 (Guinney 2015) + MSI status comparison
+  - Demonstrates disease-agnostic framework applicability to cancer data
+  - Standalone notebook (no prior notebooks required)
 
 #### Scripts
 - **Cytoscape figure generator** (`scripts/generate_cytoscape_figures.py`): Publication-ready network figures via py4cytoscape
