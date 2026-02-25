@@ -57,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Notebook execution registry (`research-results/NOTEBOOK-EXECUTION-REGISTRY.md`)
 - Updated JOSS paper with all 6 validation datasets (1,075 samples)
 
+### Fixed
+- **Notebook 17 MSI ARI bug:** `adjusted_rand_score([], [])` returned 1.0 when MSI column existed but had 0 valid samples; added `valid_msi.sum() >= 2` guard before ARI computation and `ari_vs_msi is not None` guard on visualization panel
+
 ## [0.3.1] - 2026-02-23
 
 ### Changed
