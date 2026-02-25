@@ -37,14 +37,14 @@ These notebooks download real transcriptomics data from NCBI GEO and reproduce t
 | 14 | [geo_blood_large_cohort](examples/notebooks/14_geo_blood_large_cohort.ipynb) | GSE18123 | Blood | 285 | Affymetrix (2 platforms) | **13**, **10** (optional) |
 | 15 | [geo_scz_replication](examples/notebooks/15_geo_scz_replication.ipynb) | GSE53987 | Brain (3 regions) | 205 | Affymetrix microarray | **12** |
 | 16 | [knowledge_graph_analysis](examples/notebooks/16_knowledge_graph_analysis.ipynb) | Multi-dataset | KG (STRING + DGIdb) | 1,075 | Network analysis | **10-15** |
-| 17 | [tcga_cancer_validation](examples/notebooks/17_tcga_cancer_validation.ipynb) | TCGA-COAD | Colon adenocarcinoma | ~450 | RNA-seq (UCSC Xena) | None (standalone) |
+| 17 | [tcga_cancer_validation](examples/notebooks/17_tcga_cancer_validation.ipynb) | TCGA-COAD | Colon adenocarcinoma | 452 | RNA-seq (NCI GDC API) | None (standalone) |
 
 ---
 
 ## Dependency Diagram
 
 ```
-Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-16)
+Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-17)
   All standalone                   Must follow arrows
   Any order                        ─────────────────────
 
@@ -72,9 +72,9 @@ Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-16)
                      STRING PPI + DGIdb drug targets)
 
                     17: TCGA-COAD Cancer Validation
-                    (standalone; UCSC Xena download;
+                    (standalone; NCI GDC API download;
                      MSigDB Hallmark pathways;
-                     compares to CMS1-4 subtypes)
+                     CMS validation via NTP classifier)
 ```
 
 **Arrow meaning:** The target notebook loads output files produced by the source notebook. If the source has not been run, the target will skip that analysis section (with a warning) and proceed with available data.
@@ -338,22 +338,23 @@ outputs/knowledge_graph/
 
 ### Step 9: Notebook 17 -- TCGA-COAD Cancer Validation
 
-**Standalone notebook** — demonstrates disease-agnostic applicability by applying the framework to colorectal adenocarcinoma from TCGA. Downloads RNA-seq data from UCSC Xena, scores 50 MSigDB Hallmark cancer pathways, discovers molecular subtypes, and compares to the published CMS1-4 consensus subtypes.
+**Standalone notebook** — demonstrates disease-agnostic applicability by applying the framework to colorectal adenocarcinoma from TCGA. Downloads RNA-seq data from NCI GDC REST API, scores 50 MSigDB Hallmark cancer pathways, discovers molecular subtypes, and validates against CMS1-4 using a pure Python NTP classifier.
 
 **No prior notebooks required.** Can be run independently.
 
-**Requires network access:** UCSC Xena (expression + clinical data), MSigDB Broad Institute server (Hallmark GMT). Results are cached locally after first run.
+**Requires network access:** NCI GDC REST API (expression + clinical data), MSigDB Broad Institute server (Hallmark GMT). Results are cached locally after first run.
 
 **Produces:**
 ```
 research-results/tcga/
-├── results_summary.json               # Complete metrics (k, silhouette, ARI vs CMS, etc.)
+├── results_summary.json               # Complete metrics (k, silhouette, CMS ARI, etc.)
 ├── sample_metadata_with_subtypes.csv  # Subtype assignments + all clinical variables
 ├── pathway_scores.csv                 # 50 Hallmark pathway scores per sample
-├── gene_expression_processed.csv      # Cleaned RNA-seq matrix (log2 normalized)
+├── gene_expression_processed.csv      # Cleaned RNA-seq matrix (log2 TPM+1)
 ├── pathway_enrichment.csv             # Enriched pathways per subtype (FDR < 0.05)
 ├── gene_contributions.csv             # Top genes per subtype (Cohen's d)
 ├── subtype_summary.csv                # Subtype profile summary
+├── cms_ntp_results.csv                # CMS predictions (NTP, per-sample FDR)
 ├── hallmark_score_distributions.png   # ssGSEA score distributions (top 12 pathways)
 ├── model_selection.png                # BIC + silhouette curves for k selection
 ├── pca_scatter.png                    # 3-panel PCA: our subtypes / CMS / MSI
@@ -361,15 +362,18 @@ research-results/tcga/
 ├── subtype_pathway_heatmap.png        # Characterization pathway heatmap
 ├── subtype_gene_heatmap.png           # Top genes per subtype
 ├── benchmark_comparison.png           # Pathway-GMM vs NMF/PCA-Kmeans/Gene-Kmeans
-└── cms_msi_comparison.png             # Comparison to CMS1-4 and MSI status
+├── cms_msi_comparison.png             # Comparison to CMS1-4 and MSI status
+└── cms_validation_heatmap.png         # CMS NTP validation contingency heatmap
 ```
 
-**Key metrics (expected, pending first execution):**
-- ~450 TCGA-COAD primary tumors
-- 50 MSigDB Hallmark gene sets
-- k selected by BIC (expect k=3-5; CMS has 4)
-- ARI vs CMS1-4 (external validation)
-- ARI vs MSI status
+**Key results:**
+- 452 TCGA-COAD primary tumors (6 TCGA-A6 batch outliers removed)
+- 50 MSigDB Hallmark gene sets, k=3 (forced after degenerate BIC k=2)
+- Subtype 0 (19%): Stromal/EMT → CMS4 at 76% (Fisher OR=16.7, p=1.4e-25)
+- Subtype 1 (29%): Immune-cold → CMS2 at 60%
+- Subtype 2 (52%): Proliferative/Metabolic → spread across CMS1-3
+- CMS classification rate: 436/452 (96.5%, FDR ≤ 0.05)
+- Benchmark: pathway_gmm wins; 2/3 validation gates pass
 
 ---
 
@@ -398,7 +402,7 @@ Click the badge above (or any Binder link in the notebook tables) to launch a no
 | 08 | [characterization](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F08_characterization.ipynb) |
 | 09 | [signaling_databases](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F09_signaling_databases.ipynb) |
 
-> **Note:** Tier 2 notebooks (10-16) require GEO data downloads and 4-6 GB RAM, which may exceed Binder's free resource limits. Run those locally (Option B).
+> **Note:** Tier 2 notebooks (10-17) require GEO/GDC data downloads and 4-6 GB RAM, which may exceed Binder's free resource limits. Run those locally (Option B).
 
 ### Option B: Local Execution
 
@@ -484,6 +488,8 @@ Each Tier 2 notebook corresponds to a section in the manuscript:
 | 13 | Section 6.10 (Blood Validation) | ADOS-pathway correlation |
 | 14 | Section 6.10 (Blood Validation) | Cross-cohort replication ARI = 0.374 |
 | 15 | Section 6.11 (SCZ Replication) | Cross-platform ARI = 0.319, cross-disease ARI = 0.792 |
+| 16 | Section 7 (Knowledge Graph) | 20 hub genes, 1,546 drug candidates, 6 cross-disease communities |
+| 17 | Section 7 (Cancer Validation) | CMS4 recovery at 76% (Fisher p=1.4e-25), disease-agnostic |
 
 ---
 

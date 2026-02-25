@@ -138,7 +138,7 @@ CyREST API on `localhost:1234`.
 | 14 | GSE18123 | Blood (largest cohort, 2 platforms) | 285 | Section 6.10 |
 | 15 | GSE53987 | Brain (3 regions, Affymetrix, 4 diagnoses) | 205 | Section 6.11 |
 | 16 | Multi-dataset | Knowledge graph (STRING PPI + DGIdb) | 1,075 | Section 7 |
-| 17 | TCGA-COAD | Colon adenocarcinoma (~450 tumors) | ~450 | Section 7 |
+| 17 | TCGA-COAD | Colon adenocarcinoma (452 tumors, CMS validated) | 452 | Section 7 |
 
 ### Run with Sample Data
 

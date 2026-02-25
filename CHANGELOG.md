@@ -31,10 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 6 Louvain communities (all cross-disease), convergence subnetwork (260 genes)
   - Manuscript-ready network figure, drug overlay, pathway crosstalk heatmap
 - **Notebook 17** (`17_tcga_cancer_validation.ipynb`): TCGA-COAD colorectal cancer subtyping
-  - ~450 primary tumor samples from UCSC Xena (pan-cancer normalized RNA-seq)
+  - 452 primary tumor samples from NCI GDC REST API (STAR Counts, TPM)
   - 50 MSigDB Hallmark cancer pathway gene sets scored via ssGSEA
-  - BIC-selected GMM subtypes + 3 validation gates + benchmark comparison
-  - External validation: ARI vs CMS1-4 (Guinney 2015) + MSI status comparison
+  - k=3 subtypes: Stromal/EMT (19%), Immune-cold (29%), Proliferative/Metabolic (52%)
+  - CMS external validation via pure Python NTP classifier (482 CMScaller marker genes)
+    - Subtype 0 → CMS4 at 76% (Fisher OR=16.7, p=1.4e-25)
+    - 436/452 classified (96.5%, FDR ≤ 0.05), global ARI=0.10 (k=3 vs k=4 mismatch)
+  - Benchmark: pathway_gmm wins, 2/3 validation gates pass
   - Demonstrates disease-agnostic framework applicability to cancer data
   - Standalone notebook (no prior notebooks required)
 

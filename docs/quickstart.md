@@ -282,7 +282,7 @@ See the [Single-Cell API Reference](api/single_cell.md) for full documentation.
 
 | Resource | Description |
 |----------|-------------|
-| [Notebook Guide](notebook-guide.md) | 16 tutorials from quick demo to real GEO dataset analysis, with execution order and dependency map |
+| [Notebook Guide](notebook-guide.md) | 19 notebooks from quick demo to real GEO/TCGA dataset analysis, with execution order and dependency map |
 | [Adapting for Your Disease](guides/adapting-for-your-disease.md) | Customize pathways for your condition |
 | [Validation Gates Guide](guides/validation-gates.md) | Understanding validation results |
 | [Single-Cell API](api/single_cell.md) | Single-cell pathway scoring |
