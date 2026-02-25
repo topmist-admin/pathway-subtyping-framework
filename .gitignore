@@ -113,8 +113,9 @@ claude-results.md
 VULNERABILITY-MITIGATION-PLAN.md
 NOTEBOOK-*-IMPLEMENTATION-PLAN.md
 
-# Cached GEO data downloads
-examples/notebooks/data/
+# Cached GEO data downloads (except small reference files)
+examples/notebooks/data/*
+!examples/notebooks/data/cms_ntp_templates.csv
 
 # Research results (generated from Colab notebook runs)
 research-results/
