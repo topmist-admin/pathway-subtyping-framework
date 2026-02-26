@@ -200,6 +200,117 @@ class TestModelSelection:
         assert "bic_values" in d
 
 
+class TestMinClusterFraction:
+    """Tests for min_cluster_fraction guard in select_n_clusters."""
+
+    def test_no_guard_by_default(self, clustered_data):
+        """Test that guard is not applied when min_cluster_fraction is None."""
+        data, _ = clustered_data
+        result = select_n_clusters(data, k_range=[2, 3, 4], seed=42)
+        assert result.min_cluster_fraction is None
+        assert result.rejected_k == {}
+
+    def test_balanced_clusters_pass_guard(self, clustered_data):
+        """Test that balanced clusters are not rejected."""
+        data, _ = clustered_data  # 3 clusters of 30 each = 33% each
+        result = select_n_clusters(data, k_range=[2, 3, 4], seed=42, min_cluster_fraction=0.05)
+        # k=3 should not be rejected (3 balanced clusters of ~33%)
+        assert 3 not in result.rejected_k
+
+    def test_degenerate_split_rejected(self):
+        """Test that a degenerate split (e.g. 452:6) is rejected.
+
+        Simulates the TCGA-COAD scenario where BIC-optimal k=2
+        produced a 452:6 split (1.3% < 5% threshold).
+        """
+        np.random.seed(42)
+        # Large main cluster + tiny outlier cluster
+        main = np.random.normal([0, 0, 0], 0.5, (95, 3))
+        outlier = np.random.normal([10, 10, 10], 0.1, (5, 3))
+        data = np.vstack([main, outlier])
+
+        result = select_n_clusters(data, k_range=[2, 3, 4], seed=42, min_cluster_fraction=0.10)
+        # k=2 should be rejected if it finds the 95:5 split (5% < 10%)
+        # The optimal_k should be from non-rejected candidates
+        assert result.min_cluster_fraction == 0.10
+
+    def test_rejected_k_in_result(self):
+        """Test that rejected k values are recorded with reasons."""
+        np.random.seed(42)
+        main = np.random.normal([0, 0, 0], 0.5, (95, 3))
+        outlier = np.random.normal([10, 10, 10], 0.1, (5, 3))
+        data = np.vstack([main, outlier])
+
+        result = select_n_clusters(data, k_range=[2, 3, 4, 5], seed=42, min_cluster_fraction=0.10)
+        # At least some k values should be rejected with the outlier structure
+        # Check that any rejected entries have descriptive reasons
+        for k, reason in result.rejected_k.items():
+            assert "smallest cluster" in reason
+            assert "samples" in reason
+
+    def test_rejected_k_excluded_from_scores(self):
+        """Test that rejected k values don't appear in BIC/silhouette dicts."""
+        np.random.seed(42)
+        main = np.random.normal([0, 0, 0], 0.5, (95, 3))
+        outlier = np.random.normal([10, 10, 10], 0.1, (5, 3))
+        data = np.vstack([main, outlier])
+
+        result = select_n_clusters(data, k_range=[2, 3, 4], seed=42, min_cluster_fraction=0.10)
+        for k in result.rejected_k:
+            assert k not in result.bic_values
+            assert k not in result.silhouette_values
+
+    def test_to_dict_includes_guard_metadata(self):
+        """Test serialization includes guard fields."""
+        np.random.seed(42)
+        data = np.random.randn(100, 5)
+        result = select_n_clusters(data, k_range=[2, 3], seed=42, min_cluster_fraction=0.05)
+        d = result.to_dict()
+        assert "min_cluster_fraction" in d
+        assert d["min_cluster_fraction"] == 0.05
+
+    def test_to_dict_omits_guard_when_none(self, clustered_data):
+        """Test serialization omits guard fields when not used."""
+        data, _ = clustered_data
+        result = select_n_clusters(data, k_range=[2, 3], seed=42)
+        d = result.to_dict()
+        assert "min_cluster_fraction" not in d
+        assert "rejected_k" not in d
+
+    def test_all_k_rejected_falls_back(self):
+        """Test fallback when all k values are rejected."""
+        np.random.seed(42)
+        # Two tight, very uneven clusters — most k will be degenerate
+        main = np.random.normal([0, 0], 0.3, (97, 2))
+        outlier = np.random.normal([8, 8], 0.1, (3, 2))
+        data = np.vstack([main, outlier])
+
+        result = select_n_clusters(data, k_range=[2, 3], seed=42, min_cluster_fraction=0.20)
+        # Should still return a valid result (falls back to k_range[0])
+        assert isinstance(result, ModelSelectionResult)
+        assert result.optimal_k in [2, 3]
+
+    def test_invalid_fraction_raises(self, clustered_data):
+        """Test that invalid fraction values raise ValueError."""
+        data, _ = clustered_data
+        with pytest.raises(ValueError, match="between 0 and 1"):
+            select_n_clusters(data, k_range=[2, 3], min_cluster_fraction=0.0)
+        with pytest.raises(ValueError, match="between 0 and 1"):
+            select_n_clusters(data, k_range=[2, 3], min_cluster_fraction=1.0)
+        with pytest.raises(ValueError, match="between 0 and 1"):
+            select_n_clusters(data, k_range=[2, 3], min_cluster_fraction=-0.1)
+        with pytest.raises(ValueError, match="between 0 and 1"):
+            select_n_clusters(data, k_range=[2, 3], min_cluster_fraction=1.5)
+
+    def test_backward_compatible(self, clustered_data):
+        """Test that existing calls without min_cluster_fraction still work."""
+        data, _ = clustered_data
+        # These mirror the existing TestModelSelection tests
+        result = select_n_clusters(data, k_range=[2, 3, 4, 5], method="bic", seed=42)
+        assert result.optimal_k == 3
+        assert result.rejected_k == {}
+
+
 class TestCrossValidation:
     """Tests for cross-validation."""
 

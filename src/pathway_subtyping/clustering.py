@@ -279,15 +279,22 @@ class ModelSelectionResult:
     bic_values: Dict[int, float] = field(default_factory=dict)
     silhouette_values: Dict[int, float] = field(default_factory=dict)
     method: str = "bic"
+    rejected_k: Dict[int, str] = field(default_factory=dict)
+    min_cluster_fraction: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        d = {
             "optimal_k": self.optimal_k,
             "k_range": self.k_range,
             "method": self.method,
             "bic_values": {str(k): round(v, 2) for k, v in self.bic_values.items()},
             "silhouette_values": {str(k): round(v, 4) for k, v in self.silhouette_values.items()},
         }
+        if self.rejected_k:
+            d["rejected_k"] = {str(k): reason for k, reason in self.rejected_k.items()}
+        if self.min_cluster_fraction is not None:
+            d["min_cluster_fraction"] = self.min_cluster_fraction
+        return d
 
 
 def select_n_clusters(
@@ -295,6 +302,7 @@ def select_n_clusters(
     k_range: List[int] = None,
     method: str = "bic",
     seed: Optional[int] = None,
+    min_cluster_fraction: Optional[float] = None,
 ) -> ModelSelectionResult:
     """
     Select optimal number of clusters.
@@ -304,6 +312,10 @@ def select_n_clusters(
         k_range: Range of k values to test (default: [2, 8])
         method: Selection method ("bic" or "silhouette")
         seed: Random seed
+        min_cluster_fraction: Minimum fraction of samples in any cluster
+            (e.g. 0.05 means every cluster must contain at least 5% of
+            samples). Values of k that produce a cluster below this
+            threshold are rejected. If None, no guard is applied.
 
     Returns:
         ModelSelectionResult with optimal k and scores
@@ -311,23 +323,54 @@ def select_n_clusters(
     if k_range is None:
         k_range = list(range(2, 9))
 
+    if min_cluster_fraction is not None:
+        if not 0.0 < min_cluster_fraction < 1.0:
+            raise ValueError(
+                f"min_cluster_fraction must be between 0 and 1 exclusive, "
+                f"got {min_cluster_fraction}"
+            )
+
+    n_samples = data.shape[0]
     bic_values = {}
     silhouette_values = {}
+    rejected_k: Dict[int, str] = {}
 
     for k in k_range:
         result = run_clustering(data, k, ClusteringAlgorithm.GMM, seed)
+
+        # Check min_cluster_fraction guard
+        if min_cluster_fraction is not None:
+            cluster_sizes = np.bincount(result.labels)
+            min_size = cluster_sizes.min()
+            min_frac = min_size / n_samples
+            if min_frac < min_cluster_fraction:
+                reason = (
+                    f"smallest cluster has {min_size}/{n_samples} samples "
+                    f"({min_frac:.1%} < {min_cluster_fraction:.1%})"
+                )
+                rejected_k[k] = reason
+                logger.info("[Clustering] k=%d rejected: %s", k, reason)
+                continue
 
         if result.bic is not None:
             bic_values[k] = result.bic
         silhouette_values[k] = result.silhouette
 
-    # Select optimal k
+    # Select optimal k from non-rejected candidates
     if method == "bic" and bic_values:
         optimal_k = min(bic_values, key=bic_values.get)
     elif silhouette_values:
         optimal_k = max(silhouette_values, key=silhouette_values.get)
     else:
+        # All k values rejected or no valid scores — fall back to smallest k
         optimal_k = k_range[0]
+        if rejected_k:
+            logger.warning(
+                "[Clustering] All k values rejected by min_cluster_fraction="
+                "%s. Falling back to k=%d without guard.",
+                min_cluster_fraction,
+                optimal_k,
+            )
 
     return ModelSelectionResult(
         optimal_k=optimal_k,
@@ -335,6 +378,8 @@ def select_n_clusters(
         bic_values=bic_values,
         silhouette_values=silhouette_values,
         method=method,
+        rejected_k=rejected_k,
+        min_cluster_fraction=min_cluster_fraction,
     )
 
 
