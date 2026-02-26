@@ -99,6 +99,34 @@ from .expression import (
     load_expression_matrix,
     score_pathways_from_expression,
 )
+
+# Knowledge graph (requires [graph] extra)
+try:
+    from .knowledge_graph import (  # noqa: F401
+        EDGE_TYPE_METADATA,
+        Edge,
+        EdgeType,
+        GraphSchema,
+        KnowledgeGraph,
+        KnowledgeGraphBuilder,
+        KnowledgeGraphStats,
+        Node,
+        NodeFeatures,
+        NodeMapping,
+        NodeType,
+        PPINetwork,
+        create_node_mapping,
+        load_ppi_from_file,
+        to_adjacency_matrix,
+        to_csv,
+        to_dgl,
+        to_edge_list,
+        to_neo4j_cypher,
+        to_pyg,
+    )
+except ImportError:
+    pass  # networkx not installed; knowledge_graph module unavailable
+
 from .multi_omic import (
     FusionStrategy,
     MissingStrategy,
@@ -111,6 +139,13 @@ from .multi_omic import (
     correlation_analysis,
     fuse_modalities,
     prepare_modality,
+)
+from .network_propagation import (
+    NetworkPropagator,
+    PropagationConfig,
+    PropagationMethod,
+    PropagationResult,
+    propagate_network_scores,
 )
 from .pipeline import DemoPipeline, PipelineConfig
 from .sensitivity import (
@@ -378,6 +413,33 @@ __all__ = [
     "calibrate_thresholds",
     "generate_calibration_table",
     "get_default_thresholds",
+    # Knowledge graph (requires [graph] extra)
+    "EDGE_TYPE_METADATA",
+    "Edge",
+    "EdgeType",
+    "GraphSchema",
+    "KnowledgeGraph",
+    "KnowledgeGraphBuilder",
+    "KnowledgeGraphStats",
+    "Node",
+    "NodeFeatures",
+    "NodeMapping",
+    "NodeType",
+    "PPINetwork",
+    "create_node_mapping",
+    "load_ppi_from_file",
+    "to_adjacency_matrix",
+    "to_csv",
+    "to_dgl",
+    "to_edge_list",
+    "to_neo4j_cypher",
+    "to_pyg",
+    # Network propagation
+    "NetworkPropagator",
+    "PropagationConfig",
+    "PropagationMethod",
+    "PropagationResult",
+    "propagate_network_scores",
     # Multi-omic fusion
     "FusionStrategy",
     "MissingStrategy",
