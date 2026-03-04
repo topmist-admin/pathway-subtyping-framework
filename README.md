@@ -8,6 +8,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![RRID:SCR_028051](https://img.shields.io/badge/RRID-SCR__028051-blue.svg)](https://scicrunch.org/resolver/RRID:SCR_028051)
 
 ---
 
@@ -109,7 +110,7 @@ CyREST API on `localhost:1234`.
 
 ### Notebooks
 
-19 Jupyter notebooks covering tutorials through full manuscript reproduction. See [docs/notebook-guide.md](docs/notebook-guide.md) for execution order and dependencies.
+21 Jupyter notebooks covering tutorials through full manuscript reproduction. See [docs/notebook-guide.md](docs/notebook-guide.md) for execution order and dependencies.
 
 **Tutorials (00-09)** -- Synthetic data, standalone, any order:
 
@@ -126,7 +127,7 @@ CyREST API on `localhost:1234`.
 | 08 | Subtype characterization |
 | 09 | Signaling database integration |
 
-**Real Data Validation (10-17)** -- GEO/TCGA datasets, run in order (later notebooks use earlier outputs):
+**Real Data Validation (10-19)** -- GEO/TCGA datasets, run in order (later notebooks use earlier outputs):
 
 | # | Dataset | Tissue | N | Manuscript Section |
 |---|---------|--------|---|-------------------|
@@ -138,7 +139,9 @@ CyREST API on `localhost:1234`.
 | 14 | GSE18123 | Blood (largest cohort, 2 platforms) | 285 | Section 6.10 |
 | 15 | GSE53987 | Brain (3 regions, Affymetrix, 4 diagnoses) | 205 | Section 6.11 |
 | 16 | Multi-dataset | Knowledge graph (STRING PPI + DGIdb) | 1,075 | Section 7 |
-| 17 | TCGA-COAD | Colon adenocarcinoma (452 tumors, CMS validated) | 452 | Section 7 |
+| 17 | TCGA-COAD | Colon adenocarcinoma (452 tumors, CMS + survival) | 452 | Section 7 |
+| 18 | GSE15402 | LCL (ADI-R clinical phenotype) | 116 | Section 6.10 |
+| 19 | Multi-GEO | SCZ blood multi-cohort (Hertzberg replication) | 407 | Section 6.11 |
 
 ### Run with Sample Data
 
@@ -167,14 +170,18 @@ psf --config configs/my_analysis.yaml
 ### Docker
 
 ```bash
-# Run pipeline
-docker-compose run pipeline
+# Pull from Docker Hub
+docker pull rohitdataops/pathway-subtyping:latest        # CLI runtime
+docker pull rohitdataops/pathway-subtyping:0.3.1-jupyter  # Jupyter + notebooks
 
-# Run tests
-docker-compose run test
+# Run pipeline
+docker compose run pipeline
+
+# Run tests (1003 tests)
+docker compose run test
 
 # Start Jupyter notebook
-docker-compose up jupyter
+docker compose up jupyter
 # Open http://localhost:8888
 ```
 
@@ -291,7 +298,7 @@ pathway-subtyping-framework/
 │   ├── validate_with_public_data.py   # ClinVar/Reactome validation
 │   └── benchmark_performance.py       # Performance benchmarks
 ├── examples/notebooks/          # Jupyter tutorials
-├── tests/                       # Test suite (968+ tests)
+├── tests/                       # Test suite (1003 tests)
 ├── Dockerfile                   # Container support
 └── docker-compose.yml           # Easy orchestration
 ```

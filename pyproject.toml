@@ -103,6 +103,9 @@ Documentation = "https://codeberg.org/pathways/pathway-subtyping-framework#readm
 Repository = "https://codeberg.org/pathways/pathway-subtyping-framework.git"
 Issues = "https://codeberg.org/pathways/pathway-subtyping-framework/issues"
 Changelog = "https://codeberg.org/pathways/pathway-subtyping-framework/releases"
+RRID = "https://scicrunch.org/resolver/RRID:SCR_028051"
+Docker = "https://hub.docker.com/r/rohitdataops/pathway-subtyping"
+"bio.tools" = "https://bio.tools/pathway-subtyping"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

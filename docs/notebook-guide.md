@@ -1,6 +1,6 @@
 # Notebook Guide
 
-> Complete guide to the 19 analysis notebooks, their execution order, and how outputs flow between them.
+> Complete guide to the 21 analysis notebooks (00-19 + 12b), their execution order, and how outputs flow between them.
 
 ---
 
@@ -38,6 +38,8 @@ These notebooks download real transcriptomics data from NCBI GEO and reproduce t
 | 15 | [geo_scz_replication](examples/notebooks/15_geo_scz_replication.ipynb) | GSE53987 | Brain (3 regions) | 205 | Affymetrix microarray | **12** |
 | 16 | [knowledge_graph_analysis](examples/notebooks/16_knowledge_graph_analysis.ipynb) | Multi-dataset | KG (STRING + DGIdb) | 1,075 | Network analysis | **10-15** |
 | 17 | [tcga_cancer_validation](examples/notebooks/17_tcga_cancer_validation.ipynb) | TCGA-COAD | Colon adenocarcinoma | 452 | RNA-seq (NCI GDC API) | None (standalone) |
+| 18 | [geo_clinical_phenotype](examples/notebooks/18_geo_clinical_phenotype.ipynb) | GSE15402 | LCL (lymphoblastoid) | 116 | TIGR 40K two-channel | None (standalone) |
+| 19 | [scz_blood_multi_cohort](examples/notebooks/19_scz_blood_multi_cohort.ipynb) | Multi-GEO (5) | Blood (SCZ) | 407 | Multi-platform | None (standalone) |
 
 ---
 
@@ -74,7 +76,15 @@ Tier 1 (Tutorials 00-09)          Tier 2 (Real Data 10-17)
                     17: TCGA-COAD Cancer Validation
                     (standalone; NCI GDC API download;
                      MSigDB Hallmark pathways;
-                     CMS validation via NTP classifier)
+                     CMS validation + survival analysis)
+
+                    18: GSE15402 Clinical Phenotype
+                    (standalone; ADI-R severity subgroups;
+                     TIGR 40K EST microarray)
+
+                    19: SCZ Blood Multi-Cohort
+                    (standalone; 5 GEO datasets;
+                     Hertzberg replication)
 ```
 
 **Arrow meaning:** The target notebook loads output files produced by the source notebook. If the source has not been run, the target will skip that analysis section (with a warning) and proceed with available data.
@@ -374,6 +384,62 @@ research-results/tcga/
 - Subtype 2 (52%): Proliferative/Metabolic → spread across CMS1-3
 - CMS classification rate: 436/452 (96.5%, FDR ≤ 0.05)
 - Benchmark: pathway_gmm wins; 2/3 validation gates pass
+- Survival analysis: Kaplan-Meier curves, log-rank test, Cox PH regression
+
+---
+
+### Step 10: Notebook 18 -- GSE15402 Clinical Phenotype Validation
+
+**Standalone notebook** — validates whether pathway-derived subtypes correlate with ADI-R clinical severity subgroups in lymphoblastoid cell lines.
+
+**No prior notebooks required.** Can be run independently.
+
+**Requires network access:** NCBI GEO (GSE15402 download), MyGene.info (probe-to-gene mapping).
+
+**Produces:**
+```
+outputs/gse15402/
+├── results_summary.json
+├── pathway_scores_matrix.csv
+├── sample_metadata_with_subtypes.csv
+├── subtypes_vs_adi_r.png
+└── ... (additional figures and CSVs)
+```
+
+**Key results:**
+- 116 LCL samples (87 ASD, 29 controls), TIGR 40K platform (532 genes mapped)
+- k=6 subtypes, silhouette=0.057, 2/3 validation gates pass
+- ADI-R subgroup association: chi-square p=0.001
+- S5→L subgroup OR=13.2 (raw p=0.008)
+
+---
+
+### Step 11: Notebook 19 -- SCZ Blood Multi-Cohort (Hertzberg Replication)
+
+**Standalone notebook** — applies PSF to 5 schizophrenia blood GEO datasets for multi-cohort validation and Hertzberg concordance mapping.
+
+**No prior notebooks required.** Can be run independently.
+
+**Requires network access:** NCBI GEO (5 datasets: GSE38484, GSE27383, GSE38481, GSE18312, GSE48072).
+
+**Produces:**
+```
+outputs/scz_blood_multi_cohort/
+├── results_summary.json
+├── merged_pathway_scores.csv
+├── merged_metadata_with_subtypes.csv
+├── cross_cohort_projection_results.json
+├── hertzberg_concordance.json
+├── per-dataset figures and CSVs
+└── ... (20 output files total)
+```
+
+**Key results:**
+- 407 total samples (177 SCZ) across 5 GEO datasets, 5 microarray platforms
+- Per-dataset subtyping: k=2-4, silhouette 0.10-0.25
+- Merged analysis (177 SCZ): k=7, silhouette=0.088, 2/3 gates
+- Cross-cohort projection: mean ARI=0.205 (GSE38484→GSE18312 ARI=0.469 PASS)
+- Hertzberg concordance: 4 Immune-like (A) + 3 Neuro-like (B) subtypes
 
 ---
 
@@ -402,7 +468,7 @@ Click the badge above (or any Binder link in the notebook tables) to launch a no
 | 08 | [characterization](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F08_characterization.ipynb) |
 | 09 | [signaling_databases](https://mybinder.org/v2/git/https%3A%2F%2Fcodeberg.org%2Fpathways%2Fpathway-subtyping-framework.git/main?labpath=examples%2Fnotebooks%2F09_signaling_databases.ipynb) |
 
-> **Note:** Tier 2 notebooks (10-17) require GEO/GDC data downloads and 4-6 GB RAM, which may exceed Binder's free resource limits. Run those locally (Option B).
+> **Note:** Tier 2 notebooks (10-19) require GEO/GDC data downloads and 4-6 GB RAM, which may exceed Binder's free resource limits. Run those locally (Option B) or via Docker (Option D).
 
 ### Option B: Local Execution
 
@@ -428,6 +494,22 @@ jupyter notebook examples/notebooks/
 ### Option C: VS Code
 
 Open any `.ipynb` file in VS Code. Select the `pathwayenv` kernel. Run cells interactively.
+
+### Option D: Docker
+
+```bash
+# Pull the Jupyter image with all dependencies
+docker pull rohitdataops/pathway-subtyping:0.3.1-jupyter
+
+# Launch Jupyter server
+docker run -p 8888:8888 \
+  -v $(pwd)/examples/notebooks:/home/psf/examples/notebooks \
+  rohitdataops/pathway-subtyping:0.3.1-jupyter
+
+# Or use docker compose
+docker compose up jupyter
+# Open http://localhost:8888
+```
 
 ---
 
@@ -489,7 +571,9 @@ Each Tier 2 notebook corresponds to a section in the manuscript:
 | 14 | Section 6.10 (Blood Validation) | Cross-cohort replication ARI = 0.374 |
 | 15 | Section 6.11 (SCZ Replication) | Cross-platform ARI = 0.319, cross-disease ARI = 0.792 |
 | 16 | Section 7 (Knowledge Graph) | 20 hub genes, 1,546 drug candidates, 6 cross-disease communities |
-| 17 | Section 7 (Cancer Validation) | CMS4 recovery at 76% (Fisher p=1.4e-25), disease-agnostic |
+| 17 | Section 7 (Cancer Validation) | CMS4 recovery at 76% (Fisher p=1.4e-25), survival analysis |
+| 18 | Section 6.10 (Clinical Validation) | ADI-R subgroup association chi-sq p=0.001 |
+| 19 | Section 6.11 (SCZ Replication) | Multi-cohort SCZ blood, Hertzberg concordance |
 
 ---
 
@@ -536,4 +620,4 @@ This means every notebook can run independently -- cross-references are optional
 
 ---
 
-*Last updated: February 2026*
+*Last updated: March 2026*

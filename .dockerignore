@@ -51,3 +51,21 @@ Thumbs.db
 *.vcf.gz
 *.bam
 *.bai
+*.bundle
+*.tar.gz
+
+# Cached GEO downloads and notebook outputs (large)
+examples/notebooks/data/
+examples/notebooks/outputs/
+
+# Research artifacts (not needed in container)
+research-results/
+manuscripts/
+codeberg-issues/
+AIForAutismOutReach/
+
+# Plan and session files
+claude-session.md
+.claude/
+TODO-*.md
+*-PLAN.md

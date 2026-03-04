@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 141 blood leukocyte samples (28 ASD, 113 control), Illumina BeadChip
   - Pathway subtypes detectable in peripheral tissue
   - Synaptic transmission correlates with ADOS Social Affect (rho=-0.52, FDR p=0.032)
+  - ADOS severity stratification (Section 10b): chi-square, Fisher exact, ARI, contingency heatmap
 - **Notebook 14** (`14_geo_blood_large_cohort.ipynb`): GSE18123 large blood cohort validation
   - 285 blood samples (72 ASD, 213 control) across two Affymetrix platforms
   - Cross-cohort projection from GSE111175 achieves ARI=0.374 (exceeds 0.3 threshold)
@@ -37,9 +38,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CMS external validation via pure Python NTP classifier (482 CMScaller marker genes)
     - Subtype 0 → CMS4 at 76% (Fisher OR=16.7, p=1.4e-25)
     - 436/452 classified (96.5%, FDR ≤ 0.05), global ARI=0.10 (k=3 vs k=4 mismatch)
+  - Survival analysis: Kaplan-Meier curves, log-rank test, Cox PH regression
+  - k=4 sensitivity analysis: global ARI worsened to 0.082, k=3 confirmed as primary
   - Benchmark: pathway_gmm wins, 2/3 validation gates pass
   - Demonstrates disease-agnostic framework applicability to cancer data
   - Standalone notebook (no prior notebooks required)
+- **Notebook 18** (`18_geo_clinical_phenotype.ipynb`): GSE15402 clinical phenotype validation
+  - 116 lymphoblastoid cell lines (87 ASD, 29 controls), TIGR 40K platform
+  - ADI-R severity subgroup association: chi-square p=0.001
+  - S5→L subgroup OR=13.2 (raw p=0.008)
+- **Notebook 19** (`19_scz_blood_multi_cohort.ipynb`): SCZ blood multi-cohort Hertzberg replication
+  - 407 total samples (177 SCZ) across 5 GEO datasets, 5 microarray platforms
+  - Per-dataset subtyping + merged analysis: k=7, silhouette=0.088, 2/3 gates
+  - Cross-cohort projection: mean ARI=0.205 (GSE38484→GSE18312 ARI=0.469 PASS)
+  - Hertzberg concordance: 4 Immune-like (A) + 3 Neuro-like (B) subtypes mapped
 
 #### Scripts
 - **Cytoscape figure generator** (`scripts/generate_cytoscape_figures.py`): Publication-ready network figures via py4cytoscape
@@ -52,6 +64,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `[graph]` optional extra: `networkx>=3.0`, `py4cytoscape>=1.0.0`
 - Updated `requirements.txt` to match `pyproject.toml` (removed stale `pysam` from core)
 
+#### Infrastructure
+- **Docker multi-stage build** (`Dockerfile`): 4 stages (builder → runtime → development → jupyter)
+  - Runtime image: minimal production CLI (374 MB compressed)
+  - Jupyter image: notebook server with all analysis dependencies (617 MB compressed)
+  - 1003 tests pass in container; NB00 quick demo executes successfully
+- **Docker Hub:** Published as `rohitdataops/pathway-subtyping` (`:0.3.1-runtime`, `:0.3.1-jupyter`, `:latest`)
+- **Docker Compose** (`docker-compose.yml`): pipeline, dev, test, and jupyter services
+- **SciCrunch RRID:** `RRID:SCR_028051` — added to CITATION.cff, README.md, pyproject.toml, Dockerfile
+- **bio.tools registration:** `biotools:pathway-subtyping` — added to pyproject.toml
+
 #### Documentation
 - Notebook execution guide with dependency diagram (`docs/notebook-guide.md`)
 - Notebook execution registry (`research-results/NOTEBOOK-EXECUTION-REGISTRY.md`)
@@ -59,6 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Notebook 17 MSI ARI bug:** `adjusted_rand_score([], [])` returned 1.0 when MSI column existed but had 0 valid samples; added `valid_msi.sum() >= 2` guard before ARI computation and `ari_vs_msi is not None` guard on visualization panel
+- **Notebook 17 Cox PH ZeroDivisionError:** `tumor_stage` entirely NaN in GDC TCGA-COAD; added `dropna(axis=1, how='all')` and sample count guard
+- **Notebook 13 missing `import json`:** ADOS severity cell 10b.3 lacked json import for results_summary update
 
 ## [0.3.1] - 2026-02-23
 

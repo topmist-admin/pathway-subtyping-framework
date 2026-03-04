@@ -14,6 +14,10 @@ license: MIT
 version: 0.3.1
 date-released: '2026-02-16'
 doi: '10.5281/zenodo.18442426'
+identifiers:
+  - type: other
+    value: 'RRID:SCR_028051'
+    description: SciCrunch Research Resource Identifier
 preferred-citation:
   type: article
   authors:

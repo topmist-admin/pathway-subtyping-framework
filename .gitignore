@@ -112,6 +112,18 @@ claude-session.md
 claude-results.md
 VULNERABILITY-MITIGATION-PLAN.md
 NOTEBOOK-*-IMPLEMENTATION-PLAN.md
+*-PLAN.md
+TODO-*.md
+
+# Local Codeberg issue drafts
+codeberg-issues/
+
+# Virtual environment
+pathwayenv/
+
+# Docker/backup artifacts
+*.bundle
+*.tar.gz
 
 # Cached GEO data downloads (except small reference files)
 examples/notebooks/data/*
