@@ -75,7 +75,7 @@ psf --help
 
 Expected output:
 ```
-pathway-subtyping 0.3.1
+pathway-subtyping 0.4.0
 ```
 
 ---

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-03-04
+
 ### Added
 
 #### Notebooks
@@ -69,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Runtime image: minimal production CLI (374 MB compressed)
   - Jupyter image: notebook server with all analysis dependencies (617 MB compressed)
   - 1003 tests pass in container; NB00 quick demo executes successfully
-- **Docker Hub:** Published as `rohitdataops/pathway-subtyping` (`:0.3.1-runtime`, `:0.3.1-jupyter`, `:latest`)
+- **Docker Hub:** Published as `rohitdataops/pathway-subtyping` (`:0.4.0-runtime`, `:0.4.0-jupyter`, `:latest`)
 - **Docker Compose** (`docker-compose.yml`): pipeline, dev, test, and jupyter services
 - **SciCrunch RRID:** `RRID:SCR_028051` — added to CITATION.cff, README.md, pyproject.toml, Dockerfile
 - **bio.tools registration:** `biotools:pathway-subtyping` — added to pyproject.toml
@@ -196,7 +198,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 49 new single-cell tests, 768 total tests passing
 
 ### Changed
-- Total test count: 971 (up from 716)
+- Total test count: 1,003 (up from 971)
 
 ## [0.2.3] - 2026-02-14
 
@@ -489,6 +491,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.4.0 | 2026-03-04 | Clinical validation (NB13-19), network biology, Docker, RRID/bio.tools |
 | 0.3.1 | 2026-02-23 | Repository URL migration from GitHub to Codeberg |
 | 0.3.0 | 2026-02-16 | Multi-omic integration: single-cell, deconvolution, signaling databases, cross-modal validation, fusion |
 | 0.2.3 | 2026-02-14 | Cross-cohort validation, performance optimization, threshold calibration, expression scoring |
@@ -496,7 +499,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | 0.1.0 | 2026-01-29 | First public release with full pipeline |
 | 0.0.1 | 2026-01-29 | Initial project setup |
 
-[Unreleased]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.3.1...HEAD
+[Unreleased]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.4.0...HEAD
+[0.4.0]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.3.1...v0.4.0
 [0.3.1]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.3.0...v0.3.1
 [0.3.0]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.2.3...v0.3.0
 [0.2.3]: https://codeberg.org/pathways/pathway-subtyping-framework/compare/v0.2.0...v0.2.3

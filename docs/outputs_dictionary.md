@@ -407,4 +407,4 @@ If you're unsure how to interpret an output, **do not guess**. Contact the devel
 
 ---
 
-*Last updated: February 2026 | Pathway Subtyping Framework v0.3.1+*
+*Last updated: March 2026 | Pathway Subtyping Framework v0.4.0*
