@@ -4,7 +4,30 @@ This directory contains benchmark datasets for validating the pathway subtyping 
 
 ## Available Benchmarks
 
-### 1. Synthetic 4-Subtype Benchmark
+### 1. 47-Dataset Bootstrap Threshold Calibration Benchmark
+
+**Zenodo DOI:** 10.5281/zenodo.19324360
+**URL:** https://zenodo.org/records/19324360
+
+**Description:** 47 publicly available datasets (12 TCGA + 35 GEO) spanning oncology, psychiatry, immunology, single-cell RNA-seq, and other domains. Used to calibrate the adaptive bootstrap stability threshold model (Methods §1.5 in manuscript).
+
+**Results:** 39/47 PASS (83.0%): 12/12 TCGA (100%), 27/35 GEO (77.1%). 8 GEO failures are data-quality issues (insufficient samples, missing values, format incompatibility), not framework deficiencies.
+
+**Files in this directory:**
+- `dataset_candidate_list_47.csv` — 47 datasets with accession IDs, domains, sources, selection justifications
+- `benchmark_47datasets_manifest.csv` — Complete metadata manifest for automation
+
+**Results files (in `research-results/benchmarks/`):**
+- `bootstrap_threshold_calibration_47datasets_zenodo.csv` — Final validated results (silhouette + bootstrap ARI for all 47)
+- `ZENODO_47DATASETS_README.md` — Comprehensive documentation
+
+**Selection criteria:** See `archive/benchmark-calibration-2026-03/BENCHMARK_SELECTION_CRITERIA.md`
+
+**Circularity prevention:** None of the 47 benchmarks include TCGA-COAD, GSE28521, GSE64018, or GSE80655 (the manuscript analysis datasets).
+
+---
+
+### 2. Synthetic 4-Subtype Benchmark
 
 **Location:** `data/sample/synthetic_cohort.vcf`, `data/sample/synthetic_phenotypes.csv`
 

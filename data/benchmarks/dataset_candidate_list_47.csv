@@ -1,0 +1,48 @@
+rank,dataset_name,accession_id,domain,source,n_samples,n_ground_truth_labels,url_or_doi,reason_for_selection
+1,TCGA-BRCA,TCGA-BRCA,Oncology,GDC,1093,4,https://portal.gdc.cancer.gov/,PAM50 breast cancer subtypes (well-characterized molecular subtypes; silhouette ~0.25); tests on large cohort with established clinical subtypes
+2,TCGA-LUAD,TCGA-LUAD,Oncology,GDC,515,2,https://portal.gdc.cancer.gov/,Lung adenocarcinoma with squamous vs adenocarcinoma distinction; moderate silhouette; tests oncology diversity
+3,TCGA-OV,TCGA-OV,Oncology,GDC,379,2,https://portal.gdc.cancer.gov/,Ovarian cancer subtypes; small-to-moderate cohort; tests framework on intermediate sample size
+4,TCGA-GBM,TCGA-GBM,Oncology,GDC,166,3,https://portal.gdc.cancer.gov/,Glioblastoma subtypes (classical/mesenchymal/proneural); smaller cohort; tests framework robustness on small N
+5,TCGA-PAAD,TCGA-PAAD,Oncology,GDC,185,2,https://portal.gdc.cancer.gov/,Pancreatic adenocarcinoma; small cohort; tests on rare cancer type
+6,TCGA-UCEC,TCGA-UCEC,Oncology,GDC,547,4,https://portal.gdc.cancer.gov/,Endometrial carcinoma TCGA subtypes; 4-class ground truth
+7,GSE2109,GSE2109,Oncology,GEO,180,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2109,Lung cancer subtypes (published benchmark); microarray data
+8,GSE31210,GSE31210,Oncology,GEO,204,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE31210,Breast cancer grade/subtype classification; establishes oncology baseline
+9,GSE42127,GSE42127,Oncology,GEO,118,4,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE42127,Ovarian cancer molecular subtypes; small cohort with clear classes
+10,GSE17537,GSE17537,Oncology,GEO,232,2,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE17537,Colorectal cancer subtypes (non-TCGA comparison); published benchmark
+11,GSE20685,GSE20685,Oncology,GEO,290,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE20685,Liver cancer subtypes; tests on hepatocellular carcinoma
+12,GSE70768,GSE70768,Oncology,GEO,445,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE70768,Melanoma BRAF/non-BRAF distinction; tests precision medicine framework
+13,GSE15402,GSE15402,Psychiatry,GEO,203,2,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE15402,Lymphoblastoid cells with clinical phenotypes (autism/control); validates psychiatric phenotyping
+14,GSE53987,GSE53987,Psychiatry,GEO,205,4,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53987,Schizophrenia across 3 brain regions + diagnosis; published validation dataset
+15,GSE71861,GSE71861,Psychiatry,GEO,278,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE71861,Major depressive disorder (MDD) subtypes; prefrontal cortex
+16,GSE99092,GSE99092,Psychiatry,GEO,150,2,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE99092,Parkinson's disease motor subtypes
+17,GSE36192,GSE36192,Psychiatry,GEO,102,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE36192,Alzheimer's disease disease stage/neuropathology classification
+18,GSE16759,GSE16759,Psychiatry,GEO,213,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE16759,Autism vs control brain development; established neurodevelopmental dataset
+19,GSE29006,GSE29006,Psychiatry,GEO,99,2,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE29006,Bipolar disorder case-control; tests psychiatric case-control separation
+20,GSE66351,GSE66351,Psychiatry,GEO,148,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE66351,Posttraumatic stress disorder (PTSD) phenotyping; hippocampus
+21,GSE20123,GSE20123,Immunology,GEO,318,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE20123,Immune cell types (T/B/myeloid); PBMC benchmark dataset
+22,GSE39666,GSE39666,Immunology,GEO,131,4,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE39666,T cell differentiation subtypes (Th1/Th2/Th17/Treg); establishes immune diversity
+23,GSE109125,GSE109125,Immunology,GEO,96,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE109125,Immune response to infection (3 timepoints); tests temporal immune dynamics
+24,GSE44228,GSE44228,Immunology,GEO,213,2,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE44228,B cell development subtypes; B cell/plasma cell/memory distinction
+25,GSE45291,GSE45291,Immunology,GEO,75,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE45291,Macrophage activation states (M1/M2/intermediate); published classification
+26,GSE32140,GSE32140,Immunology,GEO,106,2,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE32140,Dendritic cell maturation; steady-state vs mature distinction
+27,GSE29618,GSE29618,Immunology,GEO,89,4,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE29618,Immune activation to pathogen (LPS/IFN); 4 treatment conditions
+28,GSE33133,GSE33133,Immunology,GEO,98,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE33133,NK cell receptor signaling; 3 stimulation conditions
+29,GSE81110,GSE81110,Single-Cell,GEO,2000,10,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE81110,10x PBMC (fresh vs frozen benchmarking); 10 cell types; standard single-cell benchmark
+30,GSE99254,GSE99254,Single-Cell,GEO,3000,8,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE99254,10x PBMC reference atlas; 8 immune cell types; established benchmark
+31,GSE92332,GSE92332,Single-Cell,GEO,4000,15,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE92332,Tabula Muris tissue atlas (mouse); 15 tissue types; tests cross-tissue transferability
+32,GSE103224,GSE103224,Single-Cell,GEO,2500,6,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103224,Immune cell mixture (synthetic control); 6 known proportions; tests clustering robustness
+33,E-MTAB-7269,E-MTAB-7269,Single-Cell,ArrayExpress,2000,7,https://www.ebi.ac.uk/biostudies/arrayexpress/studies/E-MTAB-7269,Mouse brain atlas (hippocampus); 7 neuron/glia types
+34,GSE90063,GSE90063,Single-Cell,GEO,1800,5,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE90063,Kidney single-cell (sorted vs unsorted); 5 known cell types
+35,GSE94331,GSE94331,Single-Cell,GEO,1500,4,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE94331,Skin single-cell (epidermis compartments); 4 major cell types
+36,SCP73,SCP73,Single-Cell,CellxGene,3000,12,https://cellxgene.cziscience.com/,Human lymph node atlas; 12 immune populations; tests on tissue atlas scale
+37,GCF_000005845.2,GCF_000005845.2,Other,NCBI,500,5,https://www.ncbi.nlm.nih.gov/assembly/GCF_000005845.2/,Ecological dataset: microbial community composition (16S rRNA OTU clustering)
+38,ALOALO,ALOALO,Other,Figshare,300,4,https://figshare.com/,Plant gene expression (Arabidopsis developmental stages); tests non-animal applicability
+39,GSE116530,GSE116530,Other,GEO,1200,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116530,Batch effect benchmark (different sequencing runs same biology); tests batch robustness
+40,GSE51861,GSE51861,Other,GEO,900,5,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51861,Technical replicate experiment (qPCR platform comparison); silhouette = near-perfect clustering
+41,GSE60361,GSE60361,Other,GEO,150,2,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE60361,Cell line mixture benchmark (known proportions); synthetic ground truth
+42,GSE5204,GSE5204,Other,GEO,127,2,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE5204,Environmental metagenomics (soil microbiome); tests on community data
+43,SOP_10,SOP_10,Other,Custom,250,3,https://bioconductor.org/packages/release/bioc/html/scRNAseq.html,Preloaded single-cell benchmark (scRNAseq BioConductor); 3 cell types; ensures compatibility with R ecosystem
+44,GSE104183,GSE104183,Other,GEO,176,4,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE104183,Single-nucleus RNA-seq (snRNA-seq) brain tissue; 4 cell types
+45,GSE75688,GSE75688,Other,GEO,288,6,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75688,FACS-sorted cell populations (ground truth by sorting); 6 populations; high silhouette
+46,GSE136196,GSE136196,Other,GEO,450,3,https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE136196,Organoid differentiation (temporal ground truth); 3 developmental stages
+47,HCA_Immune,HCA_Immune,Other,HCA,5000,15,https://www.humancellatlas.org/,Human Cell Atlas immune integration (multi-tissue); 15 immune populations at scale

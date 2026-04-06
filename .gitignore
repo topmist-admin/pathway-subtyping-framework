@@ -130,8 +130,59 @@ examples/notebooks/data/*
 !examples/notebooks/data/cms_ntp_templates.csv
 
 # Research results (generated from Colab notebook runs)
-research-results/
+research-results/*
+!research-results/benchmarks/
+research-results/benchmarks/*
+# Exception: Include final Zenodo benchmark results and documentation
+!research-results/benchmarks/bootstrap_threshold_calibration_47datasets_zenodo.csv
+!research-results/benchmarks/ZENODO_*README.md
+!research-results/benchmarks/bilinear_fit_diagnostic_plots.png
+!research-results/benchmarks/SUPPLEMENTARY_TABLE_S2_BENCHMARK_EXAMPLES.md
 
 # Manuscripts and analysis documents
 manuscripts/
 docs/CODEBERG-ISSUES-ROADMAP.md
+
+# ============================================================================
+# BENCHMARK-SPECIFIC EXCLUSIONS (feat/benchmark-calibration-47)
+# ============================================================================
+
+# Downloaded TCGA/GEO data files (large, ~1.4GB+)
+tcga_data/
+geo_data/
+*.gdc-client/
+
+# GDC client and manifests (temporary download tools)
+gdc-client
+gdc_manifest_TCGA-*.txt
+
+# Process ID files
+*.pid
+
+# Intermediate/temporary result files
+phase3_validation_results.csv
+bootstrap_threshold_calibration_*_temp.csv
+bootstrap_threshold_calibration_[0-9].csv
+bootstrap_threshold_calibration_[0-9][0-9].csv
+
+# Temporary Python utilities (one-time download scripts)
+download_tcga_datasets.py
+generate_gdc_manifest.py
+
+# Benchmark log files (except for documentation/analysis)
+scripts/benchmark_run*.log
+scripts/benchmark_*.log
+
+# Exceptions: Include benchmark manifests and documentation
+!data/benchmarks/benchmark_47datasets_manifest.csv
+!data/benchmarks/tcga_remaining_6datasets_manifest.csv
+!data/benchmarks/geo_remaining_32datasets_manifest.csv
+!data/benchmarks/geo_final_10datasets_manifest.csv
+!data/benchmarks/test_manifest_*.csv
+!BENCHMARK_SPLIT_STRATEGY.md
+!GDC-API-FIX-SUMMARY.md
+!MANUAL-TCGA-DOWNLOAD-GUIDE.md
+!PHASE3-DEBUGGING-SESSION-NOTES.md
+!ZENODO_PACKAGE_CHECKLIST.md
+!ZENODO_FILES_MANIFEST.txt
+!CODEBERG_COMMIT_CHECKLIST.md
