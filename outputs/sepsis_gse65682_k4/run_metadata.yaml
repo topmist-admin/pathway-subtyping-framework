@@ -1,0 +1,14 @@
+config_file: configs/demo.yaml
+git_commit: bfad096
+input_files:
+  expression: data/sepsis/GSE65682_expression_matrix.csv
+  expression_hash: 4b85aadf277ed383
+  pathways: data/sepsis/hallmark_pathways.gmt
+  pathways_hash: 8ff1f036f0988c99
+  phenotypes: data/sepsis/GSE65682_phenotypes.csv
+  phenotypes_hash: 1229559a67cc33d2
+input_type: expression
+random_seed: 42
+run_id: sepsis_gse65682_mars_k4_20260406_123807
+runtime_seconds: null
+timestamp: '2026-04-06T12:38:07.092645'

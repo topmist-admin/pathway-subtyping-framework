@@ -1,0 +1,2988 @@
+{
+  "pipeline_name": "sepsis_gse65682_mars_k4",
+  "timestamp": "2026-04-06T12:38:07.089690",
+  "seed": 42,
+  "input_files": {
+    "expression": "data/sepsis/GSE65682_expression_matrix.csv",
+    "phenotypes": "data/sepsis/GSE65682_phenotypes.csv",
+    "pathways": "data/sepsis/hallmark_pathways.gmt"
+  },
+  "summary": {
+    "input_type": "expression",
+    "scoring_method": "ssgsea",
+    "n_samples": 802,
+    "n_genes": 11518,
+    "n_pathways": 50,
+    "n_clusters": 4
+  },
+  "clusters": {
+    "subtype_3": 305,
+    "subtype_1": 258,
+    "subtype_2": 147,
+    "subtype_0": 92
+  },
+  "data_quality": {},
+  "variant_qc": {},
+  "ancestry_correction": {},
+  "ground_truth_validation": {},
+  "validation_gates": {
+    "all_passed": false,
+    "summary": "1/3 validation gates passed. FAILED: Negative Control 2: Random Gene Sets, Stability Test: Bootstrap",
+    "tests": [
+      {
+        "name": "Negative Control 1: Label Shuffle",
+        "status": "PASS",
+        "metric": "mean_null_ARI",
+        "value": 0.0003,
+        "threshold": 0.004074710281889033,
+        "comparison": "<",
+        "details": {
+          "std_ari": 0.0035,
+          "n_permutations": 100,
+          "n_successful": 100,
+          "interpretation": "Clustering should NOT recover shuffled labels"
+        }
+      },
+      {
+        "name": "Negative Control 2: Random Gene Sets",
+        "status": "FAIL",
+        "metric": "mean_random_ARI",
+        "value": 0.1115,
+        "threshold": 0.004074710281889033,
+        "comparison": "<",
+        "details": {
+          "std_ari": 0.0104,
+          "n_permutations": 100,
+          "interpretation": "Random gene sets should NOT replicate cluster structure"
+        }
+      },
+      {
+        "name": "Stability Test: Bootstrap",
+        "status": "FAIL",
+        "metric": "mean_bootstrap_ARI",
+        "value": 0.3546,
+        "threshold": 0.6211785890956751,
+        "comparison": ">=",
+        "details": {
+          "std_ari": 0.1248,
+          "n_bootstrap": 50,
+          "interpretation": "Clustering should be stable across bootstrap samples"
+        }
+      }
+    ]
+  },
+  "threshold_calibration": {
+    "null_ari_threshold": 0.0041,
+    "stability_threshold": 0.6212,
+    "n_samples": 802,
+    "n_clusters": 4,
+    "n_pathways": 50,
+    "alpha": 0.05,
+    "calibration_method": "simulate",
+    "interpolated": false
+  },
+  "characterization": {
+    "summary": {
+      "n_subtypes": 4,
+      "n_samples": 802,
+      "n_pathways": 50,
+      "n_genes": 11518,
+      "fdr_alpha": 0.05
+    },
+    "subtype_profiles": [
+      {
+        "subtype_id": 0,
+        "subtype_label": "subtype_0",
+        "n_samples": 92,
+        "fraction": 0.1147,
+        "mean_confidence": 0.9999,
+        "enriched_pathways": [
+          {
+            "pathway": "HALLMARK_G2M_CHECKPOINT",
+            "mean_score": 1.9907,
+            "overall_mean": -0.0,
+            "fold_change": -1.4380483617888731e+17,
+            "effect_size": 3.2241,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_score": 1.863,
+            "overall_mean": 0.0,
+            "fold_change": 4833901588200733.0,
+            "effect_size": 2.8364,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_E2F_TARGETS",
+            "mean_score": 1.8587,
+            "overall_mean": 0.0,
+            "fold_change": null,
+            "effect_size": 2.8248,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MTORC1_SIGNALING",
+            "mean_score": 1.5649,
+            "overall_mean": -0.0,
+            "fold_change": -3758164335139682.0,
+            "effect_size": 2.1387,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_GLYCOLYSIS",
+            "mean_score": 1.3734,
+            "overall_mean": 0.0,
+            "fold_change": 1.5502125770926394e+17,
+            "effect_size": 1.784,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+            "mean_score": 1.2414,
+            "overall_mean": 0.0,
+            "fold_change": 7473017367519550.0,
+            "effect_size": 1.5667,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_DNA_REPAIR",
+            "mean_score": 1.2218,
+            "overall_mean": -0.0,
+            "fold_change": -2050691859102452.8,
+            "effect_size": 1.536,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_FATTY_ACID_METABOLISM",
+            "mean_score": 1.1962,
+            "overall_mean": -0.0,
+            "fold_change": -1179145626876250.2,
+            "effect_size": 1.4963,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UV_RESPONSE_UP",
+            "mean_score": 1.1653,
+            "overall_mean": 0.0,
+            "fold_change": 1342091822359524.8,
+            "effect_size": 1.4493,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_score": 1.1352,
+            "overall_mean": 0.0,
+            "fold_change": 1601618995016992.5,
+            "effect_size": 1.4042,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_LATE",
+            "mean_score": 1.0909,
+            "overall_mean": -0.0,
+            "fold_change": -2551864206644710.5,
+            "effect_size": 1.3392,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYC_TARGETS_V1",
+            "mean_score": 1.0081,
+            "overall_mean": 0.0,
+            "fold_change": 940419593666477.0,
+            "effect_size": 1.2214,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ADIPOGENESIS",
+            "mean_score": 1.0019,
+            "overall_mean": 0.0,
+            "fold_change": 1884839408540559.0,
+            "effect_size": 1.2128,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_NOTCH_SIGNALING",
+            "mean_score": -0.9641,
+            "overall_mean": -0.0,
+            "fold_change": 2.487373025966658e+16,
+            "effect_size": -1.1606,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY",
+            "mean_score": 0.8995,
+            "overall_mean": 0.0,
+            "fold_change": 2030513144299715.5,
+            "effect_size": 1.0733,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MITOTIC_SPINDLE",
+            "mean_score": 0.8527,
+            "overall_mean": 0.0,
+            "fold_change": 1.374886558318947e+16,
+            "effect_size": 1.0114,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_CHOLESTEROL_HOMEOSTASIS",
+            "mean_score": 0.834,
+            "overall_mean": -0.0,
+            "fold_change": -3362091429142269.5,
+            "effect_size": 0.9871,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INFLAMMATORY_RESPONSE",
+            "mean_score": -0.7223,
+            "overall_mean": -0.0,
+            "fold_change": 1918173899347401.8,
+            "effect_size": -0.8444,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HEDGEHOG_SIGNALING",
+            "mean_score": -0.7085,
+            "overall_mean": -0.0,
+            "fold_change": 1.0319054865773094e+16,
+            "effect_size": -0.8272,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_TGF_BETA_SIGNALING",
+            "mean_score": -0.6906,
+            "overall_mean": -0.0,
+            "fold_change": 1321160788542996.8,
+            "effect_size": -0.8049,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HEME_METABOLISM",
+            "mean_score": 0.6453,
+            "overall_mean": 0.0,
+            "fold_change": 1867690093153612.5,
+            "effect_size": 0.749,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_BILE_ACID_METABOLISM",
+            "mean_score": 0.6389,
+            "overall_mean": 0.0,
+            "fold_change": 1413908081740061.8,
+            "effect_size": 0.7411,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_WNT_BETA_CATENIN_SIGNALING",
+            "mean_score": -0.6351,
+            "overall_mean": 0.0,
+            "fold_change": -6516301408656342.0,
+            "effect_size": -0.7364,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_XENOBIOTIC_METABOLISM",
+            "mean_score": 0.5971,
+            "overall_mean": 0.0,
+            "fold_change": 774715186753274.5,
+            "effect_size": 0.6903,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_IL6_JAK_STAT3_SIGNALING",
+            "mean_score": -0.5928,
+            "overall_mean": -0.0,
+            "fold_change": 868928848145087.1,
+            "effect_size": -0.685,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UV_RESPONSE_DN",
+            "mean_score": -0.5783,
+            "overall_mean": 0.0,
+            "fold_change": -1978147140556178.8,
+            "effect_size": -0.6675,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+            "mean_score": -0.5615,
+            "overall_mean": 0.0,
+            "fold_change": -621368125926372.4,
+            "effect_size": -0.6473,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_COMPLEMENT",
+            "mean_score": -0.5008,
+            "overall_mean": 0.0,
+            "fold_change": -264750375543859.34,
+            "effect_size": -0.5747,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYC_TARGETS_V2",
+            "mean_score": 0.5001,
+            "overall_mean": 0.0,
+            "fold_change": 1.6127461614392286e+16,
+            "effect_size": 0.5739,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+            "mean_score": -0.4805,
+            "overall_mean": -0.0,
+            "fold_change": 417210733229696.4,
+            "effect_size": -0.5508,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APICAL_SURFACE",
+            "mean_score": -0.4767,
+            "overall_mean": -0.0,
+            "fold_change": 2069646920476238.8,
+            "effect_size": -0.5463,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_TNFA_SIGNALING_VIA_NFKB",
+            "mean_score": -0.4182,
+            "overall_mean": 0.0,
+            "fold_change": -497567370428887.8,
+            "effect_size": -0.4776,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ANDROGEN_RESPONSE",
+            "mean_score": 0.3926,
+            "overall_mean": -0.0,
+            "fold_change": -364692524649705.75,
+            "effect_size": 0.4477,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INTERFERON_GAMMA_RESPONSE",
+            "mean_score": -0.3704,
+            "overall_mean": 0.0,
+            "fold_change": -8360616312052279.0,
+            "effect_size": -0.4219,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PEROXISOME",
+            "mean_score": 0.3215,
+            "overall_mean": 0.0,
+            "fold_change": 1014960430066483.1,
+            "effect_size": 0.3654,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ANGIOGENESIS",
+            "mean_score": 0.3172,
+            "overall_mean": 0.0,
+            "fold_change": 778231411011916.8,
+            "effect_size": 0.3604,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_EARLY",
+            "mean_score": -0.3164,
+            "overall_mean": -0.0,
+            "fold_change": 2164394859069637.8,
+            "effect_size": -0.3595,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INTERFERON_ALPHA_RESPONSE",
+            "mean_score": -0.3135,
+            "overall_mean": 0.0,
+            "fold_change": -3931848423767989.0,
+            "effect_size": -0.3562,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PROTEIN_SECRETION",
+            "mean_score": 0.3001,
+            "overall_mean": 0.0,
+            "fold_change": 359393438329260.94,
+            "effect_size": 0.3408,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_KRAS_SIGNALING_DN",
+            "mean_score": -0.2799,
+            "overall_mean": -0.0,
+            "fold_change": 1755138636781878.0,
+            "effect_size": -0.3176,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APICAL_JUNCTION",
+            "mean_score": -0.2444,
+            "overall_mean": -0.0,
+            "fold_change": 3447913662872263.0,
+            "effect_size": -0.2769,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_KRAS_SIGNALING_UP",
+            "mean_score": -0.2215,
+            "overall_mean": -0.0,
+            "fold_change": 526361101662932.7,
+            "effect_size": -0.2509,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION",
+            "mean_score": 0.2135,
+            "overall_mean": 0.0,
+            "fold_change": 4016423746123479.0,
+            "effect_size": 0.2417,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYOGENESIS",
+            "mean_score": -0.1742,
+            "overall_mean": -0.0,
+            "fold_change": 1.3110428138217354e+16,
+            "effect_size": -0.1971,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_COAGULATION",
+            "mean_score": 0.113,
+            "overall_mean": -0.0,
+            "fold_change": -2125201847622928.0,
+            "effect_size": 0.1276,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HYPOXIA",
+            "mean_score": 0.0927,
+            "overall_mean": -0.0,
+            "fold_change": -321775011972512.2,
+            "effect_size": 0.1046,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_P53_PATHWAY",
+            "mean_score": -0.0805,
+            "overall_mean": -0.0,
+            "fold_change": 229900515478904.1,
+            "effect_size": -0.0909,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APOPTOSIS",
+            "mean_score": -0.0716,
+            "overall_mean": -0.0,
+            "fold_change": 60984685412951.6,
+            "effect_size": -0.0808,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_IL2_STAT5_SIGNALING",
+            "mean_score": -0.0127,
+            "overall_mean": -0.0,
+            "fold_change": 40850837432844.0,
+            "effect_size": -0.0143,
+            "p_value": 0.565742,
+            "q_value": 0.565742,
+            "significant": false
+          },
+          {
+            "pathway": "HALLMARK_PANCREAS_BETA_CELLS",
+            "mean_score": -0.0077,
+            "overall_mean": 0.0,
+            "fold_change": -37060805436085.25,
+            "effect_size": -0.0087,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          }
+        ],
+        "top_genes": [
+          {
+            "gene": "RRM2",
+            "pathway": "HALLMARK_MTORC1_SIGNALING",
+            "mean_burden": 5.2243,
+            "overall_mean": 3.3118,
+            "fold_change": 1.5775,
+            "effect_size": 3.021
+          },
+          {
+            "gene": "NUSAP1",
+            "pathway": "HALLMARK_MITOTIC_SPINDLE",
+            "mean_burden": 4.0133,
+            "overall_mean": 2.7562,
+            "fold_change": 1.4561,
+            "effect_size": 3.0126
+          },
+          {
+            "gene": "CDKN3",
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_burden": 3.5105,
+            "overall_mean": 2.6476,
+            "fold_change": 1.3259,
+            "effect_size": 2.8292
+          },
+          {
+            "gene": "TOP2A",
+            "pathway": "HALLMARK_PEROXISOME",
+            "mean_burden": 4.2879,
+            "overall_mean": 3.0658,
+            "fold_change": 1.3986,
+            "effect_size": 2.7744
+          },
+          {
+            "gene": "TYMS",
+            "pathway": "HALLMARK_MYC_TARGETS_V1",
+            "mean_burden": 5.7576,
+            "overall_mean": 3.9248,
+            "fold_change": 1.467,
+            "effect_size": 2.7426
+          },
+          {
+            "gene": "DLGAP5",
+            "pathway": "HALLMARK_MITOTIC_SPINDLE",
+            "mean_burden": 3.4286,
+            "overall_mean": 2.3184,
+            "fold_change": 1.4789,
+            "effect_size": 2.721
+          },
+          {
+            "gene": "PRC1",
+            "pathway": "HALLMARK_MITOTIC_SPINDLE",
+            "mean_burden": 4.475,
+            "overall_mean": 2.8813,
+            "fold_change": 1.5531,
+            "effect_size": 2.7106
+          },
+          {
+            "gene": "CDK1",
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_burden": 3.5775,
+            "overall_mean": 2.5402,
+            "fold_change": 1.4083,
+            "effect_size": 2.6941
+          },
+          {
+            "gene": "CCNA2",
+            "pathway": "HALLMARK_MYC_TARGETS_V1",
+            "mean_burden": 3.6163,
+            "overall_mean": 2.5239,
+            "fold_change": 1.4328,
+            "effect_size": 2.6208
+          },
+          {
+            "gene": "UBE2C",
+            "pathway": "HALLMARK_G2M_CHECKPOINT",
+            "mean_burden": 5.473,
+            "overall_mean": 4.1977,
+            "fold_change": 1.3038,
+            "effect_size": 2.5822
+          },
+          {
+            "gene": "CKS1B",
+            "pathway": "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+            "mean_burden": 3.2566,
+            "overall_mean": 2.5746,
+            "fold_change": 1.2649,
+            "effect_size": 2.5689
+          },
+          {
+            "gene": "CENPN",
+            "pathway": "HALLMARK_ANDROGEN_RESPONSE",
+            "mean_burden": 3.3194,
+            "overall_mean": 2.7264,
+            "fold_change": 1.2175,
+            "effect_size": 2.5394
+          },
+          {
+            "gene": "ZWINT",
+            "pathway": "HALLMARK_DNA_REPAIR",
+            "mean_burden": 4.8936,
+            "overall_mean": 3.1273,
+            "fold_change": 1.5648,
+            "effect_size": 2.5388
+          },
+          {
+            "gene": "BIRC5",
+            "pathway": "HALLMARK_MITOTIC_SPINDLE",
+            "mean_burden": 3.4141,
+            "overall_mean": 2.792,
+            "fold_change": 1.2228,
+            "effect_size": 2.4987
+          },
+          {
+            "gene": "FEN1",
+            "pathway": "HALLMARK_UV_RESPONSE_UP",
+            "mean_burden": 3.5308,
+            "overall_mean": 2.7052,
+            "fold_change": 1.3052,
+            "effect_size": 2.4963
+          },
+          {
+            "gene": "KIF2C",
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_burden": 3.4614,
+            "overall_mean": 2.6053,
+            "fold_change": 1.3286,
+            "effect_size": 2.4941
+          },
+          {
+            "gene": "CKS2",
+            "pathway": "HALLMARK_G2M_CHECKPOINT",
+            "mean_burden": 4.8833,
+            "overall_mean": 3.128,
+            "fold_change": 1.5612,
+            "effect_size": 2.4791
+          },
+          {
+            "gene": "TPX2",
+            "pathway": "HALLMARK_MITOTIC_SPINDLE",
+            "mean_burden": 3.7607,
+            "overall_mean": 2.6431,
+            "fold_change": 1.4228,
+            "effect_size": 2.477
+          },
+          {
+            "gene": "CCNB2",
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_burden": 5.3061,
+            "overall_mean": 3.6005,
+            "fold_change": 1.4737,
+            "effect_size": 2.476
+          },
+          {
+            "gene": "BUB1",
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_burden": 3.6507,
+            "overall_mean": 2.5441,
+            "fold_change": 1.435,
+            "effect_size": 2.4692
+          }
+        ],
+        "pathway_score_means": {
+          "HALLMARK_ADIPOGENESIS": 1.0019,
+          "HALLMARK_ALLOGRAFT_REJECTION": -0.5615,
+          "HALLMARK_ANDROGEN_RESPONSE": 0.3926,
+          "HALLMARK_ANGIOGENESIS": 0.3172,
+          "HALLMARK_APICAL_JUNCTION": -0.2444,
+          "HALLMARK_APICAL_SURFACE": -0.4767,
+          "HALLMARK_APOPTOSIS": -0.0716,
+          "HALLMARK_BILE_ACID_METABOLISM": 0.6389,
+          "HALLMARK_CHOLESTEROL_HOMEOSTASIS": 0.834,
+          "HALLMARK_COAGULATION": 0.113,
+          "HALLMARK_COMPLEMENT": -0.5008,
+          "HALLMARK_DNA_REPAIR": 1.2218,
+          "HALLMARK_E2F_TARGETS": 1.8587,
+          "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION": 0.2135,
+          "HALLMARK_ESTROGEN_RESPONSE_EARLY": -0.3164,
+          "HALLMARK_ESTROGEN_RESPONSE_LATE": 1.0909,
+          "HALLMARK_FATTY_ACID_METABOLISM": 1.1962,
+          "HALLMARK_G2M_CHECKPOINT": 1.9907,
+          "HALLMARK_GLYCOLYSIS": 1.3734,
+          "HALLMARK_HEDGEHOG_SIGNALING": -0.7085,
+          "HALLMARK_HEME_METABOLISM": 0.6453,
+          "HALLMARK_HYPOXIA": 0.0927,
+          "HALLMARK_IL2_STAT5_SIGNALING": -0.0127,
+          "HALLMARK_IL6_JAK_STAT3_SIGNALING": -0.5928,
+          "HALLMARK_INFLAMMATORY_RESPONSE": -0.7223,
+          "HALLMARK_INTERFERON_ALPHA_RESPONSE": -0.3135,
+          "HALLMARK_INTERFERON_GAMMA_RESPONSE": -0.3704,
+          "HALLMARK_KRAS_SIGNALING_DN": -0.2799,
+          "HALLMARK_KRAS_SIGNALING_UP": -0.2215,
+          "HALLMARK_MITOTIC_SPINDLE": 0.8527,
+          "HALLMARK_MTORC1_SIGNALING": 1.5649,
+          "HALLMARK_MYC_TARGETS_V1": 1.0081,
+          "HALLMARK_MYC_TARGETS_V2": 0.5001,
+          "HALLMARK_MYOGENESIS": -0.1742,
+          "HALLMARK_NOTCH_SIGNALING": -0.9641,
+          "HALLMARK_OXIDATIVE_PHOSPHORYLATION": 1.1352,
+          "HALLMARK_P53_PATHWAY": -0.0805,
+          "HALLMARK_PANCREAS_BETA_CELLS": -0.0077,
+          "HALLMARK_PEROXISOME": 0.3215,
+          "HALLMARK_PI3K_AKT_MTOR_SIGNALING": -0.4805,
+          "HALLMARK_PROTEIN_SECRETION": 0.3001,
+          "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY": 0.8995,
+          "HALLMARK_SPERMATOGENESIS": 1.863,
+          "HALLMARK_TGF_BETA_SIGNALING": -0.6906,
+          "HALLMARK_TNFA_SIGNALING_VIA_NFKB": -0.4182,
+          "HALLMARK_UNFOLDED_PROTEIN_RESPONSE": 1.2414,
+          "HALLMARK_UV_RESPONSE_DN": -0.5783,
+          "HALLMARK_UV_RESPONSE_UP": 1.1653,
+          "HALLMARK_WNT_BETA_CATENIN_SIGNALING": -0.6351,
+          "HALLMARK_XENOBIOTIC_METABOLISM": 0.5971
+        }
+      },
+      {
+        "subtype_id": 1,
+        "subtype_label": "subtype_1",
+        "n_samples": 258,
+        "fraction": 0.3217,
+        "mean_confidence": 0.9966,
+        "enriched_pathways": [
+          {
+            "pathway": "HALLMARK_PROTEIN_SECRETION",
+            "mean_score": 0.7409,
+            "overall_mean": 0.0,
+            "fold_change": 887296853343666.9,
+            "effect_size": 1.2696,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PEROXISOME",
+            "mean_score": 0.6801,
+            "overall_mean": 0.0,
+            "fold_change": 2147253518977910.0,
+            "effect_size": 1.1343,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ANDROGEN_RESPONSE",
+            "mean_score": 0.5751,
+            "overall_mean": -0.0,
+            "fold_change": -534218001055894.1,
+            "effect_size": 0.9228,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ADIPOGENESIS",
+            "mean_score": 0.5741,
+            "overall_mean": 0.0,
+            "fold_change": 1079927858172255.5,
+            "effect_size": 0.9209,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_BILE_ACID_METABOLISM",
+            "mean_score": 0.5391,
+            "overall_mean": 0.0,
+            "fold_change": 1193136516062795.0,
+            "effect_size": 0.8555,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_KRAS_SIGNALING_DN",
+            "mean_score": -0.5384,
+            "overall_mean": -0.0,
+            "fold_change": 3376316820514113.0,
+            "effect_size": -0.8543,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_IL6_JAK_STAT3_SIGNALING",
+            "mean_score": 0.4538,
+            "overall_mean": -0.0,
+            "fold_change": -665267548499604.4,
+            "effect_size": 0.704,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APICAL_SURFACE",
+            "mean_score": -0.4532,
+            "overall_mean": -0.0,
+            "fold_change": 1967482454264373.5,
+            "effect_size": -0.7029,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYC_TARGETS_V2",
+            "mean_score": -0.4375,
+            "overall_mean": 0.0,
+            "fold_change": -1.41085303671127e+16,
+            "effect_size": -0.676,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INTERFERON_ALPHA_RESPONSE",
+            "mean_score": -0.4296,
+            "overall_mean": 0.0,
+            "fold_change": -5388038831121300.0,
+            "effect_size": -0.6627,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INTERFERON_GAMMA_RESPONSE",
+            "mean_score": -0.4067,
+            "overall_mean": 0.0,
+            "fold_change": -9179873862984408.0,
+            "effect_size": -0.6241,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_WNT_BETA_CATENIN_SIGNALING",
+            "mean_score": -0.3937,
+            "overall_mean": 0.0,
+            "fold_change": -4040276979979187.5,
+            "effect_size": -0.6027,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_FATTY_ACID_METABOLISM",
+            "mean_score": 0.3885,
+            "overall_mean": -0.0,
+            "fold_change": -382969496129701.1,
+            "effect_size": 0.5941,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UV_RESPONSE_DN",
+            "mean_score": 0.382,
+            "overall_mean": 0.0,
+            "fold_change": 1306562511238847.2,
+            "effect_size": 0.5834,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_GLYCOLYSIS",
+            "mean_score": 0.3519,
+            "overall_mean": 0.0,
+            "fold_change": 3.972479694750996e+16,
+            "effect_size": 0.5345,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+            "mean_score": 0.345,
+            "overall_mean": -0.0,
+            "fold_change": -299568220964560.56,
+            "effect_size": 0.5234,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_DNA_REPAIR",
+            "mean_score": -0.3402,
+            "overall_mean": -0.0,
+            "fold_change": 570982390439388.9,
+            "effect_size": -0.5156,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MTORC1_SIGNALING",
+            "mean_score": 0.3197,
+            "overall_mean": -0.0,
+            "fold_change": -767782867327263.1,
+            "effect_size": 0.4829,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+            "mean_score": -0.3152,
+            "overall_mean": 0.0,
+            "fold_change": -348763861352534.56,
+            "effect_size": -0.4757,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_TGF_BETA_SIGNALING",
+            "mean_score": 0.3087,
+            "overall_mean": -0.0,
+            "fold_change": -590634060921374.1,
+            "effect_size": 0.4655,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_EARLY",
+            "mean_score": -0.3078,
+            "overall_mean": -0.0,
+            "fold_change": 2105647607524720.2,
+            "effect_size": -0.4641,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HEME_METABOLISM",
+            "mean_score": -0.2922,
+            "overall_mean": 0.0,
+            "fold_change": -845766090366134.4,
+            "effect_size": -0.4396,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_CHOLESTEROL_HOMEOSTASIS",
+            "mean_score": 0.2865,
+            "overall_mean": -0.0,
+            "fold_change": -1154999490666268.8,
+            "effect_size": 0.4306,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYOGENESIS",
+            "mean_score": -0.2788,
+            "overall_mean": -0.0,
+            "fold_change": 2.098179476129631e+16,
+            "effect_size": -0.4186,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_XENOBIOTIC_METABOLISM",
+            "mean_score": 0.264,
+            "overall_mean": 0.0,
+            "fold_change": 342515532762014.6,
+            "effect_size": 0.3956,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_score": 0.2633,
+            "overall_mean": 0.0,
+            "fold_change": 371493442589863.25,
+            "effect_size": 0.3945,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY",
+            "mean_score": 0.2587,
+            "overall_mean": 0.0,
+            "fold_change": 583965642247140.8,
+            "effect_size": 0.3873,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APOPTOSIS",
+            "mean_score": -0.2316,
+            "overall_mean": -0.0,
+            "fold_change": 197296783719309.75,
+            "effect_size": -0.3457,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APICAL_JUNCTION",
+            "mean_score": -0.224,
+            "overall_mean": -0.0,
+            "fold_change": 3160656818172561.5,
+            "effect_size": -0.3341,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UV_RESPONSE_UP",
+            "mean_score": -0.2199,
+            "overall_mean": 0.0,
+            "fold_change": -253212960849849.47,
+            "effect_size": -0.3277,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_COMPLEMENT",
+            "mean_score": 0.2119,
+            "overall_mean": 0.0,
+            "fold_change": 112020856951799.98,
+            "effect_size": 0.3156,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HEDGEHOG_SIGNALING",
+            "mean_score": 0.2015,
+            "overall_mean": -0.0,
+            "fold_change": -2934625971836843.5,
+            "effect_size": 0.2998,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HYPOXIA",
+            "mean_score": 0.1876,
+            "overall_mean": -0.0,
+            "fold_change": -651478551383829.8,
+            "effect_size": 0.2787,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MITOTIC_SPINDLE",
+            "mean_score": 0.167,
+            "overall_mean": 0.0,
+            "fold_change": 2692900934985008.0,
+            "effect_size": 0.2477,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_P53_PATHWAY",
+            "mean_score": 0.164,
+            "overall_mean": -0.0,
+            "fold_change": -468677139736067.1,
+            "effect_size": 0.2432,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ANGIOGENESIS",
+            "mean_score": 0.1475,
+            "overall_mean": 0.0,
+            "fold_change": 361965492445576.3,
+            "effect_size": 0.2185,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_G2M_CHECKPOINT",
+            "mean_score": -0.1351,
+            "overall_mean": -0.0,
+            "fold_change": 9757599821827490.0,
+            "effect_size": -0.1999,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_COAGULATION",
+            "mean_score": 0.13,
+            "overall_mean": -0.0,
+            "fold_change": -2445166295154795.5,
+            "effect_size": 0.1923,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PANCREAS_BETA_CELLS",
+            "mean_score": 0.1261,
+            "overall_mean": 0.0,
+            "fold_change": 605797726085696.5,
+            "effect_size": 0.1865,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+            "mean_score": -0.1011,
+            "overall_mean": 0.0,
+            "fold_change": -608422644678246.4,
+            "effect_size": -0.1493,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYC_TARGETS_V1",
+            "mean_score": -0.0808,
+            "overall_mean": 0.0,
+            "fold_change": -75416057506840.69,
+            "effect_size": -0.1193,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION",
+            "mean_score": 0.0736,
+            "overall_mean": 0.0,
+            "fold_change": 1385069148836616.0,
+            "effect_size": 0.1086,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_NOTCH_SIGNALING",
+            "mean_score": -0.0683,
+            "overall_mean": -0.0,
+            "fold_change": 1762286515810722.8,
+            "effect_size": -0.1008,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_IL2_STAT5_SIGNALING",
+            "mean_score": 0.0659,
+            "overall_mean": -0.0,
+            "fold_change": -212617453285767.9,
+            "effect_size": 0.0972,
+            "p_value": 0.565742,
+            "q_value": 0.565742,
+            "significant": false
+          },
+          {
+            "pathway": "HALLMARK_E2F_TARGETS",
+            "mean_score": -0.0642,
+            "overall_mean": 0.0,
+            "fold_change": null,
+            "effect_size": -0.0947,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_TNFA_SIGNALING_VIA_NFKB",
+            "mean_score": -0.0584,
+            "overall_mean": 0.0,
+            "fold_change": -69436875299681.33,
+            "effect_size": -0.0861,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_KRAS_SIGNALING_UP",
+            "mean_score": -0.0405,
+            "overall_mean": -0.0,
+            "fold_change": 96210500061978.1,
+            "effect_size": -0.0597,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INFLAMMATORY_RESPONSE",
+            "mean_score": 0.0326,
+            "overall_mean": -0.0,
+            "fold_change": -86652778668254.4,
+            "effect_size": 0.0481,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_LATE",
+            "mean_score": -0.0214,
+            "overall_mean": -0.0,
+            "fold_change": 49995122443597.016,
+            "effect_size": -0.0315,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_score": -0.0118,
+            "overall_mean": 0.0,
+            "fold_change": -30653085136626.84,
+            "effect_size": -0.0174,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          }
+        ],
+        "top_genes": [
+          {
+            "gene": "PGM2",
+            "pathway": "HALLMARK_HYPOXIA",
+            "mean_burden": 5.7547,
+            "overall_mean": 5.2254,
+            "fold_change": 1.1013,
+            "effect_size": 1.5138
+          },
+          {
+            "gene": "ADAM9",
+            "pathway": "HALLMARK_COMPLEMENT",
+            "mean_burden": 5.4421,
+            "overall_mean": 4.8221,
+            "fold_change": 1.1286,
+            "effect_size": 1.4075
+          },
+          {
+            "gene": "PDGFC",
+            "pathway": "HALLMARK_IL6_JAK_STAT3_SIGNALING",
+            "mean_burden": 3.9979,
+            "overall_mean": 3.3533,
+            "fold_change": 1.1922,
+            "effect_size": 1.3545
+          },
+          {
+            "gene": "PIK3CB",
+            "pathway": "HALLMARK_APICAL_JUNCTION",
+            "mean_burden": 4.1314,
+            "overall_mean": 3.7068,
+            "fold_change": 1.1145,
+            "effect_size": 1.3212
+          },
+          {
+            "gene": "ATP6V1C1",
+            "pathway": "HALLMARK_UV_RESPONSE_UP",
+            "mean_burden": 6.947,
+            "overall_mean": 6.2028,
+            "fold_change": 1.12,
+            "effect_size": 1.3178
+          },
+          {
+            "gene": "ADAM10",
+            "pathway": "HALLMARK_PROTEIN_SECRETION",
+            "mean_burden": 4.3363,
+            "overall_mean": 3.85,
+            "fold_change": 1.1263,
+            "effect_size": 1.3154
+          },
+          {
+            "gene": "HPGD",
+            "pathway": "HALLMARK_FATTY_ACID_METABOLISM",
+            "mean_burden": 5.6692,
+            "overall_mean": 4.2788,
+            "fold_change": 1.3249,
+            "effect_size": 1.315
+          },
+          {
+            "gene": "SULT1B1",
+            "pathway": "HALLMARK_BILE_ACID_METABOLISM",
+            "mean_burden": 5.9072,
+            "overall_mean": 5.1097,
+            "fold_change": 1.1561,
+            "effect_size": 1.2817
+          },
+          {
+            "gene": "CAB39",
+            "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+            "mean_burden": 6.704,
+            "overall_mean": 6.1495,
+            "fold_change": 1.0902,
+            "effect_size": 1.2713
+          },
+          {
+            "gene": "GMFB",
+            "pathway": "HALLMARK_COMPLEMENT",
+            "mean_burden": 3.5684,
+            "overall_mean": 3.2018,
+            "fold_change": 1.1145,
+            "effect_size": 1.2673
+          },
+          {
+            "gene": "CLTC",
+            "pathway": "HALLMARK_PROTEIN_SECRETION",
+            "mean_burden": 7.3154,
+            "overall_mean": 6.9309,
+            "fold_change": 1.0555,
+            "effect_size": 1.2648
+          },
+          {
+            "gene": "SGMS2",
+            "pathway": "HALLMARK_INFLAMMATORY_RESPONSE",
+            "mean_burden": 4.0146,
+            "overall_mean": 3.5529,
+            "fold_change": 1.1299,
+            "effect_size": 1.2501
+          },
+          {
+            "gene": "AMPD3",
+            "pathway": "HALLMARK_HYPOXIA",
+            "mean_burden": 4.8319,
+            "overall_mean": 4.4158,
+            "fold_change": 1.0942,
+            "effect_size": 1.2432
+          },
+          {
+            "gene": "ISG20",
+            "pathway": "HALLMARK_INTERFERON_GAMMA_RESPONSE",
+            "mean_burden": 7.6464,
+            "overall_mean": 8.2677,
+            "fold_change": 0.9249,
+            "effect_size": -1.2301
+          },
+          {
+            "gene": "MEF2A",
+            "pathway": "HALLMARK_MYOGENESIS",
+            "mean_burden": 6.2392,
+            "overall_mean": 5.6767,
+            "fold_change": 1.0991,
+            "effect_size": 1.2228
+          },
+          {
+            "gene": "PGK1",
+            "pathway": "HALLMARK_MYC_TARGETS_V1",
+            "mean_burden": 9.6272,
+            "overall_mean": 9.2604,
+            "fold_change": 1.0396,
+            "effect_size": 1.2185
+          },
+          {
+            "gene": "SDHC",
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_burden": 6.7482,
+            "overall_mean": 6.3805,
+            "fold_change": 1.0576,
+            "effect_size": 1.2149
+          },
+          {
+            "gene": "ACTR3",
+            "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+            "mean_burden": 9.2186,
+            "overall_mean": 8.8339,
+            "fold_change": 1.0435,
+            "effect_size": 1.1938
+          },
+          {
+            "gene": "IRAK4",
+            "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+            "mean_burden": 5.0312,
+            "overall_mean": 4.6698,
+            "fold_change": 1.0774,
+            "effect_size": 1.1864
+          },
+          {
+            "gene": "RAB27A",
+            "pathway": "HALLMARK_UV_RESPONSE_UP",
+            "mean_burden": 8.7066,
+            "overall_mean": 8.2845,
+            "fold_change": 1.0509,
+            "effect_size": 1.1822
+          }
+        ],
+        "pathway_score_means": {
+          "HALLMARK_ADIPOGENESIS": 0.5741,
+          "HALLMARK_ALLOGRAFT_REJECTION": -0.3152,
+          "HALLMARK_ANDROGEN_RESPONSE": 0.5751,
+          "HALLMARK_ANGIOGENESIS": 0.1475,
+          "HALLMARK_APICAL_JUNCTION": -0.224,
+          "HALLMARK_APICAL_SURFACE": -0.4532,
+          "HALLMARK_APOPTOSIS": -0.2316,
+          "HALLMARK_BILE_ACID_METABOLISM": 0.5391,
+          "HALLMARK_CHOLESTEROL_HOMEOSTASIS": 0.2865,
+          "HALLMARK_COAGULATION": 0.13,
+          "HALLMARK_COMPLEMENT": 0.2119,
+          "HALLMARK_DNA_REPAIR": -0.3402,
+          "HALLMARK_E2F_TARGETS": -0.0642,
+          "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION": 0.0736,
+          "HALLMARK_ESTROGEN_RESPONSE_EARLY": -0.3078,
+          "HALLMARK_ESTROGEN_RESPONSE_LATE": -0.0214,
+          "HALLMARK_FATTY_ACID_METABOLISM": 0.3885,
+          "HALLMARK_G2M_CHECKPOINT": -0.1351,
+          "HALLMARK_GLYCOLYSIS": 0.3519,
+          "HALLMARK_HEDGEHOG_SIGNALING": 0.2015,
+          "HALLMARK_HEME_METABOLISM": -0.2922,
+          "HALLMARK_HYPOXIA": 0.1876,
+          "HALLMARK_IL2_STAT5_SIGNALING": 0.0659,
+          "HALLMARK_IL6_JAK_STAT3_SIGNALING": 0.4538,
+          "HALLMARK_INFLAMMATORY_RESPONSE": 0.0326,
+          "HALLMARK_INTERFERON_ALPHA_RESPONSE": -0.4296,
+          "HALLMARK_INTERFERON_GAMMA_RESPONSE": -0.4067,
+          "HALLMARK_KRAS_SIGNALING_DN": -0.5384,
+          "HALLMARK_KRAS_SIGNALING_UP": -0.0405,
+          "HALLMARK_MITOTIC_SPINDLE": 0.167,
+          "HALLMARK_MTORC1_SIGNALING": 0.3197,
+          "HALLMARK_MYC_TARGETS_V1": -0.0808,
+          "HALLMARK_MYC_TARGETS_V2": -0.4375,
+          "HALLMARK_MYOGENESIS": -0.2788,
+          "HALLMARK_NOTCH_SIGNALING": -0.0683,
+          "HALLMARK_OXIDATIVE_PHOSPHORYLATION": 0.2633,
+          "HALLMARK_P53_PATHWAY": 0.164,
+          "HALLMARK_PANCREAS_BETA_CELLS": 0.1261,
+          "HALLMARK_PEROXISOME": 0.6801,
+          "HALLMARK_PI3K_AKT_MTOR_SIGNALING": 0.345,
+          "HALLMARK_PROTEIN_SECRETION": 0.7409,
+          "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY": 0.2587,
+          "HALLMARK_SPERMATOGENESIS": -0.0118,
+          "HALLMARK_TGF_BETA_SIGNALING": 0.3087,
+          "HALLMARK_TNFA_SIGNALING_VIA_NFKB": -0.0584,
+          "HALLMARK_UNFOLDED_PROTEIN_RESPONSE": -0.1011,
+          "HALLMARK_UV_RESPONSE_DN": 0.382,
+          "HALLMARK_UV_RESPONSE_UP": -0.2199,
+          "HALLMARK_WNT_BETA_CATENIN_SIGNALING": -0.3937,
+          "HALLMARK_XENOBIOTIC_METABOLISM": 0.264
+        }
+      },
+      {
+        "subtype_id": 2,
+        "subtype_label": "subtype_2",
+        "n_samples": 147,
+        "fraction": 0.1833,
+        "mean_confidence": 0.9996,
+        "enriched_pathways": [
+          {
+            "pathway": "HALLMARK_CHOLESTEROL_HOMEOSTASIS",
+            "mean_score": -1.2833,
+            "overall_mean": -0.0,
+            "fold_change": 5173150904369187.0,
+            "effect_size": -1.9785,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HYPOXIA",
+            "mean_score": -1.2179,
+            "overall_mean": -0.0,
+            "fold_change": 4229772563924060.5,
+            "effect_size": -1.8252,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY",
+            "mean_score": -1.1936,
+            "overall_mean": 0.0,
+            "fold_change": -2694533459262187.5,
+            "effect_size": -1.7714,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION",
+            "mean_score": -1.1846,
+            "overall_mean": 0.0,
+            "fold_change": -2.2284877599074476e+16,
+            "effect_size": -1.7519,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+            "mean_score": 1.1824,
+            "overall_mean": 0.0,
+            "fold_change": 1308397938340023.0,
+            "effect_size": 1.747,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_COAGULATION",
+            "mean_score": -1.1766,
+            "overall_mean": -0.0,
+            "fold_change": 2.2133539704951664e+16,
+            "effect_size": -1.7346,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_XENOBIOTIC_METABOLISM",
+            "mean_score": -1.1446,
+            "overall_mean": 0.0,
+            "fold_change": -1485030277550969.2,
+            "effect_size": -1.6675,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_GLYCOLYSIS",
+            "mean_score": -1.0767,
+            "overall_mean": 0.0,
+            "fold_change": -1.2153311369117061e+17,
+            "effect_size": -1.5322,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ANGIOGENESIS",
+            "mean_score": -1.0541,
+            "overall_mean": 0.0,
+            "fold_change": -2586592544148734.5,
+            "effect_size": -1.4892,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYC_TARGETS_V2",
+            "mean_score": 1.0399,
+            "overall_mean": 0.0,
+            "fold_change": 3.353540233629486e+16,
+            "effect_size": 1.4625,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ADIPOGENESIS",
+            "mean_score": -0.9519,
+            "overall_mean": 0.0,
+            "fold_change": -1790639467563457.5,
+            "effect_size": -1.3052,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_DNA_REPAIR",
+            "mean_score": 0.9003,
+            "overall_mean": -0.0,
+            "fold_change": -1510988105169914.2,
+            "effect_size": 1.2181,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYC_TARGETS_V1",
+            "mean_score": 0.8629,
+            "overall_mean": 0.0,
+            "fold_change": 804885617404603.2,
+            "effect_size": 1.1571,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+            "mean_score": -0.8419,
+            "overall_mean": -0.0,
+            "fold_change": 730932597564621.8,
+            "effect_size": -1.1235,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UV_RESPONSE_UP",
+            "mean_score": -0.8316,
+            "overall_mean": 0.0,
+            "fold_change": -957770145508780.6,
+            "effect_size": -1.1072,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_IL6_JAK_STAT3_SIGNALING",
+            "mean_score": -0.8311,
+            "overall_mean": -0.0,
+            "fold_change": 1218251335599060.0,
+            "effect_size": -1.1064,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_P53_PATHWAY",
+            "mean_score": -0.827,
+            "overall_mean": -0.0,
+            "fold_change": 2363203670350158.0,
+            "effect_size": -1.1,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MITOTIC_SPINDLE",
+            "mean_score": -0.795,
+            "overall_mean": 0.0,
+            "fold_change": -1.2818614990976136e+16,
+            "effect_size": -1.0502,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYOGENESIS",
+            "mean_score": -0.7377,
+            "overall_mean": -0.0,
+            "fold_change": 5.55070640914995e+16,
+            "effect_size": -0.9635,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_WNT_BETA_CATENIN_SIGNALING",
+            "mean_score": 0.7229,
+            "overall_mean": 0.0,
+            "fold_change": 7417891014262176.0,
+            "effect_size": 0.9416,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_LATE",
+            "mean_score": -0.7206,
+            "overall_mean": -0.0,
+            "fold_change": 1685708207427795.2,
+            "effect_size": -0.9382,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_score": -0.6436,
+            "overall_mean": 0.0,
+            "fold_change": -1669859213229834.2,
+            "effect_size": -0.8269,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PANCREAS_BETA_CELLS",
+            "mean_score": 0.6026,
+            "overall_mean": 0.0,
+            "fold_change": 2894315387829051.0,
+            "effect_size": 0.7694,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_KRAS_SIGNALING_UP",
+            "mean_score": -0.5694,
+            "overall_mean": -0.0,
+            "fold_change": 1352954077009467.2,
+            "effect_size": -0.7236,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APICAL_JUNCTION",
+            "mean_score": -0.5686,
+            "overall_mean": -0.0,
+            "fold_change": 8022908558319362.0,
+            "effect_size": -0.7226,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MTORC1_SIGNALING",
+            "mean_score": -0.5569,
+            "overall_mean": -0.0,
+            "fold_change": 1337391342985506.0,
+            "effect_size": -0.7065,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HEME_METABOLISM",
+            "mean_score": -0.5548,
+            "overall_mean": 0.0,
+            "fold_change": -1605774328567289.5,
+            "effect_size": -0.7037,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INTERFERON_GAMMA_RESPONSE",
+            "mean_score": 0.5258,
+            "overall_mean": 0.0,
+            "fold_change": 1.18703751570984e+16,
+            "effect_size": 0.6644,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_BILE_ACID_METABOLISM",
+            "mean_score": -0.4893,
+            "overall_mean": 0.0,
+            "fold_change": -1082841403395043.0,
+            "effect_size": -0.6155,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HEDGEHOG_SIGNALING",
+            "mean_score": -0.4885,
+            "overall_mean": -0.0,
+            "fold_change": 7115128914573296.0,
+            "effect_size": -0.6145,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+            "mean_score": 0.4759,
+            "overall_mean": 0.0,
+            "fold_change": 2864873187153160.5,
+            "effect_size": 0.5978,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_FATTY_ACID_METABOLISM",
+            "mean_score": -0.4613,
+            "overall_mean": -0.0,
+            "fold_change": 454694019418717.56,
+            "effect_size": -0.5784,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INTERFERON_ALPHA_RESPONSE",
+            "mean_score": 0.4291,
+            "overall_mean": 0.0,
+            "fold_change": 5381701499220060.0,
+            "effect_size": 0.5363,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ANDROGEN_RESPONSE",
+            "mean_score": -0.4087,
+            "overall_mean": -0.0,
+            "fold_change": 379667801968649.2,
+            "effect_size": -0.5098,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INFLAMMATORY_RESPONSE",
+            "mean_score": -0.4005,
+            "overall_mean": -0.0,
+            "fold_change": 1063647474016915.2,
+            "effect_size": -0.4992,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_KRAS_SIGNALING_DN",
+            "mean_score": -0.3793,
+            "overall_mean": -0.0,
+            "fold_change": 2378153264424540.0,
+            "effect_size": -0.4718,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PROTEIN_SECRETION",
+            "mean_score": -0.3342,
+            "overall_mean": 0.0,
+            "fold_change": -400189676237001.44,
+            "effect_size": -0.4141,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_TNFA_SIGNALING_VIA_NFKB",
+            "mean_score": -0.3324,
+            "overall_mean": 0.0,
+            "fold_change": -395407267275603.5,
+            "effect_size": -0.4118,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APOPTOSIS",
+            "mean_score": -0.3285,
+            "overall_mean": -0.0,
+            "fold_change": 279805576010964.34,
+            "effect_size": -0.4069,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_score": 0.2918,
+            "overall_mean": 0.0,
+            "fold_change": 411707473376840.94,
+            "effect_size": 0.3605,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_NOTCH_SIGNALING",
+            "mean_score": 0.286,
+            "overall_mean": -0.0,
+            "fold_change": -7379619932589669.0,
+            "effect_size": 0.3533,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_E2F_TARGETS",
+            "mean_score": 0.285,
+            "overall_mean": 0.0,
+            "fold_change": null,
+            "effect_size": 0.352,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PEROXISOME",
+            "mean_score": -0.2574,
+            "overall_mean": 0.0,
+            "fold_change": -812713920808991.5,
+            "effect_size": -0.3174,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APICAL_SURFACE",
+            "mean_score": 0.1553,
+            "overall_mean": -0.0,
+            "fold_change": -674088375747664.0,
+            "effect_size": 0.1905,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UV_RESPONSE_DN",
+            "mean_score": -0.1462,
+            "overall_mean": 0.0,
+            "fold_change": -500054402636272.0,
+            "effect_size": -0.1793,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_G2M_CHECKPOINT",
+            "mean_score": -0.1125,
+            "overall_mean": -0.0,
+            "fold_change": 8130110214070440.0,
+            "effect_size": -0.1379,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_TGF_BETA_SIGNALING",
+            "mean_score": -0.104,
+            "overall_mean": -0.0,
+            "fold_change": 198992711864833.3,
+            "effect_size": -0.1274,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_EARLY",
+            "mean_score": -0.0873,
+            "overall_mean": -0.0,
+            "fold_change": 597416691252184.8,
+            "effect_size": -0.107,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_IL2_STAT5_SIGNALING",
+            "mean_score": -0.0472,
+            "overall_mean": -0.0,
+            "fold_change": 152073356990679.6,
+            "effect_size": -0.0577,
+            "p_value": 0.565742,
+            "q_value": 0.565742,
+            "significant": false
+          },
+          {
+            "pathway": "HALLMARK_COMPLEMENT",
+            "mean_score": -0.0469,
+            "overall_mean": 0.0,
+            "fold_change": -24806570610261.984,
+            "effect_size": -0.0574,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          }
+        ],
+        "top_genes": [
+          {
+            "gene": "EVL",
+            "pathway": "HALLMARK_APICAL_JUNCTION",
+            "mean_burden": 5.2851,
+            "overall_mean": 4.0967,
+            "fold_change": 1.2901,
+            "effect_size": 2.2456
+          },
+          {
+            "gene": "GPR18",
+            "pathway": "HALLMARK_INTERFERON_GAMMA_RESPONSE",
+            "mean_burden": 5.7333,
+            "overall_mean": 4.2512,
+            "fold_change": 1.3486,
+            "effect_size": 2.2372
+          },
+          {
+            "gene": "PTCD3",
+            "pathway": "HALLMARK_ADIPOGENESIS",
+            "mean_burden": 3.9574,
+            "overall_mean": 3.3708,
+            "fold_change": 1.174,
+            "effect_size": 2.1535
+          },
+          {
+            "gene": "FLT3LG",
+            "pathway": "HALLMARK_IL2_STAT5_SIGNALING",
+            "mean_burden": 3.9333,
+            "overall_mean": 3.0751,
+            "fold_change": 1.2791,
+            "effect_size": 2.1254
+          },
+          {
+            "gene": "DYRK2",
+            "pathway": "HALLMARK_COMPLEMENT",
+            "mean_burden": 4.1615,
+            "overall_mean": 3.1655,
+            "fold_change": 1.3146,
+            "effect_size": 2.0826
+          },
+          {
+            "gene": "LCK",
+            "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+            "mean_burden": 5.5902,
+            "overall_mean": 4.0881,
+            "fold_change": 1.3675,
+            "effect_size": 2.0512
+          },
+          {
+            "gene": "GADD45A",
+            "pathway": "HALLMARK_TNFA_SIGNALING_VIA_NFKB",
+            "mean_burden": 6.0693,
+            "overall_mean": 7.8662,
+            "fold_change": 0.7716,
+            "effect_size": -2.0151
+          },
+          {
+            "gene": "CD3G",
+            "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+            "mean_burden": 6.3163,
+            "overall_mean": 4.7338,
+            "fold_change": 1.3343,
+            "effect_size": 1.9761
+          },
+          {
+            "gene": "SIT1",
+            "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+            "mean_burden": 6.4518,
+            "overall_mean": 5.4796,
+            "fold_change": 1.1774,
+            "effect_size": 1.9699
+          },
+          {
+            "gene": "SDAD1",
+            "pathway": "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+            "mean_burden": 4.3129,
+            "overall_mean": 3.7461,
+            "fold_change": 1.1513,
+            "effect_size": 1.9639
+          },
+          {
+            "gene": "THEM4",
+            "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+            "mean_burden": 3.2293,
+            "overall_mean": 2.5495,
+            "fold_change": 1.2666,
+            "effect_size": 1.9581
+          },
+          {
+            "gene": "CD96",
+            "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+            "mean_burden": 3.796,
+            "overall_mean": 3.0022,
+            "fold_change": 1.2644,
+            "effect_size": 1.9565
+          },
+          {
+            "gene": "SIDT1",
+            "pathway": "HALLMARK_KRAS_SIGNALING_DN",
+            "mean_burden": 4.2667,
+            "overall_mean": 3.3372,
+            "fold_change": 1.2785,
+            "effect_size": 1.9437
+          },
+          {
+            "gene": "CD3D",
+            "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+            "mean_burden": 6.5381,
+            "overall_mean": 5.0072,
+            "fold_change": 1.3057,
+            "effect_size": 1.9411
+          },
+          {
+            "gene": "BCL11B",
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_EARLY",
+            "mean_burden": 5.7085,
+            "overall_mean": 4.0288,
+            "fold_change": 1.4169,
+            "effect_size": 1.9278
+          },
+          {
+            "gene": "AKAP1",
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_EARLY",
+            "mean_burden": 3.6769,
+            "overall_mean": 3.1452,
+            "fold_change": 1.169,
+            "effect_size": 1.9186
+          },
+          {
+            "gene": "LPIN1",
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_burden": 5.3591,
+            "overall_mean": 4.3813,
+            "fold_change": 1.2232,
+            "effect_size": 1.9038
+          },
+          {
+            "gene": "EPHX2",
+            "pathway": "HALLMARK_PEROXISOME",
+            "mean_burden": 3.3034,
+            "overall_mean": 2.4159,
+            "fold_change": 1.3674,
+            "effect_size": 1.8945
+          },
+          {
+            "gene": "GATA3",
+            "pathway": "HALLMARK_COMPLEMENT",
+            "mean_burden": 3.8984,
+            "overall_mean": 3.2708,
+            "fold_change": 1.1919,
+            "effect_size": 1.8937
+          },
+          {
+            "gene": "HLA-DMB",
+            "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+            "mean_burden": 5.4532,
+            "overall_mean": 4.3581,
+            "fold_change": 1.2513,
+            "effect_size": 1.8811
+          }
+        ],
+        "pathway_score_means": {
+          "HALLMARK_ADIPOGENESIS": -0.9519,
+          "HALLMARK_ALLOGRAFT_REJECTION": 1.1824,
+          "HALLMARK_ANDROGEN_RESPONSE": -0.4087,
+          "HALLMARK_ANGIOGENESIS": -1.0541,
+          "HALLMARK_APICAL_JUNCTION": -0.5686,
+          "HALLMARK_APICAL_SURFACE": 0.1553,
+          "HALLMARK_APOPTOSIS": -0.3285,
+          "HALLMARK_BILE_ACID_METABOLISM": -0.4893,
+          "HALLMARK_CHOLESTEROL_HOMEOSTASIS": -1.2833,
+          "HALLMARK_COAGULATION": -1.1766,
+          "HALLMARK_COMPLEMENT": -0.0469,
+          "HALLMARK_DNA_REPAIR": 0.9003,
+          "HALLMARK_E2F_TARGETS": 0.285,
+          "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION": -1.1846,
+          "HALLMARK_ESTROGEN_RESPONSE_EARLY": -0.0873,
+          "HALLMARK_ESTROGEN_RESPONSE_LATE": -0.7206,
+          "HALLMARK_FATTY_ACID_METABOLISM": -0.4613,
+          "HALLMARK_G2M_CHECKPOINT": -0.1125,
+          "HALLMARK_GLYCOLYSIS": -1.0767,
+          "HALLMARK_HEDGEHOG_SIGNALING": -0.4885,
+          "HALLMARK_HEME_METABOLISM": -0.5548,
+          "HALLMARK_HYPOXIA": -1.2179,
+          "HALLMARK_IL2_STAT5_SIGNALING": -0.0472,
+          "HALLMARK_IL6_JAK_STAT3_SIGNALING": -0.8311,
+          "HALLMARK_INFLAMMATORY_RESPONSE": -0.4005,
+          "HALLMARK_INTERFERON_ALPHA_RESPONSE": 0.4291,
+          "HALLMARK_INTERFERON_GAMMA_RESPONSE": 0.5258,
+          "HALLMARK_KRAS_SIGNALING_DN": -0.3793,
+          "HALLMARK_KRAS_SIGNALING_UP": -0.5694,
+          "HALLMARK_MITOTIC_SPINDLE": -0.795,
+          "HALLMARK_MTORC1_SIGNALING": -0.5569,
+          "HALLMARK_MYC_TARGETS_V1": 0.8629,
+          "HALLMARK_MYC_TARGETS_V2": 1.0399,
+          "HALLMARK_MYOGENESIS": -0.7377,
+          "HALLMARK_NOTCH_SIGNALING": 0.286,
+          "HALLMARK_OXIDATIVE_PHOSPHORYLATION": 0.2918,
+          "HALLMARK_P53_PATHWAY": -0.827,
+          "HALLMARK_PANCREAS_BETA_CELLS": 0.6026,
+          "HALLMARK_PEROXISOME": -0.2574,
+          "HALLMARK_PI3K_AKT_MTOR_SIGNALING": -0.8419,
+          "HALLMARK_PROTEIN_SECRETION": -0.3342,
+          "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY": -1.1936,
+          "HALLMARK_SPERMATOGENESIS": -0.6436,
+          "HALLMARK_TGF_BETA_SIGNALING": -0.104,
+          "HALLMARK_TNFA_SIGNALING_VIA_NFKB": -0.3324,
+          "HALLMARK_UNFOLDED_PROTEIN_RESPONSE": 0.4759,
+          "HALLMARK_UV_RESPONSE_DN": -0.1462,
+          "HALLMARK_UV_RESPONSE_UP": -0.8316,
+          "HALLMARK_WNT_BETA_CATENIN_SIGNALING": 0.7229,
+          "HALLMARK_XENOBIOTIC_METABOLISM": -1.1446
+        }
+      },
+      {
+        "subtype_id": 3,
+        "subtype_label": "subtype_3",
+        "n_samples": 305,
+        "fraction": 0.3803,
+        "mean_confidence": 0.9977,
+        "enriched_pathways": [
+          {
+            "pathway": "HALLMARK_KRAS_SIGNALING_DN",
+            "mean_score": 0.7227,
+            "overall_mean": -0.0,
+            "fold_change": -4531642702121248.0,
+            "effect_size": 1.4142,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_score": -0.7058,
+            "overall_mean": 0.0,
+            "fold_change": -995787719069320.6,
+            "effect_size": -1.3664,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYC_TARGETS_V1",
+            "mean_score": -0.6516,
+            "overall_mean": 0.0,
+            "fold_change": -607801460783694.6,
+            "effect_size": -1.2222,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYOGENESIS",
+            "mean_score": 0.644,
+            "overall_mean": -0.0,
+            "fold_change": -4.845574051993728e+16,
+            "effect_size": 1.203,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_E2F_TARGETS",
+            "mean_score": -0.6437,
+            "overall_mean": 0.0,
+            "fold_change": null,
+            "effect_size": -1.2025,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PROTEIN_SECRETION",
+            "mean_score": -0.5562,
+            "overall_mean": 0.0,
+            "fold_change": -666094760924977.2,
+            "effect_size": -0.9967,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PEROXISOME",
+            "mean_score": -0.5482,
+            "overall_mean": 0.0,
+            "fold_change": -1730815806896703.5,
+            "effect_size": -0.9791,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APICAL_JUNCTION",
+            "mean_score": 0.5373,
+            "overall_mean": -0.0,
+            "fold_change": -7580410079166278.0,
+            "effect_size": 0.9553,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+            "mean_score": -0.5183,
+            "overall_mean": 0.0,
+            "fold_change": -3120265291791229.5,
+            "effect_size": -0.9148,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_DNA_REPAIR",
+            "mean_score": -0.5147,
+            "overall_mean": -0.0,
+            "fold_change": 863821133652595.0,
+            "effect_size": -0.9071,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MTORC1_SIGNALING",
+            "mean_score": -0.4741,
+            "overall_mean": -0.0,
+            "fold_change": 1138500233391528.0,
+            "effect_size": -0.8235,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_FATTY_ACID_METABOLISM",
+            "mean_score": -0.4671,
+            "overall_mean": -0.0,
+            "fold_change": 460483628916482.8,
+            "effect_size": -0.8095,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APICAL_SURFACE",
+            "mean_score": 0.4523,
+            "overall_mean": -0.0,
+            "fold_change": -1963695077538081.8,
+            "effect_size": 0.7802,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION",
+            "mean_score": 0.4443,
+            "overall_mean": 0.0,
+            "fold_change": 8357436662363088.0,
+            "effect_size": 0.7643,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_G2M_CHECKPOINT",
+            "mean_score": -0.432,
+            "overall_mean": -0.0,
+            "fold_change": 3.120478023920586e+16,
+            "effect_size": -0.7404,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_COAGULATION",
+            "mean_score": 0.423,
+            "overall_mean": -0.0,
+            "fold_change": -7958225778677533.0,
+            "effect_size": 0.7231,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_BILE_ACID_METABOLISM",
+            "mean_score": -0.4129,
+            "overall_mean": 0.0,
+            "fold_change": -913872388082671.0,
+            "effect_size": -0.7038,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ANDROGEN_RESPONSE",
+            "mean_score": -0.4079,
+            "overall_mean": -0.0,
+            "fold_change": 378914064428862.2,
+            "effect_size": -0.6942,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HYPOXIA",
+            "mean_score": 0.4004,
+            "overall_mean": -0.0,
+            "fold_change": -1390464916519137.0,
+            "effect_size": 0.68,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_EARLY",
+            "mean_score": 0.3979,
+            "overall_mean": -0.0,
+            "fold_change": -2721972666851983.0,
+            "effect_size": 0.6754,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PANCREAS_BETA_CELLS",
+            "mean_score": -0.3948,
+            "overall_mean": 0.0,
+            "fold_change": -1896231413904457.5,
+            "effect_size": -0.6695,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INFLAMMATORY_RESPONSE",
+            "mean_score": 0.3833,
+            "overall_mean": -0.0,
+            "fold_change": -1017940198439465.9,
+            "effect_size": 0.6481,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_APOPTOSIS",
+            "mean_score": 0.3758,
+            "overall_mean": -0.0,
+            "fold_change": -320146166987489.94,
+            "effect_size": 0.6342,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_KRAS_SIGNALING_UP",
+            "mean_score": 0.3755,
+            "overall_mean": -0.0,
+            "fold_change": -892235343243839.5,
+            "effect_size": 0.6336,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_TNFA_SIGNALING_VIA_NFKB",
+            "mean_score": 0.3357,
+            "overall_mean": 0.0,
+            "fold_change": 399396000643573.7,
+            "effect_size": 0.5612,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ADIPOGENESIS",
+            "mean_score": -0.3291,
+            "overall_mean": 0.0,
+            "fold_change": -619024954958506.0,
+            "effect_size": -0.5493,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HEME_METABOLISM",
+            "mean_score": 0.32,
+            "overall_mean": 0.0,
+            "fold_change": 925996685389254.8,
+            "effect_size": 0.533,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ANGIOGENESIS",
+            "mean_score": 0.2876,
+            "overall_mean": 0.0,
+            "fold_change": 705720384019048.2,
+            "effect_size": 0.4761,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_P53_PATHWAY",
+            "mean_score": 0.2841,
+            "overall_mean": -0.0,
+            "fold_change": -811878966929922.2,
+            "effect_size": 0.47,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_MYC_TARGETS_V2",
+            "mean_score": -0.282,
+            "overall_mean": 0.0,
+            "fold_change": -9093212384407728.0,
+            "effect_size": -0.4663,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_HEDGEHOG_SIGNALING",
+            "mean_score": 0.2787,
+            "overall_mean": -0.0,
+            "fold_change": -4059486876588501.5,
+            "effect_size": 0.4606,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+            "mean_score": 0.2588,
+            "overall_mean": -0.0,
+            "fold_change": -224727469804177.22,
+            "effect_size": 0.4263,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INTERFERON_ALPHA_RESPONSE",
+            "mean_score": 0.2512,
+            "overall_mean": 0.0,
+            "fold_change": 3149947386985581.0,
+            "effect_size": 0.4131,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_SPERMATOGENESIS",
+            "mean_score": -0.2418,
+            "overall_mean": 0.0,
+            "fold_change": -627348019030922.6,
+            "effect_size": -0.3971,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UV_RESPONSE_UP",
+            "mean_score": 0.2353,
+            "overall_mean": 0.0,
+            "fold_change": 270979369285168.8,
+            "effect_size": 0.386,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_NOTCH_SIGNALING",
+            "mean_score": 0.2107,
+            "overall_mean": -0.0,
+            "fold_change": -5436881884845276.0,
+            "effect_size": 0.3446,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_INTERFERON_GAMMA_RESPONSE",
+            "mean_score": 0.2023,
+            "overall_mean": 0.0,
+            "fold_change": 4566029538574832.0,
+            "effect_size": 0.3304,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_IL6_JAK_STAT3_SIGNALING",
+            "mean_score": 0.1955,
+            "overall_mean": -0.0,
+            "fold_change": -286509419178725.0,
+            "effect_size": 0.319,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_GLYCOLYSIS",
+            "mean_score": -0.193,
+            "overall_mean": 0.0,
+            "fold_change": -2.1788805275763188e+16,
+            "effect_size": -0.3149,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_WNT_BETA_CATENIN_SIGNALING",
+            "mean_score": 0.1762,
+            "overall_mean": 0.0,
+            "fold_change": 1808069545358933.5,
+            "effect_size": 0.2869,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_XENOBIOTIC_METABOLISM",
+            "mean_score": 0.1482,
+            "overall_mean": 0.0,
+            "fold_change": 192316872675712.1,
+            "effect_size": 0.2407,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+            "mean_score": -0.1339,
+            "overall_mean": 0.0,
+            "fold_change": -148155911874761.94,
+            "effect_size": -0.2171,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_CHOLESTEROL_HOMEOSTASIS",
+            "mean_score": 0.1246,
+            "overall_mean": -0.0,
+            "fold_change": -502134107768143.0,
+            "effect_size": 0.2018,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY",
+            "mean_score": 0.0851,
+            "overall_mean": 0.0,
+            "fold_change": 192216634544938.38,
+            "effect_size": 0.1376,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_UV_RESPONSE_DN",
+            "mean_score": -0.0782,
+            "overall_mean": 0.0,
+            "fold_change": -267526536986627.0,
+            "effect_size": -0.1264,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_LATE",
+            "mean_score": 0.0363,
+            "overall_mean": -0.0,
+            "fold_change": -85004396954163.1,
+            "effect_size": 0.0586,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_IL2_STAT5_SIGNALING",
+            "mean_score": -0.0292,
+            "overall_mean": -0.0,
+            "fold_change": 94236860414024.16,
+            "effect_size": -0.0471,
+            "p_value": 0.565742,
+            "q_value": 0.565742,
+            "significant": false
+          },
+          {
+            "pathway": "HALLMARK_MITOTIC_SPINDLE",
+            "mean_score": -0.0153,
+            "overall_mean": 0.0,
+            "fold_change": -246975971167444.1,
+            "effect_size": -0.0247,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_COMPLEMENT",
+            "mean_score": -0.0056,
+            "overall_mean": 0.0,
+            "fold_change": -2943543160065.63,
+            "effect_size": -0.009,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          },
+          {
+            "pathway": "HALLMARK_TGF_BETA_SIGNALING",
+            "mean_score": -0.0027,
+            "overall_mean": -0.0,
+            "fold_change": 5196283697144.727,
+            "effect_size": -0.0044,
+            "p_value": 0.0,
+            "q_value": 0.0,
+            "significant": true
+          }
+        ],
+        "top_genes": [
+          {
+            "gene": "MDH1",
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_burden": 6.3702,
+            "overall_mean": 6.8144,
+            "fold_change": 0.9348,
+            "effect_size": -1.6036
+          },
+          {
+            "gene": "GNPAT",
+            "pathway": "HALLMARK_PEROXISOME",
+            "mean_burden": 4.6816,
+            "overall_mean": 5.1144,
+            "fold_change": 0.9154,
+            "effect_size": -1.5713
+          },
+          {
+            "gene": "ACAT1",
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_burden": 3.9022,
+            "overall_mean": 4.5071,
+            "fold_change": 0.8658,
+            "effect_size": -1.5228
+          },
+          {
+            "gene": "ADSL",
+            "pathway": "HALLMARK_FATTY_ACID_METABOLISM",
+            "mean_burden": 6.0691,
+            "overall_mean": 6.5203,
+            "fold_change": 0.9308,
+            "effect_size": -1.4863
+          },
+          {
+            "gene": "NDUFA8",
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_burden": 5.8318,
+            "overall_mean": 6.2611,
+            "fold_change": 0.9314,
+            "effect_size": -1.4858
+          },
+          {
+            "gene": "PSMD14",
+            "pathway": "HALLMARK_MYC_TARGETS_V1",
+            "mean_burden": 4.0235,
+            "overall_mean": 4.5122,
+            "fold_change": 0.8917,
+            "effect_size": -1.4726
+          },
+          {
+            "gene": "RAP1GDS1",
+            "pathway": "HALLMARK_FATTY_ACID_METABOLISM",
+            "mean_burden": 3.1827,
+            "overall_mean": 3.5009,
+            "fold_change": 0.9091,
+            "effect_size": -1.4426
+          },
+          {
+            "gene": "NDUFB5",
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_burden": 5.4252,
+            "overall_mean": 5.8522,
+            "fold_change": 0.927,
+            "effect_size": -1.4398
+          },
+          {
+            "gene": "XPOT",
+            "pathway": "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+            "mean_burden": 4.9003,
+            "overall_mean": 5.3477,
+            "fold_change": 0.9163,
+            "effect_size": -1.4267
+          },
+          {
+            "gene": "EED",
+            "pathway": "HALLMARK_E2F_TARGETS",
+            "mean_burden": 3.6768,
+            "overall_mean": 4.0991,
+            "fold_change": 0.897,
+            "effect_size": -1.4249
+          },
+          {
+            "gene": "RALA",
+            "pathway": "HALLMARK_DNA_REPAIR",
+            "mean_burden": 3.8172,
+            "overall_mean": 4.1239,
+            "fold_change": 0.9256,
+            "effect_size": -1.4188
+          },
+          {
+            "gene": "TM7SF3",
+            "pathway": "HALLMARK_P53_PATHWAY",
+            "mean_burden": 5.2709,
+            "overall_mean": 5.7593,
+            "fold_change": 0.9152,
+            "effect_size": -1.4178
+          },
+          {
+            "gene": "DNM1L",
+            "pathway": "HALLMARK_PROTEIN_SECRETION",
+            "mean_burden": 3.5869,
+            "overall_mean": 3.902,
+            "fold_change": 0.9193,
+            "effect_size": -1.4153
+          },
+          {
+            "gene": "ACADM",
+            "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+            "mean_burden": 2.7254,
+            "overall_mean": 3.1002,
+            "fold_change": 0.8791,
+            "effect_size": -1.4123
+          },
+          {
+            "gene": "METTL3",
+            "pathway": "HALLMARK_ESTROGEN_RESPONSE_LATE",
+            "mean_burden": 3.3105,
+            "overall_mean": 3.5842,
+            "fold_change": 0.9236,
+            "effect_size": -1.4122
+          },
+          {
+            "gene": "ILF2",
+            "pathway": "HALLMARK_MYC_TARGETS_V1",
+            "mean_burden": 5.9623,
+            "overall_mean": 6.3302,
+            "fold_change": 0.9419,
+            "effect_size": -1.4113
+          },
+          {
+            "gene": "ADH5",
+            "pathway": "HALLMARK_XENOBIOTIC_METABOLISM",
+            "mean_burden": 3.4598,
+            "overall_mean": 3.8315,
+            "fold_change": 0.903,
+            "effect_size": -1.4048
+          },
+          {
+            "gene": "OSTC",
+            "pathway": "HALLMARK_FATTY_ACID_METABOLISM",
+            "mean_burden": 5.0307,
+            "overall_mean": 5.5209,
+            "fold_change": 0.9112,
+            "effect_size": -1.3996
+          },
+          {
+            "gene": "EIF2S1",
+            "pathway": "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+            "mean_burden": 3.7018,
+            "overall_mean": 3.9736,
+            "fold_change": 0.9316,
+            "effect_size": -1.3916
+          },
+          {
+            "gene": "NUDT21",
+            "pathway": "HALLMARK_E2F_TARGETS",
+            "mean_burden": 3.391,
+            "overall_mean": 3.7493,
+            "fold_change": 0.9044,
+            "effect_size": -1.3909
+          }
+        ],
+        "pathway_score_means": {
+          "HALLMARK_ADIPOGENESIS": -0.3291,
+          "HALLMARK_ALLOGRAFT_REJECTION": -0.1339,
+          "HALLMARK_ANDROGEN_RESPONSE": -0.4079,
+          "HALLMARK_ANGIOGENESIS": 0.2876,
+          "HALLMARK_APICAL_JUNCTION": 0.5373,
+          "HALLMARK_APICAL_SURFACE": 0.4523,
+          "HALLMARK_APOPTOSIS": 0.3758,
+          "HALLMARK_BILE_ACID_METABOLISM": -0.4129,
+          "HALLMARK_CHOLESTEROL_HOMEOSTASIS": 0.1246,
+          "HALLMARK_COAGULATION": 0.423,
+          "HALLMARK_COMPLEMENT": -0.0056,
+          "HALLMARK_DNA_REPAIR": -0.5147,
+          "HALLMARK_E2F_TARGETS": -0.6437,
+          "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION": 0.4443,
+          "HALLMARK_ESTROGEN_RESPONSE_EARLY": 0.3979,
+          "HALLMARK_ESTROGEN_RESPONSE_LATE": 0.0363,
+          "HALLMARK_FATTY_ACID_METABOLISM": -0.4671,
+          "HALLMARK_G2M_CHECKPOINT": -0.432,
+          "HALLMARK_GLYCOLYSIS": -0.193,
+          "HALLMARK_HEDGEHOG_SIGNALING": 0.2787,
+          "HALLMARK_HEME_METABOLISM": 0.32,
+          "HALLMARK_HYPOXIA": 0.4004,
+          "HALLMARK_IL2_STAT5_SIGNALING": -0.0292,
+          "HALLMARK_IL6_JAK_STAT3_SIGNALING": 0.1955,
+          "HALLMARK_INFLAMMATORY_RESPONSE": 0.3833,
+          "HALLMARK_INTERFERON_ALPHA_RESPONSE": 0.2512,
+          "HALLMARK_INTERFERON_GAMMA_RESPONSE": 0.2023,
+          "HALLMARK_KRAS_SIGNALING_DN": 0.7227,
+          "HALLMARK_KRAS_SIGNALING_UP": 0.3755,
+          "HALLMARK_MITOTIC_SPINDLE": -0.0153,
+          "HALLMARK_MTORC1_SIGNALING": -0.4741,
+          "HALLMARK_MYC_TARGETS_V1": -0.6516,
+          "HALLMARK_MYC_TARGETS_V2": -0.282,
+          "HALLMARK_MYOGENESIS": 0.644,
+          "HALLMARK_NOTCH_SIGNALING": 0.2107,
+          "HALLMARK_OXIDATIVE_PHOSPHORYLATION": -0.7058,
+          "HALLMARK_P53_PATHWAY": 0.2841,
+          "HALLMARK_PANCREAS_BETA_CELLS": -0.3948,
+          "HALLMARK_PEROXISOME": -0.5482,
+          "HALLMARK_PI3K_AKT_MTOR_SIGNALING": 0.2588,
+          "HALLMARK_PROTEIN_SECRETION": -0.5562,
+          "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY": 0.0851,
+          "HALLMARK_SPERMATOGENESIS": -0.2418,
+          "HALLMARK_TGF_BETA_SIGNALING": -0.0027,
+          "HALLMARK_TNFA_SIGNALING_VIA_NFKB": 0.3357,
+          "HALLMARK_UNFOLDED_PROTEIN_RESPONSE": -0.5183,
+          "HALLMARK_UV_RESPONSE_DN": -0.0782,
+          "HALLMARK_UV_RESPONSE_UP": 0.2353,
+          "HALLMARK_WNT_BETA_CATENIN_SIGNALING": 0.1762,
+          "HALLMARK_XENOBIOTIC_METABOLISM": 0.1482
+        }
+      }
+    ]
+  },
+  "disclaimer": "Research use only. Not for clinical decision-making."
+}

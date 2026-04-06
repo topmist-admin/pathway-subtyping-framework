@@ -1,0 +1,49 @@
+2026-04-06 12:36:56,542 - pathway_subtyping.pipeline - INFO - Set random seed: 42
+2026-04-06 12:36:56,542 - pathway_subtyping.pipeline - INFO - Output directory: outputs/sepsis_gse65682_k4
+2026-04-06 12:36:56,542 - pathway_subtyping.pipeline - INFO - Loading input data...
+2026-04-06 12:36:56,968 - pathway_subtyping.expression - INFO - [Expression] Detected genes as rows — transposed to (802 samples x 11518 genes)
+2026-04-06 12:36:57,223 - pathway_subtyping.expression - INFO - [Expression] Loaded 802 samples x 11518 genes (from 11518 raw)
+2026-04-06 12:36:57,225 - pathway_subtyping.pipeline - INFO - Loaded: 11518 genes, 802 samples, 50 pathways
+2026-04-06 12:36:57,225 - pathway_subtyping.pipeline - INFO - [Pipeline] 802 samples with both data and phenotypes
+2026-04-06 12:36:57,226 - pathway_subtyping.expression - INFO - [Expression] Scoring 50 pathways via ssgsea (802 samples, 11518 genes)
+2026-04-06 12:37:22,636 - pathway_subtyping.expression - INFO - [Expression] Scored 50 pathways, skipped 0 (mean gene coverage: 73.6%)
+2026-04-06 12:37:22,636 - pathway_subtyping.pipeline - INFO - [Expression] Scored 50 pathways via ssgsea (skipped 0)
+2026-04-06 12:37:22,636 - pathway_subtyping.pipeline - INFO - Clustering samples into subtypes...
+2026-04-06 12:37:22,789 - pathway_subtyping.pipeline - INFO - Silhouette score: 0.094
+2026-04-06 12:37:22,789 - pathway_subtyping.pipeline - INFO - Assigned 802 samples to 4 clusters
+2026-04-06 12:37:22,789 - pathway_subtyping.pipeline - INFO - Running validation gates...
+2026-04-06 12:37:22,789 - pathway_subtyping.threshold_calibration - INFO - [Calibration] Calibrating thresholds for n=802, k=4, method=auto
+2026-04-06 12:37:22,789 - pathway_subtyping.threshold_calibration - INFO - [Calibration] Data dimensions outside lookup grid, falling back to simulation
+2026-04-06 12:37:22,789 - pathway_subtyping.threshold_calibration - INFO - [Calibration] Running 200 simulations for calibration...
+2026-04-06 12:37:43,006 - pathway_subtyping.threshold_calibration - INFO - [Calibration] Simulated: null_ari=0.0041, stability=0.6212
+2026-04-06 12:37:43,006 - pathway_subtyping.pipeline - INFO - [Calibration] Auto-calibrated thresholds for n=802, k=4: null_ari=0.0041, stability=0.6212
+2026-04-06 12:37:43,006 - pathway_subtyping.validation - INFO - Running validation gates...
+2026-04-06 12:37:49,560 - pathway_subtyping.validation - INFO -   - Negative Control 1: Label Shuffle: PASS (ARI = 0.000)
+2026-04-06 12:38:04,130 - pathway_subtyping.validation - INFO -   - Negative Control 2: Random Gene Sets: FAIL (ARI = 0.111)
+2026-04-06 12:38:05,789 - pathway_subtyping.validation - INFO -   - Stability Test: Bootstrap: FAIL (ARI = 0.355)
+2026-04-06 12:38:05,789 - pathway_subtyping.pipeline - INFO - Validation Gates: FAIL
+2026-04-06 12:38:05,789 - pathway_subtyping.pipeline - INFO -   1/3 validation gates passed. FAILED: Negative Control 2: Random Gene Sets, Stability Test: Bootstrap
+2026-04-06 12:38:05,789 - pathway_subtyping.pipeline - INFO - Running subtype characterization...
+2026-04-06 12:38:05,790 - pathway_subtyping.characterization - INFO - [Characterization] Starting subtype characterization...
+2026-04-06 12:38:05,790 - pathway_subtyping.characterization - INFO - [Characterization] Running pathway enrichment analysis...
+2026-04-06 12:38:05,808 - pathway_subtyping.characterization - INFO - [Characterization] Found 196 significant pathway-subtype associations (FDR < 0.05)
+2026-04-06 12:38:05,808 - pathway_subtyping.characterization - INFO - [Characterization] Computing gene contribution scores...
+2026-04-06 12:38:06,104 - pathway_subtyping.characterization - INFO - [Characterization] Analyzed 3117 genes across 50 pathways
+2026-04-06 12:38:06,106 - pathway_subtyping.characterization - INFO - [Characterization] Characterized 4 subtypes across 50 pathways
+2026-04-06 12:38:06,576 - pathway_subtyping.characterization - INFO - [Characterization] Saved heatmap: outputs/sepsis_gse65682_k4/figures/subtype_heatmap.png
+2026-04-06 12:38:06,579 - pathway_subtyping.characterization - INFO - [Characterization] Exported CSV files to outputs/sepsis_gse65682_k4/characterization
+2026-04-06 12:38:06,579 - pathway_subtyping.pipeline - INFO - Subtype characterization complete
+2026-04-06 12:38:06,579 - pathway_subtyping.pipeline - INFO - Generating outputs...
+2026-04-06 12:38:06,599 - pathway_subtyping.pipeline - INFO - Saved pathway scores: outputs/sepsis_gse65682_k4/pathway_scores.csv
+2026-04-06 12:38:06,600 - pathway_subtyping.pipeline - INFO - Saved cluster assignments: outputs/sepsis_gse65682_k4/subtype_assignments.csv
+2026-04-06 12:38:06,827 - pathway_subtyping.pipeline - INFO - Saved summary figure: outputs/sepsis_gse65682_k4/figures/summary.png
+2026-04-06 12:38:06,860 - pathway_subtyping.visualization - INFO - [Visualization] PCA: 40.0% variance explained
+2026-04-06 12:38:07,089 - pathway_subtyping.visualization - INFO - [Visualization] Interactive report saved: outputs/sepsis_gse65682_k4/figures/interactive_report.html
+2026-04-06 12:38:07,092 - pathway_subtyping.pipeline - INFO - Saved JSON report: outputs/sepsis_gse65682_k4/report.json
+2026-04-06 12:38:07,092 - pathway_subtyping.pipeline - INFO - Saved Markdown report: outputs/sepsis_gse65682_k4/report.md
+2026-04-06 12:38:07,166 - pathway_subtyping.pipeline - INFO - Saved metadata: outputs/sepsis_gse65682_k4/run_metadata.yaml
+2026-04-06 12:38:07,166 - pathway_subtyping.pipeline - INFO - All outputs saved to: outputs/sepsis_gse65682_k4
+2026-04-06 12:38:07,166 - pathway_subtyping.pipeline - INFO - ============================================================
+2026-04-06 12:38:07,166 - pathway_subtyping.pipeline - INFO - Pipeline completed successfully in 70.6 seconds
+2026-04-06 12:38:07,166 - pathway_subtyping.pipeline - INFO - Outputs: outputs/sepsis_gse65682_k4
+2026-04-06 12:38:07,166 - pathway_subtyping.pipeline - INFO - ============================================================

@@ -1,0 +1,5 @@
+subtype_id,subtype_label,n_samples,fraction,mean_confidence,n_significant_pathways,top_pathway
+0,subtype_0,92,0.1147,0.9999,49,HALLMARK_G2M_CHECKPOINT
+1,subtype_1,258,0.3217,0.9966,49,HALLMARK_PROTEIN_SECRETION
+2,subtype_2,147,0.1833,0.9996,49,HALLMARK_CHOLESTEROL_HOMEOSTASIS
+3,subtype_3,305,0.3803,0.9977,49,HALLMARK_KRAS_SIGNALING_DN
