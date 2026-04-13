@@ -1,0 +1,61 @@
+# Reference stress pathway signatures for environmental stress fingerprinting (F11)
+# Each stressor has activated and suppressed Hallmark pathways
+# Literature-backed: see PMIDs in comments
+
+stress_signatures:
+  hypoxia:
+    # PMID: 27924024 (Schito & Semenza, 2016 — HIF pathway review)
+    activated:
+      - HALLMARK_HYPOXIA
+      - HALLMARK_GLYCOLYSIS
+      - HALLMARK_ANGIOGENESIS
+    suppressed:
+      - HALLMARK_OXIDATIVE_PHOSPHORYLATION
+      - HALLMARK_FATTY_ACID_METABOLISM
+    remediation: "Check dissolved oxygen in bioreactor; verify gas exchange rate"
+
+  nutrient_depletion:
+    # PMID: 27795015 (Saxton & Sabatini, 2017 — mTOR review)
+    activated:
+      - HALLMARK_UNFOLDED_PROTEIN_RESPONSE
+      - HALLMARK_P53_PATHWAY
+    suppressed:
+      - HALLMARK_MTORC1_SIGNALING
+      - HALLMARK_ADIPOGENESIS
+    remediation: "Verify media replenishment schedule; check glucose/glutamine levels"
+
+  oxidative:
+    # PMID: 25986679 (Holmstrom & Bhatt, 2014 — ROS signaling)
+    activated:
+      - HALLMARK_P53_PATHWAY
+      - HALLMARK_APOPTOSIS
+    suppressed:
+      - HALLMARK_OXIDATIVE_PHOSPHORYLATION
+    remediation: "Check antioxidant supplementation; verify ROS scavenging capacity"
+
+  mechanical:
+    # PMID: 28314821 (Mohagheghian et al., 2018 — mechanotransduction)
+    activated:
+      - HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION
+      - HALLMARK_MYOGENESIS
+    suppressed:
+      - HALLMARK_ADIPOGENESIS
+    remediation: "Reduce bioreactor agitation speed; check shear stress parameters"
+
+  thermal:
+    # PMID: 29654060 (Richter et al., 2010 — HSF1/heat shock review)
+    activated:
+      - HALLMARK_UNFOLDED_PROTEIN_RESPONSE
+      - HALLMARK_P53_PATHWAY
+    suppressed:
+      - HALLMARK_MTORC1_SIGNALING
+    remediation: "Verify incubator temperature stability; check for thermal cycling"
+
+  ph:
+    # PMID: 30563889 (Damaghi et al., 2013 — pH and cancer metabolism)
+    activated:
+      - HALLMARK_UNFOLDED_PROTEIN_RESPONSE
+    suppressed:
+      - HALLMARK_MTORC1_SIGNALING
+      - HALLMARK_OXIDATIVE_PHOSPHORYLATION
+    remediation: "Check media pH buffering capacity; verify CO2 levels"

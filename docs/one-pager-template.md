@@ -61,7 +61,7 @@ pip install -r requirements.txt && pip install -e .
 make demo  # Run on synthetic data
 ```
 
-Or try the **[Colab notebook](https://colab.research.google.com/github/[username]/[disease]-pathway-framework/blob/main/examples/notebooks/01_demo.ipynb)** (no installation required).
+Or try the **[demo notebook](../examples/notebooks/00_quick_demo.ipynb)** (no installation required).
 
 ## Links
 

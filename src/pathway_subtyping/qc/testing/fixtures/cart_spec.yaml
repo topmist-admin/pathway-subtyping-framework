@@ -1,0 +1,46 @@
+# CAR T cell manufacturing specification
+# Scenario A: CD19-CAR T expansion over 14 days
+
+product:
+  name: CD19-CAR T cells
+  description: Anti-CD19 chimeric antigen receptor T cells for B-cell malignancy
+
+spec:
+  intended_pathways:
+    - HALLMARK_INFLAMMATORY_RESPONSE      # CAR activation cascade
+    - HALLMARK_TNFA_SIGNALING_VIA_NFKB    # NF-kB signaling (T cell activation)
+    - HALLMARK_IL6_JAK_STAT3_SIGNALING    # Cytokine signaling
+    - HALLMARK_INTERFERON_GAMMA_RESPONSE  # Effector function
+    - HALLMARK_MTORC1_SIGNALING           # Metabolic activation for expansion
+
+  excluded_pathways:
+    - HALLMARK_APOPTOSIS                  # Must not trigger programmed death
+    - HALLMARK_P53_PATHWAY                # DNA damage response = manufacturing failure
+    - HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION  # Not relevant, flag if active
+
+  therapeutic_windows:
+    HALLMARK_INFLAMMATORY_RESPONSE: [0.4, 0.8]
+    HALLMARK_TNFA_SIGNALING_VIA_NFKB: [0.3, 0.7]
+    HALLMARK_IL6_JAK_STAT3_SIGNALING: [0.2, 0.6]
+    HALLMARK_INTERFERON_GAMMA_RESPONSE: [0.3, 0.8]
+    HALLMARK_MTORC1_SIGNALING: [0.3, 0.7]
+
+  heterogeneity_threshold: 0.15  # <15% non-conforming cells
+
+timeline:
+  timepoints: [0, 3, 7, 10, 14]  # Days
+  cells_per_timepoint: 500
+  inject_at:
+    day_7:
+      defect: stress
+      stressor: nutrient_depletion
+      severity: 0.5
+    day_8:
+      action: nutrients_restored
+
+expected_outcomes:
+  day_0: "Low cascade completion, no off-target, low tension"
+  day_3: "Rising cascade completion, tension increasing"
+  day_7: "F11 identifies nutrient stress, F2 shows trajectory stall"
+  day_10: "F4 flags HOLD (cascades incomplete due to stress)"
+  day_14: "F4 PASS, tension normalized, heterogeneity < threshold"

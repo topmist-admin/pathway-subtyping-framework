@@ -1,0 +1,49 @@
+# Default therapeutic windows for pathway dosage analysis (F8)
+# Per-pathway (min, max) z-scored activation ranges
+# Values are z-score thresholds on pathway activation scores
+#
+# UNDER:    activation < min  -> insufficient engineering
+# IN-RANGE: min <= activation <= max  -> target achieved
+# OVER:     activation > max  -> over-activation risk
+
+# General immune cell therapy windows
+immune_therapy:
+  HALLMARK_INFLAMMATORY_RESPONSE: [0.3, 0.8]
+  HALLMARK_TNFA_SIGNALING_VIA_NFKB: [0.2, 0.7]
+  HALLMARK_IL6_JAK_STAT3_SIGNALING: [0.1, 0.5]
+  HALLMARK_INTERFERON_GAMMA_RESPONSE: [0.3, 0.8]
+  HALLMARK_INTERFERON_ALPHA_RESPONSE: [0.2, 0.7]
+  HALLMARK_COMPLEMENT: [0.1, 0.5]
+
+# Neural organoid differentiation windows
+neural_organoid:
+  HALLMARK_NOTCH_SIGNALING: [0.3, 0.7]
+  HALLMARK_WNT_BETA_CATENIN_SIGNALING: [0.4, 0.8]
+  HALLMARK_HEDGEHOG_SIGNALING: [0.2, 0.6]
+  HALLMARK_TGF_BETA_SIGNALING: [0.3, 0.7]
+
+# Metabolic pathway windows (energy-constrained applications)
+metabolic:
+  HALLMARK_OXIDATIVE_PHOSPHORYLATION: [0.4, 0.9]
+  HALLMARK_GLYCOLYSIS: [0.2, 0.6]
+  HALLMARK_FATTY_ACID_METABOLISM: [0.2, 0.7]
+  HALLMARK_MTORC1_SIGNALING: [0.3, 0.7]
+
+# Safety-critical pathways (tight windows)
+safety_critical:
+  HALLMARK_APOPTOSIS: [0.0, 0.3]        # Low is safe; high = cell death
+  HALLMARK_P53_PATHWAY: [0.0, 0.4]      # DNA damage response
+  HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION: [0.0, 0.2]  # EMT = bad in most contexts
+
+# Stoichiometric ratios (pathway_a : pathway_b expected ratio and tolerance)
+stoichiometric_ratios:
+  # Pro-inflammatory to anti-inflammatory balance
+  - pathway_a: HALLMARK_INFLAMMATORY_RESPONSE
+    pathway_b: HALLMARK_IL6_JAK_STAT3_SIGNALING
+    expected_ratio: 1.5
+    tolerance: 0.5
+  # Proliferation to apoptosis balance
+  - pathway_a: HALLMARK_MTORC1_SIGNALING
+    pathway_b: HALLMARK_APOPTOSIS
+    expected_ratio: 3.0
+    tolerance: 1.0

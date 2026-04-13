@@ -61,15 +61,15 @@ class TestEdgeType:
         assert EdgeType.DRUG_TARGETS.value == "drug_targets_gene"
 
     def test_count(self):
-        assert len(EdgeType) == 16
+        assert len(EdgeType) == 17
 
 
 class TestGraphSchema:
     def test_default_schema(self):
         schema = GraphSchema.default_schema()
         assert len(schema.node_types) == 8
-        assert len(schema.edge_types) == 16
-        assert len(schema.valid_edges) == 16
+        assert len(schema.edge_types) == 17
+        assert len(schema.valid_edges) == 17
 
     def test_is_valid_edge(self):
         schema = GraphSchema.default_schema()

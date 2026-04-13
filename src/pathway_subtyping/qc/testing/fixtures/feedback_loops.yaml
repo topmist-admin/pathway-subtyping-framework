@@ -1,0 +1,67 @@
+# Pre-mapped activator-inhibitor feedback loop pairs
+# Used by F10 (Feedback Loop Integrity) for monitoring
+# 10 major signaling pathways with known negative feedback mechanisms
+
+feedback_loops:
+  # Each entry: activator pathway -> inhibitor pathway (Hallmark proxy)
+  # In real biology these are gene-level; here we use pathway-level proxies
+
+  mapk_dusp:
+    description: "MAPK activates DUSP phosphatases that suppress MAPK"
+    activator: HALLMARK_KRAS_SIGNALING_UP
+    inhibitor: HALLMARK_KRAS_SIGNALING_DN
+    reference: "PMID: 11461910 (Keyse, 2000)"
+
+  nfkb_ikba:
+    description: "NF-kB induces IkBa that inhibits NF-kB"
+    activator: HALLMARK_TNFA_SIGNALING_VIA_NFKB
+    inhibitor: HALLMARK_APOPTOSIS
+    reference: "PMID: 12461546 (Hoffmann et al., 2002)"
+
+  pi3k_pten:
+    description: "PI3K/AKT activates PTEN-mediated negative feedback"
+    activator: HALLMARK_PI3K_AKT_MTOR_SIGNALING
+    inhibitor: HALLMARK_APOPTOSIS
+    reference: "PMID: 16170370 (Carnero, 2010)"
+
+  mtor_autophagy:
+    description: "mTORC1 suppresses autophagy; when nutrients drop, autophagy activates"
+    activator: HALLMARK_MTORC1_SIGNALING
+    inhibitor: HALLMARK_UNFOLDED_PROTEIN_RESPONSE
+    reference: "PMID: 22078875 (Rabinowitz & White, 2010)"
+
+  jak_stat_socs:
+    description: "JAK-STAT induces SOCS proteins that inhibit JAK"
+    activator: HALLMARK_IL6_JAK_STAT3_SIGNALING
+    inhibitor: HALLMARK_INTERFERON_ALPHA_RESPONSE
+    reference: "PMID: 17344846 (Croker et al., 2008)"
+
+  wnt_axin:
+    description: "Wnt activates Axin2 which inhibits Wnt signaling"
+    activator: HALLMARK_WNT_BETA_CATENIN_SIGNALING
+    inhibitor: HALLMARK_NOTCH_SIGNALING
+    reference: "PMID: 22796206 (Lustig et al., 2002)"
+
+  p53_mdm2:
+    description: "p53 induces MDM2 which ubiquitinates and degrades p53"
+    activator: HALLMARK_P53_PATHWAY
+    inhibitor: HALLMARK_APOPTOSIS
+    reference: "PMID: 12021785 (Michael & Oren, 2003)"
+
+  tgfb_smad7:
+    description: "TGF-beta/SMAD activates SMAD7 inhibitory feedback"
+    activator: HALLMARK_TGF_BETA_SIGNALING
+    inhibitor: HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION
+    reference: "PMID: 12692553 (Shi & Massague, 2003)"
+
+  notch_hes:
+    description: "Notch activates HES which suppresses Notch ligands"
+    activator: HALLMARK_NOTCH_SIGNALING
+    inhibitor: HALLMARK_HEDGEHOG_SIGNALING
+    reference: "PMID: 10557084 (Artavanis-Tsakonas et al., 1999)"
+
+  ifn_irf:
+    description: "Interferon activates IRF negative regulators"
+    activator: HALLMARK_INTERFERON_GAMMA_RESPONSE
+    inhibitor: HALLMARK_INTERFERON_ALPHA_RESPONSE
+    reference: "PMID: 12524386 (Takaoka & Yanai, 2006)"

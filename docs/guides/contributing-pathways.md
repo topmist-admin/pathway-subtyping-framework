@@ -94,7 +94,7 @@ Include a header with metadata:
 ### 1. Fork and Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/pathway-subtyping-framework
+git clone https://codeberg.org/YOUR_USERNAME/pathway-subtyping-framework
 cd pathway-subtyping-framework
 git checkout -b add-DISEASE-pathways
 ```

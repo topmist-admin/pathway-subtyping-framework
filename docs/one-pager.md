@@ -60,7 +60,7 @@ pip install pathway-subtyping
 pathway-subtyping run --config configs/your_disease.yaml
 ```
 
-Or try the **[demo notebook](examples/notebooks/01_demo.ipynb)** (no installation required).
+Or try the **[demo notebook](../examples/notebooks/00_quick_demo.ipynb)** (no installation required).
 
 ## Links
 

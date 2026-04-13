@@ -414,6 +414,585 @@ class KnowledgeGraph:
 
         return sub
 
+    # ── Topology-aware methods (v0.5 QC layer support) ────────────────
+
+    def get_pathway_genes(self, pathway_id: str) -> List[str]:
+        """Get all gene nodes connected to a pathway via GENE_IN_PATHWAY edges.
+
+        Args:
+            pathway_id: Pathway node ID.
+
+        Returns:
+            List of gene node IDs in the pathway.
+        """
+        return self.get_neighbors(pathway_id, EdgeType.GENE_IN_PATHWAY, direction="in")
+
+    def get_pathway_subgraph(self, pathway_id: str) -> "KnowledgeGraph":
+        """Extract a subgraph containing only genes in a pathway and their edges.
+
+        Args:
+            pathway_id: Pathway node ID.
+
+        Returns:
+            KnowledgeGraph containing only pathway genes and inter-gene edges.
+        """
+        genes = self.get_pathway_genes(pathway_id)
+        return self.subgraph(genes, include_edges=True)
+
+    def get_directed_edges_in_pathway(
+        self,
+        pathway_id: str,
+        exclude_symmetric: bool = True,
+    ) -> List[Tuple[str, str, float]]:
+        """Get directed (non-symmetric) edges between genes in a pathway.
+
+        Args:
+            pathway_id: Pathway node ID.
+            exclude_symmetric: If True, exclude PPI and co-expression edges
+                (which are symmetric and don't indicate signal direction).
+
+        Returns:
+            List of (source, target, weight) tuples for directed edges.
+        """
+        from .schema import EDGE_TYPE_METADATA
+
+        genes = set(self.get_pathway_genes(pathway_id))
+        directed = []
+
+        for source, target, data in self._graph.edges(data=True):
+            if source not in genes or target not in genes:
+                continue
+            edge_type_val = data.get("edge_type")
+            if edge_type_val is None:
+                continue
+            try:
+                et = EdgeType(edge_type_val)
+            except ValueError:
+                continue
+
+            if exclude_symmetric:
+                meta = EDGE_TYPE_METADATA.get(et, {})
+                if meta.get("symmetric", False):
+                    continue
+
+            weight = data.get("weight", 1.0)
+            directed.append((source, target, weight))
+
+        return directed
+
+    def get_in_degree(
+        self,
+        node_id: str,
+        edge_type: Optional[EdgeType] = None,
+        within_nodes: Optional[Set[str]] = None,
+    ) -> int:
+        """Count incoming edges to a node.
+
+        Args:
+            node_id: Target node ID.
+            edge_type: Optional filter by edge type.
+            within_nodes: Optional set of nodes to restrict to (pathway scope).
+
+        Returns:
+            Number of incoming edges.
+        """
+        if node_id not in self._graph:
+            return 0
+        count = 0
+        for source, _, data in self._graph.in_edges(node_id, data=True):
+            if within_nodes is not None and source not in within_nodes:
+                continue
+            if edge_type is not None and data.get("edge_type") != edge_type.value:
+                continue
+            count += 1
+        return count
+
+    def get_out_degree(
+        self,
+        node_id: str,
+        edge_type: Optional[EdgeType] = None,
+        within_nodes: Optional[Set[str]] = None,
+    ) -> int:
+        """Count outgoing edges from a node.
+
+        Args:
+            node_id: Source node ID.
+            edge_type: Optional filter by edge type.
+            within_nodes: Optional set of nodes to restrict to (pathway scope).
+
+        Returns:
+            Number of outgoing edges.
+        """
+        if node_id not in self._graph:
+            return 0
+        count = 0
+        for _, target, data in self._graph.out_edges(node_id, data=True):
+            if within_nodes is not None and target not in within_nodes:
+                continue
+            if edge_type is not None and data.get("edge_type") != edge_type.value:
+                continue
+            count += 1
+        return count
+
+    def partition_pathway_genes(
+        self,
+        pathway_id: str,
+        edge_type: Optional[EdgeType] = None,
+    ) -> Dict[str, List[str]]:
+        """Partition pathway genes into upstream, intermediate, and downstream layers.
+
+        Uses in-degree/out-degree within the pathway subgraph:
+        - **upstream** (initiators): genes with in-degree = 0 within the pathway
+        - **downstream** (effectors): genes with out-degree = 0 within the pathway
+        - **intermediate** (transducers): genes with both incoming and outgoing edges
+
+        If the pathway has no directed edges (PPI-only), falls back to
+        equal-thirds partitioning by node degree centrality.
+
+        Args:
+            pathway_id: Pathway node ID.
+            edge_type: Optional edge type filter for degree computation.
+                If None, uses all non-symmetric edge types.
+
+        Returns:
+            Dict with keys 'upstream', 'intermediate', 'downstream',
+            each mapping to a list of gene node IDs.
+        """
+        genes = self.get_pathway_genes(pathway_id)
+        if not genes:
+            return {"upstream": [], "intermediate": [], "downstream": []}
+
+        gene_set = set(genes)
+
+        # Check if we have directed (non-symmetric) edges in this pathway
+        directed_edges = self.get_directed_edges_in_pathway(
+            pathway_id, exclude_symmetric=True
+        )
+
+        if directed_edges:
+            # Use directed edges for topology-aware partitioning
+            upstream = []
+            downstream = []
+            intermediate = []
+
+            for gene in genes:
+                in_deg = self.get_in_degree(gene, edge_type, within_nodes=gene_set)
+                out_deg = self.get_out_degree(gene, edge_type, within_nodes=gene_set)
+
+                if in_deg == 0 and out_deg > 0:
+                    upstream.append(gene)
+                elif out_deg == 0 and in_deg > 0:
+                    downstream.append(gene)
+                elif in_deg > 0 and out_deg > 0:
+                    intermediate.append(gene)
+                else:
+                    # Isolated node (no directed edges) — classify by PPI degree
+                    intermediate.append(gene)
+        else:
+            # Fallback: no directed edges, partition by PPI degree centrality
+            sub = self.get_pathway_subgraph(pathway_id)
+            if sub.n_edges > 0:
+                centrality = nx.degree_centrality(sub.graph.to_undirected())
+                sorted_genes = sorted(genes, key=lambda g: centrality.get(g, 0))
+            else:
+                sorted_genes = list(genes)
+
+            n = len(sorted_genes)
+            n_up = max(1, n // 3)
+            n_down = max(1, n // 3)
+            upstream = sorted_genes[:n_up]
+            downstream = sorted_genes[-n_down:]
+            intermediate = sorted_genes[n_up:-n_down] if n > n_up + n_down else []
+
+        return {
+            "upstream": upstream,
+            "intermediate": intermediate,
+            "downstream": downstream,
+        }
+
+    def topological_sort_pathway(self, pathway_id: str) -> List[str]:
+        """Topologically sort genes within a pathway by directed edges.
+
+        If the pathway subgraph has cycles, returns genes sorted by
+        out-degree (most connections first) as a best-effort ordering.
+
+        Args:
+            pathway_id: Pathway node ID.
+
+        Returns:
+            List of gene node IDs in topological order (upstream first).
+        """
+        sub = self.get_pathway_subgraph(pathway_id)
+        if sub.n_nodes == 0:
+            return []
+
+        try:
+            return list(nx.topological_sort(sub.graph))
+        except nx.NetworkXUnfeasible:
+            # Graph has cycles — fallback to degree-based ordering
+            logger.debug(
+                "[KnowledgeGraph] Pathway %s has cycles; using degree-based sort",
+                pathway_id,
+            )
+            genes = list(sub.graph.nodes())
+            gene_set = set(genes)
+            genes.sort(
+                key=lambda g: self.get_out_degree(g, within_nodes=gene_set),
+                reverse=True,
+            )
+            return genes
+
+    def find_cascade_paths(
+        self,
+        source: str,
+        target: str,
+        pathway_id: Optional[str] = None,
+        max_depth: int = 5,
+    ) -> List[List[str]]:
+        """Find all directed paths from source to target.
+
+        Args:
+            source: Source gene node ID.
+            target: Target gene node ID.
+            pathway_id: Optional pathway to restrict search to.
+            max_depth: Maximum path length.
+
+        Returns:
+            List of paths, each a list of gene node IDs.
+        """
+        if pathway_id:
+            sub = self.get_pathway_subgraph(pathway_id)
+            graph = sub.graph
+        else:
+            graph = self._graph
+
+        if source not in graph or target not in graph:
+            return []
+
+        try:
+            paths = list(
+                nx.all_simple_paths(graph, source, target, cutoff=max_depth)
+            )
+            return paths
+        except nx.NodeNotFound:
+            return []
+
+    def get_shared_genes(
+        self,
+        pathway_a: str,
+        pathway_b: str,
+    ) -> List[str]:
+        """Find genes shared between two pathways.
+
+        Args:
+            pathway_a: First pathway node ID.
+            pathway_b: Second pathway node ID.
+
+        Returns:
+            List of gene node IDs present in both pathways.
+        """
+        genes_a = set(self.get_pathway_genes(pathway_a))
+        genes_b = set(self.get_pathway_genes(pathway_b))
+        return list(genes_a & genes_b)
+
+    def get_pathway_crosstalk(
+        self,
+        pathway_a: str,
+        pathway_b: str,
+    ) -> Dict[str, Any]:
+        """Quantify crosstalk between two pathways.
+
+        Measures shared genes and inter-pathway edge density.
+
+        Args:
+            pathway_a: First pathway node ID.
+            pathway_b: Second pathway node ID.
+
+        Returns:
+            Dict with crosstalk metrics:
+                - shared_genes: list of shared gene IDs
+                - n_shared: count of shared genes
+                - inter_pathway_edges: edges connecting genes across pathways
+                - edge_density: inter-pathway edges / possible inter-pathway edges
+                - jaccard_index: |A ∩ B| / |A ∪ B|
+        """
+        genes_a = set(self.get_pathway_genes(pathway_a))
+        genes_b = set(self.get_pathway_genes(pathway_b))
+        shared = genes_a & genes_b
+        union = genes_a | genes_b
+
+        # Count edges between pathway A genes and pathway B genes
+        inter_edges = []
+        for source, target, data in self._graph.edges(data=True):
+            if (source in genes_a and target in genes_b and source not in shared) or \
+               (source in genes_b and target in genes_a and source not in shared):
+                inter_edges.append((source, target, data.get("weight", 1.0)))
+
+        max_inter = len(genes_a - shared) * len(genes_b - shared)
+        edge_density = len(inter_edges) / max(max_inter, 1)
+        jaccard = len(shared) / max(len(union), 1)
+
+        return {
+            "shared_genes": list(shared),
+            "n_shared": len(shared),
+            "inter_pathway_edges": inter_edges,
+            "n_inter_edges": len(inter_edges),
+            "edge_density": edge_density,
+            "jaccard_index": jaccard,
+            "pathway_a_size": len(genes_a),
+            "pathway_b_size": len(genes_b),
+        }
+
+    # ── Topology-weighted scoring ────────────────────────────────────────
+
+    def compute_centrality(
+        self,
+        pathway_id: Optional[str] = None,
+        method: str = "degree",
+    ) -> Dict[str, float]:
+        """Compute node centrality scores, optionally within a pathway.
+
+        Args:
+            pathway_id: If given, compute centrality only within the pathway
+                subgraph. Otherwise uses the full gene-gene graph.
+            method: Centrality method. One of "degree", "betweenness",
+                "closeness", "pagerank".
+
+        Returns:
+            Dict mapping gene node ID to centrality score.
+        """
+        if pathway_id:
+            sub = self.get_pathway_subgraph(pathway_id)
+            g = sub.graph
+        else:
+            # Use only gene nodes
+            gene_nodes = self.get_nodes_by_type(NodeType.GENE)
+            g = self._graph.subgraph(gene_nodes)
+
+        if g.number_of_nodes() == 0:
+            return {}
+
+        undirected = g.to_undirected()
+
+        if method == "degree":
+            return dict(nx.degree_centrality(undirected))
+        elif method == "betweenness":
+            return dict(nx.betweenness_centrality(undirected))
+        elif method == "closeness":
+            return dict(nx.closeness_centrality(undirected))
+        elif method == "pagerank":
+            return dict(nx.pagerank(g, alpha=0.85))
+        else:
+            raise ValueError(f"Unknown centrality method: {method}")
+
+    def topology_weighted_pathway_score(
+        self,
+        expression: Any,  # pd.DataFrame
+        pathway_id: str,
+        centrality_method: str = "degree",
+    ) -> Any:  # np.ndarray
+        """Compute pathway scores weighted by gene centrality in the network.
+
+        Instead of equal-weight mean of all pathway genes, each gene's
+        contribution is weighted by its network centrality (degree,
+        betweenness, or PageRank). Hub genes contribute more.
+
+        Args:
+            expression: Expression matrix (cells x genes), pd.DataFrame.
+            pathway_id: Pathway node ID.
+            centrality_method: Centrality method for weighting.
+
+        Returns:
+            1D numpy array of per-cell weighted pathway scores.
+        """
+        import numpy as np_local
+
+        genes = self.get_pathway_genes(pathway_id)
+        present = [g for g in genes if g in expression.columns]
+        if not present:
+            return np_local.zeros(len(expression))
+
+        centrality = self.compute_centrality(pathway_id, method=centrality_method)
+
+        weights = np_local.array([centrality.get(g, 0.0) for g in present])
+        total_weight = weights.sum()
+        if total_weight == 0:
+            weights = np_local.ones(len(present))
+            total_weight = len(present)
+        weights = weights / total_weight
+
+        vals = expression[present].values
+        # Z-score per gene
+        means = vals.mean(axis=0, keepdims=True)
+        stds = vals.std(axis=0, keepdims=True)
+        stds[stds == 0] = 1.0
+        z = (vals - means) / stds
+
+        return z @ weights
+
+    # ── Hierarchical pathway queries ──────────────────────────────────
+
+    def get_child_pathways(self, pathway_id: str) -> List[str]:
+        """Get sub-pathways contained within a parent pathway.
+
+        Uses PATHWAY_CONTAINS edges (parent -> child).
+
+        Args:
+            pathway_id: Parent pathway node ID.
+
+        Returns:
+            List of child pathway node IDs.
+        """
+        return self.get_neighbors(pathway_id, EdgeType.PATHWAY_CONTAINS, direction="out")
+
+    def get_parent_pathways(self, pathway_id: str) -> List[str]:
+        """Get parent pathways that contain this pathway.
+
+        Args:
+            pathway_id: Child pathway node ID.
+
+        Returns:
+            List of parent pathway node IDs.
+        """
+        return self.get_neighbors(pathway_id, EdgeType.PATHWAY_CONTAINS, direction="in")
+
+    def get_pathway_hierarchy(self, root_pathway_id: str) -> Dict[str, Any]:
+        """Get the full hierarchy tree rooted at a pathway.
+
+        Recursively traverses PATHWAY_CONTAINS edges to build a tree.
+
+        Args:
+            root_pathway_id: Root pathway node ID.
+
+        Returns:
+            Nested dict: {"id": str, "name": str, "children": [...],
+            "genes": [...]}
+        """
+        node = self.get_node(root_pathway_id)
+        name = node.attributes.get("name", root_pathway_id) if node else root_pathway_id
+
+        children = self.get_child_pathways(root_pathway_id)
+        genes = self.get_pathway_genes(root_pathway_id)
+
+        return {
+            "id": root_pathway_id,
+            "name": name,
+            "n_genes": len(genes),
+            "genes": genes,
+            "children": [
+                self.get_pathway_hierarchy(child) for child in children
+            ],
+        }
+
+    def get_all_descendant_genes(self, pathway_id: str) -> List[str]:
+        """Get all genes in a pathway and its sub-pathways (recursively).
+
+        Args:
+            pathway_id: Root pathway node ID.
+
+        Returns:
+            Deduplicated list of all gene node IDs across the hierarchy.
+        """
+        all_genes: Set[str] = set()
+        all_genes.update(self.get_pathway_genes(pathway_id))
+
+        for child in self.get_child_pathways(pathway_id):
+            all_genes.update(self.get_all_descendant_genes(child))
+
+        return list(all_genes)
+
+    # ── Cross-omics entity resolution ─────────────────────────────────
+
+    def resolve_gene_to_protein(self, gene_id: str) -> List[str]:
+        """Resolve a gene to its encoded protein(s).
+
+        Uses GENE_ENCODES edges.
+
+        Args:
+            gene_id: Gene node ID.
+
+        Returns:
+            List of protein node IDs.
+        """
+        return self.get_neighbors(gene_id, EdgeType.GENE_ENCODES, direction="out")
+
+    def resolve_protein_to_gene(self, protein_id: str) -> List[str]:
+        """Resolve a protein back to its encoding gene(s).
+
+        Args:
+            protein_id: Protein node ID.
+
+        Returns:
+            List of gene node IDs.
+        """
+        return self.get_neighbors(protein_id, EdgeType.GENE_ENCODES, direction="in")
+
+    def resolve_entity_chain(
+        self,
+        start_id: str,
+        target_type: "NodeType",
+        max_hops: int = 3,
+    ) -> List[List[str]]:
+        """Resolve an entity across omics layers by traversing edges.
+
+        Finds all paths from start_id to any node of target_type within
+        max_hops, following directed edges.
+
+        Args:
+            start_id: Starting node ID (e.g., a gene).
+            target_type: Target node type (e.g., NodeType.DRUG).
+            max_hops: Maximum path length.
+
+        Returns:
+            List of paths, each a list of node IDs.
+        """
+        if start_id not in self._graph:
+            return []
+
+        paths: List[List[str]] = []
+        self._dfs_resolve(start_id, target_type, max_hops, [start_id], paths)
+        return paths
+
+    def _dfs_resolve(
+        self,
+        current: str,
+        target_type: "NodeType",
+        remaining_hops: int,
+        path: List[str],
+        results: List[List[str]],
+    ) -> None:
+        """DFS helper for entity resolution."""
+        if remaining_hops <= 0:
+            return
+
+        for _, neighbor, _ in self._graph.out_edges(current, data=True):
+            if neighbor in path:
+                continue
+            new_path = path + [neighbor]
+            nt = self._node_types.get(neighbor)
+            if nt == target_type:
+                results.append(new_path)
+            self._dfs_resolve(neighbor, target_type, remaining_hops - 1, new_path, results)
+
+    def get_drug_targets_in_pathway(self, pathway_id: str) -> Dict[str, List[str]]:
+        """Find all drugs targeting genes in a pathway.
+
+        Args:
+            pathway_id: Pathway node ID.
+
+        Returns:
+            Dict mapping gene_id to list of drug_ids that target it.
+        """
+        genes = self.get_pathway_genes(pathway_id)
+        gene_drugs: Dict[str, List[str]] = {}
+
+        for gene in genes:
+            drugs = self.get_neighbors(gene, EdgeType.DRUG_TARGETS, direction="in")
+            if drugs:
+                gene_drugs[gene] = drugs
+
+        return gene_drugs
+
     def save(self, path: str) -> None:
         """
         Save graph to file.
@@ -501,6 +1080,7 @@ class KnowledgeGraphBuilder:
     - Pathway databases (GO, Reactome)
     - Protein-protein interaction networks (STRING)
     - Gene annotations
+    - Directed signaling edges (Reactome, KEGG, custom)
     """
 
     def __init__(self, schema: Optional[GraphSchema] = None):
@@ -518,6 +1098,7 @@ class KnowledgeGraphBuilder:
         self._gene_go_annotations: Dict[str, Set[str]] = {}
         self._ppi_edges: List[Tuple[str, str, float]] = []
         self._go_hierarchy: List[Tuple[str, str, str]] = []
+        self._signaling_edges: List[Tuple[str, str, float]] = []
 
     def add_genes(self, gene_list: List[str]) -> "KnowledgeGraphBuilder":
         """
@@ -712,6 +1293,73 @@ class KnowledgeGraphBuilder:
         logger.info("[KnowledgeGraph] Added %d PPI edges from DataFrame", count)
         return self
 
+    def add_signaling_edges(
+        self,
+        edges: List[Tuple[str, str]],
+        weights: Optional[List[float]] = None,
+    ) -> "KnowledgeGraphBuilder":
+        """Add directed signaling/regulatory edges between genes.
+
+        These represent directed signal flow (e.g., RAS activates RAF,
+        kinase phosphorylates substrate). Unlike PPI edges, these are
+        directional and used for cascade layer partitioning.
+
+        Args:
+            edges: List of (source_gene, target_gene) tuples indicating
+                signal direction (source regulates/activates target).
+            weights: Optional confidence weights per edge. Defaults to 1.0.
+
+        Returns:
+            Self for chaining.
+        """
+        if weights is None:
+            weights = [1.0] * len(edges)
+
+        for (source, target), weight in zip(edges, weights):
+            self._signaling_edges.append((source, target, weight))
+            self._genes.add(source)
+            self._genes.add(target)
+
+        logger.info(
+            "[KnowledgeGraph] Added %d directed signaling edges (total: %d)",
+            len(edges),
+            len(self._signaling_edges),
+        )
+        return self
+
+    def add_signaling_edges_from_dict(
+        self,
+        pathway_edges: Dict[str, List[Tuple[str, str]]],
+        default_weight: float = 1.0,
+    ) -> "KnowledgeGraphBuilder":
+        """Add directed signaling edges organized by pathway.
+
+        Convenience method for adding edges from pathway-keyed dictionaries,
+        as commonly extracted from Reactome or KEGG.
+
+        Args:
+            pathway_edges: Dict mapping pathway_id to list of (source, target)
+                directed edges within that pathway.
+            default_weight: Weight for all edges.
+
+        Returns:
+            Self for chaining.
+        """
+        total = 0
+        for pathway_id, edges in pathway_edges.items():
+            for source, target in edges:
+                self._signaling_edges.append((source, target, default_weight))
+                self._genes.add(source)
+                self._genes.add(target)
+                total += 1
+
+        logger.info(
+            "[KnowledgeGraph] Added %d signaling edges across %d pathways",
+            total,
+            len(pathway_edges),
+        )
+        return self
+
     def _protein_id_to_gene(self, protein_id: str) -> str:
         """
         Convert protein ID to gene symbol.
@@ -794,6 +1442,18 @@ class KnowledgeGraphBuilder:
                 kg.add_edge(gene1, gene2, EdgeType.GENE_INTERACTS, normalized_score)
                 ppi_added += 1
 
+        # Add directed signaling edges
+        if self._signaling_edges:
+            logger.info(
+                "[KnowledgeGraph] Adding %d signaling edges...",
+                len(self._signaling_edges),
+            )
+            sig_added = 0
+            for source, target, weight in self._signaling_edges:
+                if kg.has_node(source) and kg.has_node(target) and source != target:
+                    kg.add_edge(source, target, EdgeType.GENE_REGULATES, weight)
+                    sig_added += 1
+
         stats = kg.get_stats()
         logger.info(
             "[KnowledgeGraph] Built knowledge graph: %d nodes, %d edges, " "%d components",
@@ -813,6 +1473,7 @@ class KnowledgeGraphBuilder:
         self._gene_go_annotations.clear()
         self._ppi_edges.clear()
         self._go_hierarchy.clear()
+        self._signaling_edges.clear()
         return self
 
 

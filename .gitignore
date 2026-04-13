@@ -63,6 +63,7 @@ autismenv/
 # IDEs
 .idea/
 .vscode/
+.obsidian/
 *.swp
 *.swo
 *~
@@ -118,6 +119,17 @@ TODO-*.md
 # Local Codeberg issue drafts
 codeberg-issues/
 
+# Documentation audit reports (local only)
+DOCUMENTATION-AUDIT-REPORT*.md
+
+# One-off task/benchmark files
+TASK_*.md
+BENCHMARK_*.ipynb
+
+# Internal v0.5 roadmap docs (specs, not user guides)
+docs/roadmap-molecular-qc-v05.md
+docs/molecular-qc-test-plan.md
+
 # Virtual environment
 pathwayenv/
 
@@ -161,6 +173,8 @@ gdc_manifest_TCGA-*.txt
 
 # Intermediate/temporary result files
 phase3_validation_results.csv
+phase3_enhanced_results.csv
+validate_phase3_enhanced.py
 bootstrap_threshold_calibration_*_temp.csv
 bootstrap_threshold_calibration_[0-9].csv
 bootstrap_threshold_calibration_[0-9][0-9].csv

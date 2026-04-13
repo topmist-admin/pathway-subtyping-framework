@@ -130,6 +130,6 @@ echo ""
 echo "Learn more:"
 echo "  - Documentation: docs/guides/"
 echo "  - Notebooks: examples/notebooks/"
-echo "  - GitHub: github.com/topmist-admin/pathway-subtyping-framework"
+echo "  - Repository: codeberg.org/pathways/pathway-subtyping-framework"
 echo ""
 sleep 2

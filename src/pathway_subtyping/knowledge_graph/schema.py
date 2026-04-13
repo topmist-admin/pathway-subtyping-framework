@@ -26,8 +26,9 @@ class EdgeType(Enum):
     """Types of edges in the knowledge graph."""
 
     # Gene-gene relationships
-    GENE_INTERACTS = "gene_interacts_gene"  # PPI network
-    GENE_COEXPRESSED = "gene_coexpressed_gene"  # Co-expression
+    GENE_INTERACTS = "gene_interacts_gene"  # PPI network (symmetric)
+    GENE_COEXPRESSED = "gene_coexpressed_gene"  # Co-expression (symmetric)
+    GENE_REGULATES = "gene_regulates_gene"  # Directed signaling/regulatory
 
     # Gene-pathway/GO relationships
     GENE_IN_PATHWAY = "gene_in_pathway"
@@ -162,6 +163,7 @@ class GraphSchema:
         schema.valid_edges = {
             EdgeType.GENE_INTERACTS: (NodeType.GENE, NodeType.GENE),
             EdgeType.GENE_COEXPRESSED: (NodeType.GENE, NodeType.GENE),
+            EdgeType.GENE_REGULATES: (NodeType.GENE, NodeType.GENE),
             EdgeType.GENE_IN_PATHWAY: (NodeType.GENE, NodeType.PATHWAY),
             EdgeType.GENE_HAS_GO: (NodeType.GENE, NodeType.GO_TERM),
             EdgeType.PATHWAY_CONTAINS: (NodeType.PATHWAY, NodeType.PATHWAY),
@@ -210,6 +212,11 @@ EDGE_TYPE_METADATA = {
         "symmetric": True,
         "source": "Co-expression atlas",
         "description": "Co-expression in tissue",
+    },
+    EdgeType.GENE_REGULATES: {
+        "symmetric": False,
+        "source": "Reactome/KEGG",
+        "description": "Directed signaling or regulatory relationship between genes",
     },
     EdgeType.GENE_IN_PATHWAY: {
         "symmetric": False,

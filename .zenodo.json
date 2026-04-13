@@ -23,7 +23,7 @@
   "access_right": "open",
   "related_identifiers": [
     {
-      "identifier": "https://github.com/topmist-admin/pathway-subtyping-framework",
+      "identifier": "https://codeberg.org/pathways/pathway-subtyping-framework",
       "relation": "isSupplementTo",
       "scheme": "url"
     },

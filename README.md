@@ -5,7 +5,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18442426.svg)](https://doi.org/10.5281/zenodo.18442426)
 [![PyPI version](https://badge.fury.io/py/pathway-subtyping.svg)](https://pypi.org/project/pathway-subtyping/)
 [![CI](https://codeberg.org/pathways/pathway-subtyping-framework/badges/workflows/ci.yml/badge.svg)](https://codeberg.org/pathways/pathway-subtyping-framework)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![RRID:SCR_028051](https://img.shields.io/badge/RRID-SCR__028051-blue.svg)](https://scicrunch.org/resolver/RRID:SCR_028051)
@@ -58,6 +58,10 @@ Originally developed for [autism research](https://codeberg.org/pathways/autism-
 | **Simulation** | Synthetic data generation with ground truth for validation |
 | **Cross-Cohort Validation** | Transfer learning and projection-based replication testing |
 | **Visualization** | Interactive Plotly HTML reports, UMAP/t-SNE scatter plots, radar charts, multi-format export |
+| **Molecular QC** | 12-feature manufacturing QC: cascade detection, dosage gating, off-target activation, drift detection, stress fingerprinting |
+| **Knowledge Graph** | Topology-aware pathway scoring, hierarchical queries, cross-omics entity resolution, pathway crosstalk quantification |
+| **GNN Embeddings** | TransE/RotatE KG embeddings, OntologyAwareGNN with biological attention, gene risk classification *(experimental)* |
+| **Autism Interpretation** | Neuro-symbolic rules (R1-R7), therapeutic hypothesis ranking with safety flags *(autism-only)* |
 | **Performance** | tqdm progress bars, chunked VCF processing, 10K+ sample support |
 | **Reproducibility** | Deterministic execution, pinned dependencies, Docker |
 | **Config-Driven** | YAML configuration for all parameters |
@@ -73,10 +77,14 @@ pip install pathway-subtyping
 Optional extras:
 
 ```bash
-pip install pathway-subtyping[vcf]   # VCF file processing (pysam)
-pip install pathway-subtyping[viz]   # Interactive visualizations (Plotly, UMAP)
-pip install pathway-subtyping[sc]    # Single-cell support (AnnData)
-pip install pathway-subtyping[graph] # Network analysis (NetworkX, py4cytoscape)
+pip install pathway-subtyping[vcf]    # VCF file processing (pysam)
+pip install pathway-subtyping[viz]    # Interactive visualizations (Plotly, UMAP)
+pip install pathway-subtyping[sc]     # Single-cell support (AnnData)
+pip install pathway-subtyping[graph]  # Network analysis (NetworkX, py4cytoscape)
+pip install pathway-subtyping[qc]     # Molecular QC layer for manufacturing
+pip install pathway-subtyping[gnn]    # Graph neural networks (PyTorch) — experimental
+pip install pathway-subtyping[autism] # Autism-specific interpretation (pure Python)
+pip install pathway-subtyping[all]    # Everything
 ```
 
 #### Network Visualization (Cytoscape)
@@ -177,7 +185,7 @@ docker pull rohitdataops/pathway-subtyping:0.4.0-jupyter  # Jupyter + notebooks
 # Run pipeline
 docker compose run pipeline
 
-# Run tests (1003 tests)
+# Run tests (1363 tests)
 docker compose run test
 
 # Start Jupyter notebook
@@ -198,6 +206,16 @@ See the full guide: [Adapting for Your Disease](docs/guides/adapting-for-your-di
 ```
 VCF / Expression / scRNA-seq → Pathway Scoring → [Ancestry Correction] → [Batch Correction] → GMM Clustering → [Sensitivity Analysis] → Validation → Report
 ```
+
+**5-Layer Architecture:**
+
+| Layer | Extra | What It Adds |
+|-------|-------|-------------|
+| **Core** | *(none)* | GMT scoring, GMM clustering, validation gates, simulation |
+| **Graph** | `[graph]` | KG builder, network propagation, topology-weighted scoring |
+| **QC** | `[qc]` | 12-feature manufacturing QC (cascade, dosage, drift, off-target, stress) |
+| **GNN** | `[gnn]` | TransE/RotatE embeddings, OntologyAwareGNN, biological attention *(experimental)* |
+| **Autism** | `[autism]` | Neuro-symbolic rules (R1-R7), therapeutic hypothesis ranking *(autism-only)* |
 
 ### 1. Pathway Scoring
 Multiple input modalities are supported, each producing the same Z-normalized pathway score matrix:
@@ -230,7 +248,7 @@ Publication-quality statistics:
 - **Power analysis**: Sample size recommendations for target effect sizes
 - **Type I error**: Estimation via null simulations
 
-See [docs/METHODS.md](docs/METHODS.md) for full statistical methodology.
+See [docs/how-it-works.md](docs/how-it-works.md) for a plain-language conceptual guide, or [docs/METHODS.md](docs/METHODS.md) for full statistical methodology.
 
 ## Data Requirements
 
@@ -281,24 +299,29 @@ pathway-subtyping-framework/
 │   ├── benchmark.py             # Method comparison benchmarks
 │   ├── cross_cohort.py          # Cross-cohort validation
 │   ├── threshold_calibration.py # Data-driven threshold calibration
+│   ├── network_propagation.py   # PPI network propagation (RWR, PageRank)
 │   ├── variant_qc.py            # Variant QC (QUAL, HWE, MAF, call rate)
 │   ├── validation_datasets.py   # ClinVar/Reactome integration
 │   ├── data_quality.py          # VCF quality checks
-│   └── utils/                   # Performance, seeding, progress tracking
+│   ├── utils/                   # Performance, seeding, progress tracking
+│   ├── knowledge_graph/         # [graph] KG builder, schema, exporters
+│   ├── qc/                      # [qc] 12-feature molecular QC layer
+│   ├── gnn/                     # [gnn] GNN embeddings, attention, model (experimental)
+│   └── autism/                  # [autism] Neuro-symbolic rules, therapeutic ranking
 ├── configs/                     # Example YAML configurations
 ├── data/
 │   ├── pathways/                # Pathway GMT files (6 diseases)
 │   └── sample/                  # Synthetic test data
 ├── docs/
 │   ├── METHODS.md               # Statistical methods documentation
-│   ├── api/                     # API reference (13 modules)
+│   ├── api/                     # API reference (22+ modules)
 │   └── guides/                  # User guides
 ├── scripts/                     # Utility scripts
 │   ├── generate_cytoscape_figures.py  # Publication-ready network figures (requires [graph] + Cytoscape desktop)
 │   ├── validate_with_public_data.py   # ClinVar/Reactome validation
 │   └── benchmark_performance.py       # Performance benchmarks
 ├── examples/notebooks/          # Jupyter tutorials
-├── tests/                       # Test suite (1003 tests)
+├── tests/                       # Test suite (1363 tests)
 ├── Dockerfile                   # Container support
 └── docker-compose.yml           # Easy orchestration
 ```
@@ -307,7 +330,7 @@ pathway-subtyping-framework/
 
 ```bash
 # Install with dev dependencies (from cloned repo)
-pip install -e ".[dev,vcf,viz,sc]"
+pip install -e ".[dev,vcf,viz,sc,graph,qc,autism]"
 
 # Run tests
 pytest tests/ -v

@@ -18,8 +18,8 @@ Thank you for your interest in contributing! This document provides guidelines f
 ### 1. Fork and Clone
 
 ```bash
-# Fork via GitHub UI, then:
-git clone https://github.com/YOUR_USERNAME/pathway-subtyping-framework
+# Fork via Codeberg UI, then:
+git clone https://codeberg.org/YOUR_USERNAME/pathway-subtyping-framework
 cd pathway-subtyping-framework
 git remote add upstream https://codeberg.org/pathways/pathway-subtyping-framework
 ```
@@ -141,7 +141,7 @@ chore: update dependencies
    git push origin feature/your-feature-name
    ```
 
-4. **Open PR** via GitHub with:
+4. **Open PR** via Codeberg with:
    - Clear title following conventional commits
    - Description of changes
    - Link to related issues
@@ -236,8 +236,8 @@ Common fixtures are in `tests/conftest.py`:
 
 ## Questions?
 
-- **GitHub Issues**: For bugs and feature requests
-- **GitHub Discussions**: For questions and ideas
+- **[Codeberg Issues](https://codeberg.org/pathways/pathway-subtyping-framework/issues)**: For bugs and feature requests
+- **Email**: For questions and ideas
 - **Email**: info@topmist.com
 
 ## Recognition

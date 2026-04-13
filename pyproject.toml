@@ -85,13 +85,23 @@ graph = [
     "networkx>=3.0,<4.0",
     "py4cytoscape>=1.0.0",
 ]
+qc = [
+    "pathway-subtyping[graph]",
+]
+autism = [
+    # Pure Python — no heavy dependencies. Rules engine + therapeutic scoring.
+]
+gnn = [
+    "torch>=2.0.0",
+    "scikit-learn>=1.3.0",
+]
 docs = [
     "sphinx>=6.0.0",
     "sphinx-rtd-theme>=1.2.0",
     "myst-parser>=1.0.0",
 ]
 all = [
-    "pathway-subtyping[dev,notebooks,docs,vcf,viz,sc,graph]",
+    "pathway-subtyping[dev,notebooks,docs,vcf,viz,sc,graph,qc,autism,gnn]",
 ]
 
 [project.scripts]
@@ -115,7 +125,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-pathway_subtyping = ["py.typed", "data/pathways/*.gmt"]
+pathway_subtyping = ["py.typed", "data/pathways/*.gmt", "qc/testing/fixtures/*.yaml"]
 
 # Black configuration
 [tool.black]
@@ -158,6 +168,21 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "network: marks tests requiring network access (deselect with '-m \"not network\"')",
+]
+filterwarnings = [
+    # sklearn GMM matmul warnings are benign (numerical edge cases in simulation)
+    "ignore:.*matmul.*:RuntimeWarning",
+    # deconvolution matmul edge cases
+    "ignore:.*matmul.*:RuntimeWarning:pathway_subtyping.deconvolution",
+    # scipy constant input in statistical tests
+    "ignore:.*constant.*:scipy.stats.ConstantInputWarning",
+    # unclosed file handles in pipeline tests (logging handlers)
+    "ignore::ResourceWarning",
+    # umap n_jobs override + tensorflow ImportWarning
+    "ignore:n_jobs value.*:UserWarning",
+    "ignore:Tensorflow not installed.*:ImportWarning",
+    # kaleido setDaemon deprecation
+    "ignore:setDaemon.*:DeprecationWarning",
 ]
 
 # Coverage configuration

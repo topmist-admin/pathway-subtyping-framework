@@ -59,7 +59,7 @@ as an appointed representative at an online or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement at:
-https://github.com/topmist-admin/pathway-subtyping-framework/issues
+https://codeberg.org/pathways/pathway-subtyping-framework/issues
 
 All complaints will be reviewed and investigated and will result in a response
 that is deemed necessary and appropriate to the circumstances. The community

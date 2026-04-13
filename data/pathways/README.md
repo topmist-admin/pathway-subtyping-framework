@@ -165,4 +165,4 @@ For full provenance details, see [DISCLAIMER.md](../../DISCLAIMER.md).
 
 ---
 
-See also: [Pathway Curation Guide](../docs/guides/pathway-curation-guide.md)
+See also: [Pathway Curation Guide](../../docs/guides/pathway-curation-guide.md)

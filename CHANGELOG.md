@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Molecular QC Layer (`[qc]` extra)
+- **12-feature molecular QC** for manufactured and engineered cells (`pathway_subtyping/qc/`)
+- **F1 CascadeAnalyzer**: Topology-aware incomplete cascade detection using KG directed edges
+- **F2 TemporalTracker**: Trajectory classification (resolving/stalled/reversing/oscillating)
+- **F3 TensionScorer**: Molecular tension from open signaling loops
+- **F4 ResolutionGate**: Unified RELEASE/HOLD/REJECT integrating all QC signals
+- **F5 DriftDetector**: Cumulative pathway drift from baseline across passages
+- **F6 OffTargetDetector**: INTENDED/TOLERATED/OFF_TARGET/EXCLUDED_VIOLATION classification
+- **F7 HeterogeneityProfiler**: Batch uniformity with DBSCAN subpopulation detection
+- **F8 DosageAnalyzer**: UNDER/IN_RANGE/OVER with therapeutic windows and stoichiometry
+- **F9 CrosstalkDetector**: Shared node competition between pathways via KG
+- **F10 FeedbackMonitor**: Activator-inhibitor correlation (intact/decoupled/inverted)
+- **F11 StressFingerprinter**: Matches pathway patterns to 6 stressor signatures with remediation
+- **F12 AtlasComparator**: Distance from reference atlas with nearest-type mapping
+- **ManufacturingSimulator**: 9 injectable defect types, 12x12 orthogonality matrix, severity titration
+- **3 scenario tests**: CAR T manufacturing, BPU organoid, 20-passage stability
+
+#### GNN & Graph Embeddings (`[gnn]` extra) — Experimental
+- **TransEModel**: Translational KG embeddings (pure numpy, no PyTorch required)
+- **RotatEModel**: Relational rotation embeddings in complex space
+- **OntologyAwareGNN**: Heterogeneous GNN with edge-type-aware message passing (requires PyTorch)
+- **BiologicalAttention**: Multi-head attention with biological prior bias injection (pLI, expression, SFARI)
+- **PathwayCoAttention**: Bi-directional gene-pathway cross-attention
+- **EmbeddingFusion**: Multi-source fusion (concat, weighted sum, PCA)
+- **GNNTrainer**: Training loop with AdamW optimizer and evaluation metrics
+
+#### Autism Interpretation Layer (`[autism]` extra) — Autism-Only
+- **BiologicalRules**: 8 curated rules (R1-R7 + R3b) with literature citations
+- **AutismRuleEngine**: Priority-sorted rule evaluation with autism-only enforcement
+- **ConditionEvaluator**: 18 predicate types (variant, gene, expression, pathway, drug)
+- **ExplanationGenerator**: Human-readable reasoning chains with mandatory disclaimers
+- **NeurosymbolicCombiner**: 4 combination methods (weighted_sum, max, product, rule_guided)
+- **EvidenceScorer**: Multi-criteria scoring with 11 pediatric safety flags
+- **DrugTargetDatabase**: In-memory drug-gene mapping with mechanism classification
+- **HypothesisRanker**: Diversity-constrained ranking (requires_validation always True)
+
+#### Knowledge Graph Enhancements
+- **GENE_REGULATES** edge type for directed signaling/regulatory relationships
+- **Topology-aware methods**: `partition_pathway_genes()`, `topological_sort_pathway()`, `find_cascade_paths()`
+- **Centrality scoring**: `compute_centrality()` (degree, betweenness, closeness, PageRank)
+- **Topology-weighted scoring**: `topology_weighted_pathway_score()` — hub genes contribute more
+- **Hierarchical queries**: `get_pathway_hierarchy()`, `get_all_descendant_genes()`
+- **Cross-omics resolution**: `resolve_entity_chain()`, `get_drug_targets_in_pathway()`
+- **Crosstalk quantification**: `get_pathway_crosstalk()`, `get_shared_genes()`
+- **Builder methods**: `add_signaling_edges()`, `add_signaling_edges_from_dict()`
+
+#### Documentation
+- **docs/how-it-works.md**: Plain-language conceptual guide (pathway scoring, validation gates, 5-layer architecture)
+- **docs/api/qc.md**: Full API reference for 12 QC features
+- **docs/api/gnn.md**: Full API reference for GNN embeddings, model, attention
+- **docs/api/autism.md**: Full API reference for rules engine, therapeutic ranking
+
+#### Infrastructure
+- **`[qc]`, `[gnn]`, `[autism]` optional extras** in pyproject.toml
+- **Codeberg issues #30-#41**: 12 QC features with labels (qc, manufacturing, safety, v0.5)
+- **Warning filters**: Suppressed 92K+ benign sklearn/umap warnings in pytest config
+- **Test count**: 1,054 → 1,363 tests (309 new)
+
+### Fixed
+- **20 broken GitHub links** replaced with Codeberg URLs (account suspended since Feb 22)
+- **3 broken internal cross-references** (data/pathways/README.md path, one-pager notebook link)
+- **Python version badge**: 3.9+ → 3.8+ (matches pyproject.toml)
+- **.gitignore**: Added audit reports, task files, QC roadmap docs
+
 ## [0.4.0] - 2026-03-04
 
 ### Added

@@ -1,0 +1,27 @@
+# Default healthy batch parameters for ManufacturingSimulator
+# Used as baseline for all QC testing
+
+batch:
+  n_cells: 500
+  base_expression: 5.0
+  noise_std: 1.0
+
+spec:
+  intended_pathways:
+    - HALLMARK_INFLAMMATORY_RESPONSE
+    - HALLMARK_TNFA_SIGNALING_VIA_NFKB
+    - HALLMARK_IL6_JAK_STAT3_SIGNALING
+    - HALLMARK_INTERFERON_GAMMA_RESPONSE
+    - HALLMARK_INTERFERON_ALPHA_RESPONSE
+
+  excluded_pathways:
+    - HALLMARK_APOPTOSIS
+    - HALLMARK_P53_PATHWAY
+    - HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION
+
+  therapeutic_windows:
+    HALLMARK_INFLAMMATORY_RESPONSE: [0.4, 0.8]
+    HALLMARK_TNFA_SIGNALING_VIA_NFKB: [0.3, 0.7]
+    HALLMARK_IL6_JAK_STAT3_SIGNALING: [0.2, 0.6]
+    HALLMARK_INTERFERON_GAMMA_RESPONSE: [0.3, 0.8]
+    HALLMARK_INTERFERON_ALPHA_RESPONSE: [0.2, 0.7]

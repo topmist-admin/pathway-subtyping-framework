@@ -29,6 +29,14 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 | [`config`](config.md) | Configuration loading and validation utilities |
 | [`cli`](cli.md) | Command-line interface |
 
+### Optional Layers
+
+| Module | Extra | Description |
+|--------|-------|-------------|
+| [`qc`](qc.md) | `[qc]` | 12-feature molecular QC for cell manufacturing (cascade, dosage, drift, off-target, stress) |
+| [`gnn`](gnn.md) | `[gnn]` | TransE/RotatE KG embeddings, OntologyAwareGNN, biological attention *(experimental)* |
+| [`autism`](autism.md) | `[autism]` | Neuro-symbolic rules (R1-R7), therapeutic hypothesis ranking *(autism-only)* |
+
 ## Quick Start
 
 ### Running the Pipeline Programmatically
@@ -97,6 +105,7 @@ config = PipelineConfig(
 
 | Guide | Description |
 |-------|-------------|
+| [How It Works](../how-it-works.md) | Plain-language conceptual guide — pathway scoring, validation gates, 5-layer architecture |
 | [Performance & Hardware](../guides/performance-and-hardware.md) | Hardware recommendations, memory estimation, chunked processing, benchmarking |
 | [Cross-Cohort Validation](../guides/cross-cohort-validation.md) | Comparing subtypes across independent cohorts |
 | [Validation Gates](../guides/validation-gates.md) | Understanding and configuring validation gates |

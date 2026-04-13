@@ -293,8 +293,8 @@ See the [Single-Cell API Reference](api/single_cell.md) for full documentation.
 
 ## Getting Help
 
-- **Issues:** [GitHub Issues](https://codeberg.org/pathways/pathway-subtyping-framework/issues)
-- **Discussions:** [GitHub Discussions](https://codeberg.org/pathways/pathway-subtyping-framework/discussions)
+- **Issues:** [Codeberg Issues](https://codeberg.org/pathways/pathway-subtyping-framework/issues)
+- **Discussions:** [Codeberg Discussions](https://codeberg.org/pathways/pathway-subtyping-framework/issues)
 
 ---
 
