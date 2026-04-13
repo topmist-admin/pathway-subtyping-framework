@@ -180,7 +180,7 @@ psf --config configs/my_analysis.yaml
 ```bash
 # Pull from Docker Hub
 docker pull rohitdataops/pathway-subtyping:latest        # CLI runtime
-docker pull rohitdataops/pathway-subtyping:0.4.0-jupyter  # Jupyter + notebooks
+docker pull rohitdataops/pathway-subtyping:0.5.0-jupyter  # Jupyter + notebooks
 
 # Run pipeline
 docker compose run pipeline

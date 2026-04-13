@@ -499,12 +499,12 @@ Open any `.ipynb` file in VS Code. Select the `pathwayenv` kernel. Run cells int
 
 ```bash
 # Pull the Jupyter image with all dependencies
-docker pull rohitdataops/pathway-subtyping:0.4.0-jupyter
+docker pull rohitdataops/pathway-subtyping:0.5.0-jupyter
 
 # Launch Jupyter server
 docker run -p 8888:8888 \
   -v $(pwd)/examples/notebooks:/home/psf/examples/notebooks \
-  rohitdataops/pathway-subtyping:0.4.0-jupyter
+  rohitdataops/pathway-subtyping:0.5.0-jupyter
 
 # Or use docker compose
 docker compose up jupyter
