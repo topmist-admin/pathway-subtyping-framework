@@ -39,7 +39,7 @@ FROM python:3.11-slim AS runtime
 
 LABEL maintainer="Rohit Chauhan <info@topmist.com>"
 LABEL description="Pathway Subtyping Framework — disease-agnostic molecular subtype discovery"
-LABEL version="0.4.0"
+LABEL version="0.5.0"
 LABEL org.opencontainers.image.source="https://codeberg.org/pathways/pathway-subtyping-framework"
 LABEL org.opencontainers.image.documentation="RRID:SCR_028051"
 
