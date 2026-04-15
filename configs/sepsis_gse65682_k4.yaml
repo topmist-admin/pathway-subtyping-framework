@@ -1,5 +1,5 @@
 # GSE65682 MARS Sepsis Cohort — k=4 (matching Scicluna Mars1-4)
-# Purpose: Preliminary results for DARPA BTO BAA abstract
+# Purpose: Preliminary sepsis subtyping results (k=4)
 
 pipeline:
   name: "sepsis_gse65682_mars_k4"

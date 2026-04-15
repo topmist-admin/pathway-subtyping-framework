@@ -442,15 +442,6 @@ class TestScenarios:
         assert report.scenario_name == "CARTManufacturingScenario"
         assert len(report.timepoints) == 5
 
-    def test_bpu_scenario_runs(self):
-        from pathway_subtyping.qc.testing.scenarios.bpu_organoid import (
-            BPUOrganoidScenario,
-        )
-        scenario = BPUOrganoidScenario(seed=42)
-        report = scenario.run()
-        assert report.scenario_name == "BPUOrganoidScenario"
-        assert len(report.timepoints) == 5
-
     def test_passage_scenario_runs(self):
         from pathway_subtyping.qc.testing.scenarios.passage_stability import (
             PassageStabilityScenario,

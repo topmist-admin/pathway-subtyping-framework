@@ -1,5 +1,5 @@
 # GSE65682 MARS Sepsis Cohort — Pathway Subtyping Analysis
-# Purpose: Preliminary results for DARPA BTO BAA abstract
+# Purpose: Preliminary sepsis subtyping results
 # Dataset: 802 ICU sepsis patients, Affymetrix HG-U219, RMA log2-normalized
 # Usage: python -m pathway_subtyping --config configs/sepsis_gse65682.yaml
 
