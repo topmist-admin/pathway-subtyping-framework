@@ -259,7 +259,19 @@ batch = sim.generate_healthy_batch(n_cells=500, spec=spec)
 injected = sim.inject_offtarget(batch, pathways=["HALLMARK_APOPTOSIS"], cell_fraction=0.2)
 ```
 
-9 injectable defect types, 12x12 orthogonality matrix, severity titration harness, and 3 end-to-end scenario tests (CAR T, BPU organoid, 20-passage stability).
+9 injectable defect types, 12x12 orthogonality matrix, severity titration harness, and 3 end-to-end scenario tests (CAR T, neural organoid, 20-passage stability).
+
+### Multi-Level Validation (L2/L3/L4)
+
+Beyond synthetic testing, the QC layer includes a 3-level validation framework:
+
+| Level | Module | Purpose |
+|-------|--------|---------|
+| L2 Retrospective | `qc.testing.retrospective` | Correlate QC scores with clinical outcomes on public datasets (TCGA-COAD, GSE65682, GSE15402) |
+| L3 Scenarios | `qc.testing.scenarios` | End-to-end scenario execution with defect injection, detection validation, and ground truth checking |
+| L4 Prospective | `qc.testing.prospective` | Shadow protocol for non-interventional PSF alongside standard QC, with concordance analysis and threshold calibration |
+
+See [qc-validation.md](qc-validation.md) for the full API reference.
 
 ---
 
