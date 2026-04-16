@@ -1,0 +1,40 @@
+# PSF public/private split — blocked keywords (committed, public-safe)
+#
+# One pattern per line. Extended regex (grep -E). Case-insensitive.
+# Lines starting with # and blank lines are ignored.
+#
+# Keywords here are public program names and acronyms whose *presence*
+# in a public commit would reveal the private fork's focus. Blocking
+# them on the public branch is the point — it's not that the words
+# themselves are secret, it's that the public PSF edition should never
+# mention them.
+#
+# Names of individuals and private partner companies go in the
+# GITIGNORED companion file: blocked-keywords.local.txt
+# Do NOT add names or partner companies here.
+
+# --- DARPA / program acronyms ---------------------------------------------
+\bDARPA\b
+\bBPU\b
+\bBPUs\b
+O-Circuit
+OCircuit
+\bO_Circuit\b
+
+# --- O-Circuit domain vocabulary that only appears in the BPU context ----
+# (generic "organoid" is fine in public — NOT listed)
+biological processing unit
+biological processing units
+
+# --- Compound phrases that only make sense in the private context --------
+CONFIDENTIAL — TOPMIST LLC PROPRIETARY
+Topmist LLC Proprietary
+molecular-informed decoder
+molecular informed decoder
+MSV injection
+MSVPlus
+7th MSV dimension
+
+# --- Private repo / workspace identifiers --------------------------------
+topmistbpu
+pathway-subtyping-framework.*private

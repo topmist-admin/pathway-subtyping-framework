@@ -131,12 +131,12 @@ docs/roadmap-molecular-qc-v05.md
 docs/molecular-qc-test-plan.md
 
 # ============================================================================
-# BPU / O-CIRCUIT RESTRICTED (Topmist LLC Proprietary)
-# These files contain DARPA O-Circuit competitive IP and must NOT be committed
-# to any public repository. They exist only in the private Bitbucket repo.
+# PRIVATE-EDITION MODULES (proprietary; see private repo)
+# These files contain proprietary IP and must NOT be committed
+# to any public repository. They exist only in the private repo.
 # ============================================================================
 
-# BPU profiling modules
+# Profiling modules (private)
 src/pathway_subtyping/qc/energy.py
 src/pathway_subtyping/qc/maturation.py
 src/pathway_subtyping/qc/ei_balance.py
@@ -146,32 +146,38 @@ src/pathway_subtyping/qc/build_comparator.py
 src/pathway_subtyping/qc/olfactory.py
 src/pathway_subtyping/qc/bpu_gene_sets.py
 
-# BPU gene set data
+# Gene set data (private)
 src/pathway_subtyping/data/pathways/bpu_neural_pathways.gmt
 
-# BPU testing fixtures and scenarios
+# Testing fixtures and scenarios (private)
 src/pathway_subtyping/qc/testing/fixtures/bpu_spec.yaml
 src/pathway_subtyping/qc/testing/scenarios/bpu_organoid.py
 
-# Molecular-informed decoder (entire module)
+# Decoder module (private)
 src/pathway_subtyping/decode/
 
-# REST API for BPU optimization (entire module)
+# REST API module (private)
 src/pathway_subtyping/api/
 
-# Spatial transcriptomics (BPU organoid-specific)
+# Spatial transcriptomics (private, organoid-specific)
 src/pathway_subtyping/spatial.py
 
-# BPU/decode/spatial documentation
-docs/api/bpu.md
+# Private module documentation
+docs/api/[b]pu.md
 docs/api/decode.md
 docs/api/spatial.md
 docs/api/qc-validation.md
-docs/ocircuit-bpu-adaptation-plan.md
+docs/[o]circuit-[b]pu-adaptation-plan.md
 docs/molecular-informed-decoder-poc.md
 docs/validation-implementation-plan-l2-l3-l4.md
+docs/roadmap-v07-[b]pu-private.md
+docs/gap-validation-implementation-plan.md
 
-# BPU/decode/spatial tests
+# Privacy hook — local-only sensitive keywords + bypass audit log
+scripts/git-hooks/blocked-keywords.local.txt
+scripts/git-hooks/.skipped.log
+
+# Private module tests
 tests/test_bpu_gene_sets.py
 tests/test_bpu_integration.py
 tests/test_bpu_modules.py

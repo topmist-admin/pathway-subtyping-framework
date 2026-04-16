@@ -1,0 +1,231 @@
+#!/usr/bin/env bash
+# PSF public/private split enforcement — pre-push hook.
+#
+# Last line of defense: before pushing to the public Codeberg remote, verify
+# that no commit in the push range contains BPU / O-Circuit / consortium IP.
+#
+# Runs the same checks as pre-commit, but across EVERY commit being pushed,
+# not just the working tree. Catches cases where pre-commit was skipped,
+# amended, or bypassed locally.
+#
+# Stdin contract (from git): lines of "<local_ref> <local_sha> <remote_ref> <remote_sha>".
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+HOOKS_DIR="${REPO_ROOT}/scripts/git-hooks"
+
+REMOTE_NAME="${1:-}"
+REMOTE_URL="${2:-}"
+
+# Remote URL patterns that require PUBLIC-level scrutiny.
+PUBLIC_REMOTE_PATTERNS=(
+    "codeberg.org"
+    "github.com"
+    "gitlab.com"
+)
+
+# Remote URL patterns that are private — skip enforcement.
+PRIVATE_REMOTE_PATTERNS=(
+    "bitbucket.org"
+    "topmistbpu"
+)
+
+KEYWORD_FILES=(
+    "${HOOKS_DIR}/blocked-keywords.txt"
+    "${HOOKS_DIR}/blocked-keywords.local.txt"
+)
+
+SKIP_CONTENT_SCAN_EXTS=(
+    gz bz2 xz zip tar whl egg pyc pyo
+    png jpg jpeg gif webp svg ico
+    pdf docx xlsx pptx
+    parquet feather h5 h5ad loom mtx
+    bin pkl joblib npy npz pt pth safetensors
+    woff woff2 ttf otf
+)
+
+MAX_SCAN_BYTES=524288
+
+if [[ -t 1 ]]; then
+    RED='\033[0;31m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'; BOLD='\033[1m'; RESET='\033[0m'
+else
+    RED=''; YELLOW=''; CYAN=''; BOLD=''; RESET=''
+fi
+
+err()  { printf "%b\n" "${RED}${BOLD}✗${RESET} $*" >&2; }
+warn() { printf "%b\n" "${YELLOW}!${RESET} $*" >&2; }
+info() { printf "%b\n" "${CYAN}i${RESET} $*" >&2; }
+
+# ---------------------------------------------------------------------------
+# Classify remote
+# ---------------------------------------------------------------------------
+
+is_public_remote=false
+
+for pat in "${PRIVATE_REMOTE_PATTERNS[@]}"; do
+    if [[ "${REMOTE_URL}" == *"${pat}"* ]]; then
+        info "push target '${REMOTE_NAME}' (${REMOTE_URL}) is private — hook skipped"
+        exit 0
+    fi
+done
+
+for pat in "${PUBLIC_REMOTE_PATTERNS[@]}"; do
+    if [[ "${REMOTE_URL}" == *"${pat}"* ]]; then
+        is_public_remote=true
+        break
+    fi
+done
+
+if [[ "${is_public_remote}" != "true" ]]; then
+    warn "push target '${REMOTE_NAME}' (${REMOTE_URL}) is unclassified — enforcing by default"
+    warn "add its host to PUBLIC_ or PRIVATE_REMOTE_PATTERNS to change behavior"
+fi
+
+# ---------------------------------------------------------------------------
+# Emergency escape hatch
+# ---------------------------------------------------------------------------
+
+if [[ "${PSF_SKIP_PRIVACY_HOOK:-0}" == "1" ]]; then
+    warn "PSF_SKIP_PRIVACY_HOOK=1 — pre-push hook skipped. This WILL be logged."
+    printf "%s\t%s\tPRE-PUSH-SKIPPED\t%s\n" \
+        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(whoami)" "${REMOTE_NAME}:${REMOTE_URL}" \
+        >> "${HOOKS_DIR}/.skipped.log" 2>/dev/null || true
+    exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Load keyword patterns
+# ---------------------------------------------------------------------------
+
+patterns=()
+for kf in "${KEYWORD_FILES[@]}"; do
+    [[ -f "$kf" ]] || continue
+    while IFS= read -r line; do
+        line="${line%%#*}"
+        line="$(printf '%s' "$line" | awk '{$1=$1;print}')"
+        [[ -z "$line" ]] && continue
+        patterns+=("$line")
+    done < "$kf"
+done
+
+regex=""
+if [[ "${#patterns[@]}" -gt 0 ]]; then
+    regex="$(IFS='|'; printf '%s' "${patterns[*]}")"
+fi
+
+should_skip_content_scan() {
+    local path="$1"
+    # Hook directory itself will always contain the patterns it protects against
+    case "$path" in
+        scripts/git-hooks/*) return 0 ;;
+    esac
+    local ext="${path##*.}"
+    ext=$(printf '%s' "$ext" | tr '[:upper:]' '[:lower:]')
+    for skip in "${SKIP_CONTENT_SCAN_EXTS[@]}"; do
+        [[ "$ext" == "$skip" ]] && return 0
+    done
+    return 1
+}
+
+# ---------------------------------------------------------------------------
+# Examine each pushed ref
+# ---------------------------------------------------------------------------
+
+ZERO="0000000000000000000000000000000000000000"
+violations_total=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    # Branch deletion — nothing to scan.
+    if [[ "${local_sha}" == "${ZERO}" ]]; then
+        continue
+    fi
+
+    # New branch on remote — compare against all commits reachable locally
+    # but not already on any public remote branch.
+    if [[ "${remote_sha}" == "${ZERO}" ]]; then
+        range="${local_sha}"
+        commit_spec="${local_sha} --not --remotes=${REMOTE_NAME}"
+    else
+        range="${remote_sha}..${local_sha}"
+        commit_spec="${remote_sha}..${local_sha}"
+    fi
+
+    info "scanning push range ${range} → ${REMOTE_NAME} ${remote_ref}"
+
+    # shellcheck disable=SC2086
+    commits=()
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && commits+=("$line")
+    done < <(git rev-list ${commit_spec})
+
+    if [[ "${#commits[@]}" -eq 0 ]]; then
+        continue
+    fi
+
+    for sha in "${commits[@]}"; do
+        # Files changed in this commit.
+        files=()
+        while IFS= read -r line; do
+            [[ -n "$line" ]] && files+=("$line")
+        done < <(git diff-tree --no-commit-id --name-only --diff-filter=ACM -r "$sha")
+
+        for f in "${files[@]}"; do
+            # Path check: was this path gitignored at commit time?
+            if git -c core.quotepath=off check-ignore -q -- "$f" 2>/dev/null; then
+                err "[${sha:0:12}] ${f} — gitignored path present in commit"
+                violations_total=$((violations_total + 1))
+                continue
+            fi
+
+            # Content check.
+            [[ -z "$regex" ]] && continue
+            should_skip_content_scan "$f" && continue
+
+            blob="$(git ls-tree "$sha" -- "$f" | awk '{print $3}')" || continue
+            [[ -z "$blob" ]] && continue
+
+            size="$(git cat-file -s "$blob" 2>/dev/null || echo 0)"
+            [[ "$size" -gt "$MAX_SCAN_BYTES" ]] && continue
+
+            match="$(git cat-file -p "$blob" 2>/dev/null \
+                | grep -n -E -i --color=never -- "$regex" \
+                | head -3 \
+                || true)"
+
+            if [[ -n "$match" ]]; then
+                err "[${sha:0:12}] ${f} — blocked keyword match:"
+                printf '%s\n' "$match" | sed 's/^/        /' >&2
+                violations_total=$((violations_total + 1))
+            fi
+        done
+    done
+done
+
+# ---------------------------------------------------------------------------
+# Verdict
+# ---------------------------------------------------------------------------
+
+if [[ "${violations_total}" -eq 0 ]]; then
+    info "pre-push: no privacy violations in push range"
+    exit 0
+fi
+
+err "push REJECTED: ${violations_total} privacy violation(s) across push range."
+cat >&2 <<EOF
+
+${BOLD}Options${RESET}
+  1. Rewrite history to drop the offending commits (interactive rebase):
+       ${CYAN}git rebase -i <parent>${RESET}
+     Then re-run the push.
+  2. Push instead to the private remote (Bitbucket):
+       ${CYAN}git push bitbucket <branch>${RESET}
+  3. Emergency bypass (logged, audit trail):
+       ${CYAN}PSF_SKIP_PRIVACY_HOOK=1 git push ...${RESET}
+
+If this blocked a genuine public-safe change, edit the keyword list:
+  ${CYAN}scripts/git-hooks/blocked-keywords.local.txt${RESET}   (gitignored)
+See: ${CYAN}scripts/git-hooks/README.md${RESET}
+EOF
+
+exit 1

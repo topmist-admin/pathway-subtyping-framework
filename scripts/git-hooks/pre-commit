@@ -1,0 +1,231 @@
+#!/usr/bin/env bash
+# PSF public/private split enforcement — pre-commit hook.
+#
+# Purpose: refuse commits on public-facing branches that would leak
+# BPU / O-Circuit / consortium IP into the public Codeberg repo.
+#
+# On private-facing branches (private, bitbucket/*), this hook is a no-op.
+# On every other branch (main and anything else), it enforces:
+#   1. No gitignored paths may be committed (catches `git add -f`).
+#   2. No staged content may contain blocked keywords.
+#
+# Install with: scripts/git-hooks/install.sh
+# Emergency override: PSF_SKIP_PRIVACY_HOOK=1 git commit ...
+
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------------
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+HOOKS_DIR="${REPO_ROOT}/scripts/git-hooks"
+
+# Branches where enforcement is SKIPPED.
+PRIVATE_BRANCH_PATTERNS=(
+    "private"
+    "private/*"
+    "bitbucket"
+    "bitbucket/*"
+)
+
+# Additional keyword lists (space-separated paths, last one wins if duplicate).
+KEYWORD_FILES=(
+    "${HOOKS_DIR}/blocked-keywords.txt"
+    "${HOOKS_DIR}/blocked-keywords.local.txt"
+)
+
+# File types to skip content scanning (binary or data).
+SKIP_CONTENT_SCAN_EXTS=(
+    gz bz2 xz zip tar whl egg pyc pyo
+    png jpg jpeg gif webp svg ico
+    pdf docx xlsx pptx
+    parquet feather h5 h5ad loom mtx
+    bin pkl joblib npy npz pt pth safetensors
+    woff woff2 ttf otf
+)
+
+# Max bytes to scan per file (content scan is slow on very large text).
+MAX_SCAN_BYTES=524288   # 512 KB
+
+# ---------------------------------------------------------------------------
+# Color helpers (only if stdout is a terminal)
+# ---------------------------------------------------------------------------
+
+if [[ -t 1 ]]; then
+    RED='\033[0;31m'
+    YELLOW='\033[0;33m'
+    CYAN='\033[0;36m'
+    BOLD='\033[1m'
+    RESET='\033[0m'
+else
+    RED=''; YELLOW=''; CYAN=''; BOLD=''; RESET=''
+fi
+
+err()  { printf "%b\n" "${RED}${BOLD}✗${RESET} $*" >&2; }
+warn() { printf "%b\n" "${YELLOW}!${RESET} $*" >&2; }
+info() { printf "%b\n" "${CYAN}i${RESET} $*" >&2; }
+
+# ---------------------------------------------------------------------------
+# Escape hatches
+# ---------------------------------------------------------------------------
+
+if [[ "${PSF_SKIP_PRIVACY_HOOK:-0}" == "1" ]]; then
+    warn "PSF_SKIP_PRIVACY_HOOK=1 — privacy hook skipped. This WILL be logged."
+    printf "%s\t%s\tSKIPPED\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(whoami)" \
+        >> "${HOOKS_DIR}/.skipped.log" 2>/dev/null || true
+    exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Branch check
+# ---------------------------------------------------------------------------
+
+current_branch="$(git symbolic-ref --short HEAD 2>/dev/null || echo '')"
+
+if [[ -z "${current_branch}" ]]; then
+    info "detached HEAD — enforcing by default"
+fi
+
+for pat in "${PRIVATE_BRANCH_PATTERNS[@]}"; do
+    # shellcheck disable=SC2053
+    if [[ "${current_branch}" == ${pat} ]]; then
+        info "on private branch '${current_branch}' — privacy hook skipped"
+        exit 0
+    fi
+done
+
+info "enforcing public-branch privacy on '${current_branch:-HEAD}'"
+
+# ---------------------------------------------------------------------------
+# Collect staged files
+# ---------------------------------------------------------------------------
+
+# --name-only --diff-filter=ACM: added, copied, modified (skip deletions)
+STAGED=()
+while IFS= read -r -d '' f; do
+    [[ -n "$f" ]] && STAGED+=("$f")
+done < <(git diff --cached --name-only --diff-filter=ACM -z)
+
+if [[ "${#STAGED[@]}" -eq 0 ]]; then
+    exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Check 1: staged paths must not be gitignored
+# ---------------------------------------------------------------------------
+
+violations_paths=()
+for f in "${STAGED[@]}"; do
+    # check-ignore exits 0 if path IS ignored (meaning someone force-added it)
+    if git check-ignore -q -- "$f" 2>/dev/null; then
+        violations_paths+=("$f")
+    fi
+done
+
+# ---------------------------------------------------------------------------
+# Check 2: staged content must not contain blocked keywords
+# ---------------------------------------------------------------------------
+
+# Load keyword patterns (one per line; # starts a comment; blank lines OK).
+patterns=()
+for kf in "${KEYWORD_FILES[@]}"; do
+    [[ -f "$kf" ]] || continue
+    while IFS= read -r line; do
+        # strip comments and whitespace
+        line="${line%%#*}"
+        line="$(printf '%s' "$line" | awk '{$1=$1;print}')"
+        [[ -z "$line" ]] && continue
+        patterns+=("$line")
+    done < "$kf"
+done
+
+should_skip_content_scan() {
+    local path="$1"
+    # Hook directory itself will always contain the patterns it protects against
+    case "$path" in
+        scripts/git-hooks/*) return 0 ;;
+    esac
+    local ext="${path##*.}"
+    ext=$(printf '%s' "$ext" | tr '[:upper:]' '[:lower:]')   # lowercase
+    for skip in "${SKIP_CONTENT_SCAN_EXTS[@]}"; do
+        [[ "$ext" == "$skip" ]] && return 0
+    done
+    return 1
+}
+
+violations_content=()
+if [[ "${#patterns[@]}" -gt 0 ]]; then
+    # Combine patterns into one regex for a single grep pass per file.
+    regex="$(IFS='|'; printf '%s' "${patterns[*]}")"
+
+    for f in "${STAGED[@]}"; do
+        [[ -f "$f" ]] || continue
+        should_skip_content_scan "$f" && continue
+
+        # Read staged content (not working-tree content) so we catch
+        # exactly what will be committed.
+        blob="$(git ls-files --stage -- "$f" | awk '{print $2}')" || continue
+        [[ -z "$blob" ]] && continue
+
+        # Skip very large files
+        size="$(git cat-file -s "$blob" 2>/dev/null || echo 0)"
+        if [[ "$size" -gt "$MAX_SCAN_BYTES" ]]; then
+            warn "skipping content scan of $f (${size} bytes > ${MAX_SCAN_BYTES})"
+            continue
+        fi
+
+        # grep -E -i: extended regex, case-insensitive
+        match="$(git cat-file -p "$blob" 2>/dev/null \
+            | grep -n -E -i --color=never -- "$regex" \
+            | head -5 \
+            || true)"
+
+        if [[ -n "$match" ]]; then
+            violations_content+=("$f")
+            violations_content+=("$(printf '%s\n' "$match" | sed 's/^/    /')")
+        fi
+    done
+fi
+
+# ---------------------------------------------------------------------------
+# Report
+# ---------------------------------------------------------------------------
+
+if [[ "${#violations_paths[@]}" -eq 0 && "${#violations_content[@]}" -eq 0 ]]; then
+    info "privacy hook: ${#STAGED[@]} staged path(s) clean"
+    exit 0
+fi
+
+err "privacy hook rejected this commit on branch '${current_branch:-HEAD}'."
+echo >&2
+
+if [[ "${#violations_paths[@]}" -gt 0 ]]; then
+    err "Gitignored paths were force-added (use of 'git add -f'?):"
+    for f in "${violations_paths[@]}"; do
+        printf "    %s\n" "$f" >&2
+    done
+    echo >&2
+fi
+
+if [[ "${#violations_content[@]}" -gt 0 ]]; then
+    err "Blocked keywords found in staged content:"
+    printf "%s\n" "${violations_content[@]}" >&2
+    echo >&2
+fi
+
+cat >&2 <<EOF
+${BOLD}How to resolve${RESET}
+  - Unstage the offending files: ${CYAN}git reset HEAD <file>${RESET}
+  - If the content belongs in the private edition, switch branches:
+      ${CYAN}git checkout private && git cherry-pick <commit>${RESET}
+  - If this is a genuine false positive, edit the keyword list:
+      ${CYAN}scripts/git-hooks/blocked-keywords.local.txt${RESET} (gitignored)
+  - For an emergency bypass (logged):
+      ${CYAN}PSF_SKIP_PRIVACY_HOOK=1 git commit ...${RESET}
+
+Repo policy: public branch (main) must contain zero BPU / O-Circuit / consortium IP.
+See: ${CYAN}scripts/git-hooks/README.md${RESET}
+EOF
+
+exit 1

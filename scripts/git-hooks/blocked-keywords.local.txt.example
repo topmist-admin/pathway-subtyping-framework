@@ -1,0 +1,17 @@
+# PSF public/private split — LOCAL blocked keywords (gitignored, example)
+#
+# Copy this file to blocked-keywords.local.txt and edit. The real file
+# must NEVER be committed — it is listed in .gitignore.
+#
+# Put sensitive names and partner companies here, not in the main
+# blocked-keywords.txt (which is committed).
+
+# --- Individuals (consortium, collaborators) -----------------------------
+# <partner-first-name-or-full-name>
+
+# --- Partner companies / their products ----------------------------------
+# <partner-company>
+# <partner-product>
+
+# --- Internal-only program codenames -------------------------------------
+# <codename>
