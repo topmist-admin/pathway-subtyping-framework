@@ -173,6 +173,7 @@ docs/molecular-informed-decoder-poc.md
 docs/validation-implementation-plan-l2-l3-l4.md
 docs/roadmap-v07-[b]pu-private.md
 docs/gap-validation-implementation-plan.md
+docs/perturbation-v06-*.md
 
 # Privacy hook — local-only sensitive keywords + bypass audit log
 scripts/git-hooks/blocked-keywords.local.txt
