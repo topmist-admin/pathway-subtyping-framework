@@ -168,6 +168,7 @@ docs/api/decode.md
 docs/api/spatial.md
 docs/api/qc-validation.md
 docs/[o]circuit-[b]pu-adaptation-plan.md
+docs/[o]circuit-abstract-*.md
 docs/molecular-informed-decoder-poc.md
 docs/validation-implementation-plan-l2-l3-l4.md
 docs/roadmap-v07-[b]pu-private.md
