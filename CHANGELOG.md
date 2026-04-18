@@ -5,6 +5,129 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-04-18
+
+v0.6 adds a **Rigor layer** (uncertainty, cross-platform harmonization,
+KG refresh, AlphaMissense cascade) and a **Foundation-Model Interface**
+(Geneformer perturbation, scGPT embeddings, Borzoi gene-set expansion,
+Nicheformer spatial join, Evo 2 off-target, multi-omics fusion, causal
+inference, active learning). All twelve roadmap features ship with
+test-asserted acceptance criteria; every foundation-model wrapper has
+an opt-in production backend (gated on the relevant extra + checkpoint)
+and a deterministic PCA-based fallback so CI runs without heavyweight
+model downloads.
+
+Public-edition test count: 1,362 → 1,612 (+250 tests, all synthetic or
+real-data acceptance).
+
+### Added
+
+#### Phase 1 — Rigor Layer
+
+- **F1 Uncertainty quantification (`pathway_subtyping.uncertainty`)** —
+  `ConformalPathwayPredictor` (split-conformal prediction intervals),
+  `BootstrapMSV` (non-parametric bootstrap with per-cell and aggregate
+  modes), `BayesianPathwayGMM` (drop-in Bayesian replacement for the
+  point-estimate GMM with posterior sampling), `CalibrationReport`
+  (ECE + Brier + reliability diagrams). Real-data acceptance on
+  TCGA-COAD (n=57) and GSE28521 autism cortex (n=79): oracle-adjusted
+  conformal coverage within ±1% of target. See
+  `docs/guides/uncertainty.md` and `examples/notebooks/21_uncertainty.ipynb`.
+- **F2 Cross-platform harmonization (`pathway_subtyping.harmonize`)** —
+  `UCEEmbedder` (opt-in, `[harmonize]` extra) / `FallbackEmbedder`,
+  `CrossPlatformAligner` (per-platform biology-regression), and
+  `HarmonizationReport`. Synthetic 4-platform harmonized rho > 0.75
+  (baseline 0.3–0.5). See `docs/guides/cross-platform.md` and
+  `examples/notebooks/22_cross_platform.ipynb`.
+- **F3 Knowledge-graph refresh (`pathway_subtyping.knowledge_graph.{sources,diff,regression}`)** —
+  pinned v0.5 + v0.6 source manifests (OmniPath 2025, SIGNOR 3.0,
+  Reactome 2026) with SHA-256 verification, `diff_kgs` utility
+  reporting node/edge/direction changes, `run_kg_regression` with
+  configurable threshold flagging, `manifest_digest` for whole-
+  manifest reproducibility hashing. Migration guide at
+  `docs/migration/v05-to-v06-kg.md`.
+- **F4 AlphaMissense-modulated cascade (`pathway_subtyping.qc.alphamissense`)** —
+  `AlphaMissenseScorer` loads per-variant pathogenicity scores and
+  produces per-cell per-gene weight matrices. `CascadeAnalyzer` gains
+  an optional `gene_weights` parameter; `gene_weights=None` is
+  bit-identical to the variant-naive v0.5 baseline.
+
+#### Phase 2 — Foundation-Model Interface
+
+- **F5 Geneformer in-silico perturbation (`pathway_subtyping.perturb`)** —
+  `GeneformerPerturber` with pluggable backend (`OfficialBackend` gated
+  on `[perturb]` extra, `FallbackPerturber` for tests), `MSVFromEmbedding`
+  ridge-regression head, `PerturbationScreen` batch runner,
+  `PerturbationReport` with directional-signature check. Synthetic
+  master-regulator tests pass for three simulated cluster markers.
+  See `docs/guides/perturbation.md` and `examples/notebooks/23_perturbation.ipynb`.
+- **F6 scGPT embeddings + cache (`pathway_subtyping.embed`)** — abstract
+  `Embedder` interface, `scGPTEmbedder` with `OfficialSCGPTBackend` /
+  `FallbackSCGPTEmbedder`, content-hashed `EmbeddingCache` safe across
+  package upgrades. See `docs/guides/embeddings.md` and
+  `examples/notebooks/24_embeddings.ipynb`.
+- **F7 Regulatory gene-set expansion (`pathway_subtyping.genesets.regulatory`)** —
+  `RegulatoryGeneSetExpander` with `BorzoiBackend` (opt-in) and
+  `CoexpressionBackend` (fallback). On the synthetic Reactome-like
+  fixture, top-20 recovers 100% of held-out pathway members (roadmap
+  ≥30%). See `examples/notebooks/25_gene_set_expansion.ipynb`.
+
+#### Phase 3 — Extensions
+
+- **F8 Nicheformer spatial-joint (`pathway_subtyping.embed.nicheformer`)** —
+  `NicheformerEmbedder` with shared-basis `embed_joint(dissociated,
+  spatial)`. Dissociated-vs-spatial pathway-score rho > 0.7 on paired
+  cortex synthetic reference. See `examples/notebooks/26_spatial_joint.ipynb`.
+- **F9 Evo 2 sequence-level off-target (`pathway_subtyping.qc.offtarget_sequence`)** —
+  `Evo2OffTargetScorer` (opt-in, `[qc-sequence]` extra), `SimulatedEvo2Backend`
+  for tests, `SimilarityBackend` baseline, and `compare_backends` /
+  `auroc` primitives. On a seed-conservation CRISPR panel, the
+  simulated contender beats the similarity baseline by AUROC ≥ 0.03.
+  See `examples/notebooks/27_evo2_offtarget.ipynb`.
+- **F10 Multi-omics fusion (`pathway_subtyping.omics`)** — `ATACScorer`,
+  `ProteomicsScorer`, `MultiOmicsFusion` with `learn_weights` grid
+  search, and `flag_discordant_pathways` for RNA/protein disagreement.
+  CITE-seq-style 1-NN cell-type accuracy uplift ≥ 3% over RNA-only.
+  See `examples/notebooks/28_multi_omics.ipynb`.
+- **F11 Invariant causal prediction (`pathway_subtyping.causal`)** —
+  `InvariantPathwayPredictor` with combined mean+variance invariance
+  test. On a 2-environment synthetic cohort, identifiable causal
+  parents recalled with 1.0 recall (roadmap ≥ 0.7). See
+  `examples/notebooks/29_causal_inference.ipynb`.
+- **F12 Active-learning selection (`pathway_subtyping.active`)** —
+  `ActiveSampleSelector` with uncertainty / diversity / hybrid
+  strategies. 40% label budget reaches ≥ 90% of full-cohort 1-NN
+  accuracy on an autism-style synthetic cohort. See
+  `examples/notebooks/30_active_learning.ipynb`.
+
+### Added — Scripts, tests, docs
+
+- `scripts/validate_f1_real_data.py` — reproducible conformal coverage
+  validation on TCGA-COAD + GSE28521.
+- `tests/test_uncertainty*.py`, `tests/test_harmonize.py`,
+  `tests/test_kg_refresh.py`, `tests/test_alphamissense.py`,
+  `tests/test_perturb.py`, `tests/test_embed.py`,
+  `tests/test_genesets_regulatory.py`, `tests/test_nicheformer.py`,
+  `tests/test_offtarget_sequence.py`, `tests/test_omics_fusion.py`,
+  `tests/test_causal.py`, `tests/test_active.py` — one test module
+  per v0.6 feature.
+- New guides: `docs/guides/{uncertainty,cross-platform,embeddings,perturbation}.md`.
+- Migration guide: `docs/migration/v05-to-v06-kg.md`.
+
+### Deprecated
+
+- None. v0.6 is additive. No public v0.5 API changes.
+
+### Removed
+
+- None.
+
+### Fixed
+
+- None (feature release, not a bugfix release).
+
+---
+
 ## [0.5.0] - 2026-04-13
 
 ### Added

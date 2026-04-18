@@ -60,6 +60,17 @@ Originally developed for [autism research](https://codeberg.org/pathways/autism-
 | **Visualization** | Interactive Plotly HTML reports, UMAP/t-SNE scatter plots, radar charts, multi-format export |
 | **Molecular QC** | 12-feature manufacturing QC: cascade detection, dosage gating, off-target activation, drift detection, stress fingerprinting |
 | **Knowledge Graph** | Topology-aware pathway scoring, hierarchical queries, cross-omics entity resolution, pathway crosstalk quantification |
+| **Uncertainty Quantification** *(v0.6)* | Split-conformal prediction intervals, bootstrap, Bayesian pathway-GMM drop-in, calibration diagnostics |
+| **Cross-Platform Harmonization** *(v0.6)* | UCE-anchored aligner for 10x / Smart-seq2 / bulk / spatial, with per-cell confidence scoring |
+| **KG Refresh Infrastructure** *(v0.6)* | Pinned source manifest (OmniPath / SIGNOR / Reactome), diff + regression tools, reproducibility hashing |
+| **AlphaMissense-modulated Cascade** *(v0.6)* | Variant-carrier down-weighting for pathway-cascade scoring |
+| **In-silico Perturbation** *(v0.6)* | Geneformer wrapper + MSV-from-embedding head + batch screens with F1 uncertainty intervals |
+| **scGPT / Nicheformer Embeddings** *(v0.6)* | Backend-pluggable cell embedders with content-hashed cache + joint dissociated/spatial analysis |
+| **Regulatory Gene-Set Expansion** *(v0.6)* | Borzoi or co-expression-backed suggestion tool for custom seed sets |
+| **CRISPR Sequence Off-Target** *(v0.6)* | Evo 2 sequence-level scoring complementing pathway-level off-target detection |
+| **Multi-Omics Fusion** *(v0.6)* | RNA + ATAC + proteomics weighted fusion with RNA/protein discordance flagger |
+| **Causal Inference** *(v0.6)* | Invariant causal prediction identifies pathway parents across environments |
+| **Active Learning** *(v0.6)* | Uncertainty / diversity / hybrid sample selection under a fixed label budget |
 | **GNN Embeddings** | TransE/RotatE KG embeddings, OntologyAwareGNN with biological attention, gene risk classification *(experimental)* |
 | **Autism Interpretation** | Neuro-symbolic rules (R1-R7), therapeutic hypothesis ranking with safety flags *(autism-only)* |
 | **Performance** | tqdm progress bars, chunked VCF processing, 10K+ sample support |
@@ -77,15 +88,26 @@ pip install pathway-subtyping
 Optional extras:
 
 ```bash
-pip install pathway-subtyping[vcf]    # VCF file processing (pysam)
-pip install pathway-subtyping[viz]    # Interactive visualizations (Plotly, UMAP)
-pip install pathway-subtyping[sc]     # Single-cell support (AnnData)
-pip install pathway-subtyping[graph]  # Network analysis (NetworkX, py4cytoscape)
-pip install pathway-subtyping[qc]     # Molecular QC layer for manufacturing
-pip install pathway-subtyping[gnn]    # Graph neural networks (PyTorch) — experimental
-pip install pathway-subtyping[autism] # Autism-specific interpretation (pure Python)
-pip install pathway-subtyping[all]    # Everything
+pip install pathway-subtyping[vcf]           # VCF file processing (pysam)
+pip install pathway-subtyping[viz]           # Interactive visualizations (Plotly, UMAP)
+pip install pathway-subtyping[sc]            # Single-cell support (AnnData)
+pip install pathway-subtyping[graph]         # Network analysis (NetworkX, py4cytoscape)
+pip install pathway-subtyping[qc]            # Molecular QC layer for manufacturing
+pip install pathway-subtyping[harmonize]     # v0.6 F2 — UCE cross-platform harmonization
+pip install pathway-subtyping[perturb]       # v0.6 F5 — Geneformer in-silico perturbation
+pip install pathway-subtyping[embed]         # v0.6 F6/F8 — scGPT + Nicheformer embedders
+pip install pathway-subtyping[genesets]      # v0.6 F7 — Borzoi regulatory gene-set expansion
+pip install pathway-subtyping[qc-sequence]   # v0.6 F9 — Evo 2 CRISPR off-target sequence scoring
+pip install pathway-subtyping[gnn]           # Graph neural networks (PyTorch) — experimental
+pip install pathway-subtyping[autism]        # Autism-specific interpretation (pure Python)
+pip install pathway-subtyping[all]           # Everything
 ```
+
+The v0.6 foundation-model extras (`harmonize`, `perturb`, `embed`,
+`genesets`, `qc-sequence`) each gate a production wrapper around a
+published model. Every wrapper also ships a deterministic PCA-based
+fallback that works without the extra so CI and local smoke runs
+don't depend on heavyweight checkpoints.
 
 #### Network Visualization (Cytoscape)
 
@@ -179,13 +201,13 @@ psf --config configs/my_analysis.yaml
 
 ```bash
 # Pull from Docker Hub
-docker pull rohitdataops/pathway-subtyping:latest        # CLI runtime
-docker pull rohitdataops/pathway-subtyping:0.5.0-jupyter  # Jupyter + notebooks
+docker pull rohitdataops/pathway-subtyping:latest         # CLI runtime
+docker pull rohitdataops/pathway-subtyping:0.6.0-jupyter  # Jupyter + notebooks
 
 # Run pipeline
 docker compose run pipeline
 
-# Run tests (1363 tests)
+# Run tests (1612 tests on the public edition)
 docker compose run test
 
 # Start Jupyter notebook
