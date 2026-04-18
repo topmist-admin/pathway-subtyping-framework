@@ -21,13 +21,21 @@ Research use only. Not for clinical decision-making.
 
 from .base import Embedder, EmbeddingResult
 from .cache import EmbeddingCache, cache_key_for
+from .nicheformer import (
+    FallbackNicheformerEmbedder,
+    NicheformerEmbedder,
+    OfficialNicheformerBackend,
+)
 from .scgpt import FallbackSCGPTEmbedder, OfficialSCGPTBackend, scGPTEmbedder
 
 __all__ = [
     "Embedder",
     "EmbeddingCache",
     "EmbeddingResult",
+    "FallbackNicheformerEmbedder",
     "FallbackSCGPTEmbedder",
+    "NicheformerEmbedder",
+    "OfficialNicheformerBackend",
     "OfficialSCGPTBackend",
     "cache_key_for",
     "scGPTEmbedder",
