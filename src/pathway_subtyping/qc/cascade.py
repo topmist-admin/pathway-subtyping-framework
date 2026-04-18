@@ -162,14 +162,21 @@ class CascadeAnalyzer:
         self,
         expression: pd.DataFrame,
         layers: Dict[str, List[str]],
+        gene_weights: Optional[pd.DataFrame] = None,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Score each layer's activation across all cells.
 
-        Computes mean z-scored expression per layer per cell.
+        Computes mean z-scored expression per layer per cell, optionally
+        down-weighted by a per-cell per-gene weight matrix (e.g., from
+        the AlphaMissense F4 extension).
 
         Args:
             expression: Expression matrix (cells x genes).
             layers: Dict with 'upstream', 'intermediate', 'downstream' gene lists.
+            gene_weights: Optional (cells x genes) DataFrame of per-cell,
+                per-gene multiplicative weights applied to z-scored
+                values before averaging. Missing cells or genes default
+                to 1.0. When None, behaviour is identical to v0.5.
 
         Returns:
             Tuple of (upstream_scores, intermediate_scores, downstream_scores),
@@ -187,6 +194,13 @@ class CascadeAnalyzer:
             stds = vals.std(axis=0, keepdims=True)
             stds[stds == 0] = 1.0
             z = (vals - means) / stds
+            if gene_weights is not None:
+                w = (
+                    gene_weights.reindex(
+                        index=expression.index, columns=present
+                    ).fillna(1.0).values
+                )
+                z = z * w
             return z.mean(axis=1)
 
         up = _layer_mean(layers["upstream"])
@@ -198,18 +212,22 @@ class CascadeAnalyzer:
         self,
         expression: pd.DataFrame,
         pathway: str,
+        gene_weights: Optional[pd.DataFrame] = None,
     ) -> LayerScores:
         """Analyze a single pathway for incomplete cascades.
 
         Args:
             expression: Expression matrix (cells x genes).
             pathway: Pathway node ID.
+            gene_weights: Optional per-cell per-gene down-weighting matrix
+                (see :meth:`score_layer_activation`). F4 integration hook
+                for AlphaMissense-modulated cascade scoring.
 
         Returns:
             LayerScores with per-layer activation and completion ratio.
         """
         layers = self.define_cascade_layers(pathway)
-        up, mid, down = self.score_layer_activation(expression, layers)
+        up, mid, down = self.score_layer_activation(expression, layers, gene_weights=gene_weights)
 
         return LayerScores(
             pathway=pathway,
@@ -225,6 +243,7 @@ class CascadeAnalyzer:
         self,
         expression: pd.DataFrame,
         pathways: Optional[List[str]] = None,
+        gene_weights: Optional[pd.DataFrame] = None,
     ) -> CascadeResult:
         """Analyze all pathways for incomplete cascades.
 
@@ -232,6 +251,11 @@ class CascadeAnalyzer:
             expression: Expression matrix (cells x genes).
             pathways: List of pathway node IDs. If None, analyzes all
                 pathways in the KG.
+            gene_weights: Optional per-cell per-gene multiplicative
+                weights applied during layer-score computation. Typically
+                produced by
+                :meth:`pathway_subtyping.qc.alphamissense.AlphaMissenseScorer.weights_from_carriers`.
+                Passing None reproduces the variant-naive baseline.
 
         Returns:
             CascadeResult with per-pathway and per-cell cascade metrics.
@@ -248,7 +272,7 @@ class CascadeAnalyzer:
             if not layers["upstream"] and not layers["downstream"]:
                 continue
 
-            up, mid, down = self.score_layer_activation(expression, layers)
+            up, mid, down = self.score_layer_activation(expression, layers, gene_weights=gene_weights)
 
             ls = LayerScores(
                 pathway=pw,
