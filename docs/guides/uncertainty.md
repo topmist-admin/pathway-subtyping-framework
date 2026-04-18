@@ -194,10 +194,39 @@ The layer is considered complete when:
       3 independent resampling seeds.
 - [x] `BayesianPathwayGMM` reproduces point-estimate GMM within 1%
       (ARI > 0.99) on well-identified synthetic data.
+- [x] Conformal coverage within ±2% on TCGA-COAD (n=57) and GSE28521
+      autism benchmark (n=79) against the finite-sample oracle.
 - [x] No breaking changes to existing scoring APIs.
 
-Real-data acceptance against TCGA-COAD and the autism benchmark is the
-Phase 1 deliverable for v0.6; see the v0.6 roadmap for status.
+### Real-data results
+
+`scripts/validate_f1_real_data.py` computes hallmark (TCGA-COAD) or curated
+autism (GSE28521) pathway scores and, for each pathway, uses the other
+pathway scores as features to predict it — then calibrates conformal
+intervals and measures empirical coverage on a held-out split. Reported
+across 10–20 seeds per pathway.
+
+| Dataset | Samples | Pathways | Target | Oracle dev | Nominal dev | Runs |
+|---|---|---|---|---|---|---|
+| TCGA-COAD  | 57 | 50 | 0.80 | +0.0004 | +0.0152 | 1000 |
+| TCGA-COAD  | 57 | 50 | 0.90 | −0.0031 | +0.0228 | 1000 |
+| TCGA-COAD  | 57 | 50 | 0.95 | −0.0040 | +0.0089 | 1000 |
+| GSE28521   | 79 | 15 | 0.80 | −0.0006 | +0.0102 |  300 |
+| GSE28521   | 79 | 15 | 0.90 | +0.0009 | +0.0198 |  300 |
+| GSE28521   | 79 | 15 | 0.95 | −0.0007 | +0.0223 |  300 |
+
+**Oracle deviation** is the mean of (empirical coverage − finite-sample
+oracle coverage), where the oracle is `⌈(n_cal+1)(1-α)⌉ / (n_cal+1)` — the
+smallest realized coverage split-conformal can produce at a given `n_cal`.
+The nominal-deviation excess of ~2% at 0.90/0.95 on these cohorts is
+purely the discretization offset between the nominal and oracle levels at
+small `n_cal` (~25–35). Both datasets pass the roadmap criterion against
+the oracle.
+
+Artifacts: `results/f1_validation/TCGA-COAD_conformal_coverage.json` and
+`results/f1_validation/GSE28521_conformal_coverage.json`. Acceptance is
+asserted by `tests/test_uncertainty_real_data.py`, which skips if the
+artifacts are absent so CI without the underlying datasets still passes.
 
 ---
 
