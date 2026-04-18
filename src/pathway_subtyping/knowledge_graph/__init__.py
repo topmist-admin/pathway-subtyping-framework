@@ -23,6 +23,7 @@ from .builder import (
     PPINetwork,
     load_ppi_from_file,
 )
+from .diff import KGDiff, diff_kgs
 from .exporters import (
     NodeMapping,
     create_node_mapping,
@@ -33,6 +34,7 @@ from .exporters import (
     to_neo4j_cypher,
     to_pyg,
 )
+from .regression import KGRegressionReport, ScoreDelta, run_kg_regression
 from .schema import (
     EDGE_TYPE_METADATA,
     Edge,
@@ -42,6 +44,15 @@ from .schema import (
     NodeFeatures,
     NodeType,
 )
+from .sources import (
+    KG_SOURCES,
+    KG_SOURCES_V05,
+    KG_SOURCES_V06,
+    KGSource,
+    get_source,
+    list_sources,
+    manifest_digest,
+)
 
 __all__ = [
     # Builder
@@ -50,6 +61,9 @@ __all__ = [
     "KnowledgeGraphStats",
     "PPINetwork",
     "load_ppi_from_file",
+    # Diff
+    "KGDiff",
+    "diff_kgs",
     # Exporters
     "NodeMapping",
     "create_node_mapping",
@@ -59,6 +73,10 @@ __all__ = [
     "to_edge_list",
     "to_neo4j_cypher",
     "to_pyg",
+    # Regression
+    "KGRegressionReport",
+    "ScoreDelta",
+    "run_kg_regression",
     # Schema
     "EDGE_TYPE_METADATA",
     "Edge",
@@ -67,4 +85,12 @@ __all__ = [
     "Node",
     "NodeFeatures",
     "NodeType",
+    # Sources
+    "KG_SOURCES",
+    "KG_SOURCES_V05",
+    "KG_SOURCES_V06",
+    "KGSource",
+    "get_source",
+    "list_sources",
+    "manifest_digest",
 ]
