@@ -1,7 +1,27 @@
-# Pathway Subtyping Framework: v0.1 → v0.5 Roadmap
+# Pathway Subtyping Framework: v0.1 → v0.5 Roadmap — Retrospective
 
-This document outlines the project milestones for the Pathway Subtyping Framework,
-modeled after the successful Autism Pathway Framework 90-day plan.
+This document is the **original v0.1 → v0.5 Gantt-style plan** (33 weeks across six phases, modelled after the Autism Pathway Framework 90-day plan). Every phase through v0.5 has shipped. It is retained as a historical record of how the project was sequenced from v0.1 (Oct 2024) to v0.5 (Apr 2026); it is **not** the current roadmap.
+
+> **Current state as of 2026-04-19:**
+> - Latest release: **v0.6.3** on PyPI / Zenodo (`10.5281/zenodo.19648024`) / Docker Hub / Confluence / bio.tools
+> - For v0.6 features (F1–F12, uncertainty + harmonize + perturb + embed + genesets + omics + causal + active + AlphaMissense + Evo 2 + Nicheformer + KG refresh) see the [v0.6 retrospective roadmap](roadmap-v06-codeberg.md) and [CHANGELOG.md](../CHANGELOG.md).
+> - For the shipped module catalogue see [docs/api/index.md](api/index.md).
+> - For the notebook manifest (31 notebooks, 00–30 + 12b) see [docs/notebook-guide.md](notebook-guide.md).
+
+**Shipped state — six phases, all complete:**
+
+| Version | Phase | Target window (plan) | Actual release |
+|---|---|---|---|
+| v0.1.0 | Phase 1 — Citable DOI + outreach | Weeks 1–2 | shipped |
+| v0.2.0 | Phase 2 — User feedback + disease pathways + v0.2 release | Weeks 3–10 | shipped |
+| — | Phase 3 — Community growth (tutorials, contributions, conference prep) | Weeks 11–13 | shipped |
+| v0.3.0 | Phase 4 — Multi-omic integration (bulk + sc RNA-seq + deconv + spatial) | Weeks 14–21 | shipped |
+| v0.4.0 | Phase 5 — Deep multi-omics + metabolic disease + CRISPR overlay | Weeks 22–29 | shipped |
+| v0.5.0 | Phase 6 — Knowledge graph + GNN + molecular QC (12 features) | Weeks 30–33 | shipped Apr 13, 2026 — DOI `10.5281/zenodo.19561365` |
+
+The original planning content below is preserved verbatim; checkboxes are pre-shipping state.
+
+---
 
 ## Phase 1: v0.1 Completion (Weeks 1-2)
 
@@ -707,18 +727,19 @@ from a genomic-variant-only tool into a multi-modal transcriptomics and genomics
 
 ## Success Metrics
 
-| Metric | v0.1 Target | v0.2 Actual | v0.3 Target | v0.4 Target | v0.5 Target |
-|--------|-------------|-------------|-------------|-------------|-------------|
-| GitHub Stars | 10 | — | 100 | 250 | 500 |
-| PyPI Downloads | 100 | — | 2,000 | 10,000 | 25,000 |
-| External Collaborators | 1 | 4 responding | 10 | 20 | 30 |
-| Disease Pathways | 4 | 6 | 6+ | 7+ (+ MitoCarta) | 7+ (+ KG-derived) |
-| Issues Closed | 80% | ~70% | 80% | 85% | 90% |
-| Test Coverage | 64 tests | 768 tests | 800 tests | 950 tests | 1,100 tests |
-| Input Modalities | 1 (VCF) | 3 (VCF, bulk RNA, scRNA) | 4 (+ spatial) | 6 (+ proteomics, metabolomics) | 6 (+ network topology) |
-| Validation Gates | 3 | 4 | 5 (+ cross-modal) | 5 (+ multi-omics QC) | 5 (+ network-propagated) |
-| Integration Methods | 1 (GMM) | 1 (GMM) | 1 (GMM) | 2 (GMM + MOFA) | 4 (+ KG embeddings + GNN) |
-| Architecture Layers | 1 (Core) | 1 (Core) | 1 (Core) | 1 (Core) | 3 (Core / Graph / KG-ML) |
+Actual numbers at v0.5 release (Apr 13, 2026) and at v0.6.3 (Apr 19, 2026) added as extra columns. Some targets were exceeded (test coverage, modalities), some not pursued on the original cadence (e.g. GitHub stars — the project moved to Codeberg primary hosting).
+
+| Metric | v0.1 Target | v0.2 Actual | v0.3 Target | v0.4 Target | v0.5 Target | **v0.5 Actual** | **v0.6.3 Actual** |
+|--------|-------------|-------------|-------------|-------------|-------------|-----------------|-------------------|
+| PyPI Downloads | 100 | — | 2,000 | 10,000 | 25,000 | — (Codeberg-primary) | — |
+| External Collaborators | 1 | 4 responding | 10 | 20 | 30 | ongoing | ongoing |
+| Disease Pathways | 4 | 6 | 6+ | 7+ (+ MitoCarta) | 7+ (+ KG-derived) | 7 + Hallmark (50) | + AlphaMissense-weighted variants |
+| Issues Closed | 80% | ~70% | 80% | 85% | 90% | — | — |
+| Test Coverage | 64 tests | 768 tests | 800 tests | 950 tests | 1,100 tests | **1,363** | **1,634** |
+| Input Modalities | 1 (VCF) | 3 (VCF, bulk RNA, scRNA) | 4 (+ spatial) | 6 (+ proteomics, metabolomics) | 6 (+ network topology) | 6 | 8 (+ ATAC via F10, + DNA-sequence via F9) |
+| Validation Gates | 3 | 4 | 5 (+ cross-modal) | 5 (+ multi-omics QC) | 5 (+ network-propagated) | 5 | 5 + conformal coverage (F1) |
+| Integration Methods | 1 (GMM) | 1 (GMM) | 1 (GMM) | 2 (GMM + MOFA) | 4 (+ KG embeddings + GNN) | 4 | 5 (+ Bayesian GMM / F1) |
+| Architecture Layers | 1 (Core) | 1 (Core) | 1 (Core) | 1 (Core) | 3 (Core / Graph / KG-ML) | 3 | **17** (see [api/index.md](api/index.md)) |
 
 ---
 
@@ -737,4 +758,4 @@ gh project create "Pathway Subtyping Framework: v0.2 Roadmap" \
 
 ---
 
-*Last updated: 2026-02-16*
+*Last updated: 2026-04-19 — v0.1 → v0.5 phases all shipped; retrospective banner added. For v0.6 see [roadmap-v06-codeberg.md](roadmap-v06-codeberg.md).*
