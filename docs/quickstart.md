@@ -75,7 +75,7 @@ psf --help
 
 Expected output:
 ```
-pathway-subtyping 0.5.0
+pathway-subtyping 0.6.3
 ```
 
 ---
@@ -149,7 +149,21 @@ See [outputs_dictionary.md](outputs_dictionary.md) for detailed guidance on:
 
 ---
 
-## Step 6: Run on Your Own Data
+## Step 6: Try Real Data in 15 Minutes
+
+Synthetic is fine for verifying the install works. When you want to see PSF on a real GEO cohort without writing a config, run:
+
+```bash
+python scripts/quickstart_real_data.py
+```
+
+This downloads GSE28521 (79 post-mortem frontal-cortex samples, autism vs control) from NCBI GEO, scores the Hallmark pathway collection, discovers subtypes, and writes a pathway-score matrix under `outputs/quickstart_real_data/`. **Expected runtime: ~10–15 minutes** on a standard laptop; the downloaded expression matrix (~4 MB) is cached so repeat runs start instantly.
+
+The script is intentionally a thin wrapper — once you've seen its output, you can copy it and adapt the data path / pathway file for your own cohort. For a deeper walkthrough on the same dataset (executed cell-by-cell), see [Notebook 10](../examples/notebooks/10_geo_autism_bulk.ipynb).
+
+---
+
+## Step 7: Run on Your Own Data
 
 ### Prepare Your Data
 

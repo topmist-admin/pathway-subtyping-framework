@@ -29,13 +29,42 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 | [`config`](config.md) | Configuration loading and validation utilities |
 | [`cli`](cli.md) | Command-line interface |
 
-### Optional Layers
+### Optional Layers (v0.5)
 
 | Module | Extra | Description |
 |--------|-------|-------------|
 | [`qc`](qc.md) | `[qc]` | 12-feature molecular QC for cell manufacturing (cascade, dosage, drift, off-target, stress) |
 | [`gnn`](gnn.md) | `[gnn]` | TransE/RotatE KG embeddings, OntologyAwareGNN, biological attention *(experimental)* |
 | [`autism`](autism.md) | `[autism]` | Neuro-symbolic rules (R1-R7), therapeutic hypothesis ranking *(autism-only)* |
+
+### v0.6 Layers — Rigor + Foundation-Model Interface
+
+All v0.6 modules ship a deterministic fallback alongside the production backend, so CI and test suites run without heavyweight checkpoints. The production backend is gated on the extra + a locally-cached checkpoint (see each module's in-package docstring for checkpoint discovery). User-facing walkthroughs in the `Guide` column; notebook numbers in the `Notebook` column mirror [notebook-guide.md](../notebook-guide.md).
+
+| Module | Feature | Extra | Guide | Notebook | What it does |
+|--------|---------|-------|-------|----------|--------------|
+| [`uncertainty`](../guides/uncertainty.md) | F1 | (core) | [uncertainty](../guides/uncertainty.md) | 21 | `ConformalPathwayPredictor`, `BootstrapMSV`, `BayesianPathwayGMM`, `CalibrationReport` — calibrated intervals on pathway scores with a distribution-free coverage guarantee |
+| [`harmonize`](../guides/cross-platform.md) | F2 | `[harmonize]` | [cross-platform](../guides/cross-platform.md) | 22 | `UCEEmbedder`, `CrossPlatformAligner`, `HarmonizationReport`, `CrossPlatformBenchmark` — align pathway scores across 10x / Smart-seq2 / bulk / spatial on an embedding anchor |
+| `knowledge_graph` (refresh) | F3 | (core) | [v0.5→v0.6 KG migration](../migration/v05-to-v06-kg.md) | 16 | `sources.py` (pinned OmniPath/SIGNOR/Reactome manifest), `diff.py`, `regression.py` — KG provenance + diff |
+| `qc.alphamissense` | F4 | `[qc]` | *(in QC guide)* | — | AlphaMissense-aware variant cascade extension; `gene_weights=None` is bit-identical to v0.5 |
+| [`perturb`](../guides/perturbation.md) | F5 | `[perturb]` | [perturbation](../guides/perturbation.md) | 23 | `GeneformerPerturber`, `MSVFromEmbedding`, `PerturbationScreen`, `PerturbationReport`, `FallbackPerturber`, `OfficialBackend` (Geneformer V2 104M; content-hashed embedding cache via `cache_dir=`) |
+| [`embed`](../guides/embeddings.md) | F6, F8 | `[embed]` | [embeddings](../guides/embeddings.md) | 24, 26 | `Embedder` ABC, `scGPTEmbedder`, `NicheformerEmbedder`, `EmbeddingCache`, `embed_joint` for dissociated + spatial |
+| [`genesets`](../guides/genesets.md) | F7 | `[genesets]` | *(see module docstring)* | 25 | `RegulatoryGeneSetExpander` with `BorzoiBackend` (opt-in) + `CoexpressionBackend` (fallback) — expand curated gene sets by regulatory co-occurrence |
+| `qc.offtarget_sequence` | F9 | `[qc-sequence]` | *(in QC guide)* | 27 | `Evo2OffTargetScorer`, `SimulatedEvo2Backend`, `SimilarityBackend` — sequence-level CRISPR off-target scoring |
+| [`omics`](../guides/multi-omics.md) | F10 | (core) | *(see module docstring)* | 28 | `ATACScorer`, `ProteomicsScorer`, `MultiOmicsFusion`, `FusionWeights`, `flag_discordant_pathways` — weighted fusion of per-modality pathway scores |
+| [`causal`](../guides/causal.md) | F11 | (core) | *(see module docstring)* | 29 | `InvariantPathwayPredictor` — Invariant Causal Prediction (ICP) with combined mean+variance invariance test |
+| [`active`](../guides/active.md) | F12 | (core) | *(see module docstring)* | 30 | `ActiveSampleSelector` — uncertainty / diversity / hybrid sample selection strategies |
+
+### Real-Data Validation Scripts (v0.6.3)
+
+Each script fetches a public cohort, computes the roadmap acceptance metric, and writes a skip-on-absent JSON artefact consumed by the corresponding `tests/test_*_real_data.py` suite. Dataset provenance + SHA-256 in [docs/provenance.md](../provenance.md).
+
+| Script | Cohort | Asserts |
+|--------|--------|---------|
+| `scripts/validate_f1_real_data.py` | TCGA-COAD (n=57) + GSE28521 (n=79) | Conformal oracle deviation within ±2% at 80/90/95% target |
+| `scripts/validate_f2_real_data.py` | GSE28521 × GSE80655 | Pathway-mean Spearman rho uplift ≥ 0.10 post-alignment |
+| `scripts/validate_f5_real_data.py` | TCGA-COAD + GSE123753 (MECP2-KO, via `scripts/fetch_gse123753.py`) | Directional agreement ≥ 70% on curated edges; 50/50 on real WT-vs-KO cohort with Geneformer |
+| `scripts/validate_f10_real_data.py` | 10x `pbmc_1k_protein_v3` CITE-seq | Fused-vs-RNA-only 1-NN classification uplift ≥ 3% with CI_low > 0 |
 
 ## Quick Start
 

@@ -144,7 +144,7 @@ CyREST API on `localhost:1234`.
 
 ### Notebooks
 
-21 Jupyter notebooks covering tutorials through full manuscript reproduction. See [docs/notebook-guide.md](docs/notebook-guide.md) for execution order and dependencies.
+31 Jupyter notebooks covering tutorials, full manuscript reproduction, and v0.6 feature walkthroughs (21-30). See [docs/notebook-guide.md](docs/notebook-guide.md) for execution order and dependencies.
 
 **Tutorials (00-09)** -- Synthetic data, standalone, any order:
 
@@ -176,6 +176,21 @@ CyREST API on `localhost:1234`.
 | 17 | TCGA-COAD | Colon adenocarcinoma (452 tumors, CMS + survival) | 452 | Section 7 |
 | 18 | GSE15402 | LCL (ADI-R clinical phenotype) | 116 | Section 6.10 |
 | 19 | Multi-GEO | SCZ blood multi-cohort (Hertzberg replication) | 407 | Section 6.11 |
+
+**v0.6 Feature Walkthroughs (21-30)** -- Standalone, any order:
+
+| # | Feature | Topic | Extra |
+|---|---------|-------|-------|
+| 21 | F1 uncertainty | Conformal intervals + bootstrap MSV + calibration | (core) |
+| 22 | F2 cross-platform | UCE harmonization across 10x / Smart-seq2 / bulk | `[harmonize]` |
+| 23 | F5 perturbation | Geneformer in-silico knockouts + MSV head | `[perturb]` |
+| 24 | F6 embeddings | scGPT + content-hashed cache | `[embed]` |
+| 25 | F7 gene sets | Regulatory expansion (Borzoi or co-expression) | `[genesets]` |
+| 26 | F8 spatial | Nicheformer joint dissociated + spatial embed | `[embed]` |
+| 27 | F9 Evo 2 | Sequence-level off-target scoring | `[qc-sequence]` |
+| 28 | F10 multi-omics | RNA + ATAC + protein fusion + discordance | (core) |
+| 29 | F11 causal | Invariant causal prediction | (core) |
+| 30 | F12 active learning | Sample-selection strategies | (core) |
 
 ### Run with Sample Data
 

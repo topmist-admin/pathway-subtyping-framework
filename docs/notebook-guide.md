@@ -1,6 +1,6 @@
 # Notebook Guide
 
-> Complete guide to the 21 analysis notebooks (00-19 + 12b), their execution order, and how outputs flow between them.
+> Complete guide to the 31 analysis notebooks (00-30, with 12b), their execution order, and how outputs flow between them.
 
 ---
 
@@ -40,6 +40,27 @@ These notebooks download real transcriptomics data from NCBI GEO and reproduce t
 | 17 | [tcga_cancer_validation](examples/notebooks/17_tcga_cancer_validation.ipynb) | TCGA-COAD | Colon adenocarcinoma | 452 | RNA-seq (NCI GDC API) | None (standalone) |
 | 18 | [geo_clinical_phenotype](examples/notebooks/18_geo_clinical_phenotype.ipynb) | GSE15402 | LCL (lymphoblastoid) | 116 | TIGR 40K two-channel | None (standalone) |
 | 19 | [scz_blood_multi_cohort](examples/notebooks/19_scz_blood_multi_cohort.ipynb) | Multi-GEO (5) | Blood (SCZ) | 407 | Multi-platform | None (standalone) |
+
+### Tier 3: v0.6 Feature Walkthroughs (Standalone, any order)
+
+Each of these is a focused, self-contained tour of one v0.6 feature module. They require the relevant optional extra (in the `Extra` column) but otherwise run in any order and don't depend on Tier 1 / Tier 2 outputs. Runtimes assume CPU; foundation-model notebooks (23, 24, 26) accept a ``cache_dir=`` for repeat runs (see [perturbation.md](guides/perturbation.md), [embeddings.md](guides/embeddings.md)).
+
+| # | Notebook | Feature | Extra | Topic | Runtime |
+|---|----------|---------|-------|-------|---------|
+| 21 | [uncertainty](examples/notebooks/21_uncertainty.ipynb) | F1 | (core) | Conformal intervals + bootstrap MSV + Bayesian GMM + calibration report | 5 min |
+| 22 | [cross_platform](examples/notebooks/22_cross_platform.ipynb) | F2 | `[harmonize]` | UCE harmonization + per-platform alignment across 10x / Smart-seq2 / bulk | 10 min |
+| 23 | [perturbation](examples/notebooks/23_perturbation.ipynb) | F5 | `[perturb]` | Geneformer in-silico KO + `MSVFromEmbedding` head + perturbation screens | 15 min |
+| 24 | [embeddings](examples/notebooks/24_embeddings.ipynb) | F6 | `[embed]` | scGPT embeddings + content-hashed cache + cross-run reuse | 10 min |
+| 25 | [gene_set_expansion](examples/notebooks/25_gene_set_expansion.ipynb) | F7 | `[genesets]` | `RegulatoryGeneSetExpander` with Borzoi or co-expression backend | 10 min |
+| 26 | [spatial_joint](examples/notebooks/26_spatial_joint.ipynb) | F8 | `[embed]` | Nicheformer joint embedding of dissociated + spatial cohorts | 10 min |
+| 27 | [evo2_offtarget](examples/notebooks/27_evo2_offtarget.ipynb) | F9 | `[qc-sequence]` | Evo 2 off-target scoring vs Hamming-distance baseline | 10 min |
+| 28 | [multi_omics](examples/notebooks/28_multi_omics.ipynb) | F10 | (core) | RNA + ATAC + proteomics fusion + RNA-vs-protein discordance | 10 min |
+| 29 | [causal_inference](examples/notebooks/29_causal_inference.ipynb) | F11 | (core) | Invariant causal prediction across environments | 10 min |
+| 30 | [active_learning](examples/notebooks/30_active_learning.ipynb) | F12 | (core) | Uncertainty / diversity / hybrid sample selection strategies | 10 min |
+
+**If you are new to v0.6**, start with **21 (uncertainty)** for the core idea of calibrated pathway predictions, then pick any feature notebook that matches your use case. Notebook 28 (multi-omics) is the most common second stop.
+
+**For the real-data acceptance claims backing these features** (what scripts produce the JSON artefacts the CHANGELOG cites), see `scripts/validate_f{1,2,5,10}_real_data.py` and [docs/provenance.md](provenance.md).
 
 ---
 
@@ -499,12 +520,12 @@ Open any `.ipynb` file in VS Code. Select the `pathwayenv` kernel. Run cells int
 
 ```bash
 # Pull the Jupyter image with all dependencies
-docker pull rohitdataops/pathway-subtyping:0.5.0-jupyter
+docker pull rohitdataops/pathway-subtyping:0.6.3-jupyter
 
 # Launch Jupyter server
 docker run -p 8888:8888 \
   -v $(pwd)/examples/notebooks:/home/psf/examples/notebooks \
-  rohitdataops/pathway-subtyping:0.5.0-jupyter
+  rohitdataops/pathway-subtyping:0.6.3-jupyter
 
 # Or use docker compose
 docker compose up jupyter
