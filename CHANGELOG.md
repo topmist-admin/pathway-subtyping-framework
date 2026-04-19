@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.2] - 2026-04-18
 
+Artefact DOIs:
+- **PyPI:** https://pypi.org/project/pathway-subtyping/0.6.2/
+- **Zenodo:** `10.5281/zenodo.19646697` (https://doi.org/10.5281/zenodo.19646697)
+  — released under concept DOI `10.5281/zenodo.18442426`
+- **Docker Hub:** `rohitdataops/pathway-subtyping:0.6.2-runtime`,
+  `:0.6.2-jupyter`, `:latest`
+
 ### Fixed
 
 - Sync `__version__` in `src/pathway_subtyping/__init__.py` and the `version`
