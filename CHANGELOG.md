@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Validation
 
 Real-data acceptance runs added for F2 (harmonize), F5 (perturb), and F10
-(multi-omics fusion). All three land as new skip-on-absent test suites
-mirroring F1's blueprint; CI remains deterministic when cohort artefacts
-are not present locally.
+(multi-omics fusion), plus a production Geneformer-backed F5 run on a real
+WT vs MECP2-KO cohort. All land as new skip-on-absent test suites mirroring
+F1's blueprint; CI remains deterministic when cohort artefacts are not
+present locally.
 
 - **F2** — `scripts/validate_f2_real_data.py` +
   `tests/test_harmonize_real_data.py`. Cohorts: GSE28521 (Affymetrix U133,
@@ -39,11 +40,31 @@ are not present locally.
   +23.0 pp (95% CI +18.1..+27.6 pp), passing both the 3% uplift and
   strictly-positive CI-lower-bound gates.
 
-Public test count: 1,612 → **1,625** (+13 real-data tests).
+### Features
 
-Production F5 acceptance with Geneformer weights (via
-`pip install pathway-subtyping[perturb]` + cached checkpoint) is a
-tracked post-release follow-up.
+- **Real Geneformer-backed F5 perturbation.** ``OfficialBackend`` is
+  now a working Geneformer V2 104M wrapper (CLS-token embeddings + rank-
+  tokenization + direct knockout-by-zero-count). Requires the optional
+  ``[perturb]`` extra plus a locally cloned ``Geneformer-V2-104M``
+  checkpoint — configured via the ``GENEFORMER_MODEL_DIR`` env var or the
+  ``--geneformer-model-dir`` CLI flag on ``scripts/validate_f5_real_data.py``.
+- ``scripts/validate_f5_real_data.py --backend {fallback,geneformer}``
+  selects the perturbation backend; the Geneformer path also runs a new
+  **real WT vs MECP2-KO** comparison on GSE123753 (Boxer et al. 2020,
+  isogenic iPSC-derived cortical neurons with MECP2 deletion). Predicted
+  in-silico MECP2-KO ΔMSV is compared to observed ΔMSV from the real RTT
+  vs WT cohort on 50 hallmark pathways.
+
+### Validation (Geneformer-backed F5)
+
+- **GSE123753 WT vs MECP2-KO** (neurons; 3 WT + 3 KO, MSV head fit on
+  all 11 GSE123753 samples): **50/50 pathways directionally agree**
+  between in-silico KO and observed KO (gate: ≥70%); Spearman
+  predicted-vs-observed ΔMSV rho = **+0.85**. Gates enforced in new
+  ``test_wt_vs_ko_*`` cases in ``tests/test_perturb_real_data.py``.
+
+Public test count: 1,612 → **1,625** + 3 Geneformer-backed WT-vs-KO
+real-data tests (skipped when the Geneformer artefact is absent).
 
 ---
 

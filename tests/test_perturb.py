@@ -130,17 +130,23 @@ class TestFallbackPerturber:
             perturber.perturb(expr, "NONEXISTENT", PerturbationMode.KNOCKOUT)
 
 
-class TestOfficialBackendStub:
+class TestOfficialBackend:
 
-    def test_lazy_import_error_informative(self):
+    def test_lazy_load_surfaces_informative_error(self):
+        """Either missing deps OR missing model_directory must be informative."""
         backend = OfficialBackend()
         try:
             backend._lazy_load()
-        except (ImportError, NotImplementedError) as exc:
+        except ImportError as exc:
             msg = str(exc).lower()
-            assert "perturb" in msg or "geneformer" in msg or "checkpoint" in msg
+            assert "perturb" in msg or "geneformer" in msg
+        except ValueError as exc:
+            # With deps installed, constructor + lazy_load with no model_directory
+            # should surface a clear message pointing at model_directory.
+            msg = str(exc).lower()
+            assert "model_directory" in msg or "checkpoint" in msg
         else:
-            pytest.skip("Geneformer installed — skipping stub error test")
+            pytest.skip("loaded without error — checkpoint must be present")
 
 
 # --------------------------------------------------------------------------- #

@@ -1,5 +1,6 @@
 {
   "feature": "F5",
+  "backend_kind": "fallback",
   "cohort": {
     "label": "TCGA-COAD",
     "n_samples": 57,
@@ -166,9 +167,11 @@
   },
   "acceptance": {
     "directional_target": 0.7,
-    "directional_pass": true,
     "conformal_oracle_target_abs": 0.02,
+    "wt_vs_ko_target": 0.7,
+    "directional_pass": true,
     "conformal_pass": true,
-    "note": "uses FallbackPerturber (deterministic PCA-based stub). Production F5 acceptance requires the Geneformer checkpoint via pip install pathway-subtyping[perturb] + HuggingFace weight download. See the plan doc for the follow-up path."
+    "wt_vs_ko_pass": false,
+    "note": "'directional' + 'conformal' exercise in-silico KO via MSV head; 'wt_vs_ko_gse123753' compares predicted in-silico \u0394MSV against observed \u0394MSV from real MECP2-deletion vs WT iPSC neurons (Boxer et al. 2020, GSE123753). With --backend geneformer, perturbations use the published Geneformer V2 104M checkpoint."
   }
 }

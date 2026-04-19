@@ -37,6 +37,19 @@ of real-data acceptance results.
   `scripts/validate_f5_real_data.py`. The directional edges are
   literature-anchored (MYC / TP53 / E2F1 / CCNE1 / CDK1 → hallmark
   pathways where each gene is a direct member and a known driver).
+- **GSE123753** — Boxer et al. 2020 (PMID 30923256), TRAP-seq and Input
+  RNA-seq of WT vs isogenic MECP2-deletion iPSC-derived NPCs and
+  Neurons. Used for the Geneformer-backed WT vs MECP2-KO section
+  of the F5 validation. Fetched by `scripts/fetch_gse123753.py` from:
+  - Counts: https://ftp.ncbi.nlm.nih.gov/geo/series/GSE123nnn/GSE123753/suppl/GSE123753_counts_gene_replicates.csv.gz
+  - Series matrix: https://ftp.ncbi.nlm.nih.gov/geo/series/GSE123nnn/GSE123753/matrix/GSE123753_series_matrix.txt.gz
+  Parsed output at `data/f5_gse123753/input_rnaseq_samples_x_genes.csv`
+  (11 samples × 19,830 genes, Input-only, NPC + Neuron).
+- **Geneformer V2 104M** checkpoint — `OfficialBackend` requires a
+  local clone of https://huggingface.co/ctheodoris/Geneformer (the
+  `Geneformer-V2-104M` subdirectory). Apache-2.0 licensed.
+  Configured via ``GENEFORMER_MODEL_DIR`` env var or the
+  ``--geneformer-model-dir`` CLI flag.
 
 ## F10 — Multi-omics fusion (Phase 3)
 

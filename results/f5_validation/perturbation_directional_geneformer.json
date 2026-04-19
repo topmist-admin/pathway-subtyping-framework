@@ -1,0 +1,490 @@
+{
+  "feature": "F5",
+  "backend_kind": "geneformer",
+  "cohort": {
+    "label": "TCGA-COAD",
+    "n_samples": 57,
+    "n_pathways": 50,
+    "n_genes": 59427
+  },
+  "directional": {
+    "edges": [
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_MYC_TARGETS_V1",
+        "expected_sign": -1,
+        "observed_sign": 0,
+        "mean_delta_msv": 0.0,
+        "std_delta_msv": 0.0,
+        "agrees": false,
+        "status": "ok"
+      },
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_MYC_TARGETS_V2",
+        "expected_sign": -1,
+        "observed_sign": 0,
+        "mean_delta_msv": 0.0,
+        "std_delta_msv": 0.0,
+        "agrees": false,
+        "status": "ok"
+      },
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_E2F_TARGETS",
+        "expected_sign": -1,
+        "observed_sign": 0,
+        "mean_delta_msv": 0.0,
+        "std_delta_msv": 0.0,
+        "agrees": false,
+        "status": "ok"
+      },
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_G2M_CHECKPOINT",
+        "expected_sign": -1,
+        "observed_sign": 0,
+        "mean_delta_msv": 0.0,
+        "std_delta_msv": 0.0,
+        "agrees": false,
+        "status": "ok"
+      },
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_IL2_STAT5_SIGNALING",
+        "expected_sign": -1,
+        "observed_sign": 0,
+        "mean_delta_msv": 0.0,
+        "std_delta_msv": 0.0,
+        "agrees": false,
+        "status": "ok"
+      },
+      {
+        "gene": "TP53",
+        "pathway": "HALLMARK_P53_PATHWAY",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.0038631902621609478,
+        "std_delta_msv": 0.048991377977610114,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "TP53",
+        "pathway": "HALLMARK_DNA_REPAIR",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.00328630756358301,
+        "std_delta_msv": 0.04003916468343069,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "TP53",
+        "pathway": "HALLMARK_E2F_TARGETS",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.0033614323839624414,
+        "std_delta_msv": 0.026873877864431038,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "E2F1",
+        "pathway": "HALLMARK_G2M_CHECKPOINT",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.0319234982386919,
+        "std_delta_msv": 0.03559589110275553,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "E2F1",
+        "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.036931210952880905,
+        "std_delta_msv": 0.058988334311674884,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "CCNE1",
+        "pathway": "HALLMARK_E2F_TARGETS",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.01039296730032548,
+        "std_delta_msv": 0.03140913752394681,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "CDK1",
+        "pathway": "HALLMARK_G2M_CHECKPOINT",
+        "expected_sign": -1,
+        "observed_sign": 1,
+        "mean_delta_msv": 7.289877262747915e-05,
+        "std_delta_msv": 0.0005503736638719148,
+        "agrees": false,
+        "status": "ok"
+      },
+      {
+        "gene": "CDK1",
+        "pathway": "HALLMARK_E2F_TARGETS",
+        "expected_sign": -1,
+        "observed_sign": 1,
+        "mean_delta_msv": 0.0001450507381711844,
+        "std_delta_msv": 0.001095109057906249,
+        "agrees": false,
+        "status": "ok"
+      },
+      {
+        "gene": "CDK1",
+        "pathway": "HALLMARK_MITOTIC_SPINDLE",
+        "expected_sign": -1,
+        "observed_sign": 1,
+        "mean_delta_msv": 0.0001969347319360629,
+        "std_delta_msv": 0.0014868246206717018,
+        "agrees": false,
+        "status": "ok"
+      }
+    ],
+    "n_edges_total": 14,
+    "n_edges_evaluated": 14,
+    "n_edges_agree": 6,
+    "directional_agreement_rate": 0.42857142857142855,
+    "backend": "FallbackPerturber",
+    "embedding_dim": 32
+  },
+  "conformal": {
+    "target": 0.9,
+    "n_runs": 20,
+    "mean_deviation": 0.010869565217391287,
+    "mean_oracle_deviation": -0.003416149068322949,
+    "mean_abs_oracle_deviation": 0.0673913043478261,
+    "status": "ok"
+  },
+  "wt_vs_ko_gse123753": {
+    "backend": "geneformer",
+    "cell_type": "Neu",
+    "n_wt_samples": 3,
+    "n_ko_samples": 3,
+    "n_pathways_total": 50,
+    "n_pathways_evaluated": 50,
+    "n_pathways_agree": 50,
+    "directional_agreement_rate": 1.0,
+    "spearman_pred_vs_observed": 0.8537334933973589,
+    "per_pathway": [
+      {
+        "pathway": "HALLMARK_ADIPOGENESIS",
+        "predicted_delta": -0.006838554065039156,
+        "observed_delta": -0.733389245167869,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_ALLOGRAFT_REJECTION",
+        "predicted_delta": -0.006079427057200826,
+        "observed_delta": -0.5180963063204338,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_ANDROGEN_RESPONSE",
+        "predicted_delta": -0.007898133634307877,
+        "observed_delta": -0.9086140485405722,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_ANGIOGENESIS",
+        "predicted_delta": -0.007968132717506626,
+        "observed_delta": -0.893329726019183,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_APICAL_JUNCTION",
+        "predicted_delta": -0.0059645786699537755,
+        "observed_delta": -0.6807901712706134,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_APICAL_SURFACE",
+        "predicted_delta": -0.0071198049609815794,
+        "observed_delta": -0.7751200952633913,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_APOPTOSIS",
+        "predicted_delta": -0.006596830172957498,
+        "observed_delta": -0.6797487359054005,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_BILE_ACID_METABOLISM",
+        "predicted_delta": -0.006155251091124636,
+        "observed_delta": -0.560256980997491,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_CHOLESTEROL_HOMEOSTASIS",
+        "predicted_delta": -0.007185387172776762,
+        "observed_delta": -0.7425820966382027,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_COAGULATION",
+        "predicted_delta": -0.004874208429374925,
+        "observed_delta": -0.48388248436275466,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_COMPLEMENT",
+        "predicted_delta": -0.006436340216749659,
+        "observed_delta": -0.7810363586519457,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_DNA_REPAIR",
+        "predicted_delta": -0.006677448463859499,
+        "observed_delta": -0.6574973216756987,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_E2F_TARGETS",
+        "predicted_delta": -0.005606190743108752,
+        "observed_delta": -0.4287286011147833,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION",
+        "predicted_delta": -0.005616402654783729,
+        "observed_delta": -0.5603181990291357,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_ESTROGEN_RESPONSE_EARLY",
+        "predicted_delta": -0.007352595450995286,
+        "observed_delta": -0.8724337818126324,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_ESTROGEN_RESPONSE_LATE",
+        "predicted_delta": -0.00734449982919011,
+        "observed_delta": -0.7744966641114986,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_FATTY_ACID_METABOLISM",
+        "predicted_delta": -0.007333785801647785,
+        "observed_delta": -0.7974363983725249,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_G2M_CHECKPOINT",
+        "predicted_delta": -0.006017735744351123,
+        "observed_delta": -0.5193537543114892,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_GLYCOLYSIS",
+        "predicted_delta": -0.006971493969173774,
+        "observed_delta": -0.7260589238295027,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_HEDGEHOG_SIGNALING",
+        "predicted_delta": -0.006136018930386021,
+        "observed_delta": -0.8846401671944513,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_HEME_METABOLISM",
+        "predicted_delta": -0.006912261614831698,
+        "observed_delta": -0.8138961268953071,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_HYPOXIA",
+        "predicted_delta": -0.006900113104117774,
+        "observed_delta": -0.7291222072078198,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_IL2_STAT5_SIGNALING",
+        "predicted_delta": -0.007184024630130033,
+        "observed_delta": -0.7725752247432176,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_IL6_JAK_STAT3_SIGNALING",
+        "predicted_delta": -0.006095403505356016,
+        "observed_delta": -0.4122636763466731,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_INFLAMMATORY_RESPONSE",
+        "predicted_delta": -0.006551115947953841,
+        "observed_delta": -0.6519176495110173,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_INTERFERON_ALPHA_RESPONSE",
+        "predicted_delta": -0.005857489470872242,
+        "observed_delta": -0.441760462814991,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_INTERFERON_GAMMA_RESPONSE",
+        "predicted_delta": -0.005975086980837559,
+        "observed_delta": -0.5148130978619085,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_KRAS_SIGNALING_DN",
+        "predicted_delta": -0.007082560289628915,
+        "observed_delta": -0.7733045405654246,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_KRAS_SIGNALING_UP",
+        "predicted_delta": -0.006104991761776886,
+        "observed_delta": -0.6229640383022338,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_MITOTIC_SPINDLE",
+        "predicted_delta": -0.007055836758443401,
+        "observed_delta": -0.7943191639246245,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_MTORC1_SIGNALING",
+        "predicted_delta": -0.00740781776299837,
+        "observed_delta": -0.8408516661405139,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_MYC_TARGETS_V1",
+        "predicted_delta": -0.006597281729375348,
+        "observed_delta": -0.5853798186470567,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_MYC_TARGETS_V2",
+        "predicted_delta": -0.00748813643176649,
+        "observed_delta": -0.7939485905270441,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_MYOGENESIS",
+        "predicted_delta": -0.007863057631208517,
+        "observed_delta": -0.9614222672271493,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_NOTCH_SIGNALING",
+        "predicted_delta": -0.005826923108528355,
+        "observed_delta": -0.41630200381214993,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+        "predicted_delta": -0.007461152872300943,
+        "observed_delta": -0.8121808915162786,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_P53_PATHWAY",
+        "predicted_delta": -0.006766300704155626,
+        "observed_delta": -0.74864952166673,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_PANCREAS_BETA_CELLS",
+        "predicted_delta": -0.0062754633257279535,
+        "observed_delta": -0.619466348464105,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_PEROXISOME",
+        "predicted_delta": -0.007060321206512547,
+        "observed_delta": -0.7364510485532365,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+        "predicted_delta": -0.0066922038147780305,
+        "observed_delta": -0.8199981196812821,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_PROTEIN_SECRETION",
+        "predicted_delta": -0.007259276687022235,
+        "observed_delta": -0.9672518680061796,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY",
+        "predicted_delta": -0.006388781944676347,
+        "observed_delta": -0.6190341212811005,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_SPERMATOGENESIS",
+        "predicted_delta": -0.008541698320353341,
+        "observed_delta": -0.9146798880744903,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_TGF_BETA_SIGNALING",
+        "predicted_delta": -0.0052561608061800396,
+        "observed_delta": -0.6043713083012272,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_TNFA_SIGNALING_VIA_NFKB",
+        "predicted_delta": -0.005989585980017346,
+        "observed_delta": -0.6568517495085664,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+        "predicted_delta": -0.008059177131698125,
+        "observed_delta": -0.9650871289387448,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_UV_RESPONSE_DN",
+        "predicted_delta": -0.007013012689347693,
+        "observed_delta": -0.850323104006647,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_UV_RESPONSE_UP",
+        "predicted_delta": -0.007362180398757449,
+        "observed_delta": -0.8622076428642464,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_WNT_BETA_CATENIN_SIGNALING",
+        "predicted_delta": -0.006242833172838487,
+        "observed_delta": -0.5630741573299496,
+        "agrees": true
+      },
+      {
+        "pathway": "HALLMARK_XENOBIOTIC_METABOLISM",
+        "predicted_delta": -0.006681009879417647,
+        "observed_delta": -0.7110252159753007,
+        "agrees": true
+      }
+    ]
+  },
+  "acceptance": {
+    "directional_target": 0.7,
+    "conformal_oracle_target_abs": 0.02,
+    "wt_vs_ko_target": 0.7,
+    "directional_pass": false,
+    "conformal_pass": true,
+    "wt_vs_ko_pass": true,
+    "note": "'directional' + 'conformal' exercise in-silico KO via MSV head; 'wt_vs_ko_gse123753' compares predicted in-silico \u0394MSV against observed \u0394MSV from real MECP2-deletion vs WT iPSC neurons (Boxer et al. 2020, GSE123753). With --backend geneformer, perturbations use the published Geneformer V2 104M checkpoint."
+  }
+}

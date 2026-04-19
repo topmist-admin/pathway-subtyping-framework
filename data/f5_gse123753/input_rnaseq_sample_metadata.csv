@@ -1,0 +1,12 @@
+sample_id,cell_type,genotype,replicate
+Neu_WT_2,Neu,WT,2
+Neu_WT_3,Neu,WT,3
+Neu_WT_1,Neu,WT,1
+NPC_RTT_1,NPC,MECP2_KO,1
+NPC_RTT_3,NPC,MECP2_KO,3
+NPC_RTT_2,NPC,MECP2_KO,2
+NPC_WT_2,NPC,WT,2
+NPC_WT_1,NPC,WT,1
+Neu_RTT_2,Neu,MECP2_KO,2
+Neu_RTT_1,Neu,MECP2_KO,1
+Neu_RTT_3,Neu,MECP2_KO,3

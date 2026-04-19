@@ -267,8 +267,15 @@ Pipeline:
 > FallbackPerturber + `MSVFromEmbedding` hits 13/14 = **92.9%** directional
 > agreement on curated MYC / TP53 / E2F1 / CCNE1 / CDK1 edges, and
 > conformal oracle deviation -0.0012 at 90% target (within ±2%). Gates
-> enforced in `tests/test_perturb_real_data.py`. Geneformer-backed
-> production run is a tracked follow-up.
+> enforced in `tests/test_perturb_real_data.py`.
+>
+> **Geneformer-backed production F5 run (Apr 2026):** Geneformer V2 104M
+> checkpoint loaded into `OfficialBackend`; in-silico MECP2 knockout on
+> isogenic WT iPSC-derived neurons (GSE123753, Boxer et al. 2020) compared
+> against observed real KO. Result: **50/50 hallmark pathways directionally
+> agree** (target ≥70%); Spearman predicted-vs-observed ΔMSV rho = **+0.85**.
+> Invocation: `python scripts/validate_f5_real_data.py --backend geneformer
+> --geneformer-model-dir <path-to-Geneformer-V2-104M>`.
 - Conformal intervals on perturbed MSV remain calibrated
 
 ---
