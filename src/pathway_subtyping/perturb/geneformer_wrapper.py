@@ -27,6 +27,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -105,6 +106,7 @@ class OfficialBackend(GeneformerBackend):
         forward_batch_size: int = 8,
         max_input_len: int = 4096,
         emb_mode: str = "cls",
+        cache_dir: Optional[str] = None,
     ) -> None:
         if emb_mode not in ("cls", "mean"):
             raise ValueError("emb_mode must be 'cls' or 'mean'")
@@ -113,6 +115,14 @@ class OfficialBackend(GeneformerBackend):
         self.forward_batch_size = int(forward_batch_size)
         self.max_input_len = int(max_input_len)
         self.emb_mode = emb_mode
+        # Optional content-hashed on-disk cache for ``embed()`` results.
+        # The key covers (model_directory basename, emb_mode, max_input_len,
+        # expression bytes), so zeroed-gene perturbation inputs produce a
+        # distinct key from the baseline automatically. Reruns with the
+        # same cohort hit the cache and skip the 40-minute forward pass.
+        self.cache_dir: Optional[Path] = (
+            Path(cache_dir).expanduser() if cache_dir else None
+        )
         self._model: Any = None
         self._torch: Any = None
         self._gene_median: Optional[Dict[str, float]] = None
@@ -299,13 +309,64 @@ class OfficialBackend(GeneformerBackend):
             out[start : start + len(batch)] = emb
         return out
 
+    # ----------------------------------------------- content-hash cache ---
+    def _backend_id(self) -> str:
+        """Stable identifier that scopes cache keys to checkpoint + config."""
+        checkpoint_tag = (
+            Path(self.model_directory).name if self.model_directory else "none"
+        )
+        return (
+            f"geneformer:official:{checkpoint_tag}"
+            f":{self.emb_mode}:maxlen{self.max_input_len}"
+        )
+
+    def _cache_lookup(
+        self, expression: pd.DataFrame,
+    ) -> Optional[np.ndarray]:
+        if self.cache_dir is None:
+            return None
+        from pathway_subtyping.embed.cache import cache_key_for
+        key = cache_key_for(
+            backend=self._backend_id(),
+            expression=expression,
+        )
+        path = self.cache_dir / f"{key}.npy"
+        if path.exists():
+            logger.info(
+                "[OfficialBackend] cache hit: %s… n=%d",
+                key[:12], len(expression),
+            )
+            return np.load(path)
+        return None
+
+    def _cache_store(
+        self, expression: pd.DataFrame, arr: np.ndarray,
+    ) -> None:
+        if self.cache_dir is None:
+            return
+        from pathway_subtyping.embed.cache import cache_key_for
+        key = cache_key_for(
+            backend=self._backend_id(),
+            expression=expression,
+        )
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        np.save(self.cache_dir / f"{key}.npy", arr)
+        logger.info(
+            "[OfficialBackend] cache stored: %s… n=%d d=%d",
+            key[:12], arr.shape[0], arr.shape[1],
+        )
+
     # ------------------------------------------------------ public API ---
     def embed(self, expression: pd.DataFrame) -> np.ndarray:
+        cached = self._cache_lookup(expression)
+        if cached is not None:
+            return cached
         self._lazy_load()
         seqs, kept = self._tokenize_df(expression)
         full = np.zeros((len(expression), self.embedding_dim), dtype=float)
         if seqs:
             full[kept] = self._forward(seqs)
+        self._cache_store(expression, full)
         return full
 
     def perturb(

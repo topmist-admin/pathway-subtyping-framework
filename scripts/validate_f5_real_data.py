@@ -89,6 +89,10 @@ DEFAULT_GENEFORMER_DIR = os.environ.get(
     "/Users/rohitchauhan/Downloads/AI-Genetic-Research/"
     "geneformer_src/Geneformer-V2-104M",
 )
+DEFAULT_GENEFORMER_CACHE_DIR = os.environ.get(
+    "GENEFORMER_CACHE_DIR",
+    str(Path.home() / ".cache" / "pathway-subtyping" / "geneformer"),
+)
 
 
 # (gene, pathway, expected_direction) edges. Each edge is a driver
@@ -357,12 +361,15 @@ def _load_gse123753() -> Tuple[pd.DataFrame, pd.DataFrame]:
     return counts, meta
 
 
-def _build_geneformer_backend(model_dir: str):
+def _build_geneformer_backend(
+    model_dir: str, cache_dir: Optional[str] = None,
+):
     return OfficialBackend(
         model_directory=model_dir,
         device="cpu",
         forward_batch_size=4,
         # Geneformer V2 context is 4096; leave default.
+        cache_dir=cache_dir,
     )
 
 
@@ -540,6 +547,15 @@ def main(argv: List[str] | None = None) -> int:
         help="Path to the Geneformer V2 104M checkpoint directory.",
     )
     parser.add_argument(
+        "--geneformer-cache-dir", default=DEFAULT_GENEFORMER_CACHE_DIR,
+        help=(
+            "On-disk cache for Geneformer CLS-token embeddings. Keyed by "
+            "content hash of the input expression + backend config; reruns "
+            "on the same cohort hit the cache and skip the forward pass. "
+            "Pass an empty string to disable caching."
+        ),
+    )
+    parser.add_argument(
         "--skip-tcga", action="store_true",
         help="Skip the TCGA-COAD in-silico-only directional test.",
     )
@@ -564,7 +580,10 @@ def main(argv: List[str] | None = None) -> int:
     # Shared backend for TCGA directional + conformal when --backend geneformer
     tcga_backend = None
     if args.backend == "geneformer":
-        tcga_backend = _build_geneformer_backend(args.geneformer_model_dir)
+        cache_dir = args.geneformer_cache_dir or None
+        tcga_backend = _build_geneformer_backend(
+            args.geneformer_model_dir, cache_dir=cache_dir,
+        )
 
     # ---- TCGA-COAD in-silico-only directional test --------------------
     if not args.skip_tcga:

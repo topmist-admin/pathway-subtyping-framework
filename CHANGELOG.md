@@ -5,7 +5,7 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.3] - 2026-04-18
 
 ### Validation
 
@@ -63,8 +63,20 @@ present locally.
   predicted-vs-observed ΔMSV rho = **+0.85**. Gates enforced in new
   ``test_wt_vs_ko_*`` cases in ``tests/test_perturb_real_data.py``.
 
-Public test count: 1,612 → **1,625** + 3 Geneformer-backed WT-vs-KO
-real-data tests (skipped when the Geneformer artefact is absent).
+Public test count: 1,612 → **1,634** (+13 real-data tests, +4
+Geneformer WT-vs-KO tests, +5 Geneformer cache tests). 3 skipped are
+the wt_vs_ko subtests that only run against the Geneformer artefact.
+
+### Features (continued)
+
+- **Content-hashed Geneformer embedding cache.** ``OfficialBackend``
+  now accepts ``cache_dir=`` and, when set, transparently caches CLS-
+  token embeddings keyed by (checkpoint + emb_mode + max_input_len +
+  expression bytes). Reruns on the same cohort return in sub-
+  millisecond time instead of the ~40-minute CPU forward pass.
+  ``scripts/validate_f5_real_data.py`` wires a ``--geneformer-cache-dir``
+  flag with a default at ``~/.cache/pathway-subtyping/geneformer`` and
+  a ``GENEFORMER_CACHE_DIR`` env override. Disable with an empty string.
 
 ---
 

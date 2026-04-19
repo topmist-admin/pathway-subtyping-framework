@@ -148,6 +148,74 @@ class TestOfficialBackend:
         else:
             pytest.skip("loaded without error — checkpoint must be present")
 
+    def test_backend_id_is_stable_and_config_sensitive(self):
+        """Backend ID changes with checkpoint path + emb_mode + max_input_len."""
+        a = OfficialBackend(model_directory="/tmp/ckpt", emb_mode="cls", max_input_len=2048)
+        b = OfficialBackend(model_directory="/tmp/ckpt", emb_mode="cls", max_input_len=2048)
+        c = OfficialBackend(model_directory="/tmp/ckpt", emb_mode="mean", max_input_len=2048)
+        d = OfficialBackend(model_directory="/tmp/ckpt2", emb_mode="cls", max_input_len=2048)
+        e = OfficialBackend(model_directory="/tmp/ckpt", emb_mode="cls", max_input_len=4096)
+        assert a._backend_id() == b._backend_id()
+        assert a._backend_id() != c._backend_id()
+        assert a._backend_id() != d._backend_id()
+        assert a._backend_id() != e._backend_id()
+
+    def test_cache_lookup_miss_returns_none(self, tmp_path):
+        """Cache lookup on an empty cache directory returns None (no error)."""
+        import pandas as pd
+        backend = OfficialBackend(
+            model_directory="/tmp/ckpt", cache_dir=str(tmp_path),
+        )
+        expr = pd.DataFrame(
+            [[1.0, 2.0, 3.0]], columns=["A", "B", "C"], index=["cell_0"],
+        )
+        assert backend._cache_lookup(expr) is None
+
+    def test_cache_roundtrip(self, tmp_path):
+        """Storing an embedding then looking it up returns the same array."""
+        import numpy as np
+        import pandas as pd
+        backend = OfficialBackend(
+            model_directory="/tmp/ckpt", cache_dir=str(tmp_path),
+        )
+        expr = pd.DataFrame(
+            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+            columns=["A", "B", "C"], index=["c0", "c1"],
+        )
+        emb = np.arange(2 * 8, dtype=float).reshape(2, 8)
+        backend._cache_store(expr, emb)
+        out = backend._cache_lookup(expr)
+        assert out is not None
+        np.testing.assert_array_equal(out, emb)
+
+    def test_cache_invalidates_on_input_change(self, tmp_path):
+        """Changing one expression value must produce a different cache key."""
+        import numpy as np
+        import pandas as pd
+        backend = OfficialBackend(
+            model_directory="/tmp/ckpt", cache_dir=str(tmp_path),
+        )
+        expr_a = pd.DataFrame(
+            [[1.0, 2.0]], columns=["A", "B"], index=["c0"],
+        )
+        expr_b = pd.DataFrame(
+            [[1.0, 2.01]], columns=["A", "B"], index=["c0"],
+        )
+        backend._cache_store(expr_a, np.zeros((1, 4)))
+        assert backend._cache_lookup(expr_a) is not None
+        assert backend._cache_lookup(expr_b) is None
+
+    def test_cache_disabled_when_cache_dir_none(self, tmp_path):
+        """No cache_dir → store is a no-op; lookup returns None."""
+        import numpy as np
+        import pandas as pd
+        backend = OfficialBackend(model_directory="/tmp/ckpt", cache_dir=None)
+        expr = pd.DataFrame([[1.0]], columns=["A"], index=["c0"])
+        backend._cache_store(expr, np.zeros((1, 4)))
+        assert backend._cache_lookup(expr) is None
+        # Ensure nothing was written anywhere adjacent
+        assert not any(tmp_path.iterdir())
+
 
 # --------------------------------------------------------------------------- #
 # GeneformerPerturber (high-level wrapper)
