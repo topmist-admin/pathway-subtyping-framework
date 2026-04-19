@@ -5,6 +5,20 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-04-18
+
+### Fixed
+
+- Sync `__version__` in `src/pathway_subtyping/__init__.py` and the `version`
+  field in `CITATION.cff` with `pyproject.toml`. In v0.6.1 these were left at
+  `0.5.0`, so `import pathway_subtyping; pathway_subtyping.__version__`
+  reported the wrong string on the v0.6.1 wheel. Publication-facing
+  metadata (CITATION.cff) also now reflects v0.6.2 and the 2026-04-18
+  release date. Still a packaging-only patch — tested behaviour is
+  identical to v0.6.0.
+
+---
+
 ## [0.6.1] - 2026-04-18
 
 ### Fixed
@@ -18,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   must be installed separately until those packages ship stable PyPI wheels.
   The deterministic fallback implementations work without any of these
   extras. `[all]` is updated to include the new extras.
+
+Known issue — `__version__` in `__init__.py` and the `version` field in
+`CITATION.cff` were not synced to 0.6.1. Fixed in v0.6.2.
 
 No code changes — v0.6.0 tested behaviour is preserved. This is a
 packaging-only patch.
