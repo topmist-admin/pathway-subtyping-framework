@@ -5,6 +5,25 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-04-18
+
+### Fixed
+
+- `pyproject.toml`: declare the five foundation-model extras that the v0.6.0
+  README advertised but didn't actually ship — `[harmonize]`, `[perturb]`,
+  `[embed]`, `[genesets]`, `[qc-sequence]`. Each extra installs the PyTorch
+  substrate (`torch>=2.0.0`; `perturb` additionally pulls `transformers>=4.35`)
+  so the corresponding `Official*Backend` can lazy-load; the upstream
+  model-specific package (geneformer, scgpt, nicheformer, borzoi, evo2, uce)
+  must be installed separately until those packages ship stable PyPI wheels.
+  The deterministic fallback implementations work without any of these
+  extras. `[all]` is updated to include the new extras.
+
+No code changes — v0.6.0 tested behaviour is preserved. This is a
+packaging-only patch.
+
+---
+
 ## [0.6.0] - 2026-04-18
 
 v0.6 adds a **Rigor layer** (uncertainty, cross-platform harmonization,

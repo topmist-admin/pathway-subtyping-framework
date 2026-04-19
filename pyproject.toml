@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pathway-subtyping"
-version = "0.6.0"
+version = "0.6.1"
 description = "A disease-agnostic framework for identifying molecular subtypes through pathway-based analysis of rare genetic variants"
 readme = "README.md"
 license = {text = "MIT"}
@@ -95,13 +95,35 @@ gnn = [
     "torch>=2.0.0",
     "scikit-learn>=1.3.0",
 ]
+# v0.6 foundation-model extras. Each extra installs the PyTorch substrate
+# required by the corresponding Official*Backend; the model-specific upstream
+# package (geneformer, scgpt, nicheformer, borzoi, evo2, uce) and its
+# checkpoint must be installed separately because not all of them ship stable
+# PyPI wheels yet. The deterministic fallback embedders / scorers work
+# without any of these extras — see docs/guides/*.md for the fallback pattern.
+harmonize = [
+    "torch>=2.0.0",
+]
+perturb = [
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+]
+embed = [
+    "torch>=2.0.0",
+]
+genesets = [
+    "torch>=2.0.0",
+]
+qc-sequence = [
+    "torch>=2.0.0",
+]
 docs = [
     "sphinx>=6.0.0",
     "sphinx-rtd-theme>=1.2.0",
     "myst-parser>=1.0.0",
 ]
 all = [
-    "pathway-subtyping[dev,notebooks,docs,vcf,viz,sc,graph,qc,autism,gnn]",
+    "pathway-subtyping[dev,notebooks,docs,vcf,viz,sc,graph,qc,autism,gnn,harmonize,perturb,embed,genesets,qc-sequence]",
 ]
 
 [project.scripts]

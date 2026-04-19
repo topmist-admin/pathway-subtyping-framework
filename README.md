@@ -104,10 +104,14 @@ pip install pathway-subtyping[all]           # Everything
 ```
 
 The v0.6 foundation-model extras (`harmonize`, `perturb`, `embed`,
-`genesets`, `qc-sequence`) each gate a production wrapper around a
-published model. Every wrapper also ships a deterministic PCA-based
-fallback that works without the extra so CI and local smoke runs
-don't depend on heavyweight checkpoints.
+`genesets`, `qc-sequence`) each install the PyTorch substrate that the
+corresponding `Official*Backend` needs (`torch>=2.0`; `perturb` additionally
+pulls `transformers>=4.35`). The model-specific upstream package
+(`geneformer`, `scgpt`, `nicheformer`, `borzoi`, `evo2`, `uce`) and its
+checkpoint must be installed separately because not all of them ship
+stable PyPI wheels yet. Every wrapper also ships a deterministic PCA-based
+fallback that works with *none* of these extras, so tests and local smoke
+runs don't depend on heavyweight checkpoints.
 
 #### Network Visualization (Cytoscape)
 
