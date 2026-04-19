@@ -41,19 +41,19 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 
 All v0.6 modules ship a deterministic fallback alongside the production backend, so CI and test suites run without heavyweight checkpoints. The production backend is gated on the extra + a locally-cached checkpoint (see each module's in-package docstring for checkpoint discovery). User-facing walkthroughs in the `Guide` column; notebook numbers in the `Notebook` column mirror [notebook-guide.md](../notebook-guide.md).
 
-| Module | Feature | Extra | Guide | Notebook | What it does |
-|--------|---------|-------|-------|----------|--------------|
-| [`uncertainty`](../guides/uncertainty.md) | F1 | (core) | [uncertainty](../guides/uncertainty.md) | 21 | `ConformalPathwayPredictor`, `BootstrapMSV`, `BayesianPathwayGMM`, `CalibrationReport` — calibrated intervals on pathway scores with a distribution-free coverage guarantee |
-| [`harmonize`](../guides/cross-platform.md) | F2 | `[harmonize]` | [cross-platform](../guides/cross-platform.md) | 22 | `UCEEmbedder`, `CrossPlatformAligner`, `HarmonizationReport`, `CrossPlatformBenchmark` — align pathway scores across 10x / Smart-seq2 / bulk / spatial on an embedding anchor |
-| `knowledge_graph` (refresh) | F3 | (core) | [v0.5→v0.6 KG migration](../migration/v05-to-v06-kg.md) | 16 | `sources.py` (pinned OmniPath/SIGNOR/Reactome manifest), `diff.py`, `regression.py` — KG provenance + diff |
-| `qc.alphamissense` | F4 | `[qc]` | *(in QC guide)* | — | AlphaMissense-aware variant cascade extension; `gene_weights=None` is bit-identical to v0.5 |
-| [`perturb`](../guides/perturbation.md) | F5 | `[perturb]` | [perturbation](../guides/perturbation.md) | 23 | `GeneformerPerturber`, `MSVFromEmbedding`, `PerturbationScreen`, `PerturbationReport`, `FallbackPerturber`, `OfficialBackend` (Geneformer V2 104M; content-hashed embedding cache via `cache_dir=`) |
-| [`embed`](../guides/embeddings.md) | F6, F8 | `[embed]` | [embeddings](../guides/embeddings.md) | 24, 26 | `Embedder` ABC, `scGPTEmbedder`, `NicheformerEmbedder`, `EmbeddingCache`, `embed_joint` for dissociated + spatial |
-| [`genesets`](../guides/genesets.md) | F7 | `[genesets]` | *(see module docstring)* | 25 | `RegulatoryGeneSetExpander` with `BorzoiBackend` (opt-in) + `CoexpressionBackend` (fallback) — expand curated gene sets by regulatory co-occurrence |
-| `qc.offtarget_sequence` | F9 | `[qc-sequence]` | *(in QC guide)* | 27 | `Evo2OffTargetScorer`, `SimulatedEvo2Backend`, `SimilarityBackend` — sequence-level CRISPR off-target scoring |
-| [`omics`](../guides/multi-omics.md) | F10 | (core) | *(see module docstring)* | 28 | `ATACScorer`, `ProteomicsScorer`, `MultiOmicsFusion`, `FusionWeights`, `flag_discordant_pathways` — weighted fusion of per-modality pathway scores |
-| [`causal`](../guides/causal.md) | F11 | (core) | *(see module docstring)* | 29 | `InvariantPathwayPredictor` — Invariant Causal Prediction (ICP) with combined mean+variance invariance test |
-| [`active`](../guides/active.md) | F12 | (core) | *(see module docstring)* | 30 | `ActiveSampleSelector` — uncertainty / diversity / hybrid sample selection strategies |
+| Module | Feature | Extra | Guide | API | Notebook | What it does |
+|--------|---------|-------|-------|-----|----------|--------------|
+| `uncertainty` | F1 | (core) | [uncertainty](../guides/uncertainty.md) | [api/uncertainty](uncertainty.md) | 21 | `ConformalPathwayPredictor`, `BootstrapMSV`, `BayesianPathwayGMM`, `CalibrationReport` — calibrated intervals on pathway scores with a distribution-free coverage guarantee |
+| `harmonize` | F2 | `[harmonize]` | [cross-platform](../guides/cross-platform.md) | [api/harmonize](harmonize.md) | 22 | `UCEEmbedder`, `CrossPlatformAligner`, `HarmonizationReport`, `CrossPlatformBenchmark` — align pathway scores across 10x / Smart-seq2 / bulk / spatial on an embedding anchor |
+| `knowledge_graph` (refresh) | F3 | (core) | [v0.5→v0.6 KG migration](../migration/v05-to-v06-kg.md) | *(inline)* | 16 | `sources.py` (pinned OmniPath/SIGNOR/Reactome manifest), `diff.py`, `regression.py` — KG provenance + diff |
+| `qc.alphamissense` | F4 | `[qc]` | *(in QC guide)* | [api/qc](qc.md) | — | AlphaMissense-aware variant cascade extension; `gene_weights=None` is bit-identical to v0.5 |
+| `perturb` | F5 | `[perturb]` | [perturbation](../guides/perturbation.md) | [api/perturb](perturb.md) | 23 | `GeneformerPerturber`, `MSVFromEmbedding`, `PerturbationScreen`, `PerturbationReport`, `FallbackPerturber`, `OfficialBackend` (Geneformer V2 104M; content-hashed embedding cache via `cache_dir=`) |
+| `embed` | F6, F8 | `[embed]` | [embeddings](../guides/embeddings.md) | [api/embed](embed.md) | 24, 26 | `Embedder` ABC, `scGPTEmbedder`, `NicheformerEmbedder`, `EmbeddingCache`, `embed_joint` for dissociated + spatial |
+| `genesets` | F7 | `[genesets]` | [genesets](../guides/genesets.md) | [api/genesets](genesets.md) | 25 | `RegulatoryGeneSetExpander` with `BorzoiBackend` (opt-in) + `CoexpressionBackend` (fallback) — expand curated gene sets by regulatory co-occurrence |
+| `qc.offtarget_sequence` | F9 | `[qc-sequence]` | [evo2-offtarget](../guides/evo2-offtarget.md) | [api/qc](qc.md) | 27 | `Evo2OffTargetScorer`, `SimulatedEvo2Backend`, `SimilarityBackend` — sequence-level CRISPR off-target scoring |
+| `omics` | F10 | (core) | [multi-omics](../guides/multi-omics.md) | [api/omics](omics.md) | 28 | `ATACScorer`, `ProteomicsScorer`, `MultiOmicsFusion`, `FusionWeights`, `flag_discordant_pathways` — weighted fusion of per-modality pathway scores |
+| `causal` | F11 | (core) | [causal](../guides/causal.md) | [api/causal](causal.md) | 29 | `InvariantPathwayPredictor` — Invariant Causal Prediction (ICP) with combined mean+variance invariance test |
+| `active` | F12 | (core) | [active](../guides/active.md) | [api/active](active.md) | 30 | `ActiveSampleSelector` — uncertainty / diversity / hybrid sample selection strategies |
 
 ### Real-Data Validation Scripts (v0.6.3)
 
