@@ -1,0 +1,100 @@
+{
+  "feature": "F2",
+  "cohorts": {
+    "A": {
+      "label": "GSE28521",
+      "platform": "Affymetrix U133",
+      "tissue": "post-mortem frontal cortex",
+      "n_samples": 79
+    },
+    "B": {
+      "label": "GSE80655",
+      "platform": "Illumina HiSeq 2000 (RNA-seq)",
+      "tissue": "DLPFC",
+      "n_samples": 281
+    }
+  },
+  "n_shared_pathways": 49,
+  "shared_pathways": [
+    "HALLMARK_ADIPOGENESIS",
+    "HALLMARK_ALLOGRAFT_REJECTION",
+    "HALLMARK_ANDROGEN_RESPONSE",
+    "HALLMARK_APICAL_JUNCTION",
+    "HALLMARK_APICAL_SURFACE",
+    "HALLMARK_APOPTOSIS",
+    "HALLMARK_BILE_ACID_METABOLISM",
+    "HALLMARK_CHOLESTEROL_HOMEOSTASIS",
+    "HALLMARK_COAGULATION",
+    "HALLMARK_COMPLEMENT",
+    "HALLMARK_DNA_REPAIR",
+    "HALLMARK_E2F_TARGETS",
+    "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION",
+    "HALLMARK_ESTROGEN_RESPONSE_EARLY",
+    "HALLMARK_ESTROGEN_RESPONSE_LATE",
+    "HALLMARK_FATTY_ACID_METABOLISM",
+    "HALLMARK_G2M_CHECKPOINT",
+    "HALLMARK_GLYCOLYSIS",
+    "HALLMARK_HEDGEHOG_SIGNALING",
+    "HALLMARK_HEME_METABOLISM",
+    "HALLMARK_HYPOXIA",
+    "HALLMARK_IL2_STAT5_SIGNALING",
+    "HALLMARK_IL6_JAK_STAT3_SIGNALING",
+    "HALLMARK_INFLAMMATORY_RESPONSE",
+    "HALLMARK_INTERFERON_ALPHA_RESPONSE",
+    "HALLMARK_INTERFERON_GAMMA_RESPONSE",
+    "HALLMARK_KRAS_SIGNALING_DN",
+    "HALLMARK_KRAS_SIGNALING_UP",
+    "HALLMARK_MITOTIC_SPINDLE",
+    "HALLMARK_MTORC1_SIGNALING",
+    "HALLMARK_MYC_TARGETS_V1",
+    "HALLMARK_MYC_TARGETS_V2",
+    "HALLMARK_MYOGENESIS",
+    "HALLMARK_NOTCH_SIGNALING",
+    "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+    "HALLMARK_P53_PATHWAY",
+    "HALLMARK_PANCREAS_BETA_CELLS",
+    "HALLMARK_PEROXISOME",
+    "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+    "HALLMARK_PROTEIN_SECRETION",
+    "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY",
+    "HALLMARK_SPERMATOGENESIS",
+    "HALLMARK_TGF_BETA_SIGNALING",
+    "HALLMARK_TNFA_SIGNALING_VIA_NFKB",
+    "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+    "HALLMARK_UV_RESPONSE_DN",
+    "HALLMARK_UV_RESPONSE_UP",
+    "HALLMARK_WNT_BETA_CATENIN_SIGNALING",
+    "HALLMARK_XENOBIOTIC_METABOLISM"
+  ],
+  "metric": "pathway-mean Spearman rho across shared hallmark pathways",
+  "pre_alignment": {
+    "rho": -0.02393319508084937,
+    "bootstrap_ci": {
+      "mean": -0.01625837818844194,
+      "ci_low": -0.30102953991214537,
+      "ci_high": 0.24900106090230234
+    }
+  },
+  "post_alignment": {
+    "rho": 0.5214174555871939,
+    "bootstrap_ci": {
+      "mean": 0.514173853328272,
+      "ci_low": 0.2439385333170351,
+      "ci_high": 0.7293212198061055
+    }
+  },
+  "uplift": 0.5453506506680432,
+  "acceptance": {
+    "uplift_target": 0.1,
+    "uplift_pass": true,
+    "post_rho_aspirational_target": 0.75,
+    "post_rho_aspirational_pass": false,
+    "note": "uplift is the gate enforced by the skip-on-absent test. The 0.75 post-rho target is aspirational and requires paired-cell data (same cortex profiled on two platforms) \u2014 unmatched-donor cohorts like this pair confound platform and biology effects. A follow-up run on paired 10x vs Smart-seq2 cortex is needed to exercise the 0.75 gate."
+  },
+  "config": {
+    "n_boot": 1000,
+    "embedding_dim": 8,
+    "embedder": "FallbackEmbedder",
+    "aligner_reference_platform": "A"
+  }
+}

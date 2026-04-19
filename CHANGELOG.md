@@ -5,6 +5,48 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Validation
+
+Real-data acceptance runs added for F2 (harmonize), F5 (perturb), and F10
+(multi-omics fusion). All three land as new skip-on-absent test suites
+mirroring F1's blueprint; CI remains deterministic when cohort artefacts
+are not present locally.
+
+- **F2** — `scripts/validate_f2_real_data.py` +
+  `tests/test_harmonize_real_data.py`. Cohorts: GSE28521 (Affymetrix U133,
+  post-mortem frontal cortex, n=79) × GSE80655 (Illumina HiSeq 2000
+  RNA-seq, DLPFC, n=281). Pathway-mean Spearman rho lifts from
+  -0.024 (95% CI -0.30..+0.25) to +0.52 (95% CI +0.24..+0.73) after
+  alignment — uplift +0.55, passing the +0.10 uplift gate. The stricter
+  roadmap 0.75 post-rho target requires paired-cell data and is tracked
+  as aspirational in the JSON artefact.
+- **F5** — `scripts/validate_f5_real_data.py` +
+  `tests/test_perturb_real_data.py`. Cohort: TCGA-COAD (n=57, log1p TPM).
+  FallbackPerturber backend + MSVFromEmbedding head produce directional
+  agreement 13/14 = **92.9%** across curated (gene, pathway) edges
+  anchored in MYC / TP53 / E2F1 / CCNE1 / CDK1 literature — clears the
+  70% gate. Perturbed MSV conformal oracle deviation -0.0012 at 90%
+  target — preserves the F1 calibration guarantee through the
+  perturbation wrapper.
+- **F10** — `scripts/validate_f10_real_data.py` +
+  `tests/test_omics_real_data.py` +
+  `data/omics/cite_adt_to_pathway.yaml`. Cohort: 10x
+  `pbmc_1k_protein_v3` CITE-seq (713 cells, 17-antibody panel; 630
+  after ADT-gating into 5 PBMC types). 1-NN cell-type classification
+  accuracy rises from 56.5% (RNA-only) to **79.5%** (fused) — uplift
+  +23.0 pp (95% CI +18.1..+27.6 pp), passing both the 3% uplift and
+  strictly-positive CI-lower-bound gates.
+
+Public test count: 1,612 → **1,625** (+13 real-data tests).
+
+Production F5 acceptance with Geneformer weights (via
+`pip install pathway-subtyping[perturb]` + cached checkpoint) is a
+tracked post-release follow-up.
+
+---
+
 ## [0.6.2] - 2026-04-18
 
 Artefact DOIs:

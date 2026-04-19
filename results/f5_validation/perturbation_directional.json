@@ -1,0 +1,174 @@
+{
+  "feature": "F5",
+  "cohort": {
+    "label": "TCGA-COAD",
+    "n_samples": 57,
+    "n_pathways": 50,
+    "n_genes": 59427
+  },
+  "directional": {
+    "edges": [
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_MYC_TARGETS_V1",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.006488943197082766,
+        "std_delta_msv": 0.0009407506435423939,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_MYC_TARGETS_V2",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.006938482972951635,
+        "std_delta_msv": 0.0010059237881670305,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_E2F_TARGETS",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.005620776738429058,
+        "std_delta_msv": 0.0008148860566790726,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_G2M_CHECKPOINT",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.005452773178375199,
+        "std_delta_msv": 0.0007905293236274396,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "MYC",
+        "pathway": "HALLMARK_IL2_STAT5_SIGNALING",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.0021897230660980174,
+        "std_delta_msv": 0.0003174605357213628,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "TP53",
+        "pathway": "HALLMARK_P53_PATHWAY",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.0016890994035157997,
+        "std_delta_msv": 0.0003543571785007686,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "TP53",
+        "pathway": "HALLMARK_DNA_REPAIR",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.0015503598894526043,
+        "std_delta_msv": 0.0003252509325050142,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "TP53",
+        "pathway": "HALLMARK_E2F_TARGETS",
+        "expected_sign": -1,
+        "observed_sign": 1,
+        "mean_delta_msv": 0.00018913119942360457,
+        "std_delta_msv": 3.967794793767974e-05,
+        "agrees": false,
+        "status": "ok"
+      },
+      {
+        "gene": "E2F1",
+        "pathway": "HALLMARK_G2M_CHECKPOINT",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.00330823302734774,
+        "std_delta_msv": 0.0006433252529766421,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "E2F1",
+        "pathway": "HALLMARK_PI3K_AKT_MTOR_SIGNALING",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.0013375474629564279,
+        "std_delta_msv": 0.0002601020100040541,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "CCNE1",
+        "pathway": "HALLMARK_E2F_TARGETS",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.0021716040412878977,
+        "std_delta_msv": 0.0004410250018182651,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "CDK1",
+        "pathway": "HALLMARK_G2M_CHECKPOINT",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.004869317406613498,
+        "std_delta_msv": 0.0008594403566470508,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "CDK1",
+        "pathway": "HALLMARK_E2F_TARGETS",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.005385052785551788,
+        "std_delta_msv": 0.0009504682689801081,
+        "agrees": true,
+        "status": "ok"
+      },
+      {
+        "gene": "CDK1",
+        "pathway": "HALLMARK_MITOTIC_SPINDLE",
+        "expected_sign": -1,
+        "observed_sign": -1,
+        "mean_delta_msv": -0.0022714115515146457,
+        "std_delta_msv": 0.0004009068604306847,
+        "agrees": true,
+        "status": "ok"
+      }
+    ],
+    "n_edges_total": 14,
+    "n_edges_evaluated": 14,
+    "n_edges_agree": 13,
+    "directional_agreement_rate": 0.9285714285714286,
+    "backend": "FallbackPerturber",
+    "embedding_dim": 32
+  },
+  "conformal": {
+    "target": 0.9,
+    "n_runs": 20,
+    "mean_deviation": 0.01304347826086954,
+    "mean_oracle_deviation": -0.0012422360248446952,
+    "mean_abs_oracle_deviation": 0.06086956521739134,
+    "status": "ok"
+  },
+  "acceptance": {
+    "directional_target": 0.7,
+    "directional_pass": true,
+    "conformal_oracle_target_abs": 0.02,
+    "conformal_pass": true,
+    "note": "uses FallbackPerturber (deterministic PCA-based stub). Production F5 acceptance requires the Geneformer checkpoint via pip install pathway-subtyping[perturb] + HuggingFace weight download. See the plan doc for the follow-up path."
+  }
+}

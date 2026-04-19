@@ -1,0 +1,37 @@
+# CITE-seq antibody -> immune pathway mapping (F10 real-data acceptance).
+#
+# Curated from CellMarker 2.0 + hand-curation for the 17-antibody panel of the
+# 10x pbmc_1k_protein_v3 dataset. Pathway names match the RNA-side pathway
+# definitions so the two modalities are comparable at fusion time.
+#
+# Each pathway lists member gene symbols (RNA side) and matching antibody
+# labels (protein side). Three isotype controls (IgG1/IgG2a/IgG2b) are not
+# assigned a pathway; they are dropped before scoring.
+
+TCELL_ACTIVATION:
+  rna: [CD3D, CD3E, CD3G, CD4, IL2RA, IL7R]
+  adt: [CD3_TotalSeqB, CD4_TotalSeqB, CD25_TotalSeqB, CD127_TotalSeqB]
+
+CD8_CYTOTOXIC:
+  rna: [CD8A, CD8B, GZMA, GZMB, PRF1]
+  adt: [CD8a_TotalSeqB]
+
+BCELL:
+  rna: [CD19, MS4A1, CD79A, CD79B]
+  adt: [CD19_TotalSeqB]
+
+MONO_MYELOID:
+  rna: [CD14, FCGR3A, ITGAM, ITGAX, LYZ]
+  adt: [CD14_TotalSeqB, CD16_TotalSeqB, CD15_TotalSeqB]
+
+NK_CELL:
+  rna: [NCAM1, NKG7, KLRD1, KLRF1, GNLY]
+  adt: [CD56_TotalSeqB]
+
+TCELL_EXHAUSTION:
+  rna: [PDCD1, TIGIT, HAVCR2, LAG3]
+  adt: [PD-1_TotalSeqB, TIGIT_TotalSeqB]
+
+TCELL_MEMORY:
+  rna: [PTPRC, CCR7, SELL, IL7R]
+  adt: [CD45RA_TotalSeqB, CD45RO_TotalSeqB]

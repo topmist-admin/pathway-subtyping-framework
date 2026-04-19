@@ -1,0 +1,51 @@
+{
+  "feature": "F10",
+  "cohort": {
+    "label": "10x pbmc_1k_protein_v3",
+    "n_cells_total": 713,
+    "n_cells_gated": 630,
+    "n_genes": 33514,
+    "n_antibodies": 17,
+    "label_source": "canonical ADT gating on CLR values",
+    "label_counts": {
+      "NK": 247,
+      "CD4_T": 123,
+      "Monocyte": 121,
+      "CD8_T": 86,
+      "B": 53
+    }
+  },
+  "pathways": [
+    "TCELL_ACTIVATION",
+    "CD8_CYTOTOXIC",
+    "BCELL",
+    "MONO_MYELOID",
+    "NK_CELL",
+    "TCELL_EXHAUSTION",
+    "TCELL_MEMORY"
+  ],
+  "rna_only_accuracy": 0.5650793650793651,
+  "fused_accuracy": 0.7952380952380952,
+  "uplift": 0.23015873015873012,
+  "uplift_bootstrap_ci": {
+    "mean": 0.23024920634920637,
+    "ci_low": 0.18095238095238098,
+    "ci_high": 0.2762301587301587
+  },
+  "acceptance": {
+    "uplift_target": 0.03,
+    "uplift_pass": true,
+    "ci_low_strictly_positive_target": true,
+    "ci_low_pass": true
+  },
+  "config": {
+    "k_folds": 5,
+    "n_boot": 1000,
+    "seed": 0,
+    "fusion_weights": {
+      "rna": 0.5,
+      "protein": 0.5
+    },
+    "classifier": "cosine-1NN"
+  }
+}
