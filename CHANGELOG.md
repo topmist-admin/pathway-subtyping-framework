@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.3] - 2026-04-18
 
+Artefact DOIs:
+- **PyPI:** https://pypi.org/project/pathway-subtyping/0.6.3/
+- **Zenodo:** `10.5281/zenodo.19648024` (https://doi.org/10.5281/zenodo.19648024)
+  — released under concept DOI `10.5281/zenodo.18442426`
+- **Docker Hub:** `rohitdataops/pathway-subtyping:0.6.3-runtime`,
+  `:0.6.3-jupyter`, `:latest`
+
 ### Validation
 
 Real-data acceptance runs added for F2 (harmonize), F5 (perturb), and F10
