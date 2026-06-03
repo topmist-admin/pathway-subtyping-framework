@@ -670,7 +670,7 @@ def main(argv: List[str] | None = None) -> int:
         "'directional' + 'conformal' exercise in-silico KO via MSV head; "
         "'wt_vs_ko_gse123753' compares predicted in-silico ΔMSV against "
         "observed ΔMSV from real MECP2-deletion vs WT iPSC neurons "
-        "(Boxer et al. 2020, GSE123753). With --backend geneformer, "
+        "(Rodrigues et al. 2020, GSE123753). With --backend geneformer, "
         "perturbations use the published Geneformer V2 104M checkpoint."
     )
     report["acceptance"] = acceptance

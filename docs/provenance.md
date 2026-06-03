@@ -37,7 +37,7 @@ of real-data acceptance results.
   `scripts/validate_f5_real_data.py`. The directional edges are
   literature-anchored (MYC / TP53 / E2F1 / CCNE1 / CDK1 → hallmark
   pathways where each gene is a direct member and a known driver).
-- **GSE123753** — Boxer et al. 2020 (PMID 30923256), TRAP-seq and Input
+- **GSE123753** — Rodrigues et al. 2020 (PMID 32209477), TRAP-seq and Input
   RNA-seq of WT vs isogenic MECP2-deletion iPSC-derived NPCs and
   Neurons. Used for the Geneformer-backed WT vs MECP2-KO section
   of the F5 validation. Fetched by `scripts/fetch_gse123753.py` from:

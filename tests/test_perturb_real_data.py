@@ -10,7 +10,7 @@ and asserts the roadmap criteria:
       the finite-sample oracle (TCGA-COAD section).
     - directional agreement >= 0.70 between predicted in-silico ΔMSV
       and observed real-cohort ΔMSV on GSE123753 (WT vs MECP2-KO iPSC
-      neurons, Boxer et al. 2020) — only asserted when the artifact's
+      neurons, Rodrigues et al. 2020) — only asserted when the artifact's
       ``wt_vs_ko_gse123753`` section is present with a final status
       (otherwise the sub-test is skipped).
 
@@ -157,7 +157,7 @@ class TestGeneformerBackedF5:
             --geneformer-model-dir <path-to-Geneformer-V2-104M>
 
     The **core claim** for the Geneformer-backed path is the real
-    WT-vs-KO comparison on GSE123753 (Boxer et al. 2020): in-silico
+    WT-vs-KO comparison on GSE123753 (Rodrigues et al. 2020): in-silico
     MECP2 KO on WT iPSC neurons predicts the direction of real
     MECP2-deletion effects on hallmark pathway scores. The TCGA-COAD
     direct-membership directional test (dropping a gene from a pathway

@@ -274,7 +274,7 @@ Pipeline:
 #### Acceptance Criteria
 
 - ✅ **Fallback backend, TCGA-COAD (n=57):** 13/14 = **92.9%** directional agreement on curated MYC / TP53 / E2F1 / CCNE1 / CDK1 edges (gate: 70%); perturbed-MSV conformal oracle deviation **−0.0012** at 90% target (gate: \|·\| < 0.02). Artefact: [`results/f5_validation/perturbation_directional.json`](../results/f5_validation/perturbation_directional.json).
-- ✅ **Geneformer backend, GSE123753 WT vs MECP2-KO (Boxer et al. 2020):** **50/50 pathways directionally agree** between in-silico KO and real MECP2-deletion effect; Spearman predicted-vs-observed ΔMSV rho **+0.85**. Reproduce: `python scripts/validate_f5_real_data.py --backend geneformer --geneformer-model-dir <Geneformer-V2-104M>`. Artefact: [`results/f5_validation/perturbation_directional_geneformer.json`](../results/f5_validation/perturbation_directional_geneformer.json).
+- ✅ **Geneformer backend, GSE123753 WT vs MECP2-KO (Rodrigues et al. 2020):** **50/50 pathways directionally agree** between in-silico KO and real MECP2-deletion effect; Spearman predicted-vs-observed ΔMSV rho **+0.85**. Reproduce: `python scripts/validate_f5_real_data.py --backend geneformer --geneformer-model-dir <Geneformer-V2-104M>`. Artefact: [`results/f5_validation/perturbation_directional_geneformer.json`](../results/f5_validation/perturbation_directional_geneformer.json).
 - ✅ Perturbation screens run on a 2,000-cell × 100-gene panel on CPU in <30 min with the embedding cache. GPU speeds this up linearly.
 - ✅ Conformal intervals on perturbed MSV remain calibrated (oracle deviation within ±2%).
 

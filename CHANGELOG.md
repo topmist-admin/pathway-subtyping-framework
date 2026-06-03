@@ -57,7 +57,7 @@ present locally.
   ``--geneformer-model-dir`` CLI flag on ``scripts/validate_f5_real_data.py``.
 - ``scripts/validate_f5_real_data.py --backend {fallback,geneformer}``
   selects the perturbation backend; the Geneformer path also runs a new
-  **real WT vs MECP2-KO** comparison on GSE123753 (Boxer et al. 2020,
+  **real WT vs MECP2-KO** comparison on GSE123753 (Rodrigues et al. 2020,
   isogenic iPSC-derived cortical neurons with MECP2 deletion). Predicted
   in-silico MECP2-KO ΔMSV is compared to observed ΔMSV from the real RTT
   vs WT cohort on 50 hallmark pathways.

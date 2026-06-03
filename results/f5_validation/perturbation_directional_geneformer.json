@@ -485,6 +485,6 @@
     "directional_pass": false,
     "conformal_pass": true,
     "wt_vs_ko_pass": true,
-    "note": "'directional' + 'conformal' exercise in-silico KO via MSV head; 'wt_vs_ko_gse123753' compares predicted in-silico \u0394MSV against observed \u0394MSV from real MECP2-deletion vs WT iPSC neurons (Boxer et al. 2020, GSE123753). With --backend geneformer, perturbations use the published Geneformer V2 104M checkpoint."
+    "note": "'directional' + 'conformal' exercise in-silico KO via MSV head; 'wt_vs_ko_gse123753' compares predicted in-silico \u0394MSV against observed \u0394MSV from real MECP2-deletion vs WT iPSC neurons (Rodrigues et al. 2020, GSE123753). With --backend geneformer, perturbations use the published Geneformer V2 104M checkpoint."
   }
 }

@@ -137,7 +137,7 @@ print(report.directional_agreement_rate)
 
 ## Validation scripts
 
-- `scripts/validate_f5_real_data.py --backend {fallback, geneformer}` — runs a TCGA-COAD in-silico directional test + a GSE123753 (Boxer 2020 MECP2-KO iPSC neurons) real WT-vs-KO comparison, writes `perturbation_directional.json` (Fallback) or `perturbation_directional_geneformer.json` (Geneformer).
+- `scripts/validate_f5_real_data.py --backend {fallback, geneformer}` — runs a TCGA-COAD in-silico directional test + a GSE123753 (Rodrigues 2020 MECP2-KO iPSC neurons) real WT-vs-KO comparison, writes `perturbation_directional.json` (Fallback) or `perturbation_directional_geneformer.json` (Geneformer).
 - Geneformer real-data result: **50/50 pathways directionally agree** on GSE123753, Spearman predicted-vs-observed ΔMSV rho = **+0.85**.
 - Tests: [`tests/test_perturb_real_data.py`](../../tests/test_perturb_real_data.py).
 

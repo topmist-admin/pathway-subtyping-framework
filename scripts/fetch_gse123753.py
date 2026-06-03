@@ -1,7 +1,7 @@
 """
 Fetch GSE123753 — Rett syndrome iPSC-derived cells with MECP2 deletion.
 
-Cohort: Boxer et al. 2020 (pubmed 30923256) — WT vs isogenic MECP2-deletion
+Cohort: Rodrigues et al. 2020 (pubmed 32209477) — WT vs isogenic MECP2-deletion
 iPSCs, NPCs, and Neurons profiled by TRAP-seq (ribosome engagement) and
 Input RNA-seq. We use the Input (bulk RNA-seq) NPC and Neuron samples to
 build a WT vs MECP2-KO pair for F5 real-data acceptance.
