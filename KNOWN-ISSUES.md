@@ -1,5 +1,7 @@
 # Known Issues
 
+> **⚠️ 2026-07-08 — Correction issued.** The empty-input `adjusted_rand_score` artifact documented below (NB17) was **also present, uncorrected, in the 47-dataset calibration benchmark** — it produced 14 spurious ARI=1.0 rows that drove the retracted R²=0.889 adaptive-threshold model. The calibration model is **retracted** and the benchmark **corrected**. See [`CORRECTION_2026-07/ERRATUM_2026-07-08.md`](CORRECTION_2026-07/ERRATUM_2026-07-08.md).
+
 ## NB17: MSI ARI reports 1.0 when no MSI data available
 
 **Status:** FIXED — `valid_msi.sum() >= 2` guard added (Feb 25, 2026); results_summary.json was manually corrected to `null` earlier

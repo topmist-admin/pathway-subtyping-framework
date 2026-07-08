@@ -1,0 +1,48 @@
+dataset_id,dataset_id_original,dataset_name,domain,source,silhouette,bootstrap_ari_5th_percentile,n_samples,n_detected_clusters,n_true_clusters,status,valid,invalid_reason
+1,1,TCGA-BRCA,Oncology,GDC,0.0460588458407744,1.0,39.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; 
+2,2,TCGA-LUAD,Oncology,GDC,0.0285502096567141,1.0,41.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; 
+3,3,TCGA-OV,Oncology,GDC,0.0858360091903841,1.0,49.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; 
+4,4,TCGA-GBM,Oncology,GDC,0.5620506186830051,1.0,42.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; 
+5,5,TCGA-PAAD,Oncology,GDC,0.1195659811216725,1.0,43.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; 
+6,6,TCGA-UCEC,Oncology,GDC,0.1273590619405172,1.0,45.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; 
+7,7,TCGA-HNSC,Oncology,GDC,0.0988146630707165,1.0,49.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; 
+8,8,TCGA-COAD,Oncology,GDC,0.0960479394961604,1.0,57.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; NOT_independent:TCGA-COAD_is_manuscript_primary_cohort; 
+9,9,TCGA-STAD,Oncology,GDC,0.0648660082834539,1.0,37.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; 
+10,10,TCGA-KIRC,Oncology,GDC,0.3526307836826503,1.0,36.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; had_duplicate_original_id; 
+11,10,GSE17537,Oncology,GEO,0.0951335592039883,-0.0208515553943321,55.0,2.0,54.0,PASS,True,had_duplicate_original_id; 
+12,11,TCGA-KIRP,Oncology,GDC,0.3357176025217378,1.0,46.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; had_duplicate_original_id; 
+13,11,GSE20685,Oncology,GEO,,,,,,ERROR,False,status=ERROR; had_duplicate_original_id; 
+14,12,GSE70768,Oncology,GEO,0.1490361598254583,0.0039465245426798,199.0,2.0,25.0,PASS,True,had_duplicate_original_id; 
+15,12,TCGA-LIHC,Oncology,GDC,0.0792533127483575,1.0,37.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; had_duplicate_original_id; 
+16,13,GSE2109,Oncology,GEO,0.1033435906091222,-0.000419028333719,2158.0,5.0,2158.0,PASS,True,had_duplicate_original_id; 
+17,13,GSE15402,Psychiatry,GEO,0.1472640893471408,1.0,116.0,2.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; had_duplicate_original_id; 
+18,14,GSE31210,Oncology,GEO,0.116934367451444,-0.0306849255261134,246.0,2.0,2.0,PASS,True,had_duplicate_original_id; 
+19,14,GSE53987,Psychiatry,GEO,0.7940999621592646,-0.0112520126637524,205.0,2.0,60.0,PASS,True,had_duplicate_original_id; 
+20,15,GSE71861,Psychiatry,GEO,,,4.0,,,ERROR,False,status=ERROR; had_duplicate_original_id; 
+21,15,GSE42127,Oncology,GEO,0.1474790760881354,-0.007681953999709,176.0,2.0,145.0,PASS,True,had_duplicate_original_id; 
+22,16,GSE99092,Psychiatry,GEO,0.8882275001916411,0.0,13.0,2.0,2.0,PASS,True,
+23,17,GSE36192,Psychiatry,GEO,0.4984718896269262,-0.0029130475130165,911.0,2.0,98.0,PASS,True,
+24,18,GSE16759,Psychiatry,GEO,0.9583199420772064,-0.1393791472307995,16.0,2.0,8.0,PASS,True,
+25,19,GSE29006,Psychiatry,GEO,,,,,,ERROR,False,status=ERROR; 
+26,20,GSE66351,Psychiatry,GEO,0.9673467236537668,-0.0095157402247531,190.0,2.0,96.0,PASS,True,
+27,21,GSE20123,Immunology,GEO,0.7178421479775456,-0.0053522587175037,360.0,2.0,3.0,PASS,True,
+28,22,GSE39666,Immunology,GEO,,,8.0,,,ERROR,False,status=ERROR; 
+29,23,GSE109125,Immunology,GEO,0.2549405834333615,0.0014803940249875,274.0,2.0,92.0,PASS,True,
+30,24,GSE44228,Immunology,GEO,0.1195389894051321,-0.0166750706225475,72.0,2.0,69.0,PASS,True,
+31,25,GSE45291,Immunology,GEO,0.4262427168887545,0.3906920045294819,805.0,2.0,4.0,PASS,True,
+32,26,GSE32140,Immunology,GEO,0.1952855313134846,0.0920198720156567,147.0,2.0,3.0,PASS,True,
+33,27,GSE29618,Immunology,GEO,0.406074868299472,-0.0267726397598783,84.0,2.0,12.0,PASS,True,
+34,28,GSE33133,Immunology,GEO,,,6.0,,,ERROR,False,status=ERROR; 
+35,29,GSE81110,Single-Cell,GEO,,,1.0,,,ERROR,False,status=ERROR; 
+36,30,GSE99254,Single-Cell,GEO,,,,,,ERROR,False,status=ERROR; 
+37,31,GSE92332,Single-Cell,GEO,0.254900883887458,-0.0017505517526343,533.0,2.0,1957.0,PASS,False,n_true_clusters>n_samples; 
+38,32,GSE103224,Single-Cell,GEO,0.1081994282778645,0.0,1377.0,3.0,4.0,PASS,True,
+39,34,GSE90063,Single-Cell,GEO,0.1101851208030419,0.0,5409.0,2.0,3.0,PASS,True,
+40,35,GSE94331,Single-Cell,GEO,,,5.0,,,ERROR,False,status=ERROR; 
+41,39,GSE116530,Other,GEO,0.130436342070956,0.0,2879.0,6.0,36.0,PASS,True,
+42,40,GSE51861,Other,GEO,,,2.0,,,ERROR,False,status=ERROR; 
+43,41,GSE60361,Other,GEO,0.141535812090809,0.0228011773093259,3005.0,5.0,10.0,PASS,True,
+44,42,GSE5204,Other,GEO,0.3339333384451103,-0.0146181544579996,79.0,2.0,79.0,PASS,True,
+45,44,GSE97930,Other,GEO,0.2009271340205368,0.0,19368.0,2.0,20.0,PASS,True,
+46,45,GSE75688,Other,GEO,,,,,,ERROR,False,status=ERROR; 
+47,46,GSE136196,Other,GEO,0.1201654049578319,0.0,1580.0,3.0,1.0,PASS,False,degenerate_ground_truth(n_true_clusters=1)->empty_input_ARI_artifact; 

@@ -1,5 +1,7 @@
 # Pathway-Subtyping Bootstrap Calibration: Complete 47-Dataset Release
 
+> **⚠️ CORRECTED / RETRACTED (2026-07-08).** This document describes the **uncorrected** release and contains errors: the "36,551 total samples" figure is wrong (passing-row total is 40,778); the set has **41 unique datasets, not 47**; **TCGA-COAD (dataset 8) is listed as a passing benchmark** even though the model file/manuscript state it is excluded (the independence claim is withdrawn); and 14 rows carry an empty-input `adjusted_rand_score` artifact (ARI=1.0 on degenerate ground truth). The **adaptive-threshold model (R²=0.889) calibrated from this benchmark does not reproduce and is retracted.** Use the corrected artifact and read the full notice: [`../../CORRECTION_2026-07/ERRATUM_2026-07-08.md`](../../CORRECTION_2026-07/ERRATUM_2026-07-08.md) · corrected data: [`../../CORRECTION_2026-07/corrected_benchmark_47datasets_v2.csv`](../../CORRECTION_2026-07/corrected_benchmark_47datasets_v2.csv).
+
 ## Overview
 Complete validated benchmark results for the pathway-subtyping framework's adaptive bootstrap threshold calibration across diverse biological domains.
 

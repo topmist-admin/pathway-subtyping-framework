@@ -1,0 +1,11 @@
+{
+  "total": 47,
+  "passing": 37,
+  "valid": 22,
+  "invalid": 25,
+  "unique_ids": 41,
+  "sum_samples_all": 40804,
+  "sum_samples_passing": 40778,
+  "R2_valid": 0.0149,
+  "slope_valid": -0.0369
+}
