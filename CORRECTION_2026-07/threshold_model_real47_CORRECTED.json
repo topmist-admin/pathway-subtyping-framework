@@ -1,6 +1,6 @@
 {
   "STATUS": "RETRACTED 2026-07-08",
-  "retraction_notice": "The adaptive bootstrap-threshold model reported here (R^2=0.889, slope=0.914) does not reproduce and is retracted. Refit on the released data gives R^2~0.11 (slope reversed); on valid rows only, R^2~0.015. Silhouette does NOT predict bootstrap-ARI reproducibility in these data. The reported R^2=0.889 originated as an 'expected output' in the calibration plan and was not computed from the data. See ERRATUM_2026-07-08.md.",
+  "retraction_notice": "The adaptive bootstrap-threshold model reported here (R^2=0.889, slope=0.914) does not reproduce and is retracted. Refit on the released data gives R^2~0.11 (slope reversed); on valid rows only, R^2~0.015. Silhouette does NOT predict bootstrap-ARI reproducibility in these data. The reported R^2=0.889 does not reproduce from the released benchmark and was not verified against it before release. See ERRATUM_2026-07-08.md.",
   "circularity_statement_correction": "The prior statement that the 47 benchmarks exclude the manuscript datasets is FALSE: TCGA-COAD (the manuscript primary cohort) is present in the benchmark. The independence claim is withdrawn.",
   "empty_input_artifact": "12 TCGA + 2 GEO rows had bootstrap ARI=1.0 from adjusted_rand_score on degenerate ground truth (n_true_clusters=1); these are artifacts, documented in KNOWN-ISSUES.md, and drove the spurious fit.",
   "do_not_use": "Do not use this model for threshold calibration. No adaptive-threshold model is supported by the data.",
