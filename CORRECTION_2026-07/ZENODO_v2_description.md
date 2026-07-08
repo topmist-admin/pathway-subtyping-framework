@@ -9,4 +9,4 @@ manuscript analysis dataset (TCGA-COAD) was incorrect and is withdrawn; dataset 
 totals are restated (41 unique datasets, not 47; 40,778 samples in passing rows, not 36,551). See ERRATUM_2026-07-08.md.
 The corrected benchmark shows that discrete-subtype reproducibility is dataset-dependent and low on
 most independent cohorts — a negative methodological result; it does not support a silhouette-
-calibrated threshold. Superseded version retained per Zenodo DOI permanence.
+calibrated threshold. This version (v2.0) supersedes v1.0 (10.5281/zenodo.19323754) and v1.1 (10.5281/zenodo.19324360), both retained per Zenodo DOI permanence. Cite the concept DOI going forward.
