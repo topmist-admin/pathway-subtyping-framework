@@ -11,8 +11,8 @@ authors:
 repository-code: 'https://codeberg.org/pathways/pathway-subtyping-framework'
 url: 'https://codeberg.org/pathways/pathway-subtyping-framework'
 license: MIT
-version: 0.6.3
-date-released: '2026-04-18'
+version: 0.7.0
+date-released: '2026-07-09'
 doi: '10.5281/zenodo.18442426'
 identifiers:
   - type: other

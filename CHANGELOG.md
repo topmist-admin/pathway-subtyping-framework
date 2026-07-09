@@ -5,11 +5,20 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0] - 2026-07-09
 
 Post-correction hardening (2026-07-09). Two source fixes that close the failure
 modes behind the 2026-07 benchmark/model correction, plus a frozen, verified
 dependency set.
+
+### Corrected / retracted (carried since 0.6.3)
+- The **adaptive bootstrap-threshold model** (`threshold_model_real47.json`,
+  reported at R²=0.889) does **not reproduce** and is **retracted** (see
+  `src/pathway_subtyping/RETRACTED_threshold_model_real47.md`). The pipeline
+  never consumed it. The **47-dataset benchmark** is **corrected** (invalid rows
+  flagged; see `CORRECTION_2026-07/` + `ERRATUM_2026-07-08.md`). Corrected data
+  is on Zenodo v2.0 (`10.5281/zenodo.21262112`). Correction notices ship in
+  `README.md` and `KNOWN-ISSUES.md`.
 
 ### Added
 - **Confound Association Gate (validation Gate 6)** — `ValidationGates.confound_association_gate()`
