@@ -5,7 +5,7 @@
 
 **A Disease-Agnostic Tool for Pathway-Based Molecular Subtype Discovery**
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18442426.svg)](https://doi.org/10.5281/zenodo.18442426)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18638048.svg)](https://doi.org/10.5281/zenodo.18638048)
 [![PyPI version](https://badge.fury.io/py/pathway-subtyping.svg)](https://pypi.org/project/pathway-subtyping/)
 [![CI](https://codeberg.org/pathways/pathway-subtyping-framework/badges/workflows/ci.yml/badge.svg)](https://codeberg.org/pathways/pathway-subtyping-framework)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -415,7 +415,7 @@ https://www.researchsquare.com/article/rs-8913089/v1
 To cite the software specifically:
 ```
 Chauhan R. Pathway Subtyping Framework. Zenodo. 2026.
-DOI: 10.5281/zenodo.18442426
+DOI: 10.5281/zenodo.18638048
 https://codeberg.org/pathways/pathway-subtyping-framework
 ```
 
