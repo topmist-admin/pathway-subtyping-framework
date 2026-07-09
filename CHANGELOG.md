@@ -13,7 +13,7 @@ dependency set.
 
 Artefact DOIs:
 - **Zenodo:** `10.5281/zenodo.21279842` (https://doi.org/10.5281/zenodo.21279842) — v0.7.0, published 2026-07-09 under concept DOI `10.5281/zenodo.18638048`.
-- **PyPI:** `pip install pathway-subtyping==0.7.0` (pending upload at time of writing).
+- **PyPI:** https://pypi.org/project/pathway-subtyping/0.7.0/ — `pip install pathway-subtyping==0.7.0` (published via GitHub Actions Trusted Publishing).
 
 ### Corrected / retracted (carried since 0.6.3)
 - The **adaptive bootstrap-threshold model** (`threshold_model_real47.json`,
