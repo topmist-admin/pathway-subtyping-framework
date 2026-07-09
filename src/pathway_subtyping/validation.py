@@ -114,6 +114,7 @@ class ValidationGates:
         gmm_seed: Optional[int] = None,
         ancestry_pcs=None,
         per_modality_scores: Optional[Dict[str, pd.DataFrame]] = None,
+        confounds: Optional[Dict[str, Any]] = None,
     ) -> ValidationGatesResult:
         """
         Run all validation gates.
@@ -128,6 +129,10 @@ class ValidationGates:
             ancestry_pcs: Optional AncestryPCs for ancestry independence gate
             per_modality_scores: Optional dict mapping modality label to pathway
                 score DataFrame for cross-modal concordance gate
+            confounds: Optional dict mapping confound name (e.g. 'region',
+                'batch', 'diagnosis') to per-sample categorical values, for the
+                confound association gate. Diagnosis-like keys are treated as
+                biology-of-interest and never fail the gate.
 
         Returns:
             ValidationGatesResult with all test outcomes
@@ -184,6 +189,15 @@ class ValidationGates:
             results.append(cm_result)
             logger.info(
                 f"  - {cm_result.name}: {cm_result.status} " f"(ARI = {cm_result.metric_value:.3f})"
+            )
+
+        # Gate 6: Confound Association (if confound annotations available)
+        if confounds:
+            confound_result = self.confound_association_gate(cluster_labels, confounds)
+            results.append(confound_result)
+            logger.info(
+                f"  - {confound_result.name}: {confound_result.status} "
+                f"(max nuisance Cramer's V = {confound_result.metric_value:.3f})"
             )
 
         # Aggregate results
@@ -572,6 +586,187 @@ class ValidationGates:
                 "interpretation": ("Subtypes should be consistent across data modalities"),
             },
         )
+
+    def confound_association_gate(
+        self,
+        cluster_labels: np.ndarray,
+        confounds: Dict[str, Any],
+        cramers_v_max: float = 0.30,
+        alpha: float = 0.05,
+    ) -> ValidationResult:
+        """
+        Confound Association Gate (mandatory when confounds are available).
+
+        Tests whether the partition is explained by a technical or anatomical
+        confound (e.g. brain region, sequencing batch) rather than the biology
+        of interest. For each named confound, computes a chi-square test of
+        independence against the cluster labels and the Cramer's V effect size.
+
+        This is the gate whose absence let an anatomy artifact pass the full
+        validation battery: on GSE80655 a k=3 partition passed every stability
+        control (bootstrap ARI ~0.92) yet corresponded almost exactly to brain
+        region (Cramer's V ~0.67, p ~4e-26) while being independent of diagnosis
+        (p ~0.41). A stability-passing partition can still be a confound
+        classifier; this gate is the check that catches it.
+
+        Pass criterion: NO confound is both statistically associated
+        (BH-adjusted p < ``alpha``) AND non-trivially so (Cramer's V >=
+        ``cramers_v_max``). Diagnosis is treated as the biology of interest, not
+        a nuisance confound, and is reported for context but never fails the gate
+        (a partition SHOULD track diagnosis).
+
+        Args:
+            cluster_labels: Array of cluster assignments (n_samples,).
+            confounds: Mapping of confound name -> per-sample categorical values
+                (array-like of length n_samples). Diagnosis, if present, should
+                be keyed 'diagnosis' to be treated as biology-of-interest.
+            cramers_v_max: Effect-size threshold above which an association is
+                considered a confound (0.30 ~ medium; 0.10 small, 0.50 large).
+            alpha: Significance level for the (BH-adjusted) chi-square p-values.
+
+        Returns:
+            ValidationResult. metric_value is the maximum Cramer's V across the
+            *nuisance* confounds (the worst offender); passed is False if any
+            nuisance confound is significant AND exceeds cramers_v_max.
+        """
+        from scipy.stats import chi2_contingency
+
+        from .statistical_rigor import benjamini_hochberg
+
+        labels = np.asarray(cluster_labels)
+        n = len(labels)
+        biology_keys = {"diagnosis", "dx", "disease", "condition", "phenotype"}
+
+        per_confound: Dict[str, Any] = {}
+        names: List[str] = []
+        pvals: List[float] = []
+        for name, values in confounds.items():
+            vals = np.asarray(list(values))
+            if len(vals) != n:
+                logger.warning(
+                    "Confound '%s' length %d != n_samples %d; skipping.",
+                    name,
+                    len(vals),
+                    n,
+                )
+                continue
+            # Contingency table cluster x confound-level.
+            df = pd.crosstab(pd.Series(labels, name="cluster"), pd.Series(vals, name=name))
+            table = df.values
+            if table.shape[0] < 2 or table.shape[1] < 2:
+                # Nothing to test (single cluster or single confound level).
+                per_confound[name] = {
+                    "chi2": None,
+                    "p_value": None,
+                    "cramers_v": 0.0,
+                    "dof": 0,
+                    "is_biology_of_interest": name.lower() in biology_keys,
+                    "note": "degenerate table (single cluster or single level)",
+                }
+                continue
+            chi2, p, dof, _ = chi2_contingency(table, correction=False)
+            v = cramers_v(table)
+            per_confound[name] = {
+                "chi2": round(float(chi2), 4),
+                "p_value": float(p),
+                "cramers_v": round(float(v), 4),
+                "dof": int(dof),
+                "is_biology_of_interest": name.lower() in biology_keys,
+            }
+            names.append(name)
+            pvals.append(float(p))
+
+        # BH-adjust p-values across the confounds actually tested.
+        # benjamini_hochberg returns q-values (adjusted p), not a boolean mask.
+        if pvals:
+            qvals = benjamini_hochberg(np.asarray(pvals), alpha=alpha)
+            for i, name in enumerate(names):
+                per_confound[name]["p_adjusted"] = float(qvals[i])
+                per_confound[name]["significant"] = bool(qvals[i] < alpha)
+
+        # Evaluate the gate over NUISANCE confounds only.
+        worst_v = 0.0
+        worst_name = None
+        failing = []
+        for name, info in per_confound.items():
+            if info.get("is_biology_of_interest"):
+                continue
+            v = info.get("cramers_v", 0.0) or 0.0
+            sig = info.get("significant", False)
+            if v > worst_v:
+                worst_v = v
+                worst_name = name
+            if sig and v >= cramers_v_max:
+                failing.append(name)
+
+        passed = len(failing) == 0
+        interpretation = (
+            "Partition is not explained by a nuisance confound."
+            if passed
+            else (
+                f"Partition is confounded by: {', '.join(failing)} "
+                f"(Cramer's V >= {cramers_v_max}). The subtype may be an "
+                "artifact of this variable, not biology."
+            )
+        )
+
+        return ValidationResult(
+            name="Confound Association Gate",
+            passed=passed,
+            metric_name="max_nuisance_cramers_v",
+            metric_value=worst_v,
+            threshold=cramers_v_max,
+            comparison="<",
+            details={
+                "worst_confound": worst_name,
+                "failing_confounds": failing,
+                "per_confound": {
+                    k: {
+                        kk: (round(vv, 6) if isinstance(vv, float) else vv)
+                        for kk, vv in v.items()
+                    }
+                    for k, v in per_confound.items()
+                },
+                "cramers_v_max": cramers_v_max,
+                "alpha": alpha,
+                "interpretation": interpretation,
+            },
+        )
+
+
+def cramers_v(
+    contingency: np.ndarray, bias_correction: bool = True
+) -> float:
+    """
+    Cramér's V effect size for a contingency table (association strength between
+    two categorical variables, 0 = independent, 1 = perfect association).
+
+    Args:
+        contingency: r x c contingency table of counts.
+        bias_correction: Apply the Bergsma (2013) small-sample bias correction.
+
+    Returns:
+        Cramér's V in [0, 1]; 0.0 for degenerate tables (a single row/column,
+        or no samples).
+    """
+    from scipy.stats import chi2_contingency
+
+    table = np.asarray(contingency, dtype=float)
+    n = table.sum()
+    if n <= 0 or table.shape[0] < 2 or table.shape[1] < 2:
+        return 0.0
+
+    chi2 = chi2_contingency(table, correction=False)[0]
+    phi2 = chi2 / n
+    r, c = table.shape
+    if bias_correction:
+        phi2 = max(0.0, phi2 - (c - 1) * (r - 1) / (n - 1))
+        r = r - (r - 1) ** 2 / (n - 1)
+        c = c - (c - 1) ** 2 / (n - 1)
+    denom = min(r - 1, c - 1)
+    if denom <= 0:
+        return 0.0
+    return float(np.sqrt(phi2 / denom))
 
 
 def format_validation_report(result: ValidationGatesResult) -> str:

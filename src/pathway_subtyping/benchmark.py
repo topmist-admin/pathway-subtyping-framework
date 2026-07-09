@@ -28,12 +28,12 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.decomposition import NMF, PCA
 from sklearn.metrics import (
-    adjusted_rand_score,
     normalized_mutual_info_score,
     silhouette_score,
 )
 
 from .clustering import ClusteringAlgorithm, run_clustering
+from .utils.metrics import ari_with_validity
 
 logger = logging.getLogger(__name__)
 
@@ -265,8 +265,23 @@ def run_single_benchmark(
     ari = None
     nmi = None
     if true_labels is not None:
-        ari = float(adjusted_rand_score(true_labels, labels))
-        nmi = float(normalized_mutual_info_score(true_labels, labels))
+        # Guard against the empty-input / single-true-cluster artifact:
+        # adjusted_rand_score returns a misleading 1.0 on degenerate ground
+        # truth. ari_with_validity returns NaN + a reason instead; we surface
+        # that as ari=None so it is never mistaken for measured agreement.
+        # (This is the fix for the benchmark rows that drove R^2=0.889.)
+        ari_value, ari_valid, ari_reason = ari_with_validity(true_labels, labels)
+        if ari_valid:
+            ari = float(ari_value)
+            nmi = float(normalized_mutual_info_score(true_labels, labels))
+        else:
+            ari = None
+            nmi = None
+            logger.warning(
+                "[Benchmark] %s: ARI not computed — %s (degenerate ground truth)",
+                method.value,
+                ari_reason,
+            )
 
     sil = 0.0
     n_unique = len(np.unique(labels))

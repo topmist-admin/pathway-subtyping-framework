@@ -5,6 +5,56 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Post-correction hardening (2026-07-09). Two source fixes that close the failure
+modes behind the 2026-07 benchmark/model correction, plus a frozen, verified
+dependency set.
+
+### Added
+- **Confound Association Gate (validation Gate 6)** — `ValidationGates.confound_association_gate()`
+  in `validation.py`, with a `cramers_v()` helper (Bergsma-corrected Cramér's V).
+  Tests each partition against named confounds (e.g. brain region, batch) via
+  chi-square + Cramér's V, BH-adjusted across confounds; a partition **fails**
+  if any *nuisance* confound is both significant and non-trivial (V ≥ 0.30).
+  Diagnosis (keys `diagnosis`/`dx`/`disease`/`condition`/`phenotype`) is treated
+  as biology-of-interest and never fails the gate. Wired into `run_all()` behind
+  a new optional `confounds=` argument (backward compatible; the gate only runs
+  when confounds are supplied). This is the gate whose absence let a brain-region
+  artifact pass the full battery on GSE80655 (bootstrap ARI ≈ 0.92, yet Cramér's
+  V ≈ 0.67 vs region and independent of diagnosis, p ≈ 0.41).
+- **Guarded ARI metrics** — new `pathway_subtyping.utils.metrics` module:
+  `safe_adjusted_rand_score`, `ari_with_validity`, `ari_degenerate_reason`.
+  These return `NaN` + a reason (not a misleading "perfect" 1.0) on degenerate
+  ground truth. The guard keys on ground-truth **structure**
+  (`n_true_clusters < 2`, too few samples, or empty), so it also catches the
+  degenerate case that returns ARI = 0.0 — which a value-based (`== 1.0`) guard
+  would miss.
+- **Regression tests** — `tests/test_metrics_ari_guard.py` (incl. the GSE136196
+  ARI = 0.0 fixture) and `tests/test_confound_gate.py` (19 tests total, all pass).
+
+### Fixed
+- **Empty-input ARI artifact fixed at the source.** The `adjusted_rand_score`
+  degeneracy that produced the spurious "perfect" scores in the 47-dataset
+  calibration benchmark is now guarded framework-wide and wired into
+  `benchmark.py` (degenerate ground truth → `ari=None`, never a fake score) and
+  `pipeline.py` (`_generate_reports` planted-subtype ARI).
+- **`KNOWN-ISSUES.md`** — corrected the count to **14 degenerate rows
+  (`n_true_clusters=1`), 13 of which carried a spurious ARI = 1.0** (the 14th,
+  GSE136196, returned 0.0), and added the "fixed at source" note.
+
+### Changed
+- **Dependencies (frozen).** `requirements.txt` now pins exact versions verified
+  against the test suite on 2026-07-09 (299 passed / 1 skipped; 19/19 new tests).
+  Added `requests` (a declared core dependency that was missing from this file).
+- **`pandas` cap raised `<3.0.0` → `<4.0.0`** in `pyproject.toml` and
+  `requirements.txt`: the suite passes on pandas 3.0.2, and the previous cap
+  excluded the tested version.
+- **Test/plotting dependencies confirmed installed** in the working environment:
+  `pytest`, `scikit-learn`, `matplotlib`, `seaborn` (the last three are already
+  declared core/dev deps in `pyproject.toml`; two figure-generating tests
+  require `matplotlib`+`seaborn` and are otherwise skipped-red in a minimal env).
+
 ## [0.6.3] - 2026-04-18
 
 Artefact DOIs:

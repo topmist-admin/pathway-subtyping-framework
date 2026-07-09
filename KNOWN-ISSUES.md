@@ -1,6 +1,8 @@
 # Known Issues
 
-> **⚠️ 2026-07-08 — Correction issued.** The empty-input `adjusted_rand_score` artifact documented below (NB17) was **also present, uncorrected, in the 47-dataset calibration benchmark** — it produced 14 spurious ARI=1.0 rows that drove the retracted R²=0.889 adaptive-threshold model. The calibration model is **retracted** and the benchmark **corrected**. See [`CORRECTION_2026-07/ERRATUM_2026-07-08.md`](CORRECTION_2026-07/ERRATUM_2026-07-08.md).
+> **⚠️ 2026-07-08 — Correction issued.** The empty-input `adjusted_rand_score` artifact documented below (NB17) was **also present, uncorrected, in the 47-dataset calibration benchmark** — it produced 14 degenerate rows (`n_true_clusters=1`), 13 of which carried a spurious ARI=1.0, that drove the retracted R²=0.889 adaptive-threshold model. The calibration model is **retracted** and the benchmark **corrected**. See [`CORRECTION_2026-07/ERRATUM_2026-07-08.md`](CORRECTION_2026-07/ERRATUM_2026-07-08.md).
+>
+> **✅ 2026-07-09 — Fixed at the source.** The empty-input / single-true-cluster ARI artifact is now guarded framework-wide by `pathway_subtyping.utils.metrics.safe_adjusted_rand_score` / `ari_with_validity`, which return NaN (not a spurious score) on degenerate ground truth and are wired into `benchmark.py` and `pipeline.py`. The guard keys on ground-truth *structure* (`n_true_clusters < 2`), so it also catches the one degenerate row that returned ARI=0.0 (GSE136196), which a value-based (`== 1.0`) guard would miss. Regression tests: `tests/test_metrics_ari_guard.py`.
 
 ## NB17: MSI ARI reports 1.0 when no MSI data available
 

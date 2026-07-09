@@ -1193,14 +1193,21 @@ class DemoPipeline:
         # Compute ground truth validation metrics (if planted subtypes available)
         ground_truth_validation = {}
         if "planted_subtype" in self.cluster_assignments.columns:
-            from sklearn.metrics import adjusted_rand_score
+            from .utils.metrics import ari_with_validity
 
-            ari = adjusted_rand_score(
+            # Guard degenerate ground truth (empty / single planted subtype),
+            # which would otherwise return a spurious ARI of 1.0 from sklearn.
+            ari, ari_valid, ari_reason = ari_with_validity(
                 self.cluster_assignments["planted_subtype"],
                 self.cluster_assignments["cluster_label"],
             )
-            ground_truth_validation["adjusted_rand_index"] = round(ari, 4)
-            ground_truth_validation["ari_threshold_met"] = ari > 0.7
+            if ari_valid:
+                ground_truth_validation["adjusted_rand_index"] = round(ari, 4)
+                ground_truth_validation["ari_threshold_met"] = ari > 0.7
+            else:
+                ground_truth_validation["adjusted_rand_index"] = None
+                ground_truth_validation["ari_threshold_met"] = False
+                ground_truth_validation["ari_invalid_reason"] = ari_reason
 
         # Validation gates results
         validation_gates = {}
