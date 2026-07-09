@@ -11,6 +11,10 @@ Post-correction hardening (2026-07-09). Two source fixes that close the failure
 modes behind the 2026-07 benchmark/model correction, plus a frozen, verified
 dependency set.
 
+Artefact DOIs:
+- **Zenodo:** `10.5281/zenodo.21279842` (https://doi.org/10.5281/zenodo.21279842) — v0.7.0, published 2026-07-09 under concept DOI `10.5281/zenodo.18638048`.
+- **PyPI:** `pip install pathway-subtyping==0.7.0` (pending upload at time of writing).
+
 ### Corrected / retracted (carried since 0.6.3)
 - The **adaptive bootstrap-threshold model** (`threshold_model_real47.json`,
   reported at R²=0.889) does **not reproduce** and is **retracted** (see
