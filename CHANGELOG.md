@@ -42,6 +42,12 @@ dependency set.
 - **`KNOWN-ISSUES.md`** — corrected the count to **14 degenerate rows
   (`n_true_clusters=1`), 13 of which carried a spurious ARI = 1.0** (the 14th,
   GSE136196, returned 0.0), and added the "fixed at source" note.
+- **Public erratum + Zenodo v2.0 description (2026-07-09)** — propagated the same
+  count correction to `CORRECTION_2026-07/ERRATUM_2026-07-08.md` and
+  `CORRECTION_2026-07/ZENODO_v2_description.md`, which previously stated all 14
+  degenerate rows carried ARI = 1.0. NOTE: the Zenodo deposit
+  `10.5281/zenodo.21262112` must be re-uploaded with the corrected erratum to
+  make this live on the DOI record (manual step).
 
 ### Changed
 - **Dependencies (frozen).** `requirements.txt` now pins exact versions verified
