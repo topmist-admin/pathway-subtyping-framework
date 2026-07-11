@@ -1,0 +1,19 @@
+# Reproducibility package — "Stable but confounded…" (consolidation/cautionary paper)
+# Install the PUBLIC framework release; do NOT use a local working tree.
+#
+#   python -m venv .venv && . .venv/bin/activate
+#   pip install -r requirements.txt
+#
+# The manuscript numbers were generated with the pins below (framework v0.7.0,
+# scikit-learn 1.9.0). scikit-learn is the reproduction-sensitive pin (GMM/BIC
+# determinism); statsmodels drives the OLS marker/interaction tests. The Layer-A
+# recompute (region_crosstab_from_labels.py) reproduced exactly on newer pandas/
+# numpy too, but record your actual versions in provenance.json regardless.
+
+pathway-subtyping==0.7.0
+scikit-learn==1.9.0
+statsmodels==0.14.6
+numpy==2.4.6
+pandas==2.3.3
+scipy==1.17.1
+requests==2.34.2
