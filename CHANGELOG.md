@@ -5,6 +5,59 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - Unreleased (branch: feat/discreteness-gate)
+
+**Not yet released** — no Zenodo/PyPI artifact; on the private review branch only.
+
+Corrects the stability gate's null. Adversarial methods review established that the
+bootstrap-stability null tested the wrong hypothesis at small n, and this release
+fixes it. See `docs/discreteness_gate.md` for the full rationale.
+
+### Corrected
+- **The stability null tested independence, not discreteness.** The bootstrap-stability
+  null permuted each pathway column independently, which destroys inter-pathway
+  correlation while preserving marginals — a null of *"the pathways are mutually
+  independent,"* **not** *"there are discrete clusters."* At small n these diverge:
+  a single correlated Gaussian blob or a 1-D continuous gradient (tumor purity,
+  immune infiltration, proliferation) has no discrete clusters, yet a mixture model
+  reproducibly bisects it every bootstrap (high observed ARI) while the feature-permuted
+  null collapses (low ARI) — so a **continuum is falsely certified as a "reproducible
+  subtype."** The independence null is **retained but demoted** to a confound / marginal
+  control; it no longer decides discreteness.
+
+### Added
+- **`pathway_subtyping.discreteness` subpackage** with a discreteness-aware Gate A
+  (`DiscretenessGateA`) that keeps the identical observed statistic (mean bootstrap-ARI
+  at the fixed selected k) and replaces the reference with:
+  - a **single-Gaussian (SigClust) reference** — primary (Liu, Hayes, Nobel & Marron,
+    JASA 2008, `doi:10.1198/016214508000000454`);
+  - the **gap statistic** — complementary (Tibshirani, Walther & Hastie, JRSS B 2001,
+    `doi:10.1111/1467-9868.00293`);
+  - **Hartigan's dip test** — optional corroborating unimodality flag (Ann. Statist.
+    1985, `doi:10.1214/aos/1176346577`), via the new `diptest` extra.
+- **Small-n hardening** (identical for observed data and every reference draw): PCA to
+  d = min(10, ⌊n/10⌋) ≪ n (a 50-dim full-covariance mixture is singular at n in the
+  tens); k fixed across observed and reference; silhouette-based k-stability routing to
+  `not-testable` when no reproducible modal k exists.
+- **`ReframedMembershipGate`** — the conformal membership gate reframed as *assignment
+  sharpness conditional on a Gate-A/B-certified partition* (not a standalone guarantee),
+  at a single 0.90 operating point with a bootstrap coverage CI and a minimum-n rule.
+- **Synthetic-control tests** (`tests/test_discreteness_gate.py`): the new gate must fail
+  a single Gaussian and a 1-D continuum (which the old null wrongly passed) and pass two
+  separated clusters — with ground truth known by construction.
+
+### Dependencies
+- Added `joblib` as an explicit core dependency (previously relied on scikit-learn's
+  transitive install; the discreteness gate imports it directly).
+- Added a `discreteness` optional extra pinning `diptest` (**GPLv2+** — intentionally NOT
+  a core dependency so the default MIT install and Docker image stay MIT-clean; the dip
+  flag is skipped gracefully when absent).
+
+### Attribution
+- The discreteness gate and reframed membership gate were developed by a Topmist
+  computational analyst under work-for-hire; © Topmist LLC, MIT-licensed with the rest
+  of the framework.
+
 ## [0.7.0] - 2026-07-09
 
 Post-correction hardening (2026-07-09). Two source fixes that close the failure

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pathway-subtyping"
-version = "0.7.0"
+version = "0.8.0"
 description = "A disease-agnostic framework for identifying molecular subtypes through pathway-based analysis of rare genetic variants"
 readme = "README.md"
 license = {text = "MIT"}
@@ -46,6 +46,7 @@ dependencies = [
     "pandas>=2.0.0,<4.0.0",
     "scikit-learn>=1.3.0,<2.0.0",
     "scipy>=1.11.0,<2.0.0",
+    "joblib>=1.2.0,<2.0.0",
     "pyyaml>=6.0,<7.0",
     "click>=8.0.0,<9.0.0",
     "matplotlib>=3.7.0,<4.0.0",
@@ -69,6 +70,14 @@ notebooks = [
     "jupyter>=1.0.0",
     "ipykernel>=6.0.0",
     "nbformat>=5.0.0",
+]
+discreteness = [
+    # Hartigan dip test — an OPTIONAL corroborating unimodality diagnostic in the
+    # discreteness Gate A. NOTE: diptest is GPLv2+; it is intentionally NOT a core
+    # dependency so the default (MIT) install and Docker image stay MIT-clean. The
+    # SigClust single-Gaussian null + gap statistic (the actual gate) need only the
+    # core deps; the dip flag is skipped gracefully if diptest is absent.
+    "diptest>=0.5.0",
 ]
 vcf = [
     "pysam>=0.21.0,<1.0.0",
