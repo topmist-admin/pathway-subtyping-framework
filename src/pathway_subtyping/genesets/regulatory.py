@@ -180,9 +180,12 @@ class CoexpressionBackend(RegulatoryBackend):
         # Add missing genes as zero-similarity rows/columns
         full = pd.DataFrame(0.0, index=genes, columns=genes)
         full.loc[present, present] = sim.values
-        # Diagonal = 1.0 (self-similarity)
-        np.fill_diagonal(full.values, 1.0)
-        return full
+        # Diagonal = 1.0 (self-similarity). Set it on a writable copy: under
+        # pandas 3.0 Copy-on-Write, DataFrame.values is a read-only view, so an
+        # in-place np.fill_diagonal into it raises "underlying array is read-only".
+        arr = full.to_numpy(copy=True)
+        np.fill_diagonal(arr, 1.0)
+        return pd.DataFrame(arr, index=genes, columns=genes)
 
 
 # --------------------------------------------------------------------------- #
