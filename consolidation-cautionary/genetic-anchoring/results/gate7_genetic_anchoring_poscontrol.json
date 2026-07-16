@@ -1,0 +1,46 @@
+{
+  "NEURONAL/SYNAPTIC|genome-wide(protein-coding)": {
+    "set": "NEURONAL/SYNAPTIC",
+    "universe_n": 23272,
+    "risk_in_univ": 1020,
+    "testset_n": 54,
+    "risk_hits": 24,
+    "expected": 2.37,
+    "fold": 10.14,
+    "p": 7.746778391612059e-19,
+    "null": "genome-wide(protein-coding)"
+  },
+  "NEURONAL/SYNAPTIC|brain-expressed-matched": {
+    "set": "NEURONAL/SYNAPTIC",
+    "universe_n": 36971,
+    "risk_in_univ": 995,
+    "testset_n": 54,
+    "risk_hits": 24,
+    "expected": 1.45,
+    "fold": 16.51,
+    "p": 1.0351461402746727e-23,
+    "null": "brain-expressed-matched"
+  },
+  "GLIAL/IMMUNE|genome-wide(protein-coding)": {
+    "set": "GLIAL/IMMUNE",
+    "universe_n": 23272,
+    "risk_in_univ": 1020,
+    "testset_n": 30,
+    "risk_hits": 2,
+    "expected": 1.31,
+    "fold": 1.52,
+    "p": 0.3809749333301324,
+    "null": "genome-wide(protein-coding)"
+  },
+  "GLIAL/IMMUNE|brain-expressed-matched": {
+    "set": "GLIAL/IMMUNE",
+    "universe_n": 36971,
+    "risk_in_univ": 995,
+    "testset_n": 28,
+    "risk_hits": 2,
+    "expected": 0.75,
+    "fold": 2.65,
+    "p": 0.17335468403723567,
+    "null": "brain-expressed-matched"
+  }
+}

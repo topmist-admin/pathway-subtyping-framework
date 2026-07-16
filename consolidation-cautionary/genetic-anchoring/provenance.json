@@ -1,0 +1,51 @@
+{
+  "analysis": "Feature-level genetic anchoring (Gate 6 + Gate 7) — extension of the 'Stable but confounded' reproduction",
+  "parent_reproduction": "consolidation-cautionary/ (Layer A + Layer B of the postmortem-psychiatric subtyping paper)",
+  "manuscript": "Chauhan 2026, 'Stable but confounded: brain region, not diagnosis, drives a validation-passing molecular subtype in postmortem psychiatric brain', Research Square 10.21203/rs.3.rs-8913089 (under revision)",
+  "framework": {
+    "package": "pathway-subtyping",
+    "gate_integration": "Gate 7 (genetic anchoring) and Gate 6 (confound association) are shipped framework gates: ValidationGates.genetic_anchoring_gate / ValidationGates.confound_association_gate, backed by pathway_subtyping.genetics (v0.8.0 line)",
+    "deposited_outputs_produced_with": "pathway-subtyping 0.7.0 (PyPI) + the Gate-7 prototype now folded into the package; numbers verified identical through the integrated gate",
+    "RRID": "SCR_028051",
+    "concept_doi": "10.5281/zenodo.18638048",
+    "v0.7.0_doi": "10.5281/zenodo.21279842"
+  },
+  "risk_reference": {
+    "source": "Open Targets Platform GraphQL v4",
+    "disease": "autism spectrum disorder (MONDO_0005258)",
+    "datatype": "genetic_association > 0",
+    "n_genes": 1020,
+    "note": "causally-prior GWAS/rare-variant-derived; SFARI Gene was allowlist-blocked, Open Targets used as an independent genetics-grounded substitute"
+  },
+  "test_sets": {
+    "NEURONAL_SYNAPTIC": "SYNAPTIC_TRANSMISSION + GLUTAMATE_SIGNALING + GABA_SIGNALING (schizophrenia_pathways.gmt); n=54 mapped to Ensembl",
+    "GLIAL_IMMUNE": "IMMUNE_COMPLEMENT + astrocyte/oligodendrocyte/microglia markers; n=28-30 mapped"
+  },
+  "nulls": {
+    "genome_wide": "Ensembl protein-coding universe (BioMart), N=23272 — reference only, does not decide the gate",
+    "brain_expressed_matched": "GSE80655 genes detected in >=50% of samples, N=36971 — the discriminating null that decides the gate"
+  },
+  "test": "one-sided hypergeometric over-representation, BH-adjusted across subtypes",
+  "seeds": {
+    "confound_gate": 42,
+    "deposited_partition": "framework v0.3.0 / seed 42"
+  },
+  "inputs_sha256": {
+    "asd_risk_ensembl.json": "5779a73b3cc8ff329ffead30793fff2dbe30f6359641dc142b88a722c70c7846",
+    "opentargets_asd_targets.json": "718bc63a828a0adda21675ddf6ead516a48f718bc8c287eb49f17518aed41602",
+    "protein_coding_ensembl.json": "6b73b4e260a8dd75166f08c095946cf6d513aace4da1039d68715c6d2e34e4ca",
+    "testset_symbol2ens.json": "7b09ce08b3b2e91d534d6feb8bad745a5143cd500a6873304b7999cd80dbdba9",
+    "GSE80655_GeneExpressionData_Updated_3-26-2018.txt.gz": "56b6112048fe494a78b28d0fe123d2635ad12fb261896efa6c2885065c239d9b",
+    "schizophrenia_pathways.gmt": "007e61ae9af76c5555a6331193a23dfed8fad8ee966636e7524b3a374a9e12f4"
+  },
+  "result_files": {
+    "gate6_confound_association": "results/gate6_confound_association.json",
+    "gate7_genetic_anchoring_poscontrol": "results/gate7_genetic_anchoring_poscontrol.json"
+  },
+  "headline": {
+    "gate6": "passed=false; max nuisance Cramer's V=0.66 (brain region, chi2=125.1, p~4e-26); diagnosis exempt (V=0.0, p=0.408)",
+    "gate7": "DISCRIMINATION CONFIRMED under brain-expressed-matched null: NEURONAL/SYNAPTIC fold 16.51x p=1.04e-23; GLIAL/IMMUNE fold 2.65x p=0.17 (n.s.). Recovers Voineagu F5. Gate-7 calibration passes.",
+    "null_matters": "matched null raises neuronal fold 10.14x -> 16.51x (risk genes concentrate in the brain-expressed background), so a genome-wide null understates true enrichment here and would overstate it for a region-artifact subtype"
+  },
+  "usage_note": "Research use only. Not clinical guidance."
+}
