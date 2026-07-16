@@ -1,0 +1,58 @@
+{
+  "name": "Confound Association Gate",
+  "passed": false,
+  "metric_name": "max_nuisance_cramers_v",
+  "metric_value": 0.66,
+  "threshold": 0.3,
+  "comparison": "<",
+  "details": {
+    "worst_confound": "brain region",
+    "failing_confounds": [
+      "brain region"
+    ],
+    "per_confound": {
+      "brain region": {
+        "chi2": 125.119,
+        "p_value": 0.0,
+        "cramers_v": 0.66,
+        "dof": 4,
+        "is_biology_of_interest": false,
+        "p_adjusted": 0.0,
+        "significant": true
+      },
+      "diagnosis": {
+        "chi2": 1.7926,
+        "p_value": 0.408087,
+        "cramers_v": 0.0,
+        "dof": 2,
+        "is_biology_of_interest": true,
+        "p_adjusted": 0.637137,
+        "significant": false
+      },
+      "gender": {
+        "chi2": 1.4769,
+        "p_value": 0.477853,
+        "cramers_v": 0.0,
+        "dof": 2,
+        "is_biology_of_interest": false,
+        "p_adjusted": 0.637137,
+        "significant": false
+      },
+      "ethnicity": {
+        "chi2": 1.7099,
+        "p_value": 0.98865,
+        "cramers_v": 0.0,
+        "dof": 8,
+        "is_biology_of_interest": false,
+        "p_adjusted": 0.98865,
+        "significant": false
+      }
+    },
+    "cramers_v_max": 0.3,
+    "alpha": 0.05,
+    "interpretation": "Partition is confounded by: brain region (Cramer's V >= 0.3). The subtype may be an artifact of this variable, not biology."
+  },
+  "partition": "deposited SCZ+Control 39/92/10 (framework v0.3.0, seed 42)",
+  "framework_version": "0.7.0",
+  "gate": "Gate 6 - Confound Association Gate"
+}
