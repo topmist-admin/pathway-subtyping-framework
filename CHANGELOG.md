@@ -45,6 +45,27 @@ fixes it. See `docs/discreteness_gate.md` for the full rationale.
 - **Synthetic-control tests** (`tests/test_discreteness_gate.py`): the new gate must fail
   a single Gaussian and a 1-D continuum (which the old null wrongly passed) and pass two
   separated clusters — with ground truth known by construction.
+- **`pathway_subtyping.genetics` subpackage + Gate 7 — Genetic Anchoring** (feature-level).
+  `ValidationGates.genetic_anchoring_gate()` tests whether a subtype's *defining genes* are
+  over-represented for disease genetic-risk genes (hypergeometric over-representation,
+  BH-adjusted across subtypes) against a **background-matched** null. Unlike every other
+  gate this is **positive evidence**: a germline-variant enrichment cannot be manufactured
+  by any postmortem/technical confound (PMI, RIN, dissection, batch), so a pass is
+  confound-immune evidence a subtype axis is genetically implicated — necessary, not
+  sufficient, and a specific low-power test (a null is weak evidence of absence). The null
+  is background-matched because brain-expressed genes are already enriched for brain-disease
+  risk; a genome-wide reference is reported per subtype for contrast but does not decide the
+  gate. Reusable core in `genetics/gwas_enrichment.py` (`feature_level_anchoring`,
+  `hypergeometric_enrichment`, `EnrichmentResult`); wired into `run_all()` behind an optional
+  `genetic_anchoring=` argument (backward compatible). Scope is feature-level only;
+  subject-level anchoring (rare-variant burden / PRS on same-donor genotypes) is a later,
+  data-use-agreement-gated addition.
+- **Positive-control tests** (`tests/test_genetic_anchoring_gate.py`): reconstruct the
+  Voineagu discrimination (a neuronal/synaptic set enriches for autism risk under a
+  brain-expressed-matched null while a glial/immune set does not) and verify the gate passes
+  on the anchored axis. The refactored code reproduces the v0.7.0 reproduction-bundle
+  headline exactly on the real deposited inputs (neuronal fold 16.5×, p≈1.0e-23; glial 2.6×,
+  n.s.).
 
 ### Dependencies
 - Added `joblib` as an explicit core dependency (previously relied on scikit-learn's

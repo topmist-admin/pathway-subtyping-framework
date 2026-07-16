@@ -115,6 +115,7 @@ class ValidationGates:
         ancestry_pcs=None,
         per_modality_scores: Optional[Dict[str, pd.DataFrame]] = None,
         confounds: Optional[Dict[str, Any]] = None,
+        genetic_anchoring: Optional[Dict[str, Any]] = None,
     ) -> ValidationGatesResult:
         """
         Run all validation gates.
@@ -133,6 +134,11 @@ class ValidationGates:
                 'batch', 'diagnosis') to per-sample categorical values, for the
                 confound association gate. Diagnosis-like keys are treated as
                 biology-of-interest and never fail the gate.
+            genetic_anchoring: Optional kwargs for the Gate 7 genetic-anchoring
+                gate, forwarded to ``genetic_anchoring_gate`` (requires at least
+                ``subtype_gene_sets``, ``risk_genes``, ``background_universe``).
+                Gate 7 is positive-evidence and low-power; when supplied it is
+                appended like any other gate.
 
         Returns:
             ValidationGatesResult with all test outcomes
@@ -198,6 +204,15 @@ class ValidationGates:
             logger.info(
                 f"  - {confound_result.name}: {confound_result.status} "
                 f"(max nuisance Cramer's V = {confound_result.metric_value:.3f})"
+            )
+
+        # Gate 7: Genetic Anchoring (if subtype gene sets + risk catalogue available)
+        if genetic_anchoring:
+            anchoring_result = self.genetic_anchoring_gate(**genetic_anchoring)
+            results.append(anchoring_result)
+            logger.info(
+                f"  - {anchoring_result.name}: {anchoring_result.status} "
+                f"(max enrichment fold = {anchoring_result.metric_value:.2f})"
             )
 
         # Aggregate results
@@ -729,6 +744,147 @@ class ValidationGates:
                 },
                 "cramers_v_max": cramers_v_max,
                 "alpha": alpha,
+                "interpretation": interpretation,
+            },
+        )
+
+    def genetic_anchoring_gate(
+        self,
+        subtype_gene_sets: Dict[Any, Any],
+        risk_genes: Any,
+        background_universe: Any,
+        reference_universe: Optional[Any] = None,
+        alpha: float = 0.05,
+        min_fold: float = 1.0,
+    ) -> ValidationResult:
+        """
+        Gate 7: Genetic Anchoring Gate (feature-level).
+
+        Tests whether the genes defining each subtype are over-represented for
+        disease genetic-risk genes, by a hypergeometric over-representation test
+        against a background-matched gene universe (BH-adjusted across subtypes).
+
+        Unlike every other gate in the battery, this is a POSITIVE-EVIDENCE gate.
+        The negative controls and the confound gate can only certify that a
+        partition is *reproducible*; they can never show it is *real* or *causal*.
+        A germline-variant enrichment is the exception: it cannot be manufactured
+        by any postmortem or technical confound (PMI, RIN, dissection, batch,
+        platform), because the variants are fixed at conception, upstream of all
+        of them. So a subtype whose defining genes carry disease genetic risk is
+        genetically implicated — necessary, not sufficient, but confound-immune.
+
+        The null must be background-matched, not genome-wide. Brain-expressed
+        genes are already enriched for brain-disease genetic risk, so a
+        region-identity subtype could show spurious genome-wide enrichment. The
+        gate decides on ``background_universe`` (e.g. brain-expressed genes);
+        ``reference_universe`` (e.g. genome-wide protein-coding) is reported per
+        subtype for contrast but never decides the gate.
+
+        This is a SPECIFIC, LOW-POWER test: a non-anchored result is weak evidence
+        of absence, never proof a subtype lacks genetic grounding. A pass reports
+        which subtype axes are anchored; it does not upgrade an unstable or
+        confounded partition (Gate 7 is complementary to, not a substitute for,
+        the discreteness and confound gates).
+
+        Pass criterion: at least one subtype's defining genes are BOTH
+        significantly over-represented for risk genes (BH-adjusted p < ``alpha``)
+        AND enriched in direction (fold > ``min_fold``) under the
+        background-matched null.
+
+        Args:
+            subtype_gene_sets: Mapping of subtype label -> iterable of gene IDs
+                defining that subtype. Identifiers must share a namespace with
+                ``risk_genes`` and the universes (e.g. Ensembl gene IDs, version
+                suffixes stripped).
+            risk_genes: Disease genetic-risk reference gene IDs.
+            background_universe: Background-matched universe of testable genes
+                (the discriminating null, e.g. brain-expressed genes).
+            reference_universe: Optional genome-wide universe reported alongside
+                each subtype for contrast; does not affect the gate decision.
+            alpha: Significance level for the BH-adjusted hypergeometric p-values.
+            min_fold: Minimum fold enrichment for a subtype to count as anchored.
+
+        Returns:
+            ValidationResult. metric_value is the maximum fold enrichment across
+            subtypes under the matched null; passed is True if any subtype is
+            significantly anchored.
+        """
+        from .genetics.gwas_enrichment import hypergeometric_enrichment
+        from .statistical_rigor import benjamini_hochberg
+
+        risk = set(risk_genes)
+        background = set(background_universe)
+        reference = set(reference_universe) if reference_universe is not None else None
+
+        labels: List[Any] = []
+        matched: Dict[Any, Any] = {}
+        pvals: List[float] = []
+        for label, genes in subtype_gene_sets.items():
+            res = hypergeometric_enrichment(
+                genes, risk, background, label=str(label), null="background-matched"
+            )
+            matched[label] = res
+            labels.append(label)
+            # NaN p (undefined test) is treated as non-significant (p = 1.0).
+            pvals.append(res.p_value if np.isfinite(res.p_value) else 1.0)
+
+        qvals = benjamini_hochberg(np.asarray(pvals), alpha=alpha) if pvals else np.array([])
+
+        per_subtype: Dict[str, Any] = {}
+        anchored: List[str] = []
+        best_fold = 0.0
+        best_label: Optional[str] = None
+        for i, label in enumerate(labels):
+            res = matched[label]
+            q = float(qvals[i])
+            fold = res.fold if np.isfinite(res.fold) else 0.0
+            is_anchored = bool(q < alpha and fold > min_fold and res.risk_hits > 0)
+            entry = res.to_dict()
+            entry["p_adjusted"] = q
+            entry["anchored"] = is_anchored
+            if reference is not None:
+                entry["reference_null"] = hypergeometric_enrichment(
+                    subtype_gene_sets[label], risk, reference,
+                    label=str(label), null="genome-wide",
+                ).to_dict()
+            per_subtype[str(label)] = entry
+            if fold > best_fold:
+                best_fold = fold
+                best_label = str(label)
+            if is_anchored:
+                anchored.append(str(label))
+
+        passed = len(anchored) > 0
+        interpretation = (
+            f"Genetically anchored subtype axis/axes: {', '.join(anchored)} "
+            "(defining genes over-represented for disease genetic risk under a "
+            "background-matched null — confound-immune positive evidence)."
+            if passed
+            else (
+                "No subtype's defining genes were significantly over-represented "
+                "for disease genetic risk under the background-matched null. This "
+                "is a specific, low-power test — a null is weak evidence of "
+                "absence, not proof the partition lacks genetic grounding."
+            )
+        )
+
+        return ValidationResult(
+            name="Gate 7: Genetic Anchoring",
+            passed=passed,
+            metric_name="max_enrichment_fold",
+            metric_value=best_fold,
+            threshold=min_fold,
+            comparison=">",
+            details={
+                "anchored_subtypes": anchored,
+                "best_subtype": best_label,
+                "risk_genes_n": len(risk),
+                "background_universe_n": len(background),
+                "reference_universe_n": (len(reference) if reference is not None else None),
+                "per_subtype": per_subtype,
+                "alpha": alpha,
+                "min_fold": min_fold,
+                "gate_polarity": "positive_evidence",
                 "interpretation": interpretation,
             },
         )
