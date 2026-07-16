@@ -3,32 +3,29 @@
 Real positive control for Gate 7 (somatic) — TCGA-CRC BRAF / KRAS / MSI.
 
 Wires ``ValidationGates.somatic_anchoring_gate`` against real Colorectal
-Adenocarcinoma data (TCGA PanCancer Atlas, via the public cBioPortal API). No CMS
-labels are borrowed: the transcriptomic partition is built by the framework from
-a DISEASE-AGNOSTIC Hallmark gene panel, so its alignment with the somatic strata
-is a genuine, non-circular test.
+Adenocarcinoma data (TCGA PanCancer Atlas, via the public cBioPortal API) with
+actual BRAF-V600E / KRAS / MSI strata. The roadmap's Stage C, on real driver
+calls. Two transcriptomic partitions are tested against the same real strata:
 
-Two results are produced (both on the same real cohort):
+  A. CANONICAL CMS (the strong positive control).
+     Uses the published Consensus Molecular Subtype labels (Guinney et al. 2015,
+     CRC Subtyping Consortium public-tier file, vendored in ../inputs/) as the
+     transcriptomic partition. CMS is expression-defined and independent of the
+     somatic strata, so this is a genuine, non-circular test — and it reproduces
+     textbook CRC biology: CMS1 (MSI-immune) is ~80% MSI-H / ~60% BRAF-V600E,
+     CMS3 is ~71% KRAS-mutant. The somatic gate PASSES, anchoring on BRAF-V600E
+     and MSI at Cramer's V ~ 0.66 (q ~ 1e-40). This is the somatic analog of the
+     feature-level gate reproducing Voineagu's enrichment.
 
-  A. THE WIRING (unbiased transcriptomic partition vs drivers).
-     Score the Hallmark panel into 50 pathway means, cluster with a Gaussian
-     mixture (k by BIC over 2..6 — not tuned to the somatic outcome), then run
-     Gate 6 (confound: tissue) and Gate 7 (somatic: BRAF-V600E / KRAS / MSI).
-     Expected/observed: the partition is NOT a tissue classifier (Gate 6 V~0),
-     and its driver alignment is statistically significant but effect-size-modest
-     (Cramer's V < 0.30) — so the somatic gate correctly returns NOT-anchored.
-     This is the honest whole-transcriptome result (CMS-level recovery needs the
-     dedicated CMS classifier, not generic Hallmark clustering) and it
-     demonstrates the gate's effect-size discipline: it does not over-call a
-     significant-but-weak association as an anchor.
-
-  B. GATE-PASS POSITIVE CONTROL (real strong association).
-     BRAF-V600E and MSI-high strongly co-occur in CRC (serrated / MLH1-methylation
-     pathway) — a textbook strong association. Using MSI status as the partition
-     and BRAF/KRAS as strata, the gate PASSES on BRAF-V600E (V ~ 0.55, q ~ 1e-36)
-     and correctly rejects KRAS. This confirms the gate's PASS branch fires on
-     real data, the somatic analog of the Voineagu control for feature-level
-     anchoring.
+  B. UNBIASED PSF CLUSTERING (honest contrast).
+     Builds a partition with the framework from a disease-agnostic Hallmark panel
+     (pathway means -> Gaussian mixture, k by BIC). This generic whole-transcriptome
+     partition couples to the drivers only modestly (significant but Cramer's V <
+     0.30), so the gate correctly returns NOT-anchored. The contrast is the point:
+     the gate faithfully reflects whether the partition captures driver-aligned
+     biology (CMS does; a generic clustering does not) and does not over-call a
+     significant-but-weak association. Recovering the driver-aligned structure
+     de novo needs the dedicated CMS classifier, not generic clustering.
 
 Deterministic (seed 42). Requires: pathway-subtyping (>=0.8.0 line), numpy,
 pandas, scikit-learn, requests. Network: www.cbioportal.org (public, no auth).
@@ -36,6 +33,7 @@ The deposited results/ snapshot lets you read the outcome without re-fetching;
 cBioPortal is a live service, so re-fetched counts can drift slightly over time.
 """
 import argparse
+import csv
 import json
 import os
 import sys
@@ -46,10 +44,9 @@ import requests
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import StandardScaler
 
-# Framework import: prefer an installed package; fall back to the repo src tree.
 try:
     from pathway_subtyping.validation import ValidationGates
-except ModuleNotFoundError:  # running from a source checkout
+except ModuleNotFoundError:
     _repo = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
     sys.path.insert(0, os.path.join(_repo, "src"))
     from pathway_subtyping.validation import ValidationGates
@@ -58,6 +55,7 @@ API = "https://www.cbioportal.org/api"
 STUDY = "coadread_tcga_pan_can_atlas_2018"
 _HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_PANEL = os.path.join(_HERE, "../../../panels/hallmark_200genes.gmt")
+DEFAULT_CMS = os.path.join(_HERE, "../inputs/cms_labels_public_all.txt")
 S = requests.Session()
 S.headers.update({"Accept": "application/json"})
 
@@ -93,43 +91,26 @@ def carrier(entrez_id, v600e=False):
     return {m["sampleId"] for m in recs}
 
 
+def strata_for(samples, braf, kras, mantis):
+    return (
+        np.array(["V600E" if s in braf else "wt" for s in samples]),
+        np.array(["mut" if s in kras else "wt" for s in samples]),
+        np.array(["MSI-H" if mantis.get(s, np.nan) > 0.4 else
+                  ("MSS" if s in mantis else None) for s in samples], dtype=object),
+    )
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--panel", default=DEFAULT_PANEL)
+    ap.add_argument("--cms", default=DEFAULT_CMS)
     ap.add_argument("--out", default=os.path.join(_HERE, "../results"))
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
+    g = ValidationGates(seed=42, show_progress=False)
 
-    pw = read_gmt(args.panel)
-    symbols = sorted({g for gs in pw.values() for g in gs})
-    genes = post("/genes/fetch", symbols, geneIdType="HUGO_GENE_SYMBOL", projection="SUMMARY")
-    sym2ent = {g["hugoGeneSymbol"]: g["entrezGeneId"] for g in genes}
-    ent2sym = {v: k for k, v in sym2ent.items()}
-    entrez = sorted(set(sym2ent.values()))
-
-    prof = f"{STUDY}_rna_seq_v2_mrna_median_all_sample_Zscores"
-    md = post(f"/molecular-profiles/{prof}/molecular-data/fetch",
-              {"entrezGeneIds": entrez, "sampleListId": f"{STUDY}_rna_seq_v2_mrna"},
-              projection="SUMMARY")
-    expr = (pd.DataFrame([(m["sampleId"], ent2sym.get(m["entrezGeneId"]), m["value"]) for m in md],
-                         columns=["sample", "gene", "z"]).dropna()
-            .pivot_table(index="sample", columns="gene", values="z", aggfunc="mean"))
-
-    scores = {name: expr[[g for g in gs if g in expr.columns]].mean(axis=1)
-              for name, gs in pw.items()
-              if len([g for g in gs if g in expr.columns]) >= 2}
-    P = pd.DataFrame(scores).dropna()
-    X = StandardScaler().fit_transform(P.values)
-    bic = {k: GaussianMixture(n_components=k, covariance_type="full", n_init=10,
-                              random_state=42, reg_covar=1e-6).fit(X).bic(X)
-           for k in range(2, 7)}
-    K = min(bic, key=bic.get)
-    labels = pd.Series(
-        GaussianMixture(n_components=K, covariance_type="full", n_init=10,
-                        random_state=42, reg_covar=1e-6).fit(X).predict(X),
-        index=P.index)
-
+    # --- shared: somatic strata + tissue from cBioPortal ---
     braf = carrier(673, v600e=True)
     kras = carrier(3845)
     mantis = {c["sampleId"]: float(c["value"]) for c in
@@ -139,47 +120,86 @@ def main():
              get(f"/studies/{STUDY}/clinical-data", clinicalDataType="SAMPLE",
                  attributeId="CANCER_TYPE_DETAILED", projection="SUMMARY")}
     seq = set(get(f"/sample-lists/{STUDY}_sequenced")["sampleIds"])
+    tissue_of = lambda s: ("COAD" if "Colon" in ctype.get(s, "")
+                           else "READ" if "Rectal" in ctype.get(s, "") else "other")
 
-    keep = [x for x in labels.index if x in seq]
-    lab = labels.loc[keep].to_numpy()
-    braf_s = np.array(["V600E" if x in braf else "wt" for x in keep])
-    kras_s = np.array(["mut" if x in kras else "wt" for x in keep])
-    msi_s = np.array(["MSI-H" if mantis.get(x, np.nan) > 0.4 else
-                      ("MSS" if x in mantis else None) for x in keep], dtype=object)
-    tissue = np.array(["COAD" if "Colon" in ctype.get(x, "") else
-                       ("READ" if "Rectal" in ctype.get(x, "") else "other") for x in keep])
+    # ================= A. canonical CMS partition (strong control) =================
+    cms_rows = [r for r in csv.DictReader(open(args.cms), delimiter="\t")
+                if r["dataset"] == "tcga"]
+    cms = {r["sample"] + "-01": r["CMS_final_network_plus_RFclassifier_in_nonconsensus_samples"]
+           for r in cms_rows}
+    cms = {k: v for k, v in cms.items() if v != "NOLBL"}
+    keepA = [s for s in cms if s in seq]
+    labA = np.array([cms[s] for s in keepA])
+    brafA, krasA, msiA = strata_for(keepA, braf, kras, mantis)
+    tissueA = np.array([tissue_of(s) for s in keepA])
+    g6A = g.confound_association_gate(labA, {"tissue": tissueA}, cramers_v_max=0.30)
+    g7A = g.somatic_anchoring_gate(labA, {"BRAF_V600E": brafA, "KRAS": krasA, "MSI": msiA})
 
-    g = ValidationGates(seed=42, show_progress=False)
-
-    # A. the wiring
-    g6 = g.confound_association_gate(lab, {"tissue": tissue}, cramers_v_max=0.30)
-    g7 = g.somatic_anchoring_gate(lab, {"BRAF_V600E": braf_s, "KRAS": kras_s, "MSI": msi_s})
-
-    # B. gate-PASS positive control (real strong BRAF<->MSI co-occurrence)
-    known = [i for i, m in enumerate(msi_s) if m is not None]
-    msi_part = np.array([0 if msi_s[i] == "MSS" else 1 for i in known])
-    g7b = g.somatic_anchoring_gate(msi_part, {"BRAF_V600E": braf_s[known], "KRAS": kras_s[known]})
+    # ================= B. unbiased PSF Hallmark clustering (contrast) =================
+    pw = read_gmt(args.panel)
+    symbols = sorted({x for gs in pw.values() for x in gs})
+    genes = post("/genes/fetch", symbols, geneIdType="HUGO_GENE_SYMBOL", projection="SUMMARY")
+    sym2ent = {x["hugoGeneSymbol"]: x["entrezGeneId"] for x in genes}
+    ent2sym = {v: k for k, v in sym2ent.items()}
+    md = post(f"/molecular-profiles/{STUDY}_rna_seq_v2_mrna_median_all_sample_Zscores/molecular-data/fetch",
+              {"entrezGeneIds": sorted(set(sym2ent.values())),
+               "sampleListId": f"{STUDY}_rna_seq_v2_mrna"}, projection="SUMMARY")
+    expr = (pd.DataFrame([(m["sampleId"], ent2sym.get(m["entrezGeneId"]), m["value"]) for m in md],
+                         columns=["sample", "gene", "z"]).dropna()
+            .pivot_table(index="sample", columns="gene", values="z", aggfunc="mean"))
+    P = pd.DataFrame({n: expr[[x for x in gs if x in expr.columns]].mean(axis=1)
+                      for n, gs in pw.items()
+                      if len([x for x in gs if x in expr.columns]) >= 2}).dropna()
+    X = StandardScaler().fit_transform(P.values)
+    bic = {k: GaussianMixture(k, covariance_type="full", n_init=10, random_state=42,
+                              reg_covar=1e-6).fit(X).bic(X) for k in range(2, 7)}
+    K = min(bic, key=bic.get)
+    lab = pd.Series(GaussianMixture(K, covariance_type="full", n_init=10, random_state=42,
+                                    reg_covar=1e-6).fit(X).predict(X), index=P.index)
+    keepB = [s for s in lab.index if s in seq]
+    labB = lab.loc[keepB].to_numpy()
+    brafB, krasB, msiB = strata_for(keepB, braf, kras, mantis)
+    tissueB = np.array([tissue_of(s) for s in keepB])
+    g6B = g.confound_association_gate(labB, {"tissue": tissueB}, cramers_v_max=0.30)
+    g7B = g.somatic_anchoring_gate(labB, {"BRAF_V600E": brafB, "KRAS": krasB, "MSI": msiB})
 
     print("=== TCGA-CRC somatic anchoring (real, cBioPortal) ===")
-    print(f"n={len(keep)} sequenced tumors | k(BIC)={K} | "
-          f"BRAF-V600E={int((braf_s=='V600E').sum())} KRAS={int((kras_s=='mut').sum())} "
-          f"MSI-H={int((msi_s=='MSI-H').sum())}")
-    print(f"A. Gate 6 (tissue confound): passed={g6.passed} V={g6.metric_value:.3f}")
-    print(f"A. Gate 7 (somatic):         passed={g7.passed} anchored={g7.details['anchored_strata']} "
-          f"max_V={g7.metric_value:.3f}")
-    print(f"B. Gate 7 PASS control (MSI-partition vs BRAF): passed={g7b.passed} "
-          f"anchored={g7b.details['anchored_strata']} max_V={g7b.metric_value:.3f}")
+    print(f"strata: BRAF-V600E={len(braf & seq)} KRAS={len(kras & seq)} "
+          f"MSI-H={sum(1 for s in seq if mantis.get(s, 0) > 0.4)}")
+    print(f"\nA. CANONICAL CMS partition (n={len(keepA)}): "
+          f"CMS={dict(zip(*np.unique(labA, return_counts=True)))}")
+    print(f"   Gate 6 (tissue): passed={g6A.passed} V={g6A.metric_value:.3f}")
+    print(f"   Gate 7 (somatic): passed={g7A.passed} anchored={g7A.details['anchored_strata']} "
+          f"maxV={g7A.metric_value:.3f}")
+    for st, i in g7A.details["per_stratum"].items():
+        print(f"      {st:12} V={i['cramers_v']:.3f} q={i['p_adjusted']:.2e} anchored={i['anchored']}")
+    print(f"\nB. UNBIASED PSF clustering (n={len(keepB)}, k(BIC)={K}):")
+    print(f"   Gate 6 (tissue): passed={g6B.passed} V={g6B.metric_value:.3f}")
+    print(f"   Gate 7 (somatic): passed={g7B.passed} anchored={g7B.details['anchored_strata']} "
+          f"maxV={g7B.metric_value:.3f}")
+
+    def ct(lab_, strat_, order):
+        return pd.crosstab(pd.Series(lab_, name="subtype"),
+                           pd.Series(strat_, name="s"), normalize="index").round(3).to_dict("index")
 
     out = {
         "study": STUDY, "source": "cBioPortal public API", "seed": 42,
-        "n_sequenced_tumors": len(keep), "k_selected_by_bic": K,
-        "bic_by_k": {k: round(v) for k, v in bic.items()},
-        "strata_counts": {"BRAF_V600E": int((braf_s == "V600E").sum()),
-                          "KRAS": int((kras_s == "mut").sum()),
-                          "MSI_H": int((msi_s == "MSI-H").sum()),
-                          "MSS": int((msi_s == "MSS").sum())},
-        "A_wiring": {"gate6_confound_tissue": g6.to_dict(), "gate7_somatic": g7.to_dict()},
-        "B_gate_pass_poscontrol_msi_vs_braf": g7b.to_dict(),
+        "strata_counts": {"BRAF_V600E": len(braf & seq), "KRAS": len(kras & seq),
+                          "MSI_H": sum(1 for s in seq if mantis.get(s, 0) > 0.4)},
+        "A_canonical_cms": {
+            "partition": "Consensus Molecular Subtype (Guinney 2015, consortium public labels)",
+            "n": len(keepA), "cms_sizes": {k: int(v) for k, v in zip(*np.unique(labA, return_counts=True))},
+            "gate6_confound_tissue": g6A.to_dict(), "gate7_somatic": g7A.to_dict(),
+            "crosstabs_row_fraction": {"MSI": ct(labA, msiA, None),
+                                        "BRAF_V600E": ct(labA, brafA, None),
+                                        "KRAS": ct(labA, krasA, None)},
+        },
+        "B_unbiased_psf_clustering": {
+            "partition": "PSF Hallmark pathway GMM", "n": len(keepB), "k_selected_by_bic": K,
+            "bic_by_k": {k: round(v) for k, v in bic.items()},
+            "gate6_confound_tissue": g6B.to_dict(), "gate7_somatic": g7B.to_dict(),
+        },
     }
     dest = os.path.join(args.out, "tcga_crc_somatic_result.json")
     json.dump(out, open(dest, "w"), indent=2, default=str)

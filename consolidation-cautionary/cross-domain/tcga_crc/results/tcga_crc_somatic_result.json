@@ -2,22 +2,168 @@
   "study": "coadread_tcga_pan_can_atlas_2018",
   "source": "cBioPortal public API",
   "seed": 42,
-  "n_sequenced_tumors": 532,
-  "k_selected_by_bic": 2,
-  "bic_by_k": {
-    "2": 36997,
-    "3": 42898,
-    "4": 49476,
-    "5": 49992,
-    "6": 56642
-  },
   "strata_counts": {
     "BRAF_V600E": 48,
     "KRAS": 218,
-    "MSI_H": 85,
-    "MSS": 442
+    "MSI_H": 85
   },
-  "A_wiring": {
+  "A_canonical_cms": {
+    "partition": "Consensus Molecular Subtype (Guinney 2015, consortium public labels)",
+    "n": 430,
+    "cms_sizes": {
+      "CMS1": 57,
+      "CMS2": 188,
+      "CMS3": 62,
+      "CMS4": 123
+    },
+    "gate6_confound_tissue": {
+      "name": "Confound Association Gate",
+      "status": "PASS",
+      "metric": "max_nuisance_cramers_v",
+      "value": 0.175,
+      "threshold": 0.3,
+      "comparison": "<",
+      "details": {
+        "worst_confound": "tissue",
+        "failing_confounds": [],
+        "per_confound": {
+          "tissue": {
+            "chi2": 16.1413,
+            "p_value": 0.001061,
+            "cramers_v": 0.175,
+            "dof": 3,
+            "is_biology_of_interest": false,
+            "p_adjusted": 0.001061,
+            "significant": true
+          }
+        },
+        "cramers_v_max": 0.3,
+        "alpha": 0.05,
+        "interpretation": "Partition is not explained by a nuisance confound."
+      }
+    },
+    "gate7_somatic": {
+      "name": "Gate 7 (somatic): Genetic Anchoring",
+      "status": "PASS",
+      "metric": "max_somatic_cramers_v",
+      "value": 0.656,
+      "threshold": 0.3,
+      "comparison": ">",
+      "details": {
+        "anchored_strata": [
+          "BRAF_V600E",
+          "MSI"
+        ],
+        "best_stratum": "BRAF_V600E",
+        "per_stratum": {
+          "BRAF_V600E": {
+            "stratum": "BRAF_V600E",
+            "chi2": 187.6183,
+            "p_value": 1.9956181311066896e-40,
+            "cramers_v": 0.656,
+            "dof": 3,
+            "n": 430,
+            "p_adjusted": 5.986854393320069e-40,
+            "significant": true,
+            "anchored": true
+          },
+          "KRAS": {
+            "stratum": "KRAS",
+            "chi2": 36.5171,
+            "p_value": 5.8216132822505407e-08,
+            "cramers_v": 0.2795,
+            "dof": 3,
+            "n": 430,
+            "p_adjusted": 5.8216132822505407e-08,
+            "significant": true,
+            "anchored": false
+          },
+          "MSI": {
+            "stratum": "MSI",
+            "chi2": 185.2499,
+            "p_value": 6.480922413100891e-40,
+            "cramers_v": 0.6556,
+            "dof": 3,
+            "n": 425,
+            "p_adjusted": 9.721383619651337e-40,
+            "significant": true,
+            "anchored": true
+          }
+        },
+        "cramers_v_min": 0.3,
+        "alpha": 0.05,
+        "gate_polarity": "positive_evidence",
+        "interpretation": "Somatically anchored subtype: aligns with BRAF_V600E, MSI (subtype tumors carry the somatic stratum more than others \u2014 positive evidence the partition tracks a genomic driver axis)."
+      }
+    },
+    "crosstabs_row_fraction": {
+      "MSI": {
+        "CMS1": {
+          "MSI-H": 0.804,
+          "MSS": 0.196
+        },
+        "CMS2": {
+          "MSI-H": 0.022,
+          "MSS": 0.978
+        },
+        "CMS3": {
+          "MSI-H": 0.226,
+          "MSS": 0.774
+        },
+        "CMS4": {
+          "MSI-H": 0.107,
+          "MSS": 0.893
+        }
+      },
+      "BRAF_V600E": {
+        "CMS1": {
+          "V600E": 0.596,
+          "wt": 0.404
+        },
+        "CMS2": {
+          "V600E": 0.0,
+          "wt": 1.0
+        },
+        "CMS3": {
+          "V600E": 0.032,
+          "wt": 0.968
+        },
+        "CMS4": {
+          "V600E": 0.049,
+          "wt": 0.951
+        }
+      },
+      "KRAS": {
+        "CMS1": {
+          "mut": 0.246,
+          "wt": 0.754
+        },
+        "CMS2": {
+          "mut": 0.314,
+          "wt": 0.686
+        },
+        "CMS3": {
+          "mut": 0.71,
+          "wt": 0.29
+        },
+        "CMS4": {
+          "mut": 0.374,
+          "wt": 0.626
+        }
+      }
+    }
+  },
+  "B_unbiased_psf_clustering": {
+    "partition": "PSF Hallmark pathway GMM",
+    "n": 532,
+    "k_selected_by_bic": 2,
+    "bic_by_k": {
+      "2": 36997,
+      "3": 42898,
+      "4": 49476,
+      "5": 49992,
+      "6": 56642
+    },
     "gate6_confound_tissue": {
       "name": "Confound Association Gate",
       "status": "PASS",
@@ -94,48 +240,6 @@
         "gate_polarity": "positive_evidence",
         "interpretation": "No somatic stratum was significantly associated with the partition. Specific, low-power test \u2014 a null is weak evidence of absence, not proof the partition lacks somatic grounding."
       }
-    }
-  },
-  "B_gate_pass_poscontrol_msi_vs_braf": {
-    "name": "Gate 7 (somatic): Genetic Anchoring",
-    "status": "PASS",
-    "metric": "max_somatic_cramers_v",
-    "value": 0.5494,
-    "threshold": 0.3,
-    "comparison": ">",
-    "details": {
-      "anchored_strata": [
-        "BRAF_V600E"
-      ],
-      "best_stratum": "BRAF_V600E",
-      "per_stratum": {
-        "BRAF_V600E": {
-          "stratum": "BRAF_V600E",
-          "chi2": 159.7907,
-          "p_value": 1.2571112787321186e-36,
-          "cramers_v": 0.5494,
-          "dof": 1,
-          "n": 527,
-          "p_adjusted": 2.5142225574642373e-36,
-          "significant": true,
-          "anchored": true
-        },
-        "KRAS": {
-          "stratum": "KRAS",
-          "chi2": 0.9266,
-          "p_value": 0.33574969355074424,
-          "cramers_v": 0.0,
-          "dof": 1,
-          "n": 527,
-          "p_adjusted": 0.33574969355074424,
-          "significant": false,
-          "anchored": false
-        }
-      },
-      "cramers_v_min": 0.3,
-      "alpha": 0.05,
-      "gate_polarity": "positive_evidence",
-      "interpretation": "Somatically anchored subtype: aligns with BRAF_V600E (subtype tumors carry the somatic stratum more than others \u2014 positive evidence the partition tracks a genomic driver axis)."
     }
   }
 }
