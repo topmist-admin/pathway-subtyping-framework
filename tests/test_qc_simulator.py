@@ -74,12 +74,20 @@ class TestHealthyBatch:
         assert not any(label.affected for label in healthy_batch.cell_labels)
         assert healthy_batch.affected_mask.sum() == 0
 
-    def test_intended_pathways_elevated(self, healthy_batch):
-        scores = healthy_batch.pathway_scores
-        intended = "HALLMARK_INFLAMMATORY_RESPONSE"
-        excluded = "HALLMARK_APOPTOSIS"
-        # Intended should have higher raw expression than excluded
-        assert scores[intended].mean() > scores[excluded].mean()
+    def test_intended_pathways_elevated(self, simulator, healthy_batch):
+        # Intended pathways are elevated (+2.0) and excluded suppressed (-2.0) in
+        # the RAW expression (base 5.0). Assert on raw expression, NOT on
+        # pathway_scores: _compute_pathway_scores z-scores each gene across cells,
+        # which removes a uniform per-gene shift and centers every pathway's
+        # column mean to ~0 — so the elevation is invisible there and comparing
+        # the two ~0 means is floating-point noise (the original assertion).
+        expr = healthy_batch.expression
+        intended_genes = simulator.pathway_genes["HALLMARK_INFLAMMATORY_RESPONSE"]
+        excluded_genes = simulator.pathway_genes["HALLMARK_APOPTOSIS"]
+        intended_mean = expr[intended_genes].to_numpy().mean()
+        excluded_mean = expr[excluded_genes].to_numpy().mean()
+        # Expected gap ~4.0 (7.0 vs 3.0); assert a wide margin above the noise.
+        assert intended_mean > excluded_mean + 1.0
 
     def test_custom_spec(self, simulator):
         spec = ManufacturingSpec(
