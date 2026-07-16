@@ -1,0 +1,32 @@
+{
+  "psychiatry_region": {
+    "nuisance": "brain region",
+    "planted_alignment": 0.92,
+    "passed": false,
+    "max_nuisance_cramers_v": 0.9329,
+    "worst_confound": "brain region",
+    "failing_confounds": [
+      "brain region"
+    ]
+  },
+  "cancer_pan_tissue": {
+    "nuisance": "tissue of origin",
+    "planted_alignment": 0.9,
+    "passed": false,
+    "max_nuisance_cramers_v": 0.8797,
+    "worst_confound": "tissue of origin",
+    "failing_confounds": [
+      "tissue of origin"
+    ]
+  },
+  "cancer_single_purity": {
+    "nuisance": "tumor purity bin",
+    "planted_alignment": 0.55,
+    "passed": false,
+    "max_nuisance_cramers_v": 0.4841,
+    "worst_confound": "tumor purity bin",
+    "failing_confounds": [
+      "tumor purity bin"
+    ]
+  }
+}

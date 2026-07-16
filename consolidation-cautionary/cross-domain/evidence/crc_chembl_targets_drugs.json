@@ -1,0 +1,41 @@
+{
+  "chembl_targets": {
+    "BRAF": {
+      "error": "'str' object has no attribute 'get'"
+    },
+    "EGFR": {
+      "error": "'str' object has no attribute 'get'"
+    },
+    "PDCD1": {
+      "error": "'str' object has no attribute 'get'"
+    }
+  },
+  "chembl_mechanisms": {
+    "encorafenib": {
+      "chembl_id": "CHEMBL3301612",
+      "max_phase": 4.0,
+      "first_approval": 2018,
+      "mechanisms": [
+        {
+          "moa": "Serine/threonine-protein kinase B-raf inhibitor",
+          "target": "CHEMBL5145",
+          "action": "INHIBITOR"
+        }
+      ]
+    },
+    "cetuximab": {
+      "error": "timeout_or_empty",
+      "note": "biologic; MoA textbook"
+    },
+    "pembrolizumab": {
+      "chembl_id": "CHEMBL3137343",
+      "mechanisms": [
+        {
+          "moa": "Programmed cell death protein 1 inhibitor",
+          "action": "INHIBITOR"
+        }
+      ]
+    }
+  },
+  "trials": {}
+}

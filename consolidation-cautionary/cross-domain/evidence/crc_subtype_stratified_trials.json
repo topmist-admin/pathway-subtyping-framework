@@ -1,0 +1,115 @@
+{
+  "BRAF_V600E_CRC": {
+    "total": 4,
+    "examples": [
+      {
+        "nct": "NCT03803553",
+        "title": "Early Identification and Treatment of Occult Metastatic Disease in Stage III Colon Cancer",
+        "status": "RECRUITING",
+        "phase": [
+          "PHASE3"
+        ]
+      },
+      {
+        "nct": "NCT05710406",
+        "title": "Randomized Trial of Consolidation Targeted Adjuvant Therapy With Encorafenib and Cetuximab Versus Usual Care for Patients With Stage II/III BRAF V600E Colon Cancer",
+        "status": "ACTIVE_NOT_RECRUITING",
+        "phase": [
+          "PHASE2",
+          "PHASE3"
+        ]
+      },
+      {
+        "nct": "NCT02928224",
+        "title": "A Multicenter, Randomized, Open-label, 3-Arm Phase 3 Study of Encorafenib + Cetuximab Plus or Minus Binimetinib vs. Irinotecan/Cetuximab or Infusional 5-Fluorouracil (5-FU)/Folinic Acid (FA)/Irinotecan (FOLFIRI)/Cetuximab With a Safety Lead-in of Encorafenib + Binimetinib + Cetuximab in Patients With BRAF V600E-mutant Metastatic Colorectal Cancer",
+        "status": "COMPLETED",
+        "phase": [
+          "PHASE3"
+        ]
+      },
+      {
+        "nct": "NCT04607421",
+        "title": "AN OPEN-LABEL, MULTICENTER, RANDOMIZED PHASE 3 STUDY OF FIRST-LINE ENCORAFENIB PLUS CETUXIMAB WITH OR WITHOUT CHEMOTHERAPY VERSUS STANDARD OF CARE THERAPY WITH A SAFETY LEAD-IN OF ENCORAFENIB AND CETUXIMAB PLUS CHEMOTHERAPY IN PARTICIPANTS WITH METASTATIC BRAF V600E-MUTANT COLORECTAL CANCER",
+        "status": "ACTIVE_NOT_RECRUITING",
+        "phase": [
+          "PHASE3"
+        ]
+      }
+    ]
+  },
+  "MSI-H_dMMR_CRC": {
+    "total": 8,
+    "examples": [
+      {
+        "nct": "NCT03755739",
+        "title": "A Phase II/III Trial of Comparison of Benefit of Administration of Checkpoint Inhibitors Plus Chemodrug Via Artery or Fine Needle to Tumor Versus Vein for Immunotherapy of Advanced Solid Tumors",
+        "status": "RECRUITING",
+        "phase": [
+          "PHASE2",
+          "PHASE3"
+        ]
+      },
+      {
+        "nct": "NCT04776148",
+        "title": "A Phase 3 Randomized Study of Lenvatinib in Combination With Pembrolizumab Versus Standard of Care in Participants With Metastatic Colorectal Cancer Who Have Received and Progressed On or After or Became Intolerant to Prior Treatment",
+        "status": "COMPLETED",
+        "phase": [
+          "PHASE3"
+        ]
+      },
+      {
+        "nct": "NCT05600309",
+        "title": "A Phase 3 Study of MK-4280A (Coformulated Favezelimab [MK-4280] Plus Pembrolizumab [MK-3475]) Versus Standard of Care in Previously Treated Metastatic PD-L1 Positive Colorectal Cancer (KEYFORM-007)",
+        "status": "COMPLETED",
+        "phase": [
+          "PHASE3"
+        ]
+      },
+      {
+        "nct": "NCT06555003",
+        "title": "Comparative Analysis of the Efficacy of Irinotecan-loaded Drug-eluting Beads (DEBIRI) in Combination With Systemic Chemotherapy Versus Chemotherapy Alone in Unresectable Colorectal Cancer Liver Metastases: a Randomized Clinical Trial",
+        "status": "RECRUITING",
+        "phase": [
+          "PHASE3"
+        ]
+      }
+    ]
+  },
+  "RAS-wt_EGFR_CRC": {
+    "total": 72,
+    "examples": [
+      {
+        "nct": "NCT03391934",
+        "title": "A Phase III, Randomized, Two-armed, Parallel, Double-blind, Active-controlled, Equivalency Clinical Trial of Cetuximab (CinnaGen Co.) Efficacy and Safety Compared With Erbitux (Merck Co.) and FOLFIRI for RAS Wild-type mCRC",
+        "status": "UNKNOWN",
+        "phase": [
+          "PHASE3"
+        ]
+      },
+      {
+        "nct": "NCT00208546",
+        "title": "Cetuximab Added to Capecitabine, Oxaliplatin and Bevacizumab in Patients With Previously Untreated Advanced Colorectal Carcinoma, a Randomised Phase III Study",
+        "status": "COMPLETED",
+        "phase": [
+          "PHASE3"
+        ]
+      },
+      {
+        "nct": "NCT01309126",
+        "title": "A Phase 3 Open-Label, Randomized, Multicenter Study of Imprime PGG\u00ae in Combination With Cetuximab (Erbitux\u00ae) in Subjects With Recurrent or Progressive KRAS Wild Type Colorectal Cancer",
+        "status": "TERMINATED",
+        "phase": [
+          "PHASE3"
+        ]
+      },
+      {
+        "nct": "NCT04008030",
+        "title": "A Phase 3 Randomized Clinical Trial of Nivolumab Alone, Nivolumab in Combination With Ipilimumab, or Investigator's Choice Chemotherapy in Participants With Microsatellite Instability High (MSI-H) or Mismatch Repair Deficient (dMMR) Metastatic Colorectal Cancer",
+        "status": "ACTIVE_NOT_RECRUITING",
+        "phase": [
+          "PHASE3"
+        ]
+      }
+    ]
+  }
+}
