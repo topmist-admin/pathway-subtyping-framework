@@ -1,0 +1,141 @@
+{
+  "study": "coadread_tcga_pan_can_atlas_2018",
+  "source": "cBioPortal public API",
+  "seed": 42,
+  "n_sequenced_tumors": 532,
+  "k_selected_by_bic": 2,
+  "bic_by_k": {
+    "2": 36997,
+    "3": 42898,
+    "4": 49476,
+    "5": 49992,
+    "6": 56642
+  },
+  "strata_counts": {
+    "BRAF_V600E": 48,
+    "KRAS": 218,
+    "MSI_H": 85,
+    "MSS": 442
+  },
+  "A_wiring": {
+    "gate6_confound_tissue": {
+      "name": "Confound Association Gate",
+      "status": "PASS",
+      "metric": "max_nuisance_cramers_v",
+      "value": 0.0,
+      "threshold": 0.3,
+      "comparison": "<",
+      "details": {
+        "worst_confound": null,
+        "failing_confounds": [],
+        "per_confound": {
+          "tissue": {
+            "chi2": 0.0315,
+            "p_value": 0.859071,
+            "cramers_v": 0.0,
+            "dof": 1,
+            "is_biology_of_interest": false,
+            "p_adjusted": 0.859071,
+            "significant": false
+          }
+        },
+        "cramers_v_max": 0.3,
+        "alpha": 0.05,
+        "interpretation": "Partition is not explained by a nuisance confound."
+      }
+    },
+    "gate7_somatic": {
+      "name": "Gate 7 (somatic): Genetic Anchoring",
+      "status": "FAIL",
+      "metric": "max_somatic_cramers_v",
+      "value": 0.1323,
+      "threshold": 0.3,
+      "comparison": ">",
+      "details": {
+        "anchored_strata": [],
+        "best_stratum": "KRAS",
+        "per_stratum": {
+          "BRAF_V600E": {
+            "stratum": "BRAF_V600E",
+            "chi2": 3.4641,
+            "p_value": 0.06271584935008172,
+            "cramers_v": 0.0681,
+            "dof": 1,
+            "n": 532,
+            "p_adjusted": 0.06271584935008172,
+            "significant": false,
+            "anchored": false
+          },
+          "KRAS": {
+            "stratum": "KRAS",
+            "chi2": 10.2896,
+            "p_value": 0.0013378513635467365,
+            "cramers_v": 0.1323,
+            "dof": 1,
+            "n": 532,
+            "p_adjusted": 0.00401355409064021,
+            "significant": true,
+            "anchored": false
+          },
+          "MSI": {
+            "stratum": "MSI",
+            "chi2": 7.2335,
+            "p_value": 0.0071555903447516195,
+            "cramers_v": 0.1088,
+            "dof": 1,
+            "n": 527,
+            "p_adjusted": 0.01073338551712743,
+            "significant": true,
+            "anchored": false
+          }
+        },
+        "cramers_v_min": 0.3,
+        "alpha": 0.05,
+        "gate_polarity": "positive_evidence",
+        "interpretation": "No somatic stratum was significantly associated with the partition. Specific, low-power test \u2014 a null is weak evidence of absence, not proof the partition lacks somatic grounding."
+      }
+    }
+  },
+  "B_gate_pass_poscontrol_msi_vs_braf": {
+    "name": "Gate 7 (somatic): Genetic Anchoring",
+    "status": "PASS",
+    "metric": "max_somatic_cramers_v",
+    "value": 0.5494,
+    "threshold": 0.3,
+    "comparison": ">",
+    "details": {
+      "anchored_strata": [
+        "BRAF_V600E"
+      ],
+      "best_stratum": "BRAF_V600E",
+      "per_stratum": {
+        "BRAF_V600E": {
+          "stratum": "BRAF_V600E",
+          "chi2": 159.7907,
+          "p_value": 1.2571112787321186e-36,
+          "cramers_v": 0.5494,
+          "dof": 1,
+          "n": 527,
+          "p_adjusted": 2.5142225574642373e-36,
+          "significant": true,
+          "anchored": true
+        },
+        "KRAS": {
+          "stratum": "KRAS",
+          "chi2": 0.9266,
+          "p_value": 0.33574969355074424,
+          "cramers_v": 0.0,
+          "dof": 1,
+          "n": 527,
+          "p_adjusted": 0.33574969355074424,
+          "significant": false,
+          "anchored": false
+        }
+      },
+      "cramers_v_min": 0.3,
+      "alpha": 0.05,
+      "gate_polarity": "positive_evidence",
+      "interpretation": "Somatically anchored subtype: aligns with BRAF_V600E (subtype tumors carry the somatic stratum more than others \u2014 positive evidence the partition tracks a genomic driver axis)."
+    }
+  }
+}
