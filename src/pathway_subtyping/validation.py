@@ -116,6 +116,7 @@ class ValidationGates:
         per_modality_scores: Optional[Dict[str, pd.DataFrame]] = None,
         confounds: Optional[Dict[str, Any]] = None,
         genetic_anchoring: Optional[Dict[str, Any]] = None,
+        somatic_anchoring: Optional[Dict[str, Any]] = None,
     ) -> ValidationGatesResult:
         """
         Run all validation gates.
@@ -139,6 +140,10 @@ class ValidationGates:
                 ``subtype_gene_sets``, ``risk_genes``, ``background_universe``).
                 Gate 7 is positive-evidence and low-power; when supplied it is
                 appended like any other gate.
+            somatic_anchoring: Optional kwargs for the Gate 7 somatic-anchoring
+                gate (cancer mode), forwarded to ``somatic_anchoring_gate``
+                (requires ``somatic_strata``). Positive-evidence subject-level
+                alignment of the partition with somatic driver strata.
 
         Returns:
             ValidationGatesResult with all test outcomes
@@ -213,6 +218,15 @@ class ValidationGates:
             logger.info(
                 f"  - {anchoring_result.name}: {anchoring_result.status} "
                 f"(max enrichment fold = {anchoring_result.metric_value:.2f})"
+            )
+
+        # Gate 7 (somatic): subject-level somatic-driver alignment (cancer mode)
+        if somatic_anchoring:
+            somatic_result = self.somatic_anchoring_gate(cluster_labels, **somatic_anchoring)
+            results.append(somatic_result)
+            logger.info(
+                f"  - {somatic_result.name}: {somatic_result.status} "
+                f"(max somatic Cramer's V = {somatic_result.metric_value:.3f})"
             )
 
         # Aggregate results
@@ -884,6 +898,86 @@ class ValidationGates:
                 "per_subtype": per_subtype,
                 "alpha": alpha,
                 "min_fold": min_fold,
+                "gate_polarity": "positive_evidence",
+                "interpretation": interpretation,
+            },
+        )
+
+    def somatic_anchoring_gate(
+        self,
+        cluster_labels: np.ndarray,
+        somatic_strata: Dict[str, Any],
+        cramers_v_min: float = 0.30,
+        alpha: float = 0.05,
+    ) -> ValidationResult:
+        """
+        Gate 7 (somatic mode): Genetic Anchoring by subject-level somatic alignment.
+
+        The cancer counterpart to ``genetic_anchoring_gate``. Where the feature-level
+        gate tests whether a subtype's *defining genes* are enriched for germline
+        risk (the psychiatry-appropriate mode, low power because germline risk is
+        diffuse), this tests whether the *tumors* in a subtype carry a **somatic
+        stratum** — driver mutation (BRAF-V600E, KRAS, MSI-high), copy-number
+        alteration, or mutational-signature class — more than the other subtypes.
+        Somatic signal is high per-tumor, fixed in the tumor genome, and causally
+        upstream of the transcriptome, so it is a far stronger anchor than any
+        germline analog.
+
+        Like the feature-level gate this is POSITIVE EVIDENCE: a strong association
+        is the desired result. It is exactly the confound gate's statistic
+        (chi-square + Bergsma Cramér's V, BH-adjusted) with inverted polarity — a
+        nuisance association fails Gate 6, a somatic-driver association passes Gate 7.
+
+        Confound caveat: a somatic driver can co-vary with **tissue of origin**
+        (pan-cancer) and **tumor purity** (within a tumor type). Run the confound
+        gate first so a "somatic anchor" is not the tissue/purity axis re-labelled.
+        And this is a *specific* test — a null is weak evidence of absence.
+
+        Pass criterion: at least one somatic stratum is both significantly
+        associated with the partition (BH-adjusted p < ``alpha``) AND non-trivially
+        so (Cramér's V >= ``cramers_v_min``).
+
+        Args:
+            cluster_labels: Array of cluster assignments (n_samples,).
+            somatic_strata: Mapping of stratum name -> per-sample categorical value
+                (e.g. driver carrier status, MSI-high/low). Missing values
+                (None/NaN) are dropped per stratum.
+            cramers_v_min: Minimum Cramér's V for a stratum to count as an anchor.
+            alpha: Significance level for the BH-adjusted p-values.
+
+        Returns:
+            ValidationResult. metric_value is the maximum Cramér's V across strata
+            (the strongest anchor); passed is True if any stratum anchors.
+        """
+        from .genetics.somatic_anchoring import somatic_alignment
+
+        res = somatic_alignment(cluster_labels, somatic_strata, cramers_v_min, alpha)
+        anchored = res["anchored_strata"]
+        passed = res["passed"]
+        interpretation = (
+            f"Somatically anchored subtype: aligns with {', '.join(anchored)} "
+            "(subtype tumors carry the somatic stratum more than others — "
+            "positive evidence the partition tracks a genomic driver axis)."
+            if passed
+            else (
+                "No somatic stratum was significantly associated with the "
+                "partition. Specific, low-power test — a null is weak evidence of "
+                "absence, not proof the partition lacks somatic grounding."
+            )
+        )
+        return ValidationResult(
+            name="Gate 7 (somatic): Genetic Anchoring",
+            passed=passed,
+            metric_name="max_somatic_cramers_v",
+            metric_value=res["max_cramers_v"],
+            threshold=cramers_v_min,
+            comparison=">",
+            details={
+                "anchored_strata": anchored,
+                "best_stratum": res["best_stratum"],
+                "per_stratum": res["per_stratum"],
+                "cramers_v_min": cramers_v_min,
+                "alpha": alpha,
                 "gate_polarity": "positive_evidence",
                 "interpretation": interpretation,
             },

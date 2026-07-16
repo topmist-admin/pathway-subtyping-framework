@@ -66,6 +66,24 @@ fixes it. See `docs/discreteness_gate.md` for the full rationale.
   on the anchored axis. The refactored code reproduces the v0.7.0 reproduction-bundle
   headline exactly on the real deposited inputs (neuronal fold 16.5×, p≈1.0e-23; glial 2.6×,
   n.s.).
+- **Gate 7 somatic mode — `ValidationGates.somatic_anchoring_gate()`** (+
+  `genetics/somatic_anchoring.py`: `somatic_alignment`, `StratumAlignment`). The cancer
+  counterpart to feature-level anchoring: instead of testing whether a subtype's *genes* are
+  enriched for germline risk, it tests whether the *tumors* in a subtype carry a **somatic
+  stratum** (driver mutation like BRAF-V600E/KRAS/MSI, CNA, or mutational-signature class)
+  more than the others — a subject-level chi-square + Bergsma Cramér's V association,
+  BH-adjusted across strata. It is the confound gate's statistic with **inverted polarity**:
+  a strong nuisance association fails Gate 6, a strong somatic-driver association passes
+  Gate 7. High-power (somatic signal is strong per-tumor) and matched to oncology, where the
+  psychiatry-appropriate germline mode is weak. Positive-evidence; wired into `run_all()`
+  behind an optional `somatic_anchoring=` argument (backward compatible). Docstrings carry
+  the confound caveat (a somatic driver can co-vary with tissue-of-origin / tumor purity —
+  run Gate 6 first). Germline *subject-level* anchoring (rare-variant burden / PRS on
+  same-donor genotypes) remains the later, data-use-agreement-gated addition.
+- **Somatic-anchoring tests** (`tests/test_somatic_anchoring_gate.py`): a synthetic
+  colorectal-style scenario — a subtype aligned with a BRAF-V600E stratum anchors (Cramér's
+  V high, significant) while a random stratum does not; per-stratum missing-value handling;
+  `run_all` integration.
 
 ### Dependencies
 - Added `joblib` as an explicit core dependency (previously relied on scikit-learn's
