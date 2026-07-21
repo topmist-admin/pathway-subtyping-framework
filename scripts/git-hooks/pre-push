@@ -170,6 +170,12 @@ while read -r local_ref local_sha remote_ref remote_sha; do
             [[ -n "$line" ]] && files+=("$line")
         done < <(git diff-tree --no-commit-id --name-only --diff-filter=ACM -r "$sha")
 
+        # Merge commits report no files here; bash 3.2 (macOS) errors on
+        # expanding an empty array under `set -u`.
+        if [[ "${#files[@]}" -eq 0 ]]; then
+            continue
+        fi
+
         for f in "${files[@]}"; do
             # Path check: was this path gitignored at commit time?
             if git -c core.quotepath=off check-ignore -q -- "$f" 2>/dev/null; then
