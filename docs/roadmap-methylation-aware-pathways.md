@@ -1,11 +1,10 @@
 # PSF Roadmap — Methylation-Aware Pathway Feature Module
 
 **Planned:** April 29, 2026
-**Status:** **Strategically prioritized backlog** — pre-implementation, not yet scheduled for a specific release. **No longer "someday-maybe."**
-**Target release window:** v0.7.x or v0.8.x (depends on conversion-trigger timing — see below)
+**Status:** **Prioritized backlog** — pre-implementation, not yet scheduled for a specific release.
+**Target release window:** v0.7.x or v0.8.x
 **Public/private posture:** Public Codeberg track. MIT-licensed alongside the rest of the framework.
 **Author:** Rohit Chauhan
-**Triggering analysis:** [Illumina 5-Base Solution for Cancer Research Grant Contest assessment](../../WebsiteIssues/opportunities/on-hold/illumina-5base-2026/ASSESSMENT.md) — exposed PSF's transcriptomics-only restriction as a binding constraint on cancer-epigenetics opportunities.
 
 ---
 
@@ -13,15 +12,13 @@
 
 PSF v0.6 ingests gene expression (RNA-seq, microarray) and scores 50–100 biological pathways via ssGSEA, then discovers patient subtypes via Gaussian mixture modeling with five mandatory validation gates. **This pipeline is transcriptomics-only.** That restriction has been acceptable through v0.5–v0.6 because every validation case (sepsis GSE65682, autism, schizophrenia, colorectal cancer cross-validation) is RNA-driven.
 
-The Illumina 5-Base grant assessment (Apr 29, 2026) made the gap concrete:
+That single-modality restriction is a real limitation:
 
-- The grant offers reagents for up to 1,000 samples on Illumina's 5-Base DNA Prep, which produces **integrated methylome plus high-accuracy variant calls from one library**.
-- PSF cannot ingest methylation data today. Without an extension, Topmist is forced into a sub-only posture on any opportunity where the cohort is methylation-anchored — even when PSF's pathway-subtyping value proposition is otherwise a clean fit.
-- Cancer epigenetics in particular is an entire opportunity surface (NIH Bridge2AI, NHGRI methylation atlases, NIDCR HNSCC, future Illumina cycles, TCGA reanalysis tracks) where transcriptomics-only PSF either competes weakly or sits on the bench.
+- Integrated methylome-plus-variant assays (e.g. Illumina's 5-Base DNA Prep) produce methylation and high-accuracy variant calls from one library, and PSF cannot ingest the methylation channel today.
+- Cancer epigenetics in particular is an entire analysis surface (methylation atlases, HNSCC and other methylation-rich cancers, TCGA reanalysis tracks) where a transcriptomics-only tool either competes weakly or cannot participate.
+- Methylation is a *second genomics modality* that does not commit PSF to any single disease — it broadens the tool's applicability rather than narrowing it.
 
-Sen's guidance for NHGRI SBIR — *"genomics tool first, disease second"* — also pulls in this direction. Methylation is a second genomics modality that does not commit PSF to any single disease.
-
-This roadmap formalizes the methylation-aware pathway feature module as a **strategic backlog item** with clear architecture, dependencies, validation strategy, and conversion triggers.
+This roadmap formalizes the methylation-aware pathway feature module as a **prioritized backlog item** with clear architecture, dependencies, and validation strategy.
 
 ---
 
@@ -38,21 +35,6 @@ PSF's pathway-subtyping value proposition rests on three claims:
 - Promoter methylation is mechanistically linked to gene expression repression — there is a biological path from methylation pattern to pathway activity that pathway-level scoring is uniquely positioned to capture.
 - The same ssGSEA + GMM + validation-gates machinery that powers the transcriptomic path can be reused with a methylation-scored feature vector. The architecture extends, not replaces.
 - Cross-platform reproducibility translates: 450k arrays, EPIC, EPIC v2, and bisulfite/5-base sequencing all produce CpG-level methylation calls. PSF's existing reproducibility story extends to methylation data.
-
----
-
-## Cross-Agency / Cross-Opportunity Alignment
-
-| Opportunity / Track | Methylation Module Value | Status |
-|---|---|---|
-| **Illumina 5-Base Cancer Research Grant** | Direct hit — 5-Base data is methylome + variants. PSF needs the methylation path before Topmist can be a credible computational sub on any 5-Base proposal. | **Active forcing function** (Olsen / Cui / commercial-referral partner — conversion-gated through 2026-05-26) |
-| **NHGRI SBIR (Sen mentoring)** | Reinforces "genomics tool first, disease second." Methylation as a second modality strengthens the genomics-first framing at NHGRI scope-review time. | NOFO expected ~1 month after WH signs reauthorization |
-| **NIDCR R01 (Cui / Kurago / Leslie)** | HNSCC + craniofacial epigenetics are methylation-rich domains. Promoter-methylation pathway signatures offer subtype refinement beyond gene-expression-only TCGA-HNSC analysis. | Successor FOA expected ~Feb 2027 |
-| **Cancer subtyping (Olsen, U. Copenhagen)** | Olsen's 2024 *Mol Oncol* paper explicitly calls for "flexible and robust analysis frameworks for molecular subtyping of cancers" — multi-modality methylation + transcriptomics fits the brief directly. | Apr 29 bump sent; 2026-05-26 conversion gate |
-| **ARPA-H CIRCLE** | Tangential. Immune-state subtyping is more transcriptomic than epigenetic in the acute-care timeframe; methylation extension is not load-bearing for the May 28 proposal. | Not a driver |
-| **TCGA reanalysis publications** | TCGA Methylation 450k data already public; methylation-aware PSF unlocks an entire reanalysis paper class without new data generation. | Backlog publication track |
-
-**Read:** four active grant pathways either become competitive or strengthen materially with the module shipped. None of them require it *today*, which is why this is "strategically prioritized backlog" rather than "drop-everything-and-build."
 
 ---
 
@@ -145,7 +127,7 @@ mGSEA(meth_gene_matrix, pathway_gene_sets, direction="repressive"):
 ### F3: 5-Base / Bisulfite Sequencing Ingest
 
 **Module:** `pathway_subtyping.methylation.ingest`
-**Priority:** MEDIUM — required for the Illumina 5-Base use case but not for any backlog publications (those use array data).
+**Priority:** MEDIUM — required for the sequencing-based methylation use case but not for any array-based backlog work.
 **Depends on:** F1 (aggregation re-uses BED-style position input).
 
 **Problem:** Sequencing-derived methylation calls come in BED-like format (chrom, start, end, β, coverage) rather than array probe IDs. PSF needs a clean ingest path that produces the same intermediate as array data.
@@ -179,7 +161,7 @@ mGSEA(meth_gene_matrix, pathway_gene_sets, direction="repressive"):
 ### F5: Validation Suite
 
 **Module:** `tests/integration/test_methylation_validation.py` + benchmark notebook
-**Priority:** HIGH — modules that ship without validation are a liability for grant submissions.
+**Priority:** HIGH — modules that ship without validation are a liability.
 
 **Validation cohorts (public, no new data needed):**
 - TCGA-HNSC (methylation 450k + RNA-seq matched, n ≈ 530)
@@ -220,27 +202,14 @@ mGSEA(meth_gene_matrix, pathway_gene_sets, direction="repressive"):
 
 ---
 
-## Conversion Triggers (when to move from backlog to scheduled work)
+## Prioritization
 
-| Trigger | Response |
-|---|---|
-| **Olsen / Cui / commercial-referral partner commits to Illumina 5-Base joint application by 2026-05-26** | Schedule F1 + F2 + F3 as scoped sprint. Target shipping pre-Jun-26 application as proof-of-concept architecture (not full validation). |
-| **NHGRI SBIR NOFO releases with explicit methylation language** | Move full F1–F5 into the proposal scope; build during Phase I. |
-| **NIDCR R01 successor FOA includes methylation language** | Move F1–F5 into the proposal scope. |
-| **A clinical partner offers methylation data outright (e.g., Cui's Augusta MCG cohort)** | Schedule F1 + F2 + F4 + F5 as a 6-week sprint to enable the partner publication. |
-| **Six months pass with no conversion trigger** | Re-evaluate. If still high-impact for grant pipeline, schedule for v0.7.x or v0.8.x release regardless. Do NOT let this become someday-maybe again. |
+This is a **prioritized backlog item**, not active work. The commitments it represents:
 
----
-
-## What "Strategically Prioritized Backlog" Means
-
-This is **not** a green light to start coding tomorrow. It is a commitment that:
-
-1. **The module is in the public roadmap** — no longer hidden in a head-only "should probably do this someday" list.
-2. **Architecture is decided** — when conversion triggers, F1–F5 are the work, in this order, with these deliverables. No re-architecting from scratch under deadline pressure.
-3. **Validation cohorts are pre-selected** — TCGA-HNSC / COAD / BRCA. No scrambling for benchmark data on application-week.
-4. **Cross-opportunity value is documented** — when a new grant emerges with a methylation angle, this file is the authoritative answer to "can PSF do that?" → "yes, here's exactly what we'd build, in this order, with this validation."
-5. **Backstop scheduled** — even with no external trigger, this lands in v0.7.x or v0.8.x.
+1. **The module is in the public roadmap** — its architecture and scope are decided in the open.
+2. **Architecture is decided** — F1–F5 are the work, in this order, with these deliverables. No re-architecting from scratch under deadline pressure.
+3. **Validation cohorts are pre-selected** — TCGA-HNSC / COAD / BRCA. No scrambling for benchmark data later.
+4. **Backstop scheduled** — this lands in a v0.7.x or v0.8.x release, and F1–F2–F3 (the ingest + scoring core) can be pulled forward as a scoped sprint if a matched methylation cohort becomes available sooner.
 
 ---
 
@@ -248,10 +217,7 @@ This is **not** a green light to start coding tomorrow. It is a commitment that:
 
 - [roadmap-molecular-qc-v05.md](roadmap-molecular-qc-v05.md) — v0.5 QC roadmap (retrospective; shipped) — pattern this file follows
 - [roadmap-v06-codeberg.md](roadmap-v06-codeberg.md) — v0.6 public roadmap (retrospective)
-- `../../WebsiteIssues/opportunities/on-hold/illumina-5base-2026/ASSESSMENT.md` — opportunity analysis that triggered this roadmap (in WebsiteIssues workspace)
-- `../../WebsiteIssues/opportunities/on-hold/illumina-5base-2026/bump_emails_olsen_cui_DRAFT.md` — three Apr 29 sends whose conversion gates this module is partially keyed to
 
 ---
 
 **Last updated:** April 29, 2026
-**Next review:** 2026-05-26 (Illumina conversion gate) or upon any of the triggers above.

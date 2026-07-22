@@ -21,6 +21,20 @@ O-Circuit
 OCircuit
 \bO_Circuit\b
 
+# --- Federal funding agencies / programs ----------------------------------
+# These reveal the private fork's grant-pipeline strategy. The public PSF
+# edition is a scientific tool and should never name the agencies it is
+# being positioned for. (Generic science words like "grant" are NOT listed.)
+ARPA-?H
+\bNHGRI\b
+\bNIDCR\b
+\bCDMRP\b
+\bSBIR\b
+\bSTTR\b
+Bridge2AI
+\bBTO\b
+\bARPA-H CIRCLE\b
+
 # --- O-Circuit domain vocabulary that only appears in the BPU context ----
 # (generic "organoid" is fine in public — NOT listed)
 biological processing unit
