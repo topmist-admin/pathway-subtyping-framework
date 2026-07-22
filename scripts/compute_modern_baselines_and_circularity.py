@@ -20,6 +20,14 @@ from sklearn.mixture import GaussianMixture
 from sklearn.metrics import silhouette_score, adjusted_rand_score
 from scipy.stats import fisher_exact
 
+# Deep-learning clustering baselines (R2.2). Optional import — the script still
+# runs the classical baselines if torch is unavailable.
+try:
+    from pathway_subtyping.clustering_dl import run_dec, run_vae_gmm
+    _HAS_DL = True
+except Exception:
+    _HAS_DL = False
+
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Load TCGA-COAD pathway scores from the benchmark run
@@ -195,6 +203,10 @@ def run_bootstrap(X, labels, k, method='gmm', n_boot=50):
             elif method == 'spectral':
                 sc = SpectralClustering(n_clusters=k, affinity='rbf', random_state=42, n_init=5)
                 boot_labels = sc.fit_predict(X_boot)
+            elif method == 'dec' and _HAS_DL:
+                boot_labels, _ = run_dec(X_boot, k, seed=42)
+            elif method == 'vae_gmm' and _HAS_DL:
+                boot_labels, _ = run_vae_gmm(X_boot, k, seed=42)
             else:
                 boot_labels = labels[idx]
 
@@ -267,6 +279,22 @@ def main():
     print(f"  Silhouette: {sil_gmm:.4f}")
     print(f"  Bootstrap ARI (5th%): {boot_gmm:.4f}")
     results['Pathway-GMM'] = {'silhouette': sil_gmm, 'bootstrap_ari': boot_gmm, 'k': k}
+
+    # --- Deep-learning baselines (R2.2): DEC + VAE-GMM ---
+    if _HAS_DL:
+        for dl_name, dl_fn, dl_key in [
+            ("DEC (Xie 2016)", run_dec, "dec"),
+            ("VAE-GMM (VaDE, Jiang 2017)", run_vae_gmm, "vae_gmm"),
+        ]:
+            print(f"\n--- {dl_name} ---")
+            labels_dl, sil_dl = dl_fn(X_pathway, k, seed=42)
+            # DL bootstrap is expensive (retrains per resample) — use fewer iters
+            boot_dl = run_bootstrap(X_pathway, labels_dl, k, dl_key, n_boot=15)
+            print(f"  Silhouette: {sil_dl:.4f}")
+            print(f"  Bootstrap ARI (5th%): {boot_dl:.4f}")
+            results[dl_name] = {'silhouette': sil_dl, 'bootstrap_ari': boot_dl, 'k': k}
+    else:
+        print("\n--- DL baselines (DEC, VAE-GMM): SKIPPED (torch unavailable) ---")
 
     # --- 2. Spectral Clustering ---
     print("\n--- Spectral Clustering ---")

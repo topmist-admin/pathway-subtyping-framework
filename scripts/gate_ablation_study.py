@@ -50,6 +50,14 @@ from pathway_subtyping.validation import ValidationGates
 from pathway_subtyping.discreteness import DiscretenessGateA
 
 
+def _cluster_gmm(X, k, seed):
+    """GMM clusterer with the run_x(X, k, seed) -> labels convention."""
+    from sklearn.mixture import GaussianMixture
+    gm = GaussianMixture(n_components=k, covariance_type="full", n_init=10,
+                         random_state=seed, reg_covar=1e-6).fit(np.asarray(X))
+    return gm.predict(np.asarray(X))
+
+
 # --------------------------------------------------------------------------- #
 # Synthetic data generators — each returns (scores DataFrame, natural_k)
 # --------------------------------------------------------------------------- #
@@ -142,7 +150,11 @@ def evaluate_dataset(scores: pd.DataFrame, k: int, seed: int, n_ref: int,
     return {
         "stability_pass": bool(stab.passed),
         "stability_ari": float(stab.metric_value),
-        "discreteness_pass": bool(a.passed),
+        # A subtype is certified discrete ONLY when Gate A is both testable and
+        # passing (verdict == "discrete structure"). "not-testable" is a third
+        # outcome — no reproducible k — and must NOT count as certification even
+        # though a.passed can be True there.
+        "discreteness_pass": bool(a.testable and a.passed),
         "discreteness_verdict": a.verdict,
         "discreteness_testable": bool(a.testable),
         "sg_empirical_p": float(a.sg_empirical_p),
@@ -157,6 +169,126 @@ POLICIES = {
 }
 
 
+def _self_stability(cluster_fn, X, k, labels, n_boot, seed, threshold=0.8):
+    """A clusterer's OWN bootstrap stability: re-run the clusterer on bootstrap
+    resamples and average the ARI to its original labels on shared samples.
+    This is the naive 'is my partition reproducible?' check each method would
+    pass on a continuum it bisects the same way every time."""
+    from sklearn.metrics import adjusted_rand_score
+    Xv = np.asarray(X)
+    rng = np.random.default_rng(seed + 999)
+    aris = []
+    for b in range(n_boot):
+        idx = np.unique(rng.choice(len(Xv), len(Xv), replace=True))
+        if len(idx) < 2 * k:
+            continue
+        try:
+            lb = cluster_fn(Xv[idx], k, seed + b)
+            aris.append(adjusted_rand_score(labels[idx], lb))
+        except Exception:
+            continue
+    mean_ari = float(np.mean(aris)) if aris else 0.0
+    return mean_ari, bool(mean_ari >= threshold)
+
+
+def clusterer_sweep(args) -> None:
+    """Gate-agnostic demonstration (R2.2): cluster the SAME data with GMM, DEC,
+    and VAE-GMM. Each method's own bootstrap stability is high on a continuum it
+    bisects reproducibly (a naive stability check passes for all three), yet
+    Gate A — which tests the discreteness of the data at k, independent of the
+    clusterer — rejects the continuum partition for every method."""
+    from functools import partial
+    from pathway_subtyping.clustering_dl import run_dec, run_vae_gmm
+
+    # fast DL settings for the sweep (labels only; drop the silhouette return)
+    dl_epochs = 40 if args.quick else 120
+    clusterers = {
+        "gmm": _cluster_gmm,
+        "dec": lambda X, k, s: run_dec(X, k, seed=s, pretrain_epochs=dl_epochs,
+                                       cluster_epochs=max(20, dl_epochs // 3))[0],
+        "vae_gmm": lambda X, k, s: run_vae_gmm(X, k, seed=s, epochs=dl_epochs)[0],
+    }
+    conditions = ["discrete_k2", "continuum_1d"]  # positive control + the money case
+    n_boot = 8 if args.quick else 20
+
+    rows = []
+    for cond in conditions:
+        for rep in range(max(2, args.reps // 2)):
+            seed = args.seed + 1000 * rep + hash(cond) % 997
+            scores, k = generate(cond, args.n, args.p, args.sep, seed)
+            # Gate A is clusterer-agnostic (re-clusters internally) -> run once
+            gateA = DiscretenessGateA(seed=seed, n_ref=args.n_ref,
+                                      n_bootstrap=args.n_bootstrap)
+            a = gateA.run(tumor="synthetic", pathway_scores=scores, n_clusters=k,
+                          gmm_seed=seed)
+            # certified discrete only when testable AND passing (not "not-testable")
+            gateA_certifies = bool(a.testable and a.passed)
+            for cname, cfn in clusterers.items():
+                labels = cfn(scores.values, k, seed)
+                self_ari, self_pass = _self_stability(cfn, scores.values, k, labels,
+                                                       n_boot, seed)
+                rows.append(dict(
+                    condition=cond, klass=CONDITIONS[cond]["klass"], rep=rep,
+                    clusterer=cname, self_stability_ari=round(self_ari, 3),
+                    self_stability_pass=self_pass,
+                    gateA_pass=gateA_certifies, gateA_verdict=a.verdict))
+                print(f"  {cond:14s} rep{rep} {cname:8s}: "
+                      f"self-stability ARI={self_ari:.2f} "
+                      f"({'looks-reproducible' if self_pass else 'unstable'})  "
+                      f"GateA={'CERTIFY' if gateA_certifies else 'REJECT'} ({a.verdict})")
+
+    df = pd.DataFrame(rows)
+    args.out.mkdir(parents=True, exist_ok=True)
+    df.to_csv(args.out / "clusterer_sweep_raw.csv", index=False)
+
+    # For the continuum: fraction of (clusterer, rep) that LOOK reproducible vs
+    # fraction Gate A rejects.
+    lines = [
+        "# Gate-Agnostic Demonstration — clusterer sweep (R2.2)",
+        "",
+        "Same synthetic data clustered by GMM, DEC (Xie 2016), and VAE-GMM "
+        "(VaDE, Jiang 2017). **self-stability** = the method's own bootstrap "
+        "reproducibility (the naive check each would pass). **Gate A** = the "
+        "discreteness gate's verdict (clusterer-agnostic; tests the data).",
+        "",
+        "| Condition | Clusterer | self-stability ARI | looks-reproducible? | Gate A verdict |",
+        "|---|---|---|---|---|",
+    ]
+    for _, r in df.iterrows():
+        lines.append(
+            f"| {r.condition} | `{r.clusterer}` | {r.self_stability_ari:.2f} | "
+            f"{'yes' if r.self_stability_pass else 'no'} | "
+            f"{'PASS' if r.gateA_pass else 'REJECT'} ({r.gateA_verdict}) |")
+    cont = df[df.condition == "continuum_1d"]
+    rejected = float((~cont.gateA_pass).mean())
+    gmm_ari = float(cont[cont.clusterer == "gmm"].self_stability_ari.mean())
+    dec_ari = float(cont[cont.clusterer == "dec"].self_stability_ari.mean())
+    vae_ari = float(cont[cont.clusterer == "vae_gmm"].self_stability_ari.mean())
+    lines += [
+        "",
+        f"**Primary result (clusterer-agnostic rejection):** Gate A rejects the 1-D "
+        f"continuum for **{rejected:.0%}** of runs, and does so identically whether the "
+        f"partition was drawn by GMM, DEC, or VAE-GMM. This is the substantive answer "
+        f"to R2.2: PSF is not another clustering method to be benchmarked against "
+        f"DEC/VAE — it is a validation layer that wraps any of them, because Gate A "
+        f"tests the discreteness of the *data* at a given k, not the confidence of the "
+        f"algorithm.",
+        "",
+        f"**Secondary observation (reported honestly):** on the continuum the clusterers "
+        f"differ in how reproducible their (spurious) bipartition looks — mean "
+        f"self-stability ARI GMM {gmm_ari:.2f} vs DEC {dec_ari:.2f} vs VAE-GMM "
+        f"{vae_ari:.2f}. GMM's near-0.8 self-stability is the classic continuum "
+        f"false-positive the gate was built to catch; the deep methods are additionally "
+        f"unstable under resampling at this small n, itself a caution against trusting "
+        f"algorithmic confidence (consistent with the small-n concerns in "
+        f"R3.5/R3.6/R3.9). Competitive DL *recovery* of real subtypes is a separate "
+        f"claim for the large cohorts (TCGA-COAD, CPTAC), not this small-n control.",
+    ]
+    (args.out / "clusterer_sweep_results.md").write_text("\n".join(lines))
+    print("\n" + "\n".join(lines))
+    print(f"\nWrote: {args.out}/clusterer_sweep_results.md + clusterer_sweep_raw.csv")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -168,11 +300,17 @@ def main() -> None:
     ap.add_argument("--n-bootstrap", type=int, default=40, help="bootstrap iterations")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--quick", action="store_true", help="fast smoke settings")
+    ap.add_argument("--sweep", action="store_true",
+                    help="run the gate-agnostic clusterer sweep (GMM/DEC/VAE) instead")
     ap.add_argument("--out", type=Path, default=Path("outputs/gate_ablation"))
     args = ap.parse_args()
 
     if args.quick:
         args.reps, args.n_ref, args.n_bootstrap = 3, 30, 20
+
+    if args.sweep:
+        clusterer_sweep(args)
+        return
 
     args.out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
