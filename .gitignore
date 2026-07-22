@@ -91,6 +91,7 @@ outputs/
 
 # Large data files
 data/cohorts/
+data/GSE102741/
 *.parquet
 
 # Credentials (never commit)
