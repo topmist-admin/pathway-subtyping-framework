@@ -1,0 +1,44 @@
+{
+  "study": "brca_cptac_2020",
+  "k": 5,
+  "modalities": {
+    "mrna": {
+      "n_samples": 122,
+      "recovery_vs_pam50": {
+        "ari": 0.18886528305256997,
+        "ami": 0.19938890840033696,
+        "n": 122
+      },
+      "gates": {
+        "bootstrap_stability": {
+          "passed": false,
+          "ari": 0.47267831774692814
+        },
+        "discreteness_gateA": {
+          "certified": true,
+          "verdict": "discrete structure"
+        }
+      }
+    },
+    "protein": {
+      "n_samples": 122,
+      "recovery_vs_pam50": {
+        "ari": 0.172432217803094,
+        "ami": 0.24457216546150748,
+        "n": 122
+      },
+      "gates": {
+        "bootstrap_stability": {
+          "passed": false,
+          "ari": 0.3558027433669049
+        },
+        "discreteness_gateA": {
+          "certified": true,
+          "verdict": "discrete structure"
+        }
+      }
+    }
+  },
+  "expression_protein_concordance_ari": 0.1660148902300299,
+  "n_shared_samples": 122
+}

@@ -52,6 +52,40 @@ pending. Run: `scripts/fetch_and_validate_brca.py`.
 3. Consider a Hallmark → curated-BRCA pathway panel sensitivity check (pairs with
    R2.6) — recovery may rise with a more relevant pathway collection.
 
+---
+
+## CPTAC-BRCA multi-omic (R1.6 — protein modality; n=122)
+
+Matched mass-spec **protein** + mRNA for the same tumors (CPTAC breast, Krug et
+al. Cell 2020), public via cBioPortal. Run: `scripts/fetch_and_validate_cptac_brca.py`.
+
+**Recovery of PAM50 (k=5):**
+| Modality | ARI | AMI |
+|---|---|---|
+| mRNA (pathway) | 0.189 | 0.199 |
+| **protein (pathway)** | **0.172** | **0.245** |
+
+**Gates (both modalities):** discreteness Gate A **CERTIFIED** (discrete
+structure); bootstrap-stability **FAIL** at 0.80 bar (mRNA 0.47, protein 0.36).
+**Expression↔protein subtype concordance:** ARI **0.166** (n=122 shared).
+
+**Honest interpretation:**
+- **Directly answers R1.6.** PSF's pathway subtyping operates on the PROTEIN
+  modality and recovers PAM50 *comparably to expression* (protein AMI 0.245 is
+  actually higher than mRNA's 0.199). The framework is not expression-specific —
+  the validation the reviewer said was "mainly gene expression" now extends to
+  mass-spec proteomics.
+- **Gates are modality-general.** The discreteness gate certifies real structure
+  in both modalities; the same fixed-0.80 stability behaviour recurs — reinforcing
+  the R3.7 "fixed threshold is the wrong instrument" point across modalities.
+- **Modest expression↔protein concordance (ARI 0.17) is expected, not a defect.**
+  mRNA–protein correspondence is known to be imperfect; the two modalities agree
+  with each other about as much as each agrees with PAM50. State plainly; it
+  motivates careful (not naive-concatenation) multi-omic fusion.
+- Caveat: n=122 is small — CPTAC's value here is the *modality*, not size (TCGA-BRCA
+  supplies the large-cohort size). Recovery modest for the same Hallmark≠PAM50
+  reason as TCGA-BRCA.
+
 ## Provenance
 cBioPortal study `brca_tcga_pan_can_atlas_2018`; Hallmark 50-set panel
 (`../../panels/hallmark_200genes.gmt`); mRNA median-Zscores; PAM50 = patient-level
