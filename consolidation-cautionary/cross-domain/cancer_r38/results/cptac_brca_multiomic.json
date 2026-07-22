@@ -7,12 +7,18 @@
       "recovery_vs_pam50": {
         "ari": 0.18886528305256997,
         "ami": 0.19938890840033696,
-        "n": 122
+        "n": 122,
+        "best_subtype_enrichment": {
+          "subtype": "Basal",
+          "enrichment_frac": 0.882,
+          "odds_ratio": 48.75,
+          "p": 1.317153138518517e-09
+        }
       },
       "gates": {
         "bootstrap_stability": {
           "passed": false,
-          "ari": 0.47267831774692814
+          "ari": 0.456844329968277
         },
         "discreteness_gateA": {
           "certified": true,
@@ -25,12 +31,18 @@
       "recovery_vs_pam50": {
         "ari": 0.172432217803094,
         "ami": 0.24457216546150748,
-        "n": 122
+        "n": 122,
+        "best_subtype_enrichment": {
+          "subtype": "LumA",
+          "enrichment_frac": 0.87,
+          "odds_ratio": 11.17,
+          "p": 1.4056228708185446e-05
+        }
       },
       "gates": {
         "bootstrap_stability": {
           "passed": false,
-          "ari": 0.3558027433669049
+          "ari": 0.3688704368878698
         },
         "discreteness_gateA": {
           "certified": true,

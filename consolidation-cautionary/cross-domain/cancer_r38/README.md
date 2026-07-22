@@ -6,14 +6,27 @@ pending. Run: `scripts/fetch_and_validate_brca.py`.
 
 ## Result (n=1,082 TCGA-BRCA; 981 PAM50-labelled; k=5)
 
-**Recovery of PAM50 (ARI / AMI) — PSF vs baselines including deep learning:**
+**Recovery of PAM50 — TWO metrics (the metric choice is itself a finding):**
 
-| Method | ARI | AMI |
+| Method | k-way ARI (strict) | best-subtype enrichment (CMS4-style, generous) |
 |---|---|---|
-| **PSF (pathway-GMM)** | **0.218** | **0.250** |
-| k-means (pathway) | 0.160 | 0.190 |
-| VAE-GMM (VaDE) | 0.125 | 0.168 |
-| DEC | 0.088 | 0.118 |
+| **PSF (pathway-GMM)** | **0.218** | LumA **87.6%** (OR 11.6, p 8e-47) |
+| VAE-GMM (VaDE) | 0.125 | LumA **89.1%** (OR 12.6) |
+| k-means (pathway) | 0.160 | LumA 76.6% (OR 4.4) |
+| DEC | 0.088 | LumA 75.7% (OR 4.2) |
+
+**The metric choice is a cautionary finding in itself.** The SAME PSF partition
+scores ARI 0.218 (looks weak) and LumA-enrichment 87.6% (looks strong). The
+manuscript's headline "75.9% CMS4" was single-subtype enrichment — the generous
+metric; measured that way PSF's BRCA recovery (87.6%) is comparable-to-stronger.
+Single-subtype enrichment FLATTERS subtyping; the k-way ARI is the honest test.
+This is a worked example of a meta-point for the paper: reported recovery
+numbers depend enormously on the metric, and the commonly-reported one overstates.
+
+**Method comparison is NOT metric-robust:** PSF leads on ARI; VAE-GMM edges it on
+enrichment (89.1% vs 87.6%). Do NOT claim "PSF beats deep learning" — the honest
+statement is that pathway-GMM is *competitive* with DL, with the ranking
+depending on the metric.
 
 **Validation gates (forced k=5 to match PAM50, AND framework's BIC k=2):**
 
@@ -24,13 +37,14 @@ pending. Run: `scripts/fetch_and_validate_brca.py`.
 | bootstrap-stability (0.80 bar) | FAIL (ARI 0.39) | FAIL (ARI 0.43) |
 
 ## Honest interpretation (do NOT overstate)
-- **PSF recovers PAM50 better than every baseline, including modern deep
-  clustering (DEC, VAE-GMM).** This is a genuine, useful answer to R2.2: with
-  standard settings, deep clustering did **not** outperform pathway-GMM here.
-- **But recovery is modest across all methods (ARI ~0.09–0.22).** Expected:
-  PAM50 is defined by a specific 50-gene classifier, not by the 50 Hallmark
-  pathways used here; generic pathway-level scoring only partially aligns with
-  PAM50. State this plainly — it is not a strong recovery claim.
+- **Pathway-GMM is COMPETITIVE with deep clustering, ranking depends on metric**
+  (PSF leads on ARI; VAE-GMM edges it on enrichment). The honest R2.2 answer is
+  that standard-setting DL does not clearly beat pathway-GMM — not that PSF wins.
+  (Superseded the earlier "PSF beats every baseline" claim, which was ARI-only.)
+- **Recovery is metric-dependent, not simply "modest."** By strict k-way ARI it
+  is weak (~0.09–0.22, because PAM50 is a specific gene classifier not Hallmark
+  pathways); by single-subtype enrichment it is strong (LumA 87.6%). Report BOTH;
+  the gap between them is the cautionary point.
 - **The two "stability" instruments disagree, informatively.** The discreteness
   gate CERTIFIES real structure at BOTH the natural k=2 AND the forced k=5, yet the
   old bootstrap-stability gate FAILS the fixed 0.80 bar at both k (ARI 0.39 / 0.43).
@@ -59,11 +73,15 @@ pending. Run: `scripts/fetch_and_validate_brca.py`.
 Matched mass-spec **protein** + mRNA for the same tumors (CPTAC breast, Krug et
 al. Cell 2020), public via cBioPortal. Run: `scripts/fetch_and_validate_cptac_brca.py`.
 
-**Recovery of PAM50 (k=5):**
-| Modality | ARI | AMI |
+**Recovery of PAM50 (k=5) — both metrics:**
+| Modality | k-way ARI (strict) | best-subtype enrichment (generous) |
 |---|---|---|
-| mRNA (pathway) | 0.189 | 0.199 |
-| **protein (pathway)** | **0.172** | **0.245** |
+| mRNA (pathway) | 0.189 | Basal **88.2%** (OR 48.8, p 1e-9) |
+| **protein (pathway)** | **0.172** | LumA **87.0%** (OR 11.2, p 1e-5) |
+
+The metric-dependence seen on TCGA-BRCA recurs here across BOTH modalities: weak
+by ARI (~0.18), strong by enrichment (~87–88%). Protein enrichment (87%) matches
+mRNA — the R1.6 protein-modality point holds on the generous metric too.
 
 **Gates (both modalities):** discreteness Gate A **CERTIFIED** (discrete
 structure); bootstrap-stability **FAIL** at 0.80 bar (mRNA 0.47, protein 0.36).

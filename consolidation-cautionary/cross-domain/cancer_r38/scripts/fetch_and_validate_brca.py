@@ -121,6 +121,39 @@ def recovery(labels, truth_series):
             "n": int(len(idx))}
 
 
+def single_subtype_enrichment(labels, truth_series):
+    """Best-cluster enrichment per subtype, matching how the manuscript reported
+    CMS4 (fraction of the most-enriched cluster that is the subtype + Fisher OR/p).
+    This is the metric COMPARABLE to the paper's '75.9% CMS4' headline; the k-way
+    ARI above is a harder, stricter test. Reporting BOTH is the honest fix."""
+    from scipy.stats import fisher_exact
+    idx = truth_series.dropna().index.intersection(labels.index)
+    t = truth_series.loc[idx]
+    lab = labels.loc[idx]
+    per = {}
+    for sub in sorted(t.unique()):
+        is_sub = (t == sub).to_numpy()
+        best = None
+        for cl in sorted(lab.unique()):
+            in_cl = (lab == cl).to_numpy()
+            if in_cl.sum() == 0:
+                continue
+            frac = float((is_sub & in_cl).sum() / in_cl.sum())      # % of cluster that is sub
+            a = int((is_sub & in_cl).sum()); b = int((~is_sub & in_cl).sum())
+            c = int((is_sub & ~in_cl).sum()); d = int((~is_sub & ~in_cl).sum())
+            try:
+                orr, p = fisher_exact([[a, b], [c, d]], alternative="greater")
+            except Exception:
+                orr, p = float("nan"), float("nan")
+            cand = {"cluster": int(cl), "enrichment_frac": round(frac, 3),
+                    "odds_ratio": round(float(orr), 2), "p": float(p)}
+            if best is None or cand["enrichment_frac"] > best["enrichment_frac"]:
+                best = cand
+        per[str(sub)] = best
+    best_sub = max(per, key=lambda s: per[s]["enrichment_frac"])
+    return {"per_subtype": per, "best_subtype": best_sub, "best": per[best_sub]}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -128,6 +161,8 @@ def main():
     ap.add_argument("--out", default=os.path.join(_HERE, "../results"))
     ap.add_argument("--n-ref", type=int, default=200)
     ap.add_argument("--no-dl", action="store_true", help="skip DEC/VAE baselines")
+    ap.add_argument("--skip-gates", action="store_true",
+                    help="skip the heavy Gate A (fast recovery-metric recompute)")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
 
@@ -168,39 +203,51 @@ def main():
             print(f"  DL baselines skipped: {e}")
 
     rec = {name: recovery(lab, pam50) for name, lab in methods.items()}
+    # single-subtype enrichment (metric-consistent with the manuscript's CMS4 report)
+    enrich = {name: single_subtype_enrichment(lab, pam50) for name, lab in methods.items()}
 
     # --- validation gates: at forced k (=PAM50) AND at the framework's BIC k ---
-    g = ValidationGates(seed=42, show_progress=False)
-    ns = g.negative_control_label_shuffle(P, lab_psf.to_numpy(), k)
-    stab_k = g.stability_test_bootstrap(P, lab_psf.to_numpy(), k)
-    stab_bic = g.stability_test_bootstrap(P, lab_bic.to_numpy(), k_bic)
-    gateA = DiscretenessGateA(seed=42, n_ref=args.n_ref).run("BRCA", P, k, gmm_seed=42)
-    gateA_bic = DiscretenessGateA(seed=42, n_ref=args.n_ref).run("BRCA", P, k_bic, gmm_seed=42)
-    gates = {
-        "label_shuffle": {"passed": bool(ns.passed), "ari": float(ns.metric_value)},
-        "bootstrap_stability_at_k5": {"passed": bool(stab_k.passed), "ari": float(stab_k.metric_value)},
-        "bootstrap_stability_at_bic_k": {"k": int(k_bic), "passed": bool(stab_bic.passed),
-                                         "ari": float(stab_bic.metric_value)},
-        "discreteness_gateA_at_k5": {"certified": bool(gateA.testable and gateA.passed),
-                                     "verdict": gateA.verdict},
-        "discreteness_gateA_at_bic_k": {"k": int(k_bic),
-                                        "certified": bool(gateA_bic.testable and gateA_bic.passed),
-                                        "verdict": gateA_bic.verdict},
-    }
+    if args.skip_gates:
+        gates = "skipped"
+    else:
+        g = ValidationGates(seed=42, show_progress=False)
+        ns = g.negative_control_label_shuffle(P, lab_psf.to_numpy(), k)
+        stab_k = g.stability_test_bootstrap(P, lab_psf.to_numpy(), k)
+        stab_bic = g.stability_test_bootstrap(P, lab_bic.to_numpy(), k_bic)
+        gateA = DiscretenessGateA(seed=42, n_ref=args.n_ref).run("BRCA", P, k, gmm_seed=42)
+        gateA_bic = DiscretenessGateA(seed=42, n_ref=args.n_ref).run("BRCA", P, k_bic, gmm_seed=42)
+        gates = {
+            "label_shuffle": {"passed": bool(ns.passed), "ari": float(ns.metric_value)},
+            "bootstrap_stability_at_k5": {"passed": bool(stab_k.passed), "ari": float(stab_k.metric_value)},
+            "bootstrap_stability_at_bic_k": {"k": int(k_bic), "passed": bool(stab_bic.passed),
+                                             "ari": float(stab_bic.metric_value)},
+            "discreteness_gateA_at_k5": {"certified": bool(gateA.testable and gateA.passed),
+                                         "verdict": gateA.verdict},
+            "discreteness_gateA_at_bic_k": {"k": int(k_bic),
+                                            "certified": bool(gateA_bic.testable and gateA_bic.passed),
+                                            "verdict": gateA_bic.verdict},
+        }
 
     out = {"study": STUDY, "n_samples": int(P.shape[0]), "k_pam50": int(k),
            "k_bic": int(k_bic), "pam50_classes": int(n_pam),
-           "recovery_vs_pam50": rec, "gates": gates}
+           "recovery_vs_pam50_ARI": rec,
+           "recovery_vs_pam50_single_subtype_enrichment": enrich, "gates": gates}
     with open(os.path.join(args.out, "brca_pam50_validation.json"), "w") as fh:
         json.dump(out, fh, indent=2)
 
     print("\n=== TCGA-BRCA / PAM50 recovery (R3.8 + R2.2) ===")
-    for name, r in rec.items():
-        print(f"  {name:20s}: " + ("n/a" if r is None else
-              f"ARI={r['ari']:.3f}  AMI={r['ami']:.3f}  (n={r['n']})"))
+    print("  k-way ARI (strict) | best-subtype enrichment (CMS4-comparable):")
+    for name in rec:
+        r = rec[name]; e = enrich[name]["best"]; bs = enrich[name]["best_subtype"]
+        ari = "n/a" if r is None else f"ARI={r['ari']:.3f}"
+        print(f"  {name:20s}: {ari:11s} | {bs} {e['enrichment_frac']*100:.1f}% "
+              f"(OR={e['odds_ratio']}, p={e['p']:.1e})")
     print(f"\n=== Validation gates (forced k={k} vs BIC k={k_bic}) ===")
-    for gname, gv in gates.items():
-        print(f"  {gname}: {gv}")
+    if gates == "skipped":
+        print("  (skipped)")
+    else:
+        for gname, gv in gates.items():
+            print(f"  {gname}: {gv}")
     print(f"\nWrote {args.out}/brca_pam50_validation.json")
 
 

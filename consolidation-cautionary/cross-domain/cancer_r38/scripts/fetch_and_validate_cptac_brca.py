@@ -110,9 +110,26 @@ def recovery(labels, truth):
     if len(idx) < 10:
         return None
     t = truth.loc[idx].astype("category").cat.codes.to_numpy()
-    return {"ari": float(adjusted_rand_score(t, labels.loc[idx])),
-            "ami": float(adjusted_mutual_info_score(t, labels.loc[idx])),
-            "n": int(len(idx))}
+    ari = float(adjusted_rand_score(t, labels.loc[idx]))
+    ami = float(adjusted_mutual_info_score(t, labels.loc[idx]))
+    # single-subtype best-cluster enrichment (metric-consistent with the paper's CMS4)
+    from scipy.stats import fisher_exact
+    tt, lab = truth.loc[idx], labels.loc[idx]
+    best = {"enrichment_frac": -1}
+    for sub in tt.unique():
+        iss = (tt == sub).to_numpy()
+        for cl in lab.unique():
+            inc = (lab == cl).to_numpy()
+            if inc.sum() == 0:
+                continue
+            frac = float((iss & inc).sum() / inc.sum())
+            if frac > best["enrichment_frac"]:
+                a, b = int((iss & inc).sum()), int((~iss & inc).sum())
+                c, d = int((iss & ~inc).sum()), int((~iss & ~inc).sum())
+                orr, p = fisher_exact([[a, b], [c, d]], alternative="greater")
+                best = {"subtype": str(sub), "enrichment_frac": round(frac, 3),
+                        "odds_ratio": round(float(orr), 2), "p": float(p)}
+    return {"ari": ari, "ami": ami, "n": int(len(idx)), "best_subtype_enrichment": best}
 
 
 def gate_summary(P, lab, k, n_ref):
