@@ -1,0 +1,53 @@
+{
+  "study": "brca_tcga_pan_can_atlas_2018",
+  "n_samples": 1082,
+  "k_pam50": 5,
+  "k_bic": 2,
+  "pam50_classes": 5,
+  "recovery_vs_pam50": {
+    "PSF (pathway-GMM)": {
+      "ari": 0.21779604557214727,
+      "ami": 0.2496712099935301,
+      "n": 981
+    },
+    "k-means (pathway)": {
+      "ari": 0.1597917007754306,
+      "ami": 0.1903008707552459,
+      "n": 981
+    },
+    "DEC": {
+      "ari": 0.08775851965152613,
+      "ami": 0.11790129918707566,
+      "n": 981
+    },
+    "VAE-GMM": {
+      "ari": 0.12469006074005333,
+      "ami": 0.16836568353245712,
+      "n": 981
+    }
+  },
+  "gates": {
+    "label_shuffle": {
+      "passed": true,
+      "ari": 3.95485968597474e-06
+    },
+    "bootstrap_stability_at_k5": {
+      "passed": false,
+      "ari": 0.39156382583097576
+    },
+    "bootstrap_stability_at_bic_k": {
+      "k": 2,
+      "passed": false,
+      "ari": 0.4326293513652552
+    },
+    "discreteness_gateA_at_k5": {
+      "certified": true,
+      "verdict": "discrete structure"
+    },
+    "discreteness_gateA_at_bic_k": {
+      "k": 2,
+      "certified": true,
+      "verdict": "discrete structure"
+    }
+  }
+}
