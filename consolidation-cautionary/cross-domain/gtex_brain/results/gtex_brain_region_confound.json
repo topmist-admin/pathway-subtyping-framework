@@ -1,0 +1,34 @@
+{
+  "n_samples": 2931,
+  "n_regions": 13,
+  "k_region": 13,
+  "k_bic": 3,
+  "region_recovery_at_k": {
+    "ari": 0.151,
+    "ami": 0.272,
+    "best_region_enrichment": {
+      "region": "Brain - Cerebellum",
+      "enrichment_frac": 0.589,
+      "odds_ratio": 22.14,
+      "p": 9.222500623849346e-77
+    }
+  },
+  "region_recovery_at_bic_k": {
+    "ari": 0.074,
+    "best_region_enrichment": {
+      "region": "Brain - Spinal cord (cervical c-1)",
+      "enrichment_frac": 0.247,
+      "odds_ratio": 147.53,
+      "p": 8.923045183862054e-106
+    }
+  },
+  "discreteness_gateA_at_k": {
+    "certified": true,
+    "verdict": "discrete structure"
+  },
+  "discreteness_gateA_at_bic_k": {
+    "k": 3,
+    "certified": false,
+    "verdict": "no discrete structure (continuum)"
+  }
+}

@@ -259,3 +259,4 @@ scripts/benchmark_*.log
 !ZENODO_PACKAGE_CHECKLIST.md
 !ZENODO_FILES_MANIFEST.txt
 !CODEBERG_COMMIT_CHECKLIST.md
+consolidation-cautionary/cross-domain/gtex_brain/results/*.tsv
