@@ -1,0 +1,58 @@
+gse	n_samples	srp	gdstype	keep	reason
+GSE119291	5718		Expression profiling by array; Expression profiling by high throughput sequencing	True	
+GSE174407	700		Genome binding/occupancy profiling by high throughput sequencing; Expression profiling by high throughput sequencing	True	
+GSE112525	332		Expression profiling by high throughput sequencing; Methylation profiling by high throughput sequencing; Methylation profiling by array; Genome variation profiling by SNP array	True	
+GSE108066	245		Expression profiling by high throughput sequencing; Methylation profiling by high throughput sequencing; Other	True	
+GSE159487	150	SRP287292	Expression profiling by high throughput sequencing	True	
+GSE311978	97	SRP650289	Expression profiling by high throughput sequencing	True	
+GSE107638	96	SRP126056	Expression profiling by high throughput sequencing	True	
+GSE138082	78	SRP223448	Expression profiling by high throughput sequencing	True	
+GSE119290	44	SRP159190	Expression profiling by high throughput sequencing	True	
+GSE80163	39		Expression profiling by high throughput sequencing	True	
+GSE87194	38	SRP090259	Expression profiling by high throughput sequencing	True	
+GSE191250	37		Expression profiling by high throughput sequencing	True	
+GSE165604	37	SRP303646	Expression profiling by high throughput sequencing	True	
+GSE80336	36	SRP073382	Expression profiling by high throughput sequencing	True	
+GSE112523	34	SRP136794	Expression profiling by high throughput sequencing	True	
+GSE241671	30		Expression profiling by high throughput sequencing	True	
+GSE263180	29		Expression profiling by high throughput sequencing	True	
+GSE328018	23	SRP691817	Expression profiling by high throughput sequencing	True	
+GSE53239	22	SRP033725	Expression profiling by high throughput sequencing	True	
+GSE12297	20		Expression profiling by high throughput sequencing	True	
+GSE304368	18		Expression profiling by high throughput sequencing	True	
+GSE213232	18		Expression profiling by high throughput sequencing	True	
+GSE81396	16	SRP074904	Expression profiling by high throughput sequencing	True	
+GSE143692	12	SRP242009	Expression profiling by high throughput sequencing	True	
+GSE250482	10		Expression profiling by high throughput sequencing	True	
+GSE206720	8		Expression profiling by high throughput sequencing	True	
+GSE169512	8	SRP311949	Expression profiling by high throughput sequencing	True	
+GSE293325	6		Expression profiling by high throughput sequencing	True	
+GSE272752	4		Expression profiling by high throughput sequencing	True	
+GSE246593	4		Expression profiling by high throughput sequencing	True	
+GSE106589	94	SRP124299	Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE306819	82		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE301134	53		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE86906	36	SRP089857	Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE182875	32	SRP334277	Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE244010	26		Expression profiling by high throughput sequencing; Non-coding RNA profiling by high throughput sequencing	False	iPSC/single-cell
+GSE228315	26		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE272060	21		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE191249	21		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE144639	20	SRP246389	Expression profiling by high throughput sequencing; Genome binding/occupancy profiling by high throughput sequencing	False	iPSC/single-cell
+GSE254523	18		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE145656	18	SRP250204	Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE58933	18	SRP043684	Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE234795	16		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE191248	16		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE292323	14		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE282524	14		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE244005	12		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE185052	12	SRP339410	Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE63738	12	SRP050377	Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE63734	11	SRP050376	Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE244006	8		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE120190	8	SRP162147	Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE283922	6		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE263847	6		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE266062	6		Expression profiling by high throughput sequencing	False	iPSC/single-cell
+GSE284672	4		Expression profiling by high throughput sequencing	False	iPSC/single-cell
