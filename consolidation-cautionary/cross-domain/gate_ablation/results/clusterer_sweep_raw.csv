@@ -1,0 +1,31 @@
+condition,klass,rep,clusterer,self_stability_ari,self_stability_pass,gateA_pass,gateA_verdict
+discrete_k2,positive,0,gmm,1.0,True,True,discrete structure
+discrete_k2,positive,0,dec,0.201,False,True,discrete structure
+discrete_k2,positive,0,vae_gmm,0.025,False,True,discrete structure
+discrete_k2,positive,1,gmm,1.0,True,True,discrete structure
+discrete_k2,positive,1,dec,0.148,False,True,discrete structure
+discrete_k2,positive,1,vae_gmm,0.018,False,True,discrete structure
+discrete_k2,positive,2,gmm,1.0,True,True,discrete structure
+discrete_k2,positive,2,dec,0.045,False,True,discrete structure
+discrete_k2,positive,2,vae_gmm,0.053,False,True,discrete structure
+discrete_k2,positive,3,gmm,1.0,True,True,discrete structure
+discrete_k2,positive,3,dec,0.136,False,True,discrete structure
+discrete_k2,positive,3,vae_gmm,-0.008,False,True,discrete structure
+discrete_k2,positive,4,gmm,1.0,True,True,discrete structure
+discrete_k2,positive,4,dec,0.046,False,True,discrete structure
+discrete_k2,positive,4,vae_gmm,0.039,False,True,discrete structure
+continuum_1d,negative,0,gmm,0.86,True,False,not-testable (no reproducible k)
+continuum_1d,negative,0,dec,0.468,False,False,not-testable (no reproducible k)
+continuum_1d,negative,0,vae_gmm,0.277,False,False,not-testable (no reproducible k)
+continuum_1d,negative,1,gmm,0.867,True,False,no discrete structure (continuum)
+continuum_1d,negative,1,dec,0.301,False,False,no discrete structure (continuum)
+continuum_1d,negative,1,vae_gmm,0.167,False,False,no discrete structure (continuum)
+continuum_1d,negative,2,gmm,0.712,False,False,no discrete structure (continuum)
+continuum_1d,negative,2,dec,0.37,False,False,no discrete structure (continuum)
+continuum_1d,negative,2,vae_gmm,0.254,False,False,no discrete structure (continuum)
+continuum_1d,negative,3,gmm,0.99,True,False,no discrete structure (continuum)
+continuum_1d,negative,3,dec,0.175,False,False,no discrete structure (continuum)
+continuum_1d,negative,3,vae_gmm,0.127,False,False,no discrete structure (continuum)
+continuum_1d,negative,4,gmm,0.949,True,False,not-testable (no reproducible k)
+continuum_1d,negative,4,dec,0.389,False,False,not-testable (no reproducible k)
+continuum_1d,negative,4,vae_gmm,0.261,False,False,not-testable (no reproducible k)

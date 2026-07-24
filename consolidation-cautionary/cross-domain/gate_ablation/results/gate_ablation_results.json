@@ -1,0 +1,48 @@
+{
+  "params": {
+    "reps": 15,
+    "n": 60,
+    "p": 50,
+    "sep": 3.0,
+    "n_ref": 120,
+    "n_bootstrap": 40,
+    "seed": 42,
+    "quick": false,
+    "sweep": false,
+    "out": "outputs/gate_ablation"
+  },
+  "n_datasets": 60,
+  "elapsed_sec": 4623.9,
+  "summary": {
+    "stability_only": {
+      "TPR": 1.0,
+      "FPR": 0.367,
+      "cert_rate_by_condition": {
+        "discrete_k2": 1.0,
+        "discrete_k3": 1.0,
+        "single_gaussian": 0.0,
+        "continuum_1d": 0.7333333333333333
+      }
+    },
+    "discreteness_only": {
+      "TPR": 0.967,
+      "FPR": 0.0,
+      "cert_rate_by_condition": {
+        "discrete_k2": 1.0,
+        "discrete_k3": 0.9333333333333333,
+        "single_gaussian": 0.0,
+        "continuum_1d": 0.0
+      }
+    },
+    "stability+discreteness": {
+      "TPR": 0.967,
+      "FPR": 0.0,
+      "cert_rate_by_condition": {
+        "discrete_k2": 1.0,
+        "discrete_k3": 0.9333333333333333,
+        "single_gaussian": 0.0,
+        "continuum_1d": 0.0
+      }
+    }
+  }
+}

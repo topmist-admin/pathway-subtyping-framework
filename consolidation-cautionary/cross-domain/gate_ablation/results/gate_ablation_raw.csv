@@ -1,0 +1,61 @@
+stability_pass,stability_ari,discreteness_pass,discreteness_verdict,discreteness_testable,sg_empirical_p,condition,klass,rep,k
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,0,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,1,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,2,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,3,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,4,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,5,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,6,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,7,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,8,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,9,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,10,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,11,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,12,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,13,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k2,positive,14,2
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,0,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,1,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,2,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,3,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,4,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,5,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,6,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,7,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,8,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,9,3
+True,0.9878760037254259,True,discrete structure,True,0.0083,discrete_k3,positive,10,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,11,3
+True,0.9893153937475268,False,no discrete structure (continuum),True,0.1653,discrete_k3,positive,12,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,13,3
+True,1.0,True,discrete structure,True,0.0083,discrete_k3,positive,14,3
+False,0.13835551804655571,False,not-testable (no reproducible k),False,0.6694,single_gaussian,negative,0,2
+False,0.11090214020959921,False,not-testable (no reproducible k),False,0.6529,single_gaussian,negative,1,2
+False,0.047786767434710845,False,not-testable (no reproducible k),False,0.9587,single_gaussian,negative,2,2
+False,0.08999597027035142,False,not-testable (no reproducible k),False,0.6529,single_gaussian,negative,3,2
+False,0.14184198069238213,False,not-testable (no reproducible k),False,0.8347,single_gaussian,negative,4,2
+False,0.14692348588318851,False,not-testable (no reproducible k),False,0.6364,single_gaussian,negative,5,2
+False,0.0857046131525935,False,not-testable (no reproducible k),False,0.9256,single_gaussian,negative,6,2
+False,0.1666090580241304,False,not-testable (no reproducible k),False,0.6033,single_gaussian,negative,7,2
+False,0.19347046385488825,False,not-testable (no reproducible k),False,0.9091,single_gaussian,negative,8,2
+False,0.17652347116490813,False,not-testable (no reproducible k),False,0.9669,single_gaussian,negative,9,2
+False,0.20265265687914064,False,not-testable (no reproducible k),False,0.9091,single_gaussian,negative,10,2
+False,0.0731705457367391,False,not-testable (no reproducible k),False,0.9835,single_gaussian,negative,11,2
+False,0.1748789403416237,False,not-testable (no reproducible k),False,0.8264,single_gaussian,negative,12,2
+False,0.06531355435289687,False,not-testable (no reproducible k),False,0.6777,single_gaussian,negative,13,2
+False,0.12133099065929828,False,no discrete structure (continuum),True,0.5785,single_gaussian,negative,14,2
+True,0.9542332946778943,False,not-testable (no reproducible k),False,0.3554,continuum_1d,negative,0,2
+False,0.7769304397750738,False,not-testable (no reproducible k),False,0.7025,continuum_1d,negative,1,2
+True,0.9299108852184703,False,not-testable (no reproducible k),False,0.6777,continuum_1d,negative,2,2
+True,0.9514458023542932,False,not-testable (no reproducible k),False,0.3967,continuum_1d,negative,3,2
+True,0.8148424108707186,False,no discrete structure (continuum),True,0.6364,continuum_1d,negative,4,2
+True,0.9208275211097445,False,not-testable (no reproducible k),False,0.4876,continuum_1d,negative,5,2
+True,0.9495875406204639,False,not-testable (no reproducible k),False,0.2645,continuum_1d,negative,6,2
+False,0.7244273345050669,False,not-testable (no reproducible k),False,0.5372,continuum_1d,negative,7,2
+True,0.85915404974344,False,not-testable (no reproducible k),False,0.3719,continuum_1d,negative,8,2
+True,0.8214883570415822,False,not-testable (no reproducible k),False,0.4876,continuum_1d,negative,9,2
+False,0.587246219101796,False,not-testable (no reproducible k),False,0.4215,continuum_1d,negative,10,2
+False,0.6752176030147575,False,not-testable (no reproducible k),False,0.9339,continuum_1d,negative,11,2
+True,0.9340342202522391,False,not-testable (no reproducible k),False,0.2397,continuum_1d,negative,12,2
+True,0.8194730810998803,False,not-testable (no reproducible k),False,0.2149,continuum_1d,negative,13,2
+True,0.92285548635719,False,not-testable (no reproducible k),False,0.3388,continuum_1d,negative,14,2
