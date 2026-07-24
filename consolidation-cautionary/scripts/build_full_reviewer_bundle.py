@@ -213,10 +213,14 @@ PyPI. Nothing here needs controlled-access data or the unreleased release.
 - `MANIFEST.txt`                      every file with its SHA-256
 
 ## Setup (5 minutes) — run at the bundle root
+v0.8 is NOT on PyPI and NOT in any public git repo. You do not pull it — this bundle
+CONTAINS the v0.8 source under `src/`, and `pip install -e .` builds it from the files
+in this folder (the `.` = "the project in this directory"; pip reads the bundled
+`pyproject.toml`). Only third-party deps come from PyPI.
 ```
 python -m venv .venv && . .venv/bin/activate
-pip install -e .                    # installs the v0.8 line from source (pyproject.toml is here)
-python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.8.0
+pip install -e .                    # builds v0.8 from the local src/ HERE — not PyPI, not git
+python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.8.0  (if it says 0.7.0 you installed the PyPI release by mistake)
 pip install numpy pandas scikit-learn scipy statsmodels requests torch   # analysis deps (torch only for DL baselines)
 ```
 
