@@ -35,9 +35,9 @@ import pandas as pd
 from sklearn.mixture import GaussianMixture
 
 SEPS = [0.0, 0.5, 1.0, 1.5, 2.0, 3.0]
-NS = [150]        # single n keeps the sweep tractable; the curve is the point
+NS = [120]        # single n keeps the sweep tractable; the curve is the point
 P = 50            # features
-N_REF = 120       # floor 1/121; kept modest so the sweep is tractable
+N_REF = 100       # floor 1/101; modest so the sweep is tractable
 
 
 def make(sep: float, n: int, p: int, rng) -> np.ndarray:
@@ -68,7 +68,7 @@ def main() -> None:
                 lab = GaussianMixture(2, covariance_type="full", n_init=1,
                                       random_state=42, reg_covar=1e-6).fit(X).predict(X)
                 _ = lab
-                res = DiscretenessGateA(seed=42, n_ref=N_REF).run(
+                res = DiscretenessGateA(seed=42, n_ref=N_REF, n_bootstrap=20).run(
                     "sweep", Xdf, 2, gmm_seed=42)
                 if res.testable:
                     testable += 1

@@ -35,11 +35,14 @@ abstentions. Frame the contribution as replacing the feature-permutation null wi
 single-Gaussian null (SigClust; Liu et al. 2008) on the existing bootstrap-ARI
 statistic — not as a multi-test discreteness instrument.
 
-**Resolution / operating characteristic:** every certified positive sits exactly at
-the p-floor (`1/(n_ref+1)`), so the ablation alone shows no resolution between
-borderline and obvious structure. That is addressed by `separation_sweep.py` /
-`results/separation_sweep.json`, which varies component separation from 0 to a clean
-split and reports the certify-rate and p transition.
+**Resolution / operating characteristic** (`separation_sweep.py` /
+`results/separation_sweep.json`): sweeping component separation δ from 0 to 3 SD
+(n=120, n_ref=100), the gate **does** resolve — median p collapses from ≈0.8 to 0.03
+and certify rate rises 0 → 0.75 between δ=2 and δ=3 — refuting "flat at the floor".
+But the transition is **sharp and late**: it certifies nothing through δ≤2, so the
+recalibrated null is **conservative** (low sensitivity to moderate structure), abstaining
+in the mid-range. Good for rejecting over-called subtypes; not a sensitive detector of
+subtle real structure. Reported as a limitation, not tuned away.
 
 The scripts live in the framework repo root (they are framework tooling, not
 package-local): `scripts/gate_ablation_study.py` and `scripts/plot_gate_ablation.py`.

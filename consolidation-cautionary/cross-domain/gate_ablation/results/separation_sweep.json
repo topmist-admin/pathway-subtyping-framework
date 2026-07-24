@@ -1,0 +1,88 @@
+{
+  "design": {
+    "seps": [
+      0.0,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      3.0
+    ],
+    "ns": [
+      120
+    ],
+    "p": 50,
+    "n_ref": 100,
+    "reps": 4,
+    "p_floor": 0.0099
+  },
+  "sweep": [
+    {
+      "n": 120,
+      "sep": 0.0,
+      "reps": 4,
+      "certify_rate": 0.0,
+      "testable_rate": 0.25,
+      "median_sg_p": 0.7574,
+      "min_sg_p": 0.3762,
+      "p_floor": 0.0099,
+      "median_p_above_floor": true
+    },
+    {
+      "n": 120,
+      "sep": 0.5,
+      "reps": 4,
+      "certify_rate": 0.0,
+      "testable_rate": 0.25,
+      "median_sg_p": 0.8268,
+      "min_sg_p": 0.4356,
+      "p_floor": 0.0099,
+      "median_p_above_floor": true
+    },
+    {
+      "n": 120,
+      "sep": 1.0,
+      "reps": 4,
+      "certify_rate": 0.0,
+      "testable_rate": 0.0,
+      "median_sg_p": 0.7178,
+      "min_sg_p": 0.3861,
+      "p_floor": 0.0099,
+      "median_p_above_floor": true
+    },
+    {
+      "n": 120,
+      "sep": 1.5,
+      "reps": 4,
+      "certify_rate": 0.0,
+      "testable_rate": 0.0,
+      "median_sg_p": 0.8218,
+      "min_sg_p": 0.0297,
+      "p_floor": 0.0099,
+      "median_p_above_floor": true
+    },
+    {
+      "n": 120,
+      "sep": 2.0,
+      "reps": 4,
+      "certify_rate": 0.0,
+      "testable_rate": 0.25,
+      "median_sg_p": 0.8911,
+      "min_sg_p": 0.7723,
+      "p_floor": 0.0099,
+      "median_p_above_floor": true
+    },
+    {
+      "n": 120,
+      "sep": 3.0,
+      "reps": 4,
+      "certify_rate": 0.75,
+      "testable_rate": 1.0,
+      "median_sg_p": 0.0297,
+      "min_sg_p": 0.0099,
+      "p_floor": 0.0099,
+      "median_p_above_floor": true
+    }
+  ],
+  "reads": "A resolving gate should show certify_rate rising with sep and median p descending through the floor region, not a flat floor. Flat-at-floor across all sep would confirm the reviewer's concern that the test has no resolution."
+}
