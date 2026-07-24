@@ -1,0 +1,32 @@
+{
+  "n_samples": 141,
+  "n_donors": 48,
+  "region_sample_level_valid": {
+    "note": "region varies within donor; sample-level unit is appropriate",
+    "chi2": 125.119,
+    "cramers_v_uncorrected": 0.6661,
+    "cramers_v_bergsma": 0.66
+  },
+  "diagnosis_naive_sample_level_INVALID": {
+    "note": "diagnosis is fixed per donor; 141-sample test inflates n -> invalid",
+    "chi2": 1.793,
+    "p_invalid": 0.4081,
+    "cramers_v_uncorrected": 0.1128,
+    "cramers_v_bergsma": 0.0
+  },
+  "diagnosis_donor_level_CORRECT": {
+    "n": 48,
+    "chi2": 3.2,
+    "p_asymptotic": 0.2019,
+    "cramers_v_uncorrected": 0.2582,
+    "cramers_v_bergsma": 0.157,
+    "permutation_test_permuting_diagnosis_across_donors": {
+      "n_perm": 10000,
+      "observed_v": 0.2582,
+      "p": 0.2339,
+      "null_v_95th_percentile": 0.2582,
+      "interpretation": "even by chance the diagnosis effect can reach V~0.26 at this donor count; the observed effect is not distinguishable from that null"
+    }
+  },
+  "conclusion": "Region dominates (Bergsma V 0.660) and diagnosis is not distinguishable from chance at the donor level (permutation p 0.234). The region-not-diagnosis finding holds under correct donor-level inference; the effect-size gap is not an artifact of unequal replication because both are now compared on a corrected footing."
+}

@@ -4,6 +4,43 @@ Synthetic-ground-truth validation of the gate battery: what does each gate
 actually *buy*, and is the discreteness gate clusterer-agnostic? This is the
 **Result 1 (methods validation)** evidence for the cautionary-framework paper.
 
+## ⚠️ READ FIRST — the honest re-analysis supersedes the headline numbers below
+
+A hostile-review pass showed the original ablation write-up was misleading in three
+ways, all confirmed against the raw CSV. **The corrected numbers live in
+`results/ablation_honest.json`** (from `scripts/reanalyze_ablation_honest.py`); use
+those, not the "FPR 0.000 / rejected 100%" framing in the older sections:
+
+1. **Three-way accounting.** The gate returns certify / reject / **not-testable**.
+   On the 30 negative-control datasets it returned `not-testable` (an abstention) on
+   **28 (93%)** — it did not *judge* them as continua, it declined. The old write-up
+   scored abstentions as correct rejections, manufacturing FPR=0.000. Excluding
+   abstentions the testable-negative denominator is **2** (Wilson 95% CI on that FPR:
+   [0.00, 0.66] — nearly uninformative).
+2. **The real, defensible result is the paired contrast.** The stability-only gate
+   falsely certified **11/30** negatives (FPR 0.367, 95% CI [0.22, 0.54]); the
+   recalibrated gate certified **0/30**. Exact McNemar on the negatives: b=11, c=0,
+   **p=0.001** — the reduction in false certification is significant. The mechanism is
+   partly abstention, and we say so, but the improvement over stability-only is real.
+3. **No detectable TPR cost.** TPR 1.000 → 0.967 is a single discordant pair; exact
+   McNemar **p=1.0**. Do not claim a "3% cost" — it is not distinguishable from zero
+   (though the study has no power to exclude one).
+
+**And the increment is a null recalibration, not a new instrument.** Head-to-head in
+`ablation_honest.json`: the SigClust-style single-Gaussian p-value **alone**
+(threshold α=0.05) reproduces the full gate's TPR and FPR exactly. The gap statistic
+and Hartigan dip are computed but never enter the decision rule
+(`passed = obs > sg_p95 and sg_p < alpha`); the k-stability route only adds
+abstentions. Frame the contribution as replacing the feature-permutation null with a
+single-Gaussian null (SigClust; Liu et al. 2008) on the existing bootstrap-ARI
+statistic — not as a multi-test discreteness instrument.
+
+**Resolution / operating characteristic:** every certified positive sits exactly at
+the p-floor (`1/(n_ref+1)`), so the ablation alone shows no resolution between
+borderline and obvious structure. That is addressed by `separation_sweep.py` /
+`results/separation_sweep.json`, which varies component separation from 0 to a clean
+split and reports the certify-rate and p transition.
+
 The scripts live in the framework repo root (they are framework tooling, not
 package-local): `scripts/gate_ablation_study.py` and `scripts/plot_gate_ablation.py`.
 The deposited outputs are here because the scripts' default `--out`

@@ -1,0 +1,43 @@
+{
+  "design_note": "Both controls are WITHIN a single study each; study is not confounded with the ground-truth label. Supersedes the pooled-3-study version (batch-confounded).",
+  "discrete_control": {
+    "study": "lgg_tcga_pan_can_atlas_2018",
+    "axis": "IDH-mutant vs IDH-wildtype (single study)",
+    "n": 507,
+    "n_idhmut": 415,
+    "n_idhwt": 92,
+    "normalization": "within-study median z-scores (no batch confound)",
+    "recovery_of_idh_ari": 0.418,
+    "gateA": {
+      "certified": true,
+      "verdict": "discrete structure",
+      "testable": true,
+      "sg_p": 0.0066,
+      "sg_p_at_floor": true,
+      "dip_pc1_p": 0.9963
+    },
+    "EXPECTED": "certified=True (IDH status is genuinely discrete)"
+  },
+  "continuum_control": {
+    "study": "luad_tcga_pan_can_atlas_2018",
+    "n": 510,
+    "immune_pathways": 8,
+    "immune_score_unimodal_dip_p": 0.9817,
+    "k2_split_tracks_immune_score_(std_gap)": 1.09,
+    "gateA": {
+      "certified": false,
+      "verdict": "no discrete structure (continuum)",
+      "testable": true,
+      "sg_p": 0.1722,
+      "sg_p_at_floor": false,
+      "dip_pc1_p": 0.9972
+    },
+    "EXPECTED": "certified=False (continuous gradient, not discrete)"
+  },
+  "calibration_verdict": {
+    "discrete_certified_correctly": true,
+    "continuum_rejected_correctly": true,
+    "both_correct": true,
+    "caveat": "Two anchors at opposite ends of the difficulty range; this shows the gate is not degenerate, not that it resolves borderline within-disease structure. See the separation sweep for the operating characteristic."
+  }
+}
