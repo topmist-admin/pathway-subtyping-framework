@@ -235,6 +235,7 @@ def main():
             tar.add(src, arcname=os.path.join(root, dest))
         tar.add(man, arcname=os.path.join(root, "MANIFEST.txt"))
 
+    os.remove(guide_path)   # it now lives inside the tar as STRESS-TEST.md
     print(f"Wrote {out_path}")
     print(f"  {len(pairs)} files, {os.path.getsize(out_path)/1e6:.1f} MB compressed "
           f"({total/1e6:.1f} MB uncompressed)")
