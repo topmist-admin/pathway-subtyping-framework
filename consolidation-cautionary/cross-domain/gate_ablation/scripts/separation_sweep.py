@@ -34,10 +34,10 @@ except ModuleNotFoundError:
 import pandas as pd
 from sklearn.mixture import GaussianMixture
 
-SEPS = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
-NS = [100, 250]
-P = 50           # features
-N_REF = 200      # larger than the ablation's 120 so p can resolve below the floor
+SEPS = [0.0, 0.5, 1.0, 1.5, 2.0, 3.0]
+NS = [150]        # single n keeps the sweep tractable; the curve is the point
+P = 50            # features
+N_REF = 120       # floor 1/121; kept modest so the sweep is tractable
 
 
 def make(sep: float, n: int, p: int, rng) -> np.ndarray:
@@ -65,7 +65,7 @@ def main() -> None:
                 rng = np.random.default_rng(1000 * n + int(sep * 10) + rep)
                 X = make(sep, n, P, rng)
                 Xdf = pd.DataFrame(X, columns=[f"f{i}" for i in range(P)])
-                lab = GaussianMixture(2, covariance_type="full", n_init=5,
+                lab = GaussianMixture(2, covariance_type="full", n_init=1,
                                       random_state=42, reg_covar=1e-6).fit(X).predict(X)
                 _ = lab
                 res = DiscretenessGateA(seed=42, n_ref=N_REF).run(
