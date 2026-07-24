@@ -1,0 +1,219 @@
+{
+  "study": "brca_tcga_pan_can_atlas_2018",
+  "n_samples": 1082,
+  "k_pam50": 5,
+  "k_bic": 2,
+  "pam50_classes": 5,
+  "recovery_vs_pam50_ARI": {
+    "PSF (pathway-GMM)": {
+      "ari": 0.21779604557214727,
+      "ami": 0.2496712099935301,
+      "n": 981
+    },
+    "k-means (pathway)": {
+      "ari": 0.1597917007754306,
+      "ami": 0.1903008707552459,
+      "n": 981
+    },
+    "DEC": {
+      "ari": 0.08775851965152613,
+      "ami": 0.11790129918707566,
+      "n": 981
+    },
+    "VAE-GMM": {
+      "ari": 0.12469006074005333,
+      "ami": 0.16836568353245712,
+      "n": 981
+    }
+  },
+  "recovery_vs_pam50_single_subtype_enrichment": {
+    "PSF (pathway-GMM)": {
+      "per_subtype": {
+        "BRCA_Basal": {
+          "cluster": 4,
+          "enrichment_frac": 0.514,
+          "odds_ratio": 7.87,
+          "p": 5.29758521780785e-24
+        },
+        "BRCA_Her2": {
+          "cluster": 0,
+          "enrichment_frac": 0.242,
+          "odds_ratio": 7.58,
+          "p": 4.738424300248513e-16
+        },
+        "BRCA_LumA": {
+          "cluster": 2,
+          "enrichment_frac": 0.876,
+          "odds_ratio": 11.64,
+          "p": 7.783448206312001e-47
+        },
+        "BRCA_LumB": {
+          "cluster": 3,
+          "enrichment_frac": 0.43,
+          "odds_ratio": 3.72,
+          "p": 5.305461338750253e-10
+        },
+        "BRCA_Normal": {
+          "cluster": 2,
+          "enrichment_frac": 0.081,
+          "odds_ratio": 4.18,
+          "p": 3.4735560196271524e-05
+        }
+      },
+      "best_subtype": "BRCA_LumA",
+      "best": {
+        "cluster": 2,
+        "enrichment_frac": 0.876,
+        "odds_ratio": 11.64,
+        "p": 7.783448206312001e-47
+      }
+    },
+    "k-means (pathway)": {
+      "per_subtype": {
+        "BRCA_Basal": {
+          "cluster": 2,
+          "enrichment_frac": 0.513,
+          "odds_ratio": 10.87,
+          "p": 1.225949359207466e-37
+        },
+        "BRCA_Her2": {
+          "cluster": 2,
+          "enrichment_frac": 0.231,
+          "odds_ratio": 7.05,
+          "p": 3.715637240860904e-15
+        },
+        "BRCA_LumA": {
+          "cluster": 0,
+          "enrichment_frac": 0.766,
+          "odds_ratio": 4.41,
+          "p": 1.0787398105324169e-20
+        },
+        "BRCA_LumB": {
+          "cluster": 4,
+          "enrichment_frac": 0.412,
+          "odds_ratio": 3.47,
+          "p": 1.5320432929713014e-09
+        },
+        "BRCA_Normal": {
+          "cluster": 0,
+          "enrichment_frac": 0.121,
+          "odds_ratio": 14.5,
+          "p": 6.583128295142767e-13
+        }
+      },
+      "best_subtype": "BRCA_LumA",
+      "best": {
+        "cluster": 0,
+        "enrichment_frac": 0.766,
+        "odds_ratio": 4.41,
+        "p": 1.0787398105324169e-20
+      }
+    },
+    "DEC": {
+      "per_subtype": {
+        "BRCA_Basal": {
+          "cluster": 2,
+          "enrichment_frac": 0.594,
+          "odds_ratio": 9.88,
+          "p": 5.334630509650757e-23
+        },
+        "BRCA_Her2": {
+          "cluster": 2,
+          "enrichment_frac": 0.167,
+          "odds_ratio": 2.65,
+          "p": 0.00215642085628727
+        },
+        "BRCA_LumA": {
+          "cluster": 0,
+          "enrichment_frac": 0.757,
+          "odds_ratio": 4.16,
+          "p": 1.9851052272374448e-19
+        },
+        "BRCA_LumB": {
+          "cluster": 1,
+          "enrichment_frac": 0.404,
+          "odds_ratio": 3.91,
+          "p": 2.0904111582115882e-14
+        },
+        "BRCA_Normal": {
+          "cluster": 4,
+          "enrichment_frac": 0.094,
+          "odds_ratio": 7.95,
+          "p": 8.667229261918047e-09
+        }
+      },
+      "best_subtype": "BRCA_LumA",
+      "best": {
+        "cluster": 0,
+        "enrichment_frac": 0.757,
+        "odds_ratio": 4.16,
+        "p": 1.9851052272374448e-19
+      }
+    },
+    "VAE-GMM": {
+      "per_subtype": {
+        "BRCA_Basal": {
+          "cluster": 1,
+          "enrichment_frac": 0.412,
+          "odds_ratio": 4.92,
+          "p": 1.9222908391795106e-16
+        },
+        "BRCA_Her2": {
+          "cluster": 2,
+          "enrichment_frac": 0.145,
+          "odds_ratio": 2.72,
+          "p": 4.829172551246384e-05
+        },
+        "BRCA_LumA": {
+          "cluster": 0,
+          "enrichment_frac": 0.891,
+          "odds_ratio": 12.64,
+          "p": 6.431633488917308e-44
+        },
+        "BRCA_LumB": {
+          "cluster": 3,
+          "enrichment_frac": 0.375,
+          "odds_ratio": 3.09,
+          "p": 1.63861918141615e-09
+        },
+        "BRCA_Normal": {
+          "cluster": 4,
+          "enrichment_frac": 0.081,
+          "odds_ratio": 3.17,
+          "p": 0.0016471858058046665
+        }
+      },
+      "best_subtype": "BRCA_LumA",
+      "best": {
+        "cluster": 0,
+        "enrichment_frac": 0.891,
+        "odds_ratio": 12.64,
+        "p": 6.431633488917308e-44
+      }
+    }
+  },
+  "gates": {
+    "label_shuffle": {
+      "passed": true,
+      "ari": -7.654659039719397e-05
+    },
+    "bootstrap_stability_at_k5": {
+      "passed": false,
+      "ari": 0.3918212967493579
+    },
+    "bootstrap_stability_at_bic_k": {
+      "k": 2,
+      "passed": false,
+      "ari": 0.43379815323135745
+    },
+    "discreteness_gateA_at_k5": {
+      "certified": true,
+      "verdict": "discrete structure"
+    },
+    "discreteness_gateA_at_bic_k": {
+      "k": 2,
+      "certified": true,
+      "verdict": "discrete structure"
+    }
+  }
+}

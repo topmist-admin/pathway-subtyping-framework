@@ -126,7 +126,29 @@ def main() -> None:
             "valid_rows": distribution(valid),
             "strict_rows": distribution(strict),
         },
-        # 3. the incomplete-correction finding
+        # 3. is the reproducibility column even trustworthy?
+        "column_validity_diagnostic": {
+            "question": ("Is `bootstrap_ari_5th_percentile` actually measuring "
+                         "bootstrap stability of the reported partition?"),
+            "test": ("Well-separated clusters are trivially reproducible under "
+                     "resampling. Any row with a high silhouette must therefore "
+                     "have a high stability ARI. Rows with high silhouette AND "
+                     "near-zero ARI are not physically consistent."),
+            "high_silhouette_rows": [
+                {
+                    "dataset": row["dataset_name"],
+                    "silhouette": round(float(row["silhouette"]), 3),
+                    "bootstrap_ari": round(
+                        float(row["bootstrap_ari_5th_percentile"]), 4),
+                    "n_samples": int(row["n_samples"]),
+                }
+                for _, row in valid[valid["silhouette"] > 0.7]
+                .sort_values("silhouette", ascending=False).iterrows()
+            ],
+            "spearman_silhouette_vs_ari": None,   # filled below
+            "verdict": None,                       # filled below
+        },
+        # 4. the incomplete-correction finding
         "incomplete_correction_finding": {
             "erratum_rule": "n_true_clusters > n_samples",
             "rule_catches": ["GSE92332 (1957 labels / 533 samples)"],
@@ -148,6 +170,21 @@ def main() -> None:
             "conclusion_robust": None,  # filled below
         },
     }
+
+    diag = out["column_validity_diagnostic"]
+    hi = valid[valid["silhouette"] > 0.7]
+    diag["spearman_silhouette_vs_ari"] = round(float(
+        valid[["silhouette", "bootstrap_ari_5th_percentile"]]
+        .corr(method="spearman").iloc[0, 1]), 4)
+    n_bad = int((hi["bootstrap_ari_5th_percentile"] < 0.1).sum())
+    diag["n_high_silhouette"] = int(len(hi))
+    diag["n_high_silhouette_with_near_zero_ari"] = n_bad
+    diag["verdict"] = (
+        "COLUMN UNRELIABLE: every well-separated cohort reports near-zero or "
+        "negative stability, which cannot be true of a genuine bootstrap-ARI "
+        "measure. The column does not measure what its name says."
+        if n_bad == len(hi) and len(hi) > 0 else
+        "No inconsistency detected between silhouette and stability.")
 
     # The load-bearing defensive check: does the Result 2 conclusion survive the
     # stricter screen? It does only if no cohort clears the bar either way.
