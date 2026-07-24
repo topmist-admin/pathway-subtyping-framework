@@ -138,10 +138,17 @@ def main() -> None:
     results_items = list(RESULTS_ITEMS)
     for p in PACKAGES:
         base = f"consolidation-cautionary/cross-domain/{p}"
-        code_items.append((f"{base}/scripts", f"code/packages/{p}/scripts"))
+        # gate_ablation's scripts live at the framework repo root, not in-package
+        if os.path.isdir(os.path.join(REPO, base, "scripts")):
+            code_items.append((f"{base}/scripts", f"code/packages/{p}/scripts"))
         code_items.append((f"{base}/README.md", f"code/packages/{p}/README.md"))
         results_items.append((f"{base}/results", f"results/packages/{p}/results"))
         results_items.append((f"{base}/README.md", f"results/packages/{p}/README.md"))
+    # gate_ablation scripts (repo-root framework tooling)
+    code_items.append(("scripts/gate_ablation_study.py",
+                       "code/packages/gate_ablation/scripts/gate_ablation_study.py"))
+    code_items.append(("scripts/plot_gate_ablation.py",
+                       "code/packages/gate_ablation/scripts/plot_gate_ablation.py"))
     # bundle-level cross-domain readme + gate-6 remap results
     code_items.append(("consolidation-cautionary/cross-domain/README.md",
                        "code/packages/README-cross-domain.md"))
