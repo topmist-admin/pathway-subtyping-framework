@@ -87,9 +87,9 @@ def manuscript_items(ms_dir):
          "manuscript/rebuild-architecture-rationale.md"),
         # --- PROPOSED new version (not yet submitted) ---
         ("REBUILD-DRAFT-v2-2026-07-24-FULL.md",
-         "manuscript/proposed-new-version/PROPOSED-manuscript-v2.1-2026-07-24.md"),
-        ("rebuild-deliverables-2026-07-24/manuscript-v2.1-2026-07-24.pdf",
-         "manuscript/proposed-new-version/PROPOSED-manuscript-v2.1-2026-07-24.pdf"),
+         "manuscript/proposed-new-version/PROPOSED-manuscript-v2.2-2026-07-24.md"),
+        ("rebuild-deliverables-2026-07-24/manuscript-v2.2-2026-07-24.pdf",
+         "manuscript/proposed-new-version/PROPOSED-manuscript-v2.2-2026-07-24.pdf"),
         # --- WITHDRAWN prior version (do not cite) ---
         ("Chauhan-Mandatory-Validation-Gates-Manuscript-RevisionR1-2026-05-25.docx",
          "manuscript/withdrawn-prior-version/WITHDRAWN-manuscript-as-reviewed-2026-05-25.docx"),
@@ -156,10 +156,11 @@ This folder holds the **proposed** rebuild of the manuscript. It has NOT been
 submitted to any journal. It supersedes the withdrawn prior version
 (`../withdrawn-prior-version/`).
 
-- `PROPOSED-manuscript-v2.1-2026-07-24.md` — the draft (markdown source of record)
-- `PROPOSED-manuscript-v2.1-2026-07-24.pdf` — typeset PDF of the same
+- `PROPOSED-manuscript-v2.2-2026-07-24.md` — the draft (markdown source of record)
+- `PROPOSED-manuscript-v2.2-2026-07-24.pdf` — typeset PDF of the same
 
-Status: draft v2.1, after two internal hostile-review passes. Known
+Status: draft v2.2, after two internal hostile-review passes and one independent
+third-party stress-test (MAJOR REVISION; its analytical findings applied). Known
 pre-submission gaps (v0.8 release + code DOI, Zenodo supersession, funding/author
 statements) are listed in the manuscript's Data/Code section and in Part C of
 `../REVIEWER-CONCERN-HANDLING-MATRIX.md`. Every number in this draft is
