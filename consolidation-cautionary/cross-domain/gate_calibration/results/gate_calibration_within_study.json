@@ -8,6 +8,23 @@
     "n_idhwt": 92,
     "normalization": "within-study median z-scores (no batch confound)",
     "recovery_of_idh_ari": 0.418,
+    "certified_partition_vs_idh": {
+      "crosstab_cluster_x_idh": {
+        "IDHmut": {
+          "0": 70,
+          "1": 345
+        },
+        "IDHwt": {
+          "0": 80,
+          "1": 12
+        }
+      },
+      "idhwt_enriched_cluster": 0,
+      "precision_for_idhwt": 0.533,
+      "recall_of_idhwt": 0.87,
+      "note": "does the CERTIFIED GMM partition track IDH? high precision/recall => the certified structure IS the IDH axis, and the modest ARI reflects the 415-mut arm's internal codel/non-codel substructure collapsed to binary, not a wrong axis"
+    },
+    "pc1_dip_p": 0.8602,
     "gateA": {
       "certified": true,
       "verdict": "discrete structure",

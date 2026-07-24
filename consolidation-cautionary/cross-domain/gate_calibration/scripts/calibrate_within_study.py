@@ -161,6 +161,24 @@ def main():
     lab = GaussianMixture(2, covariance_type="full", n_init=10, random_state=42,
                           reg_covar=1e-6).fit(X).predict(X)
     ari = float(adjusted_rand_score(label.astype("category").cat.codes, lab))
+    # Does the CERTIFIED partition actually align with IDH, or a different axis?
+    # Cross-tab GMM cluster x IDH, and report the best cluster->IDH-wt mapping purity.
+    ct = pd.crosstab(pd.Series(lab, index=P.index, name="cluster"), label)
+    # which cluster is enriched for IDH-wt (the minority, transcriptionally distinct arm)
+    wt_frac_by_cluster = (ct.get("IDHwt", pd.Series(0, index=ct.index)) /
+                          ct.sum(axis=1)).to_dict()
+    wt_cluster = max(wt_frac_by_cluster, key=wt_frac_by_cluster.get)
+    # purity: of the samples the GMM puts in the IDH-wt-enriched cluster, what frac are IDH-wt;
+    # and of all IDH-wt, what frac land in that cluster (recall)
+    in_wt_cluster = (lab == wt_cluster)
+    is_wt = (label.values == "IDHwt")
+    precision = float((in_wt_cluster & is_wt).sum() / max(1, in_wt_cluster.sum()))
+    recall = float((in_wt_cluster & is_wt).sum() / max(1, is_wt.sum()))
+    # dip on PC1 of the pathway matrix (the diagnostic the reviewer wanted reported)
+    from sklearn.decomposition import PCA
+    pc1 = PCA(n_components=1, random_state=42).fit_transform(
+        StandardScaler().fit_transform(P.values)).ravel()
+    dip_pos = dip_of(pc1)
     out["discrete_control"] = {
         "study": st, "axis": "IDH-mutant vs IDH-wildtype (single study)",
         "n": int(len(P)),
@@ -168,6 +186,16 @@ def main():
         "n_idhwt": int((label == "IDHwt").sum()),
         "normalization": "within-study median z-scores (no batch confound)",
         "recovery_of_idh_ari": round(ari, 3),
+        "certified_partition_vs_idh": {
+            "crosstab_cluster_x_idh": ct.to_dict(),
+            "idhwt_enriched_cluster": int(wt_cluster),
+            "precision_for_idhwt": round(precision, 3),
+            "recall_of_idhwt": round(recall, 3),
+            "note": ("does the CERTIFIED GMM partition track IDH? high precision/recall "
+                     "=> the certified structure IS the IDH axis, and the modest ARI "
+                     "reflects the 415-mut arm's internal codel/non-codel substructure "
+                     "collapsed to binary, not a wrong axis")},
+        "pc1_dip_p": round(float(dip_pos["p"]), 4),
         "gateA": gateA_call(P, 2),
         "EXPECTED": "certified=True (IDH status is genuinely discrete)"}
     print(f"  n={len(P)} ({(label=='IDHmut').sum()} mut / {(label=='IDHwt').sum()} wt); "

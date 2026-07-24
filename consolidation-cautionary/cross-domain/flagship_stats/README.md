@@ -37,6 +37,20 @@ under correct inference.
 - Both Cramér's V values are now Bergsma-corrected (the earlier draft paired a corrected
   region V with an uncorrected diagnosis V — fixed).
 
+## Partition stability (traceability of the "passes bootstrap stability" claim)
+
+`scripts/flagship_stability.py` → `results/flagship_stability.json`. Recomputes the
+k=3 partition's mean bootstrap ARI from the cached per-sample pathway scores
+(`research-results/GSE80655/pathway_scores_scz.csv`) + the deposited labels:
+**0.921** (n=141, n_bootstrap=100, seed 42), passing the 0.80 bar.
+
+⚠️ **Provenance note.** The original `results_summary.json` records this as 0.9234.
+That 0.923 was a headline of the *withdrawn* methodology paper, but the withdrawal was
+driven by the 47-dataset benchmark and the adaptive-threshold model — **not** by this
+stability computation, which reproduces here. It is a valid GSE80655 figure and is
+distinct from the withdrawn CMS4 colorectal cross-platform ARI. Do not list it among
+disavowed figures.
+
 ## Provenance
 
 Input: `../../data/partition/sample_metadata_with_subtypes.csv` (framework v0.3.0

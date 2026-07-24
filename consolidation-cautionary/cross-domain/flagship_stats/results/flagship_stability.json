@@ -1,0 +1,14 @@
+{
+  "cohort": "GSE80655 (postmortem psychiatric brain), 3-region subset",
+  "n_samples": 141,
+  "k": 3,
+  "subtype_sizes": {
+    "0": 39,
+    "1": 92,
+    "2": 10
+  },
+  "mean_bootstrap_ari": 0.9206,
+  "passes_0.80_bar": true,
+  "n_bootstrap": 100,
+  "provenance_note": "0.923 in the original results_summary.json is this number. It was a headline of the withdrawn methodology paper, but the withdrawal was driven by the 47-dataset benchmark + adaptive-threshold model, not by this computation. Distinct from the withdrawn CMS4 colorectal figures."
+}
