@@ -57,7 +57,7 @@ python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.8.0 (unrel
 |---|---|---|---|
 | **Result 1** methods validation | [`cross-domain/gate_ablation/`](cross-domain/gate_ablation/) | `gate_ablation_results.json`, `clusterer_sweep_results.md`, figure | none (synthetic) |
 | **Result 1** real-data calibration (**linchpin**) | [`cross-domain/gate_calibration/`](cross-domain/gate_calibration/) | `gate_calibration.json` | cBioPortal (public, no auth) |
-| **Result 2** benchmark audit | Zenodo `10.5281/zenodo.21262112` (corrected 47-dataset benchmark v2.0) | `corrected_benchmark_47datasets_v2.csv` | Zenodo |
+| **Result 2** benchmark audit | [`cross-domain/benchmark_audit/`](cross-domain/benchmark_audit/) | `benchmark_audit.json` | none (reads deposited CSV) |
 | **Result 3** cancer worked example | [`cross-domain/cancer_r38/`](cross-domain/cancer_r38/) | `brca_pam50_validation.json`, `cptac_brca_multiomic.json` | cBioPortal |
 | **Result 4** psychiatry flagship | [`README.md`](README.md) (v0.7.0 package) + [`genetic-anchoring/`](genetic-anchoring/) | see that README | GEO |
 | Large-N calibration point | [`cross-domain/gtex_brain/`](cross-domain/gtex_brain/) | `gtex_brain_region_confound.json` | recount3 (R) |
@@ -112,6 +112,19 @@ None is restated from prose.
 - 57 candidates → 30 bulk-RNA-seq keepers → only **6 studies / 243 samples** in
   recount3; **~595** with the GSE80655 anchor (n=352) added. Not large-N.
 
+**Benchmark audit (Result 2)** — `cross-domain/benchmark_audit/results/benchmark_audit.json`
+- Retracted adaptive-threshold model refit: R² **0.111** (all rows) / **0.015**
+  (valid) / **0.001** (stricter screen), slope reversing sign between screens.
+  Published claim was R² 0.889, slope +0.914. Reproduces the erratum exactly.
+- Reproducibility across valid cohorts: median **−0.002**, max **0.391**,
+  **0 of 22 reach 0.5** (0 of 15 under the stricter screen).
+- ⚠️ The correction was incomplete: **7 of 22 "valid" rows** have a ground-truth
+  label count ≥ half the sample count (GSE2109 and GSE5204 at exactly one label per
+  sample), which the erratum's `n_true_clusters > n_samples` rule missed. Every
+  headline is reported under both screens and none move.
+- ⚠️ The statistic is a **5th percentile** (conservative lower bound). Claims must be
+  about the gate criterion, not about biology. See that package's caveat section.
+
 ---
 
 ## What this bundle does NOT contain
@@ -131,9 +144,14 @@ None is restated from prose.
 2. **Add a cautionary-bundle pin file.** `requirements.txt` covers only the
    v0.7.0 package; the cross-domain packages have no pinned environment.
 3. **Zenodo deposit** of this bundle, cited from the paper.
-4. **Result 2 writeup** — the corrected 47-dataset benchmark is deposited on Zenodo
-   but has no package here turning it into the "reproducibility is usually low"
-   audit narrative.
-5. **Rewrite the abstract** — the withdrawn manuscript's abstract still carries
-   retracted numbers (R²=0.889, CMS4 75.9%, ARI 0.870, bootstrap 0.923). None may
-   survive into the new paper.
+4. ~~**Result 2 writeup**~~ **DONE 2026-07-23** — `cross-domain/benchmark_audit/`
+   plus the Result 2 section of the rebuild draft.
+5. ~~**Rewrite the abstract**~~ **DRAFTED 2026-07-23** in
+   `AIForAutismOutReach/.../REBUILD-DRAFT-2026-07-23-abstract-result2-result4.md`,
+   carrying none of the retracted figures. Still needs the 3 hostile-review rounds
+   before submission.
+6. **Re-issue the benchmark correction.** The audit found the 2026-07-08 erratum's
+   ground-truth rule (`n_true_clusters > n_samples`) is too weak — 7 rows with
+   near-singleton labels remain marked valid. The conclusions are unaffected, but
+   the deposited Zenodo v2.0 artifact should be superseded by a v2.1 applying the
+   ratio screen, or the manuscript must disclose the gap. **PI decision.**

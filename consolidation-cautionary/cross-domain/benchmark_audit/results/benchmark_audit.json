@@ -1,0 +1,186 @@
+{
+  "source": {
+    "file": "corrected_benchmark_47datasets_v2.csv",
+    "zenodo_doi": "10.5281/zenodo.21262112",
+    "version": "v2.0 (corrected, 2026-07-08 erratum)"
+  },
+  "row_accounting": {
+    "total_rows": 47,
+    "unique_dataset_ids": 41,
+    "marked_PASS": 37,
+    "valid": 22,
+    "invalid": 25
+  },
+  "retracted_threshold_model": {
+    "published_claim": {
+      "r_squared": 0.889,
+      "slope": 0.914,
+      "loocv_rmse": 0.051
+    },
+    "refit_all_rows": {
+      "n": 37,
+      "r_squared": 0.1105,
+      "slope": -0.5993,
+      "p": 0.0444
+    },
+    "refit_valid_rows": {
+      "n": 22,
+      "r_squared": 0.0149,
+      "slope": -0.0369,
+      "p": 0.5887
+    },
+    "refit_strict_rows": {
+      "n": 15,
+      "r_squared": 0.0008,
+      "slope": 0.0112,
+      "p": 0.9181
+    },
+    "verdict": "Silhouette does not predict bootstrap ARI. The published R^2=0.889 does not reproduce under any row screen."
+  },
+  "reproducibility_distribution": {
+    "valid_rows": {
+      "n": 22,
+      "min": -0.1394,
+      "median": -0.0017,
+      "mean": 0.0102,
+      "max": 0.3907,
+      "pass_rate_at_threshold": {
+        "0.9": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.8": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.7": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.6": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.5": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.4": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.3": {
+          "n_passing": 1,
+          "frac": 0.0455
+        },
+        "0.2": {
+          "n_passing": 1,
+          "frac": 0.0455
+        },
+        "0.1": {
+          "n_passing": 1,
+          "frac": 0.0455
+        }
+      }
+    },
+    "strict_rows": {
+      "n": 15,
+      "min": -0.0307,
+      "median": 0.0,
+      "mean": 0.0289,
+      "max": 0.3907,
+      "pass_rate_at_threshold": {
+        "0.9": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.8": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.7": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.6": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.5": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.4": {
+          "n_passing": 0,
+          "frac": 0.0
+        },
+        "0.3": {
+          "n_passing": 1,
+          "frac": 0.0667
+        },
+        "0.2": {
+          "n_passing": 1,
+          "frac": 0.0667
+        },
+        "0.1": {
+          "n_passing": 1,
+          "frac": 0.0667
+        }
+      }
+    }
+  },
+  "incomplete_correction_finding": {
+    "erratum_rule": "n_true_clusters > n_samples",
+    "rule_catches": [
+      "GSE92332 (1957 labels / 533 samples)"
+    ],
+    "rule_misses": "rows where the label count equals or approaches the sample count, which are equally unusable as ground truth",
+    "n_valid_rows_failing_stricter_screen": 7,
+    "screen": "n_true_clusters / n_samples >= 0.5",
+    "rows_dropped": [
+      {
+        "dataset": "GSE2109",
+        "n_samples": 2158,
+        "n_true_clusters": 2158,
+        "ratio": 1.0
+      },
+      {
+        "dataset": "GSE5204",
+        "n_samples": 79,
+        "n_true_clusters": 79,
+        "ratio": 1.0
+      },
+      {
+        "dataset": "GSE17537",
+        "n_samples": 55,
+        "n_true_clusters": 54,
+        "ratio": 0.982
+      },
+      {
+        "dataset": "GSE44228",
+        "n_samples": 72,
+        "n_true_clusters": 69,
+        "ratio": 0.958
+      },
+      {
+        "dataset": "GSE42127",
+        "n_samples": 176,
+        "n_true_clusters": 145,
+        "ratio": 0.824
+      },
+      {
+        "dataset": "GSE66351",
+        "n_samples": 190,
+        "n_true_clusters": 96,
+        "ratio": 0.505
+      },
+      {
+        "dataset": "GSE16759",
+        "n_samples": 16,
+        "n_true_clusters": 8,
+        "ratio": 0.5
+      }
+    ],
+    "conclusion_robust": true
+  }
+}
