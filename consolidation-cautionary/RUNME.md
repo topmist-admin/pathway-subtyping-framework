@@ -81,8 +81,9 @@ None is restated from prose.
 - No detectable TPR cost: 0.967 vs 1.000, McNemar **p=1.0**.
 - Head-to-head: the SigClust p-value **alone** reproduces the composite gate exactly
   → the contribution is a null recalibration, not a new instrument.
-- Separation sweep (`separation_sweep.json`): gate resolves (certify 0→0.75, median p
-  0.8→0.03 between δ=2 and δ=3) but is **conservative** — certifies nothing below δ=3.
+- Separation sweep (`separation_sweep.json`, 20 reps/step): gate resolves (certify 0.00
+  through δ≤2.0 → 0.15 at δ=2.5 → 0.55 at δ=3.0; median p 0.78→0.23→0.04) but is
+  **conservative** — the transition is confined to δ=2.5–3.0. Script default `--reps 20`.
 - The old `gate_ablation_results.json` "FPR 0.000 / TPR held" framing is SUPERSEDED.
 
 **Gate calibration (authoritative: `gate_calibration_within_study.json`)**

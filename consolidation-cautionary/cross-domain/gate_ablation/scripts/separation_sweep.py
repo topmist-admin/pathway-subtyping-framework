@@ -34,7 +34,7 @@ except ModuleNotFoundError:
 import pandas as pd
 from sklearn.mixture import GaussianMixture
 
-SEPS = [0.0, 0.5, 1.0, 1.5, 2.0, 3.0]
+SEPS = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
 NS = [120]        # single n keeps the sweep tractable; the curve is the point
 P = 50            # features
 N_REF = 100       # floor 1/101; modest so the sweep is tractable
@@ -51,7 +51,7 @@ def make(sep: float, n: int, p: int, rng) -> np.ndarray:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--reps", type=int, default=10)
+    ap.add_argument("--reps", type=int, default=20)
     ap.add_argument("--out", default=os.path.join(_HERE, "../results"))
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)

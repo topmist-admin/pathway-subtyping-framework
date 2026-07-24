@@ -36,13 +36,15 @@ single-Gaussian null (SigClust; Liu et al. 2008) on the existing bootstrap-ARI
 statistic — not as a multi-test discreteness instrument.
 
 **Resolution / operating characteristic** (`separation_sweep.py` /
-`results/separation_sweep.json`): sweeping component separation δ from 0 to 3 SD
-(n=120, n_ref=100), the gate **does** resolve — median p collapses from ≈0.8 to 0.03
-and certify rate rises 0 → 0.75 between δ=2 and δ=3 — refuting "flat at the floor".
-But the transition is **sharp and late**: it certifies nothing through δ≤2, so the
-recalibrated null is **conservative** (low sensitivity to moderate structure), abstaining
-in the mid-range. Good for rejecting over-called subtypes; not a sensitive detector of
-subtle real structure. Reported as a limitation, not tuned away.
+`results/separation_sweep.json`, 20 reps/step, 7 δ points): sweeping component
+separation δ from 0 to 3 SD (n=120, n_ref=100), the gate **does** resolve — certify
+rate 0.00 through δ≤2.0, then **0.15 at δ=2.5** and **0.55 at δ=3.0**, while median
+single-Gaussian p descends 0.78 → 0.23 → 0.04 — refuting "flat at the floor". But the
+transition is **sharp and late** (confined to δ=2.5–3.0), so the recalibrated null is
+**conservative** (low sensitivity to moderate structure), abstaining in the mid-range.
+Good for rejecting over-called subtypes; not a sensitive detector of subtle real
+structure. Reported as a limitation, not tuned away. (The script default is now
+`--reps 20`, so a re-run reproduces the deposited table exactly.)
 
 The scripts live in the framework repo root (they are framework tooling, not
 package-local): `scripts/gate_ablation_study.py` and `scripts/plot_gate_ablation.py`.
