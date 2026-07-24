@@ -52,8 +52,8 @@ def main() -> None:
     here = os.path.dirname(os.path.abspath(__file__))
     ap = argparse.ArgumentParser()
     ap.add_argument("--labels", default=os.path.join(
-        here, "../data/partition/sample_metadata_with_subtypes.csv"))
-    ap.add_argument("--out", default=os.path.join(here, "../cross-domain/gtex_brain/results"))
+        here, "../../../data/partition/sample_metadata_with_subtypes.csv"))
+    ap.add_argument("--out", default=os.path.join(here, "../results"))
     args = ap.parse_args()
 
     df = pd.read_csv(args.labels)
