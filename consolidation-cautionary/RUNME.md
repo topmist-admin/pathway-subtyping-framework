@@ -72,20 +72,25 @@ python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.8.0 (unrel
 Every figure below is read directly from the deposited artifact named in its row.
 None is restated from prose.
 
-**Gate ablation** — `cross-domain/gate_ablation/results/gate_ablation_results.json`
-- `stability_only`: TPR 1.000, FPR **0.367**, continuum certification rate 0.733
-- `stability+discreteness`: TPR 0.967, FPR **0.000**, continuum rate 0.000
-- Honest reading: the discreteness gate removes continuum false positives **at a
-  cost of ~3% of true positives** (TPR 1.000 → 0.967). Not "TPR held".
+**Gate ablation (authoritative: `ablation_honest.json`)** — three-way accounting
+- Negatives (n=30): stability-only false-certifies **11** (FPR 0.367, Wilson 95%
+  CI [0.22, 0.54]); the recalibrated gate certifies **0**. Paired exact McNemar
+  b=11 c=0 **p=0.001** — real reduction.
+- ⚠️ The gate reaches that by **abstaining on 28/30 (93%)** negatives; FPR excluding
+  abstentions is 0/2, CI [0.00, 0.66] — nearly uninformative. Do NOT quote "FPR 0.000".
+- No detectable TPR cost: 0.967 vs 1.000, McNemar **p=1.0**.
+- Head-to-head: the SigClust p-value **alone** reproduces the composite gate exactly
+  → the contribution is a null recalibration, not a new instrument.
+- Separation sweep (`separation_sweep.json`): gate resolves (certify 0→0.75, median p
+  0.8→0.03 between δ=2 and δ=3) but is **conservative** — certifies nothing below δ=3.
+- The old `gate_ablation_results.json` "FPR 0.000 / TPR held" framing is SUPERSEDED.
 
-**Gate calibration (linchpin)** — `cross-domain/gate_calibration/results/gate_calibration.json`
-- Discrete positive control (pooled COAD/GBM/LUAD, n=1262): recovery of
-  tumor-of-origin ARI **0.921**; Gate A **certified** (SigClust p=0.0066)
-- Continuum negative control (LUAD immune infiltration, n=510): immune-score
-  Hartigan dip p **0.9817** (unimodal); Gate A **not certified** (verdict
-  "continuum", dip on PC1 p=0.9972)
-- Both calls correct → the gate is **calibrated, not merely pessimistic**. This is
-  the answer to the hostile reviewer question the whole paper hinges on.
+**Gate calibration (authoritative: `gate_calibration_within_study.json`)**
+- Discrete positive control, **within one study**: IDH-mut vs IDH-wt low-grade glioma
+  (TCGA-LGG, n=507); recovery ARI **0.418** (within-study z-scores); Gate A **certified**.
+- Continuum negative control: LUAD immune infiltration (n=510), dip p 0.98; **not certified**.
+- ⚠️ The old pooled `gate_calibration.json` (ARI 0.921) is a **withdrawn batch artifact**
+  (3 studies, 1 tumor type each; within-study z-score collapsed it to 0.05). Do not cite it.
 
 **Cancer worked example** — `cross-domain/cancer_r38/results/brca_pam50_validation.json`
 - TCGA-BRCA n=1082 (981 PAM50-labelled), k=5: PSF pathway-GMM recovery
@@ -108,6 +113,11 @@ None is restated from prose.
   Cerebellum separates; cortical regions behave more like a continuum. Retained as
   a large-N calibration point and a third independent recurrence of the
   metric-dependence finding.
+
+**Flagship donor-level (Result 4)** — `cross-domain/flagship_stats/results/flagship_donor_level.json`
+- GSE80655: 141 samples = **48 donors**. Region (sample-level, valid): Bergsma V **0.660**.
+  Diagnosis at donor level: permutation p **0.234** (indistinguishable from chance), obs
+  V 0.258, null 95th 0.258. Region-not-diagnosis holds under correct inference.
 
 **Psychiatric meta-cohort scoping** — `cross-domain/psychiatric_meta/results/track_a_recount3.tsv`
 - 57 candidates → 30 bulk-RNA-seq keepers → only **6 studies / 243 samples** in

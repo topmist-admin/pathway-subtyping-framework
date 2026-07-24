@@ -49,6 +49,7 @@ CODE_ITEMS = [
 PACKAGES = [
     "gate_ablation", "gate_calibration", "benchmark_audit",
     "cancer_r38", "gtex_brain", "psychiatric_meta", "tcga_crc",
+    "flagship_stats",
 ]
 
 RESULTS_ITEMS = [
