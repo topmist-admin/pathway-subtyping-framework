@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Artefacts:
 - **PyPI:** https://pypi.org/project/pathway-subtyping/0.8.0/ — `pip install pathway-subtyping==0.8.0` (published via GitHub Actions Trusted Publishing).
 - **Source:** tag `v0.8.0` on GitHub (`topmist-admin/pathway-subtyping-framework`) and Codeberg (`pathways/pathway-subtyping-framework`) · RRID:SCR_028051.
-- **Zenodo:** DOI pending (to be minted under concept DOI `10.5281/zenodo.18638048`).
+- **Zenodo:** `10.5281/zenodo.21566406` (https://doi.org/10.5281/zenodo.21566406) — v0.8.0, published 2026-07-25 under concept DOI `10.5281/zenodo.18638048`.
 
 Corrects the stability gate's null. Adversarial methods review established that the
 bootstrap-stability null tested the wrong hypothesis at small n, and this release
