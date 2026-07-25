@@ -5,9 +5,12 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.8.0] - Unreleased (branch: feat/discreteness-gate)
+## [0.8.0] - 2026-07-25
 
-**Not yet released** — no Zenodo/PyPI artifact; on the private review branch only.
+Artefacts:
+- **PyPI:** https://pypi.org/project/pathway-subtyping/0.8.0/ — `pip install pathway-subtyping==0.8.0` (published via GitHub Actions Trusted Publishing).
+- **Source:** tag `v0.8.0` on GitHub (`topmist-admin/pathway-subtyping-framework`) and Codeberg (`pathways/pathway-subtyping-framework`) · RRID:SCR_028051.
+- **Zenodo:** DOI pending (to be minted under concept DOI `10.5281/zenodo.18638048`).
 
 Corrects the stability gate's null. Adversarial methods review established that the
 bootstrap-stability null tested the wrong hypothesis at small n, and this release
@@ -42,6 +45,12 @@ fixes it. See `docs/discreteness_gate.md` for the full rationale.
 - **`ReframedMembershipGate`** — the conformal membership gate reframed as *assignment
   sharpness conditional on a Gate-A/B-certified partition* (not a standalone guarantee),
   at a single 0.90 operating point with a bootstrap coverage CI and a minimum-n rule.
+- **`pathway_subtyping.clustering_dl`** — deep-learning clustering baselines, DEC
+  (Xie, Girshick & Farhadi, ICML 2016) and VAE-GMM / VaDE (Jiang et al., IJCAI 2017),
+  exposed as `run_dec` / `run_vae_gmm`. These let the validation gates be run over
+  DL-produced partitions (the gate is clusterer-agnostic — it tests the data, not the
+  algorithm) and provide the method-comparison baselines for the cancer worked example.
+  Torch is an optional dependency; the baselines are skipped gracefully when absent.
 - **Synthetic-control tests** (`tests/test_discreteness_gate.py`): the new gate must fail
   a single Gaussian and a 1-D continuum (which the old null wrongly passed) and pass two
   separated clusters — with ground truth known by construction.
