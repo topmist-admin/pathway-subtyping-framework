@@ -158,10 +158,9 @@ None is restated from prose.
 3. **Zenodo deposit** of this bundle, cited from the paper.
 4. ~~**Result 2 writeup**~~ **DONE 2026-07-23** — `cross-domain/benchmark_audit/`
    plus the Result 2 section of the rebuild draft.
-5. ~~**Rewrite the abstract**~~ **DRAFTED 2026-07-23** in
-   `AIForAutismOutReach/.../REBUILD-DRAFT-2026-07-23-abstract-result2-result4.md`,
-   carrying none of the retracted figures. Still needs the 3 hostile-review rounds
-   before submission.
+5. ~~**Rewrite the abstract**~~ **DRAFTED 2026-07-23** in the manuscript working copy
+   (maintained outside this repository), carrying none of the retracted figures.
+   Still needs the hostile-review rounds before submission.
 6. **Re-issue the benchmark correction.** The audit found the 2026-07-08 erratum's
    ground-truth rule (`n_true_clusters > n_samples`) is too weak — 7 rows with
    near-singleton labels remain marked valid. The conclusions are unaffected, but
