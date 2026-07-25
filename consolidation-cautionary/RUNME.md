@@ -14,40 +14,30 @@ not interchangeable — see the version blocker immediately below.
 
 ---
 
-## ⚠️ BLOCKER — these packages need v0.8.0, which is not publicly released
+## Install (public — everything runs from PyPI)
 
-Every cross-domain package here imports `pathway_subtyping.discreteness`
-(Gate A) and, for the DL baselines, `pathway_subtyping.clustering_dl`. **Neither
-module exists in v0.7.0**, which is the newest public release on PyPI / Codeberg
-/ Zenodo. Verified:
-
-```
-git ls-tree -r --name-only v0.7.0 -- src/pathway_subtyping/discreteness   # empty
-git ls-tree -r --name-only v0.7.0 -- src/pathway_subtyping/clustering_dl.py   # empty
-```
-
-Consequences a reviewer will hit:
-
-- [`requirements.txt`](requirements.txt) pins `pathway-subtyping==0.7.0`. Following
-  it and then running any cross-domain script fails at import.
-- The **linchpin** gate-calibration result, the discreteness verdicts in the
-  cancer and GTEx packages, and the entire ablation are unreproducible from a
-  public install.
-
-**Until v0.8.0 is tagged and published, the claim "third-party reproducible" holds
-only for the v0.7.0-based `README.md` package, not for the cautionary-framework
-evidence.** Publishing v0.8.0 (currently written, tested, untagged, and held) is
-therefore a hard prerequisite for submission, not an independent release decision.
-
-Interim instructions for a reviewer with repo access: install from source at the
-commit that produced these outputs rather than from PyPI —
+The framework is on PyPI as **`pathway-subtyping==0.8.0`** (the version these packages
+need — it contains `pathway_subtyping.discreteness` (Gate A) and
+`pathway_subtyping.clustering_dl` (the DL baselines), which the v0.7.0 line did not).
 
 ```bash
-git clone <repo> && cd pathway-subtyping-framework
-git checkout 39cd5a2          # head of the rebuild series (d13bec9..39cd5a2)
-pip install -e .
-python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.8.0 (unreleased)
+python -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt      # pins pathway-subtyping==0.8.0 + numpy/pandas/sklearn/scipy/statsmodels/requests
+pip install torch                    # only needed for the DL baselines in cancer_r38
+python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.8.0
 ```
+
+**Verified reviewer reproduction (2026-07-25):** from a clean virtual environment with
+only the PyPI wheel installed (no local source tree), every no-network package
+reproduces its deposited headline numbers exactly — benchmark audit (22 valid rows),
+honest ablation (McNemar p=0.001, SigClust-p-alone == composite gate), donor-level
+flagship (region V 0.660, diagnosis permutation p 0.234), and the framework-gate
+flagship stability (0.921). The network packages (calibration, cancer, sweep) fetch
+public cBioPortal/GEO/recount3 data with no authentication.
+
+- **PyPI:** https://pypi.org/project/pathway-subtyping/0.8.0/
+- **Source (tag v0.8.0):** GitHub `topmist-admin/pathway-subtyping-framework` ·
+  Codeberg `pathways/pathway-subtyping-framework` · RRID:SCR_028051
 
 ---
 
@@ -151,11 +141,14 @@ None is restated from prose.
 
 ## Open items before this bundle is submission-ready
 
-1. **Publish v0.8.0** — hard prerequisite (see blocker above). Currently untagged
-   and held.
-2. **Add a cautionary-bundle pin file.** `requirements.txt` covers only the
-   v0.7.0 package; the cross-domain packages have no pinned environment.
-3. **Zenodo deposit** of this bundle, cited from the paper.
+1. ~~**Publish v0.8.0**~~ **DONE 2026-07-25** — `pathway-subtyping==0.8.0` is on PyPI
+   and tagged `v0.8.0` on GitHub + Codeberg. The full reproduction was re-verified from
+   a clean PyPI install (see Install section above).
+2. ~~**Environment pin**~~ **DONE** — `requirements.txt` now pins
+   `pathway-subtyping==0.8.0` and the analysis deps; it covers the whole bundle.
+3. **Zenodo deposit** of this bundle at a citable DOI, cited from the paper's Data &
+   Code Availability. (The framework release itself should also get a v0.8.0 Zenodo DOI
+   under the existing concept DOI.)
 4. ~~**Result 2 writeup**~~ **DONE 2026-07-23** — `cross-domain/benchmark_audit/`
    plus the Result 2 section of the rebuild draft.
 5. ~~**Rewrite the abstract**~~ **DRAFTED 2026-07-23** in the manuscript working copy

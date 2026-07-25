@@ -10,12 +10,15 @@ Status: **draft package for the pre-post reproduction pass** (intended to become
 
 ```
 python -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt        # installs pathway-subtyping==0.7.0 from PyPI
+pip install -r requirements.txt        # installs pathway-subtyping==0.8.0 from PyPI
 ```
 
 Do **not** import a local working tree of the framework. Verify the release:
-`python -c "import pathway_subtyping as p; print(p.__version__)"` → `0.7.0`.
-Provenance of v0.7.0: PyPI https://pypi.org/project/pathway-subtyping/ · Codeberg (primary) https://codeberg.org/pathways/pathway-subtyping-framework (tag `v0.7.0`) · Zenodo DOI 10.5281/zenodo.21279842 · RRID:SCR_028051.
+`python -c "import pathway_subtyping as p; print(p.__version__)"` → `0.8.0`.
+(v0.8.0 is a superset of v0.7.0 — the scoring, GMM, bootstrap and confound gates this
+package uses are unchanged; it additionally ships the discreteness gate used by the
+cautionary-framework packages. Layer A below is deterministic and version-independent.)
+Provenance: PyPI https://pypi.org/project/pathway-subtyping/0.8.0/ · Codeberg (primary) https://codeberg.org/pathways/pathway-subtyping-framework (tag `v0.8.0`) · GitHub https://github.com/topmist-admin/pathway-subtyping-framework (tag `v0.8.0`) · RRID:SCR_028051.
 
 ## 2. Inputs to fetch (public)
 
