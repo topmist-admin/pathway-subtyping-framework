@@ -1,8 +1,8 @@
 # Cancer arm of R3.8 — large independent-cohort validation (TCGA-BRCA / PAM50)
 
 Public-data (cBioPortal, no auth) large-cohort validation for Scientific Reports
-reviewer point R3.8. controlled-access-independent — proceeds while NIH psychiatric access is
-pending. Run: `scripts/fetch_and_validate_brca.py`.
+reviewer point R3.8. Uses public data only; large-N psychiatric validation on
+controlled-access cohorts is future work. Run: `scripts/fetch_and_validate_brca.py`.
 
 ## Result (n=1,082 TCGA-BRCA; 981 PAM50-labelled; k=5)
 

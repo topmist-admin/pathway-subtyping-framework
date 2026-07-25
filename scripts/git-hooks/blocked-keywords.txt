@@ -35,6 +35,16 @@ Bridge2AI
 \bBTO\b
 \bARPA-H CIRCLE\b
 
+# --- Research-compliance / controlled-data-access PURSUIT status ---------
+# The public PSF edition operates on already-public de-identified data and has no
+# reason to mention a Federalwide Assurance — that vocabulary only appears when the
+# private fork is pursuing controlled-access data. So FWA is blocked here.
+# NOT listed (normal science, legitimately public): public repository names
+# (CommonMind, dbGaP, GTEx, recount3, PsychENCODE, SFARI, NDA) and generic
+# compliance resources (OHRP/HHS, CITI, NIH data-sharing) as cited in the
+# already-public contributor kit.
+\bFWA\b
+
 # --- O-Circuit domain vocabulary that only appears in the BPU context ----
 # (generic "organoid" is fine in public — NOT listed)
 biological processing unit

@@ -142,9 +142,9 @@ None is restated from prose.
 ## What this bundle does NOT contain
 
 - **CommonMind (n=986)** and any other controlled-access psychiatric cohort. Access
-  is gated on controlled-access approval. When that analysis runs, controlled data cannot be
-  redistributed — the package will ship the **code plus access instructions**, not
-  the data, following the pattern of the packages above.
+  is gated on the usual controlled-access approval. When that analysis runs, controlled
+  data cannot be redistributed — the package will ship the **code plus access
+  instructions**, not the data, following the pattern of the packages above.
 - Any claim that the framework *finds* strong validated subtypes. The paper's
   contribution is the calibrated instrument and the honest audit; see
   `cross-domain/README.md` and each package's honesty notes.

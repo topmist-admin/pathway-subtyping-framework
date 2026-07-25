@@ -19,7 +19,9 @@ dependency on the unreleased gate:
 Controlled-access data is never included; none is used.
 
 Usage: python build_full_reviewer_bundle.py --out DIR [--stamp YYYY-MM-DD]
-       [--manuscript-dir PATH]   (defaults to the AIForAutismOutReach SR folder)
+       --manuscript-dir PATH
+         (or set the PSF_MANUSCRIPT_DIR environment variable; the manuscript lives
+          outside this repository, so there is no baked-in default path)
 """
 from __future__ import annotations
 
@@ -30,8 +32,9 @@ import sys
 import tarfile
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DEFAULT_MS = ("/Users/rohitchauhan/Downloads/AIForAutismOutReach/manuscripts/"
-              "SCIENTIFIC-REPORTS-SUBMISSION-2026")
+# The manuscript is maintained outside this public repo; supply its location via
+# --manuscript-dir or the PSF_MANUSCRIPT_DIR env var. No private path is hard-coded.
+DEFAULT_MS = os.environ.get("PSF_MANUSCRIPT_DIR", "")
 
 SKIP_DIR = {"__pycache__", ".ipynb_checkpoints", ".git", ".pytest_cache",
             ".mypy_cache", "node_modules", ".venv", "pathwayenv"}
@@ -287,8 +290,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
     ap.add_argument("--stamp", default="2026-07-24")
-    ap.add_argument("--manuscript-dir", default=DEFAULT_MS)
+    ap.add_argument("--manuscript-dir", default=DEFAULT_MS,
+                    help="Directory holding the manuscript files (maintained outside "
+                         "this repo). Or set PSF_MANUSCRIPT_DIR.")
     args = ap.parse_args()
+    if not args.manuscript_dir:
+        sys.exit("error: no manuscript directory given. Pass --manuscript-dir PATH "
+                 "or set the PSF_MANUSCRIPT_DIR environment variable "
+                 "(the manuscript is maintained outside this repository).")
     os.makedirs(args.out, exist_ok=True)
 
     pairs = []

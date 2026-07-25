@@ -1,7 +1,8 @@
 # GTEx brain at scale (n=2,931) — large-N region structure + gate behavior
 
-Public (recount3, no controlled access) large-N analysis: 2,931 GTEx brain samples across 13
-subregions, Hallmark pathway scores. Fetch: `scripts/fetch_gtex_brain_recount3.R`;
+Public (recount3, no controlled access needed) large-N analysis: 2,931 GTEx brain
+samples across 13 subregions, Hallmark pathway scores. Fetch:
+`scripts/fetch_gtex_brain_recount3.R`;
 analysis: `scripts/analyze_gtex_brain.py`.
 
 **Motivation:** proposed as the large-N rebuttal of the reviewers' small-N
@@ -47,10 +48,9 @@ and is reported honestly — it does NOT cleanly deliver "region dominates."**
 ## Implication for the rebuild
 GTEx brain is a supporting calibration/metric-dependence result, NOT the large-N
 psychiatric headline. The reviewers' small-N criticism is better answered by a
-large-N DISEASE cohort (CommonMind n=986 via controlled access, or an aggregated psychiatric
-SRA meta-cohort via recount3) — see `2026-07-22_large_psychiatry_data_plan.md`.
-A region-specific (not Hallmark) panel on GTEx would strengthen the region-axis
-point if pursued.
+large-N DISEASE cohort (CommonMind n=986 via controlled access, or an aggregated
+psychiatric SRA meta-cohort via recount3). A region-specific (not Hallmark) panel on
+GTEx would strengthen the region-axis point if pursued.
 
 ## Provenance
 recount3 GTEx BRAIN (uniform reprocessing), Hallmark 50-set panel, gene-wise
