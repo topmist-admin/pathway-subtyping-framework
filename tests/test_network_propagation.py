@@ -229,8 +229,13 @@ class TestNetworkPropagator:
         prop_weak.build_network_from_edges(edges_weak)
         result_weak = prop_weak.propagate({"A": 1.0})
 
-        # With strong A-B edge, B should get more signal
-        assert result_strong.gene_scores.get("B", 0) >= result_weak.gene_scores.get("B", 0)
+        # With strong A-B edge, B should get at least as much signal. The two
+        # steady-state B scores are near-identical here (both ~0.102), so compare
+        # with a floating-point tolerance: without it the last-digit difference
+        # (~3e-17) flips the >= across numpy/BLAS builds (passes on macOS, fails on
+        # Linux). The tolerance still catches a real regression where the strong
+        # edge gives B meaningfully less signal.
+        assert result_strong.gene_scores.get("B", 0) >= result_weak.gene_scores.get("B", 0) - 1e-9
 
 
 # --- Convenience function tests ---
