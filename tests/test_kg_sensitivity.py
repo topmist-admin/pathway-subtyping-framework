@@ -7,6 +7,10 @@ so the expected verdict follows from the setup rather than from a fit.
 
 from __future__ import annotations
 
+import subprocess
+import sys
+import textwrap
+
 import numpy as np
 import pytest
 
@@ -411,3 +415,59 @@ def test_optional_scalar_regression_is_reported_but_does_not_decide():
     assert not res.regression.passed, "scalar score did move"
     assert res.verdict == VERDICT_ROBUST, "but the partition verdict is unchanged"
     assert res.passed
+
+
+# --------------------------------------------------------------------------- #
+# Optional-dependency contract
+# --------------------------------------------------------------------------- #
+
+
+def test_package_imports_without_networkx():
+    """`import pathway_subtyping` must work on a base install.
+
+    kg_sensitivity imports knowledge_graph, which hard-requires networkx --
+    an OPTIONAL dependency behind the [graph] extra. Exporting kg_sensitivity
+    unguarded from the package __init__ therefore broke `import
+    pathway_subtyping` entirely for anyone without [graph], which CI's
+    integration job caught and the test matrix did not (it installs [graph]).
+
+    Run in a subprocess with networkx blocked at the meta-path, because the
+    test environment has networkx installed and import state is global.
+    """
+    script = textwrap.dedent("""
+        import sys
+
+        class _Blocker:
+            def find_spec(self, name, path=None, target=None):
+                if name == "networkx" or name.startswith("networkx."):
+                    raise ImportError("networkx blocked for this test")
+                return None
+
+        sys.meta_path.insert(0, _Blocker())
+        for mod in [m for m in sys.modules if m.startswith("networkx")]:
+            del sys.modules[mod]
+
+        import pathway_subtyping  # must not raise
+
+        # The optional symbols are simply absent, not broken.
+        assert not hasattr(pathway_subtyping, "kg_timeslice_sensitivity")
+        assert not hasattr(pathway_subtyping, "KnowledgeGraph")
+        print("OK")
+        """)
+    proc = subprocess.run(
+        [sys.executable, "-c", script], capture_output=True, text=True, timeout=120
+    )
+    assert proc.returncode == 0, (
+        "importing pathway_subtyping without networkx failed:\n"
+        f"stdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
+    )
+    assert "OK" in proc.stdout
+
+
+def test_gate_k_is_importable_when_networkx_is_present():
+    """The other half of the contract: with [graph] installed, it is exported."""
+    import pathway_subtyping
+
+    assert hasattr(pathway_subtyping, "kg_timeslice_sensitivity")
+    assert hasattr(pathway_subtyping, "KGSensitivityResult")
+    assert hasattr(pathway_subtyping, "rewire_kg")

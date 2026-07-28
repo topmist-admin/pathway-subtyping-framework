@@ -140,11 +140,19 @@ from .multi_omic import (
     fuse_modalities,
     prepare_modality,
 )
-from .kg_sensitivity import (
-    KGSensitivityResult,
-    kg_timeslice_sensitivity,
-    rewire_kg,
-)
+
+# Gate K — time-sliced KG sensitivity (requires [graph] extra, via knowledge_graph)
+try:
+    from .kg_sensitivity import (  # noqa: F401
+        KGSensitivityResult,
+        kg_timeslice_sensitivity,
+        rewire_kg,
+    )
+except ImportError:
+    # kg_sensitivity imports knowledge_graph, which requires networkx.
+    # Same optional-dependency contract as the knowledge_graph block above:
+    # a base install without [graph] must still import the package.
+    pass
 from .network_propagation import (
     NetworkPropagator,
     PropagationConfig,
