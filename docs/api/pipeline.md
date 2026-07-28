@@ -25,7 +25,15 @@ from pathway_subtyping.pipeline import PipelineConfig
 | `pathway_db` | `str` | `""` | Path to pathway GMT file |
 | `n_clusters` | `Optional[int]` | `None` | Fixed number of clusters (None = auto-select) |
 | `n_clusters_range` | `List[int]` | `[2, 8]` | Range for automatic cluster selection |
-| `disclaimer` | `str` | `"Research use only..."` | Disclaimer text for reports |
+| `input_type` | `str` | `"vcf"` | Input modality: `"vcf"`, `"expression"`, or `"multi_omic"` |
+| `expression_path` | `str` | `""` | Path to expression matrix (used when `input_type="expression"`) |
+| `expression_input_type` | `str` | `"tpm"` | Expression units: `"counts"`, `"tpm"`, `"fpkm"`, `"log2"` |
+| `expression_scoring_method` | `str` | `"ssgsea"` | Pathway scoring method: `"mean_z"`, `"ssgsea"`, `"gsva"` |
+| `ssgsea_alpha` | `float` | `0.25` | Rank-weighting exponent passed to ssGSEA scoring |
+| `ancestry_pcs_path` | `Optional[str]` | `None` | Path to ancestry PC CSV (sample IDs as index, PC columns) |
+| `ancestry_correction` | `Optional[str]` | `None` | Ancestry correction method (`AncestryMethod` value: `"regress_out"`, `"covariate_aware"`, `"stratified"`); `None` = disabled |
+| `ancestry_n_pcs` | `int` | `10` | Number of ancestry PCs used for correction |
+| `disclaimer` | `str` | `"Research use only. Not medical advice."` | Disclaimer text for reports |
 | `validation_run_gates` | `bool` | `True` | Whether to run validation gates |
 | `validation_n_permutations` | `int` | `100` | Permutations for null tests |
 | `validation_n_bootstrap` | `int` | `50` | Bootstrap iterations for stability |
@@ -38,6 +46,15 @@ from pathway_subtyping.pipeline import PipelineConfig
 | `variant_qc_min_call_rate` | `float` | `0.9` | Minimum genotype call rate |
 | `variant_qc_hwe_p_threshold` | `float` | `1e-6` | HWE p-value threshold |
 | `variant_qc_max_maf` | `float` | `0.01` | Maximum minor allele frequency |
+| `multi_omic_modalities` | `List[Dict[str, Any]]` | `[]` | Modality entries (`type`, `path`, `label`, …) for `input_type="multi_omic"` |
+| `multi_omic_fusion_strategy` | `str` | `"concatenate"` | Fusion strategy: `"concatenate"`, `"weighted_average"`, `"intersection_only"` |
+| `multi_omic_missing_strategy` | `str` | `"impute_zero"` | Missing-sample handling: `"impute_zero"`, `"impute_mean"`, `"drop"` |
+| `multi_omic_weights` | `Optional[Dict[str, float]]` | `None` | Per-modality weights (label → weight, summing to 1.0) |
+| `multi_omic_renormalize` | `bool` | `True` | Z-normalize the fused pathway-score matrix |
+| `use_chunked_processing` | `bool` | `False` | Compute gene burdens by streaming the VCF (`compute_gene_burdens_chunked`) instead of loading it in memory |
+| `chunk_size` | `int` | `1000` | Chunk size used when `use_chunked_processing` is enabled |
+| `generate_interactive_report` | `bool` | `False` | Emit an interactive HTML report alongside the static outputs |
+| `interactive_dim_reduction` | `str` | `"pca"` | Embedding for the interactive report: `"pca"`, `"tsne"`, `"umap"` |
 
 #### Methods
 
@@ -139,12 +156,15 @@ pipeline.run()
 
 This runs the following steps in order:
 1. `setup()` - Create output directories, configure logging
-2. `load_data()` - Load VCF, phenotypes, pathways
-3. `run_variant_qc()` - Apply variant QC filters (if `variant_qc_enabled`)
-4. `compute_gene_burdens()` - Calculate per-gene burden scores
-5. `compute_pathway_scores()` - Aggregate to pathway level
-6. `cluster_samples()` - GMM clustering with BIC selection
-7. `run_validation_gates()` - Execute validation tests
+2. `load_data()` - Load VCF/expression/multi-omic inputs, phenotypes, pathways
+3. Scoring, branching on `config.input_type`:
+   - `"multi_omic"` - pathway scores were already computed during `load_data()`
+   - `"expression"` - `compute_expression_pathway_scores()`
+   - otherwise (`"vcf"`) - `run_variant_qc()` (if `variant_qc_enabled`), `compute_gene_burdens()`, `compute_pathway_scores()`
+4. Ancestry correction (optional) - load PCs if `ancestry_pcs_path` is set, then adjust scores if `ancestry_correction` is set
+5. `cluster_samples()` - GMM clustering with BIC selection
+6. `run_validation_gates()` - Execute validation tests
+7. `characterize()` - Subtype characterization (best-effort; a failure is logged as a warning and does not stop the run)
 8. `generate_outputs()` - Save results and reports
 
 **Raises:**
@@ -221,6 +241,26 @@ After calling:
 
 ---
 
+##### `compute_expression_pathway_scores() -> None`
+
+Score pathways directly from an expression matrix (used when `config.input_type == "expression"`).
+
+```python
+pipeline.compute_expression_pathway_scores()
+```
+
+Calls `score_pathways_from_expression()` with the method named by
+`config.expression_scoring_method` (`mean_z`, `ssgsea`, or `gsva`),
+`alpha=config.ssgsea_alpha`, and `seed=config.seed`.
+
+After calling:
+- `pipeline.pathway_scores` - DataFrame (samples × pathways)
+- `pipeline.expression_scoring_result` - full `score_pathways_from_expression` result
+- `pipeline.gene_burdens` - set to the expression matrix, so validation gates and
+  characterization can consume it the same way as burden-based runs
+
+---
+
 ##### `cluster_samples() -> None`
 
 Cluster samples into molecular subtypes.
@@ -256,14 +296,46 @@ Threshold determination (in priority order):
 2. **Auto-calibration**: If thresholds are `None` and `validation_calibrate=True`, call `calibrate_thresholds()` based on n_samples and n_clusters
 3. **Defaults**: Fall back to 0.15 (null ARI) and 0.8 (stability)
 
-Runs three tests:
+Always runs three tests:
 1. **Label Shuffle**: Ensure clustering doesn't find spurious patterns
 2. **Random Gene Sets**: Ensure biological pathways matter
 3. **Bootstrap Stability**: Ensure clusters are robust
 
+Two further gates run conditionally, because the pipeline forwards the data they need
+to [`ValidationGates.run_all()`](validation.md):
+- **Ancestry Independence** — when `pipeline.ancestry_pcs` has been loaded
+- **Cross-Modal Concordance** — when a multi-omic run produced per-modality scores
+
+The remaining `run_all()` gates (confound association, genetic/somatic anchoring) take
+annotations the pipeline does not collect; call `ValidationGates` directly to use them.
+
 After calling:
 - `pipeline.validation_result` - `ValidationGatesResult` object
 - `pipeline.calibrated_thresholds` - `CalibratedThresholds` object (if auto-calibrated)
+- `pipeline.ancestry_report` - ancestry independence report (if ancestry PCs were loaded)
+
+---
+
+##### `characterize() -> None`
+
+Run subtype characterization on the clustering result.
+
+```python
+pipeline.characterize()
+```
+
+Calls `characterize_subtypes()` with the pathway scores, cluster labels, gene burdens,
+pathways, the `cluster_label` names from `cluster_assignments`, the `confidence` column
+(if present), and `config.seed`.
+
+After calling:
+- `pipeline.characterization_result` - `CharacterizationResult` object
+- `output_dir/figures/subtype_heatmap.png` - characterization heatmap
+- `output_dir/characterization/` - exported characterization CSVs
+
+Invoked automatically by `run()` between `run_validation_gates()` and
+`generate_outputs()`, wrapped in a `try/except` so a characterization failure is logged
+as a warning rather than failing the pipeline.
 
 ---
 

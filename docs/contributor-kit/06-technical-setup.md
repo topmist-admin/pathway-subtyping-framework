@@ -110,7 +110,7 @@ psf --config configs/test_synthetic.yaml
 
 No local setup needed. Open the notebook directly:
 
-Open the notebook directly: [examples/notebooks/01_getting_started.ipynb](examples/notebooks/01_getting_started.ipynb)
+Open the notebook directly: [examples/notebooks/01_getting_started.ipynb](../../examples/notebooks/01_getting_started.ipynb)
 
 ### AWS Setup
 

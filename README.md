@@ -55,7 +55,7 @@ Originally developed for [autism research](https://codeberg.org/pathways/autism-
 | **Sensitivity Analysis** | Parameter robustness testing across algorithms, features, normalization |
 | **Threshold Calibration** | Data-driven validation thresholds that adjust for sample size and cluster count |
 | **Variant QC** | QUAL, call rate, HWE, MAF filters before burden computation |
-| **Validation Gates** | Discreteness (Gate A, SigClust), negative controls, bootstrap stability (demoted v0.8), ancestry independence, cross-modal concordance, confound association (Gate 6), genetic/somatic anchoring (Gate 7) |
+| **Validation Gates** | Discreteness (Gate A, SigClust), negative controls, bootstrap stability (demoted v0.8), ancestry independence, cross-modal concordance, confound association (Gate 6), genetic/somatic anchoring (Gate 7), KG-version sensitivity (Gate K) |
 | **Statistical Rigor** | FDR correction, effect sizes, confidence intervals |
 | **Power Analysis** | Sample size recommendations, Type I error estimation |
 | **Simulation** | Synthetic data generation with ground truth for validation |
@@ -77,6 +77,7 @@ Originally developed for [autism research](https://codeberg.org/pathways/autism-
 | **Discreteness Gate** *(v0.8)* | `DiscretenessGateA` — asks whether structure is *discrete* or a reproducibly-sliced continuum, using a single-Gaussian (SigClust) reference in place of the independence null. Reports gap statistic + Hartigan dip as diagnostics. Three outcomes: certify / reject / not-testable |
 | **Deep-Learning Baselines** *(v0.8)* | `clustering_dl` — DEC (Xie 2016) and VAE-GMM (VaDE, Jiang 2017) baselines for benchmarking pathway-GMM against deep clustering |
 | **Genetic / Somatic Anchoring** *(v0.8)* | Gate 7 tests whether a partition tracks real genetic strata (validated against TCGA-CRC BRAF-V600E / KRAS / MSI) |
+| **KG Sensitivity (Gate K)** | Tests whether a finding survives a knowledge-graph version swap, against a size-matched degree-preserving null. Catches subtypes that are artifacts of the database release they were derived under |
 | **GNN Embeddings** | TransE/RotatE KG embeddings, OntologyAwareGNN with biological attention, gene risk classification *(experimental)* |
 | **Autism Interpretation** | Neuro-symbolic rules (R1-R7), therapeutic hypothesis ranking with safety flags *(autism-only)* |
 | **Performance** | tqdm progress bars, chunked VCF processing, 10K+ sample support |
@@ -300,6 +301,11 @@ Built-in tests prevent overfitting:
 - **Cross-modal concordance**: Subtypes should replicate across data modalities (when multi-omic)
 - **Confound association (Gate 6)** and **genetic / somatic anchoring (Gate 7)**: does the
   partition track a known confound, or a real genetic stratum?
+- **Time-sliced KG sensitivity (Gate K)**: does the finding survive being recomputed
+  against a *different knowledge-graph version*? Every gate above holds the KG fixed and
+  varies the data; this one varies the KG, and catches subtypes that are artifacts of the
+  database release they were derived under —
+  `pathway_subtyping.kg_sensitivity.kg_timeslice_sensitivity`.
 
 ⚠️ **Two properties of Gate A to know before quoting it.** It has three outcomes —
 certify, reject, and `not-testable` (an abstention) — and on synthetic negative controls

@@ -12,6 +12,22 @@ The framework implements three mandatory validation tests:
 | **Random Gene Sets** | Verify pathway biology matters | ARI < 0.15 |
 | **Bootstrap Stability** | Ensure robust clusters | ARI ≥ 0.80 |
 
+`run_all()` adds five further gates, each of which runs only when the data it needs is
+supplied:
+
+| Gate | Runs when | Pass Criteria (default) |
+|------|-----------|------------------------|
+| **Ancestry Independence** | `ancestry_pcs` given | min ancestry p > 0.05 / n_PCs (Bonferroni) |
+| **Cross-Modal Concordance** | `per_modality_scores` has ≥ 2 modalities | mean concordance ARI > permutation null 95th pct |
+| **Confound Association** | `confounds` given | no nuisance confound both significant and Cramér's V ≥ 0.30 |
+| **Genetic Anchoring** | `genetic_anchoring` given | ≥ 1 subtype significantly enriched, fold > 1.0 |
+| **Genetic Anchoring (somatic)** | `somatic_anchoring` given | ≥ 1 stratum significant with Cramér's V ≥ 0.30 |
+
+The first four gates above are *negative* controls and confound checks — they can only
+show a partition is reproducible and not confounded. The two anchoring gates have
+inverted polarity: they are **positive-evidence**, low-power tests, so a failure is weak
+evidence of absence rather than proof a partition lacks genetic grounding.
+
 > **Threshold Calibration:** These default thresholds (0.15/0.8) can be automatically calibrated based on sample size and cluster count using the [`threshold_calibration`](threshold_calibration.md) module. Set `validation.stability_threshold: null` and `validation.null_ari_max: null` in your config to enable auto-calibration.
 
 ## Classes
@@ -93,7 +109,7 @@ Convert to dictionary for JSON serialization.
 gates_dict = validation_gates_result.to_dict()
 # {
 #     "all_passed": true,
-#     "summary": "All 3 validation gates PASSED",
+#     "summary": "All 3 validation gates PASSED",  # count = gates actually run
 #     "tests": [...]
 # }
 ```
@@ -116,7 +132,8 @@ validator = ValidationGates(
     n_permutations: int = 100,
     n_bootstrap: int = 50,
     stability_threshold: float = 0.8,
-    null_ari_max: float = 0.15
+    null_ari_max: float = 0.15,
+    show_progress: bool = True
 )
 ```
 
@@ -129,12 +146,14 @@ validator = ValidationGates(
 | `n_bootstrap` | `int` | `50` | Bootstrap iterations for stability |
 | `stability_threshold` | `float` | `0.8` | Minimum ARI for stability test |
 | `null_ari_max` | `float` | `0.15` | Maximum ARI under null hypothesis |
+| `show_progress` | `bool` | `True` | Show tqdm progress bars for long-running loops |
 
 #### Methods
 
 ##### `run_all(...) -> ValidationGatesResult`
 
-Run all validation gates.
+Run all validation gates. The three mandatory tests always run; each optional argument
+below switches on one additional gate.
 
 ```python
 result = validator.run_all(
@@ -143,20 +162,30 @@ result = validator.run_all(
     pathways: Dict[str, List[str]],
     gene_burdens: pd.DataFrame,
     n_clusters: int,
-    gmm_seed: Optional[int] = None
+    gmm_seed: Optional[int] = None,
+    ancestry_pcs=None,
+    per_modality_scores: Optional[Dict[str, pd.DataFrame]] = None,
+    confounds: Optional[Dict[str, Any]] = None,
+    genetic_anchoring: Optional[Dict[str, Any]] = None,
+    somatic_anchoring: Optional[Dict[str, Any]] = None
 )
 ```
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `pathway_scores` | `pd.DataFrame` | Pathway scores matrix (samples × pathways) |
-| `cluster_labels` | `np.ndarray` | Cluster assignments (integer labels) |
-| `pathways` | `Dict[str, List[str]]` | Pathway name → gene list mapping |
-| `gene_burdens` | `pd.DataFrame` | Gene burden matrix (samples × genes) |
-| `n_clusters` | `int` | Number of clusters |
-| `gmm_seed` | `Optional[int]` | Seed for GMM in validation tests |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `pathway_scores` | `pd.DataFrame` | required | Pathway scores matrix (samples × pathways) |
+| `cluster_labels` | `np.ndarray` | required | Cluster assignments (integer labels) |
+| `pathways` | `Dict[str, List[str]]` | required | Pathway name → gene list mapping |
+| `gene_burdens` | `pd.DataFrame` | required | Gene burden matrix (samples × genes) |
+| `n_clusters` | `int` | required | Number of clusters |
+| `gmm_seed` | `Optional[int]` | `None` | Seed for GMM in validation tests |
+| `ancestry_pcs` | `AncestryPCs` (unannotated in source) | `None` | Ancestry PCs; enables the ancestry independence gate |
+| `per_modality_scores` | `Optional[Dict[str, pd.DataFrame]]` | `None` | Modality label → pathway score DataFrame; enables the cross-modal concordance gate when ≥ 2 modalities are given |
+| `confounds` | `Optional[Dict[str, Any]]` | `None` | Confound name (e.g. `region`, `batch`, `diagnosis`) → per-sample categorical values; enables the confound association gate. Diagnosis-like keys are treated as biology-of-interest and never fail the gate |
+| `genetic_anchoring` | `Optional[Dict[str, Any]]` | `None` | Kwargs forwarded to `genetic_anchoring_gate()` (requires at least `subtype_gene_sets`, `risk_genes`, `background_universe`) |
+| `somatic_anchoring` | `Optional[Dict[str, Any]]` | `None` | Kwargs forwarded to `somatic_anchoring_gate()` (requires `somatic_strata`); `cluster_labels` is supplied by `run_all()` |
 
 **Returns:** `ValidationGatesResult`
 
@@ -230,7 +259,229 @@ result = validator.stability_test_bootstrap(
 
 ---
 
+##### `negative_control_ancestry_independence(...) -> ValidationResult`
+
+Test whether clusters are confounded with ancestry (population structure rather than
+biology). Runs from `run_all()` only when `ancestry_pcs` is supplied.
+
+```python
+result = validator.negative_control_ancestry_independence(
+    cluster_labels: np.ndarray,
+    ancestry_pcs
+)
+```
+
+**Logic:**
+1. Delegate to `ancestry.check_ancestry_independence()` with `significance_threshold=0.05`
+2. Take the minimum p-value across the ancestry PCs as the test statistic
+3. Compare against the Bonferroni threshold `0.05 / n_PCs`
+4. **PASS** if no ancestry PC is significantly associated with the clusters
+   (`report.overall_independence_passed`)
+
+Reported as `min_ancestry_pvalue` (comparison `>`); `details` carries `n_pcs_tested` and
+the per-PC p-values.
+
+---
+
+##### `cross_modal_concordance_gate(...) -> ValidationResult`
+
+**Gate 5.** Test whether subtypes discovered on fused data are consistent across the
+individual data modalities. Runs from `run_all()` only when `per_modality_scores`
+contains at least two modalities.
+
+```python
+result = validator.cross_modal_concordance_gate(
+    per_modality_scores: Dict[str, pd.DataFrame],
+    cluster_labels: np.ndarray,
+    fused_sample_ids: List[str],
+    n_clusters: int
+)
+```
+
+**Logic:**
+1. Delegate to `cross_modal_validation.cross_modal_concordance()`, passing the
+   validator's `n_permutations`, `seed`, and `show_progress`
+2. Cluster each modality independently and measure pairwise agreement with the fused
+   labels
+3. Compare the mean concordance ARI against the permutation null's 95th percentile
+4. **PASS** if mean concordance ARI exceeds the null 95th percentile
+   (`result.gate_passed`)
+
+Reported as `mean_concordance_ARI` (comparison `>`); `details` carries
+`mean_concordance_nmi`, `mean_transfer_ari`, `null_ari_95th`, `n_modality_pairs`, and
+the per-pair results.
+
+---
+
+##### `confound_association_gate(...) -> ValidationResult`
+
+**Gate 6.** Test whether the partition is explained by a technical or anatomical
+confound (brain region, sequencing batch, …) rather than the biology of interest.
+Mandatory whenever confound annotations are available; runs from `run_all()` when
+`confounds` is non-empty.
+
+```python
+result = validator.confound_association_gate(
+    cluster_labels: np.ndarray,
+    confounds: Dict[str, Any],
+    cramers_v_max: float = 0.30,
+    alpha: float = 0.05
+)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `cluster_labels` | `np.ndarray` | required | Cluster assignments (n_samples,) |
+| `confounds` | `Dict[str, Any]` | required | Confound name → per-sample categorical values (length n_samples). Confounds of the wrong length are skipped with a warning |
+| `cramers_v_max` | `float` | `0.30` | Effect-size threshold above which an association counts as a confound (0.30 ≈ medium; 0.10 small, 0.50 large) |
+| `alpha` | `float` | `0.05` | Significance level for the BH-adjusted chi-square p-values |
+
+**Logic:**
+1. For each confound, cross-tabulate cluster label × confound level
+2. Chi-square test of independence (no continuity correction) plus Cramér's V effect size
+3. Benjamini–Hochberg-adjust the p-values across the confounds actually tested
+4. Evaluate over *nuisance* confounds only — keys in
+   `{diagnosis, dx, disease, condition, phenotype}` are treated as biology-of-interest,
+   reported for context but never able to fail the gate (a partition *should* track
+   diagnosis)
+5. **PASS** if no nuisance confound is both significant (adjusted p < `alpha`) **and**
+   non-trivially associated (Cramér's V ≥ `cramers_v_max`)
+
+Reported as `max_nuisance_cramers_v` (comparison `<`); `details` carries
+`worst_confound`, `failing_confounds`, and the full `per_confound` breakdown.
+
+**Why this gate exists.** Its absence is what let an anatomy artifact pass the rest of
+the battery. On GSE80655 a k=3 partition passed every stability control (bootstrap ARI
+~0.92) yet corresponded almost exactly to brain region (Cramér's V ~0.67, p ~4e-26)
+while being independent of diagnosis (p ~0.41). A stability-passing partition can still
+be a confound classifier; this gate is the check that catches it.
+
+---
+
+##### `genetic_anchoring_gate(...) -> ValidationResult`
+
+**Gate 7 (feature-level).** Test whether the genes defining each subtype are
+over-represented for disease genetic-risk genes. Runs from `run_all()` when
+`genetic_anchoring` kwargs are supplied.
+
+```python
+result = validator.genetic_anchoring_gate(
+    subtype_gene_sets: Dict[Any, Any],
+    risk_genes: Any,
+    background_universe: Any,
+    reference_universe: Optional[Any] = None,
+    alpha: float = 0.05,
+    min_fold: float = 1.0
+)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `subtype_gene_sets` | `Dict[Any, Any]` | required | Subtype label → iterable of gene IDs defining that subtype. Identifiers must share a namespace with `risk_genes` and the universes |
+| `risk_genes` | `Any` | required | Disease genetic-risk reference gene IDs |
+| `background_universe` | `Any` | required | Background-matched universe of testable genes (the discriminating null, e.g. brain-expressed genes) |
+| `reference_universe` | `Optional[Any]` | `None` | Optional genome-wide universe reported per subtype for contrast; never decides the gate |
+| `alpha` | `float` | `0.05` | Significance level for the BH-adjusted hypergeometric p-values |
+| `min_fold` | `float` | `1.0` | Minimum fold enrichment for a subtype to count as anchored |
+
+**Logic:**
+1. Hypergeometric over-representation test per subtype against `background_universe`
+2. Benjamini–Hochberg-adjust across subtypes (a non-finite p-value is treated as 1.0)
+3. A subtype is *anchored* if adjusted p < `alpha`, fold > `min_fold`, and it has at
+   least one risk-gene hit
+4. **PASS** if at least one subtype is anchored
+
+Reported as `max_enrichment_fold` (comparison `>`); `details` carries
+`anchored_subtypes`, `best_subtype`, universe sizes, the `per_subtype` breakdown, and
+`gate_polarity: "positive_evidence"`.
+
+**Polarity and caveats.** Unlike the negative controls, this is a positive-evidence
+gate: germline variants are fixed at conception, upstream of any postmortem or technical
+confound (PMI, RIN, dissection, batch, platform), so an enrichment cannot be
+manufactured by one. The null must be background-matched, not genome-wide — brain-
+expressed genes are already enriched for brain-disease risk, so a region-identity
+subtype could show spurious genome-wide enrichment. It is a specific, low-power test: a
+non-anchored result is weak evidence of absence, and a pass does not upgrade an unstable
+or confounded partition.
+
+---
+
+##### `somatic_anchoring_gate(...) -> ValidationResult`
+
+**Gate 7 (somatic mode).** The cancer counterpart to `genetic_anchoring_gate()`: test
+whether the *tumors* in a subtype carry a somatic stratum — driver mutation, copy-number
+alteration, or mutational-signature class — more than the other subtypes. Runs from
+`run_all()` when `somatic_anchoring` kwargs are supplied.
+
+```python
+result = validator.somatic_anchoring_gate(
+    cluster_labels: np.ndarray,
+    somatic_strata: Dict[str, Any],
+    cramers_v_min: float = 0.30,
+    alpha: float = 0.05
+)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `cluster_labels` | `np.ndarray` | required | Cluster assignments (n_samples,) |
+| `somatic_strata` | `Dict[str, Any]` | required | Stratum name → per-sample categorical value (e.g. driver carrier status, MSI-high/low). Missing values are dropped per stratum |
+| `cramers_v_min` | `float` | `0.30` | Minimum Cramér's V for a stratum to count as an anchor |
+| `alpha` | `float` | `0.05` | Significance level for the BH-adjusted p-values |
+
+**Logic:**
+1. Delegate to `genetics.somatic_anchoring.somatic_alignment()`
+2. Chi-square + Bergsma-corrected Cramér's V per stratum, BH-adjusted — the confound
+   gate's statistic with inverted polarity (a nuisance association fails Gate 6, a
+   somatic-driver association passes Gate 7)
+3. **PASS** if at least one stratum is both significant (adjusted p < `alpha`) and
+   non-trivially associated (Cramér's V ≥ `cramers_v_min`)
+
+Reported as `max_somatic_cramers_v` (comparison `>`); `details` carries
+`anchored_strata`, `best_stratum`, the `per_stratum` breakdown, and
+`gate_polarity: "positive_evidence"`.
+
+**Confound caveat.** A somatic driver can co-vary with tissue of origin (pan-cancer) and
+tumor purity (within a tumor type). Run the confound gate first so a "somatic anchor" is
+not the tissue/purity axis re-labelled. As with the feature-level gate, a null is weak
+evidence of absence.
+
+---
+
 ## Utility Functions
+
+### `cramers_v(contingency: np.ndarray, bias_correction: bool = True) -> float`
+
+Cramér's V effect size for a contingency table — association strength between two
+categorical variables (0 = independent, 1 = perfect association). This is the statistic
+behind the confound association and somatic anchoring gates.
+
+```python
+import numpy as np
+import pandas as pd
+from pathway_subtyping.validation import cramers_v
+
+table = pd.crosstab(cluster_labels, brain_region).values
+v = cramers_v(table)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `contingency` | `np.ndarray` | required | r × c contingency table of counts |
+| `bias_correction` | `bool` | `True` | Apply the Bergsma (2013) small-sample bias correction |
+
+**Returns:** Cramér's V in [0, 1]; `0.0` for degenerate tables (a single row/column, or
+no samples).
+
+---
 
 ### `format_validation_report(result: ValidationGatesResult) -> str`
 
@@ -243,7 +494,8 @@ markdown = format_validation_report(validation_result)
 print(markdown)
 ```
 
-**Output:**
+**Output** (a run with no optional gate data, so only the three mandatory tests ran —
+the count in the summary line is the number of gates actually run, not a fixed 3):
 ```markdown
 ## Validation Gates
 
@@ -257,6 +509,9 @@ All 3 validation gates PASSED
 | Negative Control 2: Random Gene Sets | ✓ PASS | mean_random_ARI | 0.048 | < 0.15 |
 | Stability Test: Bootstrap | ✓ PASS | mean_bootstrap_ARI | 0.921 | >= 0.8 |
 ```
+
+The report also emits an **Interpretation** section explaining the two negative controls,
+the stability test, and cross-modal concordance.
 
 ---
 

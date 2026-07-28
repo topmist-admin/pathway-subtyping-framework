@@ -161,10 +161,25 @@ A resampling method where samples are drawn with replacement. Used to:
 - Assess robustness of findings
 
 ### Validation Gate
-A mandatory statistical test that must pass before results are considered trustworthy. The framework implements three gates:
-1. Label shuffle (negative control)
-2. Random gene sets (negative control)
-3. Bootstrap stability (positive control)
+A mandatory statistical test that must pass before results are considered trustworthy. The framework's battery, as of v0.8:
+
+1. **Label shuffle** (negative control)
+2. **Random gene sets** (negative control)
+3. **Bootstrap stability** — ⚠️ **demoted in v0.8** to a marginal/confound control. Its null tested *pathway independence*, not *discreteness*, so a continuous gradient that a mixture model reproducibly bisects passed it. Still reported; no longer decides discreteness.
+4. **Gate A — discreteness**: is the structure discrete, or a reproducibly-sliced continuum? See [discreteness_gate.md](discreteness_gate.md).
+5. **Gate 5 — cross-modal concordance**: does the partition replicate across modalities?
+6. **Gate 6 — confound association**: does the partition track a technical or anatomical confound instead of the biology?
+7. **Gate 7 — genetic / somatic anchoring**: does it track a real genetic stratum?
+8. **Gate K — KG sensitivity**: does the finding survive a knowledge-graph *version* swap? See [kg_sensitivity_gate.md](kg_sensitivity_gate.md).
+
+### Abstention (`not-testable`)
+A gate outcome that is neither a pass nor a fail: the gate declined to rule because its preconditions were not met (no reproducible *k*, degenerate partition, identical inputs). **An abstention is not a rejection.** Counting abstentions as correct rejections is what produced a reported false-positive rate of 0.000 when the gate had actually declined to rule on 28 of 30 negative controls, leaving a testable denominator of 2. Any rate computed over many gate runs must use the *testable* subset as its denominator.
+
+### Size-matched null
+A reference distribution built by perturbing an input by the same *magnitude* as the real change being tested, but at random — used by Gate K, where the perturbation matches the observed knowledge-graph diff's per-edge-type addition and removal counts. Without it, an agreement score between two conditions cannot be read, because a low value is equally consistent with "the real change mattered" and "this result breaks under any change of that size."
+
+### Degree-preserving rewiring
+A null that randomises a graph's topology while holding every node's in- and out-degree exactly fixed, via double-edge swaps (`a→b`, `c→d` become `a→d`, `c→b`). Stronger than uniform rewiring, which destroys the degree sequence and so misreads changes at both ends of it — hub edges look specially targeted when losing one is ordinary, and peripheral edges look ordinary when losing one is specific.
 
 ## Data Format Terms
 
@@ -281,9 +296,11 @@ F12 (`pathway_subtyping.active`): given a partially-labelled cohort, pick the ne
 | GO | Gene Ontology |
 | ICP | Invariant Causal Prediction |
 | KEGG | Kyoto Encyclopedia of Genes and Genomes |
+| KG | Knowledge Graph |
 | LoF | Loss of Function |
 | LOEUF | Loss-of-function Observed/Expected Upper bound Fraction |
 | MSV | Molecular State Vector |
+| SigClust | Statistical Significance of Clustering (single-Gaussian null) |
 | PCA | Principal Component Analysis |
 | QC | Quality Control |
 | scRNA-seq | Single-Cell RNA Sequencing |

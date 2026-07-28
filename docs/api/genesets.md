@@ -119,7 +119,7 @@ BorzoiBackend(checkpoint: str = "borzoi-human-v1.0")
 ## Roadmap acceptance (F7)
 
 - Top-20 recall ≥ 30% against a literature-grounded gold set.
-- On synthetic benchmarks with a clean correlation signal, `CoexpressionBackend` hits **100%** top-20 recall (tests: [`tests/test_genesets.py`](../../tests/test_genesets.py)). Borzoi-backed gold-set acceptance is a post-release follow-up.
+- On synthetic benchmarks with a clean correlation signal, `CoexpressionBackend` hits **100%** top-20 recall (tests: [`tests/test_genesets_regulatory.py`](../../tests/test_genesets_regulatory.py)). Borzoi-backed gold-set acceptance is a post-release follow-up.
 
 ---
 

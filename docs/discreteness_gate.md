@@ -37,7 +37,7 @@ compared against, adding two corroborating diagnostics.
 > ```python
 > passed = bool(obs > sg_p95 and sg_p < self.alpha)
 > ```
-> (`src/pathway_subtyping/discreteness/gate_a_discreteness_null.py:388`) — the
+> (`src/pathway_subtyping/discreteness/gate_a_discreteness_null.py:400`) — the
 > single-Gaussian reference and nothing else. **The gap statistic (2) and the dip
 > test (3) are computed and reported, but never enter the decision.** On the
 > deposited ablation, thresholding the SigClust *p* alone reproduces the full
@@ -133,3 +133,18 @@ abstained on 28/30 — so a low false-positive rate is largely abstention, not
 rejection, and must be quoted with its testable denominator. And it is
 conservative: on a separation sweep it certifies nothing below δ=2.5 SD, so it is
 good for refusing over-called subtypes and poor at detecting subtle real ones.
+
+## Related gates
+
+This gate varies the **reference distribution** while holding the data and the
+knowledge graph fixed. Two siblings vary something else:
+
+- **[Gate K — time-sliced KG sensitivity](kg_sensitivity_gate.md)** *(implemented)*
+  varies the **knowledge graph**: does the finding survive being recomputed
+  against a different database release? Every gate here holds the KG fixed, so
+  this is a class of artifact the rest of the battery cannot see. Its null design
+  follows the lesson on this page — a raw agreement number between two KG
+  versions is as uninterpretable as a raw bootstrap ARI, for the same reason.
+- **[Gate T — trajectory validation](roadmap-trajectory-gate.md)** *(proposed, not
+  implemented)* transfers the argument to pseudotime: *stable is not discrete*
+  becomes *stable is not temporal*.

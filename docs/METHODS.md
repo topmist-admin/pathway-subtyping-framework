@@ -2,6 +2,30 @@
 
 This document provides detailed statistical methodology for the Pathway Subtyping Framework, suitable for methods sections in peer-reviewed publications.
 
+> ## ⚠️ Coverage notice (updated 2026-07-28)
+>
+> The bulk of this document was written against **v0.2/v0.3 (February 2026)**. The
+> methods it *does* describe were spot-checked against current code and remain
+> accurate — this is a **completeness** gap, not a correctness one. But the
+> framework has since added substantial methodology that is **not described below**:
+>
+> - the **discreteness gate (Gate A)** and the demotion of bootstrap stability —
+>   the single most important methodological change in the project's history, and
+>   the centrepiece of the cautionary-validation manuscript. See
+>   [`discreteness_gate.md`](discreteness_gate.md).
+> - **time-sliced KG sensitivity (Gate K)** — [`kg_sensitivity_gate.md`](kg_sensitivity_gate.md)
+> - confound association (Gate 6), genetic/somatic anchoring (Gate 7), cross-modal
+>   concordance (Gate 5)
+> - conformal prediction and uncertainty quantification, cross-platform
+>   harmonization, in-silico perturbation, foundation-model embeddings, network
+>   propagation, invariant causal prediction, active learning, multi-omics fusion
+>
+> The **Validation Framework** section below has been updated to enumerate the
+> current gate battery. The remaining sections have not. **Do not cite this
+> document as a complete description of v0.8.0 methodology** — cite it for the
+> variant-burden, pathway-aggregation, ancestry-correction and clustering methods
+> it actually covers, and the gate-specific docs for the rest.
+
 ## Overview
 
 The Pathway Subtyping Framework identifies molecular subtypes in genetically heterogeneous diseases by:
@@ -381,6 +405,28 @@ silhouette = (b - a) / max(a, b)
 Select k that maximizes mean silhouette score.
 
 ## Validation Framework
+
+> **The current gate battery (v0.8.0).** This section originally described three
+> gates. The framework now implements the following; only the first three are
+> detailed below, and each of the rest links to its own methods document.
+>
+> | Gate | Question | Documented in |
+> |---|---|---|
+> | Label shuffle | are the subtypes spurious? | below |
+> | Random gene sets | is the pathway structure meaningful? | below |
+> | Bootstrap stability | does the partition recur under resampling? | below — **demoted in v0.8**, see note |
+> | **Gate A — discreteness** | is the structure *discrete*, or a reproducibly-sliced continuum? | [`discreteness_gate.md`](discreteness_gate.md) |
+> | Gate 5 — cross-modal concordance | does the partition replicate across modalities? | `api/validation.md` |
+> | Gate 6 — confound association | does the partition track a technical or anatomical confound? | `api/validation.md` |
+> | Gate 7 — genetic / somatic anchoring | does the partition track a real genetic stratum? | `api/validation.md` |
+> | **Gate K — KG sensitivity** | does the finding survive a knowledge-graph version swap? | [`kg_sensitivity_gate.md`](kg_sensitivity_gate.md) |
+>
+> **⚠️ Bootstrap stability was demoted in v0.8.0.** Its null permuted each pathway
+> column independently, making it a test of *pathway independence* rather than of
+> *discreteness*; a one-dimensional continuous gradient is reproducibly bisected by
+> a mixture model on every resample and so passed it. It is retained and reported
+> as a marginal/confound control but **no longer decides discreteness**. The
+> criterion "ARI > 0.8" below must be read in that light.
 
 ### Negative Control 1: Label Shuffle Test
 
@@ -809,4 +855,4 @@ Gene symbols (e.g., SHANK3, CHD8, NRXN1) are standard HGNC identifiers used in t
 
 ---
 
-*Document version: 0.2.4-dev | Last updated: February 2026*
+*Core methods written for v0.2.4-dev (February 2026); Validation Framework section and coverage notice updated 2026-07-28 for v0.8.0. See the coverage notice at the top for what is and is not described here.*

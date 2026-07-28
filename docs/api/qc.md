@@ -271,8 +271,6 @@ Beyond synthetic testing, the QC layer includes a 3-level validation framework:
 | L3 Scenarios | `qc.testing.scenarios` | End-to-end scenario execution with defect injection, detection validation, and ground truth checking |
 | L4 Prospective | `qc.testing.prospective` | Shadow protocol for non-interventional PSF alongside standard QC, with concordance analysis and threshold calibration |
 
-See [qc-validation.md](qc-validation.md) for the full API reference.
-
 ---
 
 Research use only. Not for clinical decision-making.

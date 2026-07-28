@@ -28,6 +28,11 @@ This document provides comprehensive API documentation for the Pathway Subtyping
 | [`cross_cohort`](cross_cohort.md) | Cross-cohort validation and replication |
 | [`config`](config.md) | Configuration loading and validation utilities |
 | [`cli`](cli.md) | Command-line interface |
+| [`network_propagation`](network_propagation.md) | Network propagation of pathway scores over the knowledge graph |
+| [`data_quality`](data_quality.md) | Input data quality assessment and reporting |
+| [`validation_datasets`](validation_datasets.md) | Public reference dataset loaders (GEO, Reactome) with caching |
+| [`genetics`](genetics.md) | Genetic stratum handling for the anchoring gates |
+| [`utils`](utils.md) | Seeding, chunked readers, ARI guards, progress tracking |
 
 ### Optional Layers (v0.5)
 
@@ -54,6 +59,24 @@ All v0.6 modules ship a deterministic fallback alongside the production backend,
 | `omics` | F10 | (core) | [multi-omics](../guides/multi-omics.md) | [api/omics](omics.md) | 28 | `ATACScorer`, `ProteomicsScorer`, `MultiOmicsFusion`, `FusionWeights`, `flag_discordant_pathways` — weighted fusion of per-modality pathway scores |
 | `causal` | F11 | (core) | [causal](../guides/causal.md) | [api/causal](causal.md) | 29 | `InvariantPathwayPredictor` — Invariant Causal Prediction (ICP) with combined mean+variance invariance test |
 | `active` | F12 | (core) | [active](../guides/active.md) | [api/active](active.md) | 30 | `ActiveSampleSelector` — uncertainty / diversity / hybrid sample selection strategies |
+
+### v0.8 Layers — Discreteness, Deep Baselines, KG Sensitivity
+
+| Module | Extra | Narrative doc | API | What it does |
+|--------|-------|---------------|-----|--------------|
+| `discreteness` | `[discreteness]` (dip test only) | [discreteness_gate](../discreteness_gate.md) | [api/discreteness](discreteness.md) | `DiscretenessGateA` — is the structure *discrete*, or a reproducibly-sliced continuum? Replaces the independence null with a single-Gaussian (SigClust) reference. **Only that reference decides**; gap statistic and dip test are reported diagnostics. Three outcomes: certify / reject / not-testable |
+| `clustering_dl` | (core; needs `torch`) | — | [api/clustering_dl](clustering_dl.md) | DEC (Xie 2016) and VAE-GMM (VaDE, Jiang 2017) deep-clustering baselines for benchmarking pathway-GMM |
+| `kg_sensitivity` | (core) | [kg_sensitivity_gate](../kg_sensitivity_gate.md) | [api/kg_sensitivity](kg_sensitivity.md) | **Gate K** — does the finding survive a knowledge-graph *version* swap? Size-matched degree-preserving null; verdicts `robust` / `kg-sensitive` / `generically-fragile` / `not-testable` |
+
+> Every other gate holds the knowledge graph fixed and varies the data. Gate K
+> varies the knowledge graph, which is why it catches a class of artifact the rest
+> of the battery cannot see.
+
+### Proposed, not implemented
+
+| Spec | Status |
+|---|---|
+| [roadmap-trajectory-gate](../roadmap-trajectory-gate.md) | **Gate T** — trajectory validation. Design spec only; there is no `trajectory` module, class or test. Do not cite as a capability |
 
 ### Real-Data Validation Scripts (v0.6.3)
 

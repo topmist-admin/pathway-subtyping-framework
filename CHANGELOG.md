@@ -50,6 +50,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Docs: `docs/kg_sensitivity_gate.md`. Tests: `tests/test_kg_sensitivity.py`.
 
 ### Documentation
+- **Nine previously undocumented modules now have API reference pages**, closing the
+  gap where public top-level exports had no reference at all: `kg_sensitivity`,
+  `discreteness`, `clustering_dl`, `network_propagation`, `data_quality`,
+  `validation_datasets`, `genetics`, `utils`. All are linked from `docs/api/index.md`,
+  which gains a **v0.8 Layers** section and a "Proposed, not implemented" section so a
+  design spec can never be mistaken for a capability.
+- **Accuracy fixes to existing API pages**, each verified against source:
+  `validation.md` (`run_all()` documented 6 of 11 parameters; five gates —
+  ancestry-independence, cross-modal, confound-association, genetic and somatic
+  anchoring — plus `cramers_v` were entirely undocumented, and the sample output
+  implied only three gates exist); `pipeline.md` (`PipelineConfig` documented 22 of 39
+  fields, so every expression and multi-omic entry point was undiscoverable; `run()`
+  described a VCF-only flow); `config.md` (`ancestry` and `multi_omic` validation
+  sections were missing). Two dead cross-links repaired in `genesets.md` and `qc.md`.
+- `docs/METHODS.md` carries a **coverage notice**: its body describes v0.2/v0.3 and
+  omits the discreteness gate, Gate K, Gates 5/6/7, conformal prediction,
+  harmonization, perturbation, embeddings and causal inference. The Validation
+  Framework section is updated to enumerate the current battery and to flag that
+  bootstrap stability was demoted. The remaining sections are unchanged and the
+  document should not be cited as a complete v0.8.0 methodology.
+- `docs/terminology.md`: gate battery updated from three gates to the current eight,
+  plus new entries for **abstention (`not-testable`)**, **size-matched null** and
+  **degree-preserving rewiring**.
+- `README.md` documents Gate K in the gate battery and feature table.
+- Cross-links added between the three gate docs (A, K, T) so the shared null-design
+  argument is discoverable from any of them.
+- Fixed three dead relative links (`zenodo_setup.md` ×2, `contributor-kit/06`) and a
+  stale line citation in `discreteness_gate.md`. **All 124 tracked markdown files now
+  have zero dead relative links.**
 - `docs/roadmap-trajectory-gate.md` — proposed Gate T spec (trajectory validation).
   **Design only; no implementation exists.**
 

@@ -87,10 +87,16 @@ validate_config(config, check_files=False)
 
 **Validation checks:**
 - Required sections: `pipeline`, `data`
-- Required data fields: `vcf_path`, `phenotype_path`, `pathway_db`
+- Required data fields (depend on `data.input_type`, default `"vcf"`): `vcf_path`, `phenotype_path`, `pathway_db` for `vcf`; `expression_path`, `phenotype_path`, `pathway_db` for `expression`; `pathway_db` only for `multi_omic` (per-modality paths come from the `multi_omic` section)
 - File existence (if `check_files=True`)
 - Seed must be integer (if provided)
 - Cluster range validation (min ≥ 2, max ≥ min)
+
+Optional sections are validated only when present. `validate_config` dispatches to
+`_validate_data_section()`, `_validate_pipeline_section()`, and — if the section is
+non-empty — `_validate_clustering_section()`, `_validate_ancestry_section()`,
+`_validate_validation_section()`, `_validate_variant_qc_section()`, and
+`_validate_multi_omic_section()`.
 
 ---
 
@@ -221,6 +227,21 @@ Clustering algorithm parameters.
 | `n_clusters` | integer/null | `null` | Fixed cluster count (null = auto) |
 | `n_clusters_range` | list[int] | `[2, 8]` | Range for BIC selection |
 
+### `ancestry`
+
+Optional ancestry-PC correction. Validated only when the section is present.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `correction` | string/null | `null` | Correction method: `regress_out`, `covariate_aware`, or `stratified` |
+| `pcs_path` | string/null | `null` | CSV of ancestry PCs (sample IDs as index, PC columns) |
+| `n_pcs` | integer | `10` | Number of PCs to use |
+
+**Validation checks (performed by `_validate_ancestry_section()`):**
+- `correction`, if provided, must be one of `regress_out`, `covariate_aware`, `stratified`
+- `pcs_path`, if provided, must exist (when `check_files=True`)
+- `n_pcs` must be a positive integer
+
 ### `validation`
 
 Validation gate configuration. When thresholds are `null`, the pipeline auto-calibrates them based on sample size and cluster count.
@@ -263,6 +284,37 @@ Variant quality control filters. Applied between data loading and burden computa
 - `max_maf` must be in [0, 1]
 - `min_gq` must be a non-negative integer (if provided)
 - `min_dp` must be a non-negative integer (if provided)
+
+### `multi_omic`
+
+Multi-modality fusion. Validated only when the section is present; used when `data.input_type: multi_omic`.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `modalities` | list[dict] | required | At least 2 modality entries (see below) |
+| `fusion_strategy` | string | `"concatenate"` | `concatenate`, `weighted_average`, or `intersection_only` |
+| `missing_strategy` | string | `"impute_zero"` | `impute_zero`, `impute_mean`, or `drop` |
+| `weights` | dict/null | `null` | Map of modality label → weight; must sum to 1.0 |
+| `renormalize` | boolean | `true` | Re-normalize fused pathway scores (read by `PipelineConfig.from_yaml`; not checked by `validate_config`) |
+
+Each entry in `modalities`:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `type` | string | required | `vcf`, `expression`, or `single_cell` |
+| `path` | string | required | Path to the modality's data file |
+| `label` | string | value of `type` | Name used to key `weights` |
+| `expression_input_type` | string | `"tpm"` | `expression` modalities only: `counts`, `tpm`, `fpkm`, `log2` |
+| `expression_scoring_method` | string | `"ssgsea"` | `expression` modalities only: `mean_z`, `ssgsea`, `gsva` |
+
+**Validation checks (performed by `_validate_multi_omic_section()`):**
+- `modalities` must be a list with at least 2 entries
+- Each modality's `type` must be one of `vcf`, `expression`, `single_cell`
+- Each modality must have a `path`, and the file must exist (when `check_files=True`)
+- For `expression` modalities, `expression_input_type` and `expression_scoring_method` must be valid
+- `fusion_strategy` must be one of `concatenate`, `weighted_average`, `intersection_only`
+- `missing_strategy` must be one of `impute_zero`, `impute_mean`, `drop`
+- `weights`, if provided, must be a dict, sum to 1.0 (tolerance 0.01), and include an entry for every modality label
 
 ### `output`
 

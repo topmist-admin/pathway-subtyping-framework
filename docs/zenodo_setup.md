@@ -132,8 +132,8 @@ pip install pathway-subtyping
 ```
 
 ### Documentation
-- [Quickstart Guide](docs/quickstart.md)
-- [API Reference](docs/api/index.md)
+- [Quickstart Guide](quickstart.md)
+- [API Reference](api/index.md)
 
 ### Requirements
 - Python 3.9+
