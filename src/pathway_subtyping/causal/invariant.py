@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import itertools
 import logging
-import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Sequence
 
@@ -113,7 +112,6 @@ def invariance_pvalue(
     grand_abs_mean = abs_dev.mean()
     ss_between_v = 0.0
     ss_within_v = 0.0
-    offset = 0
     for block_abs in abs_dev_groups:
         m = block_abs.mean()
         ss_between_v += len(block_abs) * (m - grand_abs_mean) ** 2

@@ -22,7 +22,7 @@ Research use only. Not for clinical decision-making.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np

@@ -7,7 +7,7 @@ Research use only. Not for clinical decision-making.
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List
 
 from .base import ScenarioReport

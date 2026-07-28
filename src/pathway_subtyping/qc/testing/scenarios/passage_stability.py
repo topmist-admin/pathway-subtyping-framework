@@ -13,7 +13,6 @@ from typing import Dict, List, Optional
 from ..simulator import (
     FeedbackBreakType,
     InjectedBatch,
-    ManufacturingSimulator,
     ManufacturingSpec,
 )
 from .base import BaseScenario

@@ -21,13 +21,13 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
 
-from .align import AlignmentResult, CrossPlatformAligner
+from .align import CrossPlatformAligner
 from .confidence import HarmonizationReport
 from .uce import FallbackEmbedder
 

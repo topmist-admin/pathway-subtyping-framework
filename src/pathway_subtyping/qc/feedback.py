@@ -13,7 +13,7 @@ Research use only. Not for clinical decision-making.
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -75,7 +75,7 @@ class FeedbackResult:
             "n_inverted": self.n_inverted,
             "runaway_risk_score": round(self.runaway_risk_score, 4),
             "summary": self.summary,
-            "loops": [l.to_dict() for l in self.loops],
+            "loops": [loop.to_dict() for loop in self.loops],
         }
 
 

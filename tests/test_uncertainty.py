@@ -121,7 +121,9 @@ class TestConformalRegression:
             te_idx = perm[int(0.75 * n) :]
 
             coef = np.polyfit(x[fit_idx, 0], y[fit_idx], deg=1)
-            score_fn = lambda X, _c=coef: _c[0] * X[:, 0] + _c[1]
+
+            def score_fn(X, _c=coef):
+                return _c[0] * X[:, 0] + _c[1]
 
             for target in deviations:
                 predictor = ConformalPathwayPredictor(score_fn=score_fn, coverage=target)
@@ -138,7 +140,10 @@ class TestConformalRegression:
 
     def test_quantile_monotone_in_coverage(self, regression_data):
         x, y = regression_data
-        score_fn = lambda X: 2.0 * X[:, 0]  # matches true mean
+
+        def score_fn(X):  # matches true mean
+            return 2.0 * X[:, 0]
+
         q_vals = []
         for target in (0.5, 0.8, 0.95):
             pred = ConformalPathwayPredictor(score_fn=score_fn, coverage=target)

@@ -163,7 +163,7 @@ class TestOfftarget:
             cell_fraction=0.3,
             activation_level=0.8,
         )
-        n_affected = sum(1 for l in injected.cell_labels if l.affected)
+        n_affected = sum(1 for lbl in injected.cell_labels if lbl.affected)
         expected = int(100 * 0.3)
         assert abs(n_affected - expected) <= 2  # Allow rounding
 
@@ -199,7 +199,7 @@ class TestOverdose:
             pathways=["HALLMARK_INFLAMMATORY_RESPONSE"],
             multiplier=3.0,
         )
-        assert all(l.affected for l in injected.cell_labels)
+        assert all(lbl.affected for lbl in injected.cell_labels)
         assert injected.defect_metadata[-1].defect_type == DefectType.OVERDOSE
 
     def test_higher_multiplier_higher_severity(self, simulator, healthy_batch):
@@ -238,7 +238,7 @@ class TestCrosstalk:
             pathway_b="HALLMARK_TNFA_SIGNALING_VIA_NFKB",
             competition_direction=CompetitionDirection.A_DOMINATES,
         )
-        assert all(l.affected for l in injected.cell_labels)
+        assert all(lbl.affected for lbl in injected.cell_labels)
         meta = injected.defect_metadata[-1]
         assert meta.defect_type == DefectType.CROSSTALK
 
@@ -293,7 +293,7 @@ class TestAtlasDrift:
 
     def test_drift_shifts_expression(self, simulator, healthy_batch):
         injected = simulator.inject_atlas_drift(healthy_batch, drift_distance=0.7)
-        assert all(l.affected for l in injected.cell_labels)
+        assert all(lbl.affected for lbl in injected.cell_labels)
         assert injected.defect_metadata[-1].defect_type == DefectType.ATLAS_DRIFT
 
     def test_higher_drift_more_pathways(self, simulator, healthy_batch):

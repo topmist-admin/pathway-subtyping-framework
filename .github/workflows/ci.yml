@@ -64,11 +64,18 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    # Advisory, like the type-check job below. The codebase predates consistent
-    # Black/isort/flake8 enforcement (100+ files unformatted, ~118 flake8 findings,
-    # many of them intentional __init__ re-exports). Style cleanup is tracked as a
-    # separate effort; a red lint job should not block the pipeline meanwhile.
-    continue-on-error: true
+    # BLOCKING as of 2026-07-28. This job was advisory while the codebase carried
+    # 100 unformatted files and 118 flake8 findings; that backlog is now cleared
+    # (black + isort applied in 6bf7f78, all F401/F821/F841/E741/E731/F541/E225
+    # resolved), so the job passes clean and a regression should stop the build.
+    #
+    # Why this matters beyond style: a permanently-red lint job trains everyone to
+    # ignore it, and that is exactly how a genuine base-install ImportError sat
+    # unnoticed underneath it (fixed in 1defea9) until the integration job caught
+    # it. A signal nobody reads is not a signal.
+    #
+    # If this job fails, run locally and re-commit:
+    #   isort src/ tests/ && black src/ tests/ && flake8 src/ tests/
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -92,8 +99,12 @@ jobs:
           isort --check-only --diff src/ tests/
 
       - name: Lint with flake8
+        # No CLI overrides: the checked-in .flake8 is the single source of truth.
+        # Passing --extend-ignore here previously REPLACED the config's list
+        # (E203, W503, E501) rather than adding to it, so CI silently linted
+        # under different rules than the repo declares.
         run: |
-          flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203,W503
+          flake8 src/ tests/
 
   type-check:
     runs-on: ubuntu-latest

@@ -97,7 +97,6 @@ class ConformalMembershipGate:
         X = pathway_scores.values
         y = np.asarray(cluster_labels)
         n = X.shape[0]
-        labels_sorted = np.unique(y)
 
         cov_acc = {f"{c:.2f}": [] for c in self.target_coverages}
         size_acc = {f"{c:.2f}": [] for c in self.target_coverages}

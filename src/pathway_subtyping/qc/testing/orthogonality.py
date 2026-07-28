@@ -10,7 +10,7 @@ Research use only. Not for clinical decision-making.
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 import numpy as np
 import pandas as pd

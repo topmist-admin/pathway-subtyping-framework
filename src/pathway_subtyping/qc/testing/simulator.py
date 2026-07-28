@@ -365,7 +365,6 @@ class ManufacturingSimulator:
         """
         expr = batch.expression.values.copy()
         n_cells = len(expr)
-        affected = np.ones(n_cells, dtype=bool)
 
         for pw in pathways:
             if pw not in self._pathway_genes:

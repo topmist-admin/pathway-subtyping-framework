@@ -11,14 +11,13 @@ Research use only. Not for clinical decision-making.
 """
 
 import logging
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
 
-from .orthogonality import FeatureDetection, FeatureDetector
-from .simulator import DefectType, ManufacturingSimulator
+from .orthogonality import FeatureDetector
+from .simulator import DefectType, InjectedBatch, ManufacturingSimulator
 
 logger = logging.getLogger(__name__)
 

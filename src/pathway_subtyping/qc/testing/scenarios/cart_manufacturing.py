@@ -12,7 +12,6 @@ from typing import Dict, List, Optional
 
 from ..simulator import (
     InjectedBatch,
-    ManufacturingSimulator,
     ManufacturingSpec,
     StressorType,
 )

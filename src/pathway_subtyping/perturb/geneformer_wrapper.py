@@ -25,7 +25,7 @@ Research use only. Not for clinical decision-making.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -140,7 +140,7 @@ class OfficialBackend(GeneformerBackend):
             from pathlib import Path
 
             import torch
-            from transformers import BertForMaskedLM, BertModel
+            from transformers import BertForMaskedLM
         except ImportError as exc:  # pragma: no cover - optional dep
             raise ImportError(
                 "OfficialBackend requires torch + transformers + geneformer. "

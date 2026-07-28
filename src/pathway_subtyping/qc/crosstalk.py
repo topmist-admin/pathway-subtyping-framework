@@ -11,7 +11,6 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -146,7 +145,6 @@ class CrosstalkDetector:
         if not shared_present or (not a_present and not b_present):
             return 0.0, ""
 
-        shared_mean = expression[shared_present].values.mean()
         a_mean = expression[a_present].values.mean() if a_present else 0.0
         b_mean = expression[b_present].values.mean() if b_present else 0.0
 

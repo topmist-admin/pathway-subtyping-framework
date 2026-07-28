@@ -9,8 +9,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-import pandas as pd
-
 from ..simulator import InjectedBatch, ManufacturingSimulator, ManufacturingSpec
 
 logger = logging.getLogger(__name__)

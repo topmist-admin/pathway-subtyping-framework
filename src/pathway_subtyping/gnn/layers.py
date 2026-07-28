@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 try:
     import torch
     import torch.nn as nn
-    import torch.nn.functional as F
 
     HAS_TORCH = True
 except ImportError:

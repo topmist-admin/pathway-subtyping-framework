@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
 from .biological_rules import Rule
-from .conditions import ConditionEvaluator, ConditionResult
+from .conditions import ConditionEvaluator
 
 logger = logging.getLogger(__name__)
 

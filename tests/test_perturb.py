@@ -60,7 +60,7 @@ def synthetic_cohort():
 
     X = np.vstack(cells)
     gene_names = (
-        [f"MARKER_A"] + [f"MARKER_B"] + [f"MARKER_C"] + [f"GENE_{i}" for i in range(3, n_genes)]
+        ["MARKER_A"] + ["MARKER_B"] + ["MARKER_C"] + [f"GENE_{i}" for i in range(3, n_genes)]
     )
     expression = pd.DataFrame(X, columns=gene_names)
 

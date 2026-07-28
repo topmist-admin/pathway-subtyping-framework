@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Set, Tuple
 
 from .builder import KnowledgeGraph
-from .schema import EdgeType, NodeType
+from .schema import EdgeType
 
 logger = logging.getLogger(__name__)
 

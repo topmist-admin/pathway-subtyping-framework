@@ -80,7 +80,7 @@ Research use only.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -466,7 +466,7 @@ class DiscretenessGateA(ValidationGates):
         interp = (
             f"Observed bootstrap-ARI {obs:.3f} vs single-Gaussian reference "
             f"95th pctile {sg_p95:.3f} (p={sg_p:.3f}). "
-            f"Independence (confound) null 95th {fp_p95:.3f}: would{'' if obs>fp_p95 else ' NOT'} pass. "
+            f"Independence (confound) null 95th {fp_p95:.3f}: would{'' if obs > fp_p95 else ' NOT'} pass. "
             f"Gap-optimal k={gap['gap_optimal_k']} ({'supports' if gap_supports else 'does not support'} k={n_clusters}). "
             f"Dip PC1 p={dip_pc1['p']:.3f}, discriminant p={dip_disc['p']:.3f} "
             f"({'unimodal' if unimodal else 'multimodal'})."

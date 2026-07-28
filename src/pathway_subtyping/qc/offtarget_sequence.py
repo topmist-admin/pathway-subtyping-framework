@@ -19,8 +19,8 @@ Research use only. Not for clinical decision-making.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Mapping, Optional, Sequence
+from dataclasses import dataclass
+from typing import Any, List, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
