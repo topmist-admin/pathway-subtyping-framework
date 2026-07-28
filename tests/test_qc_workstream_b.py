@@ -336,3 +336,78 @@ class TestStressFingerprinter:
         )
         result = fp.fingerprint(batch, reference_scores=reference)
         assert isinstance(result, StressResult)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# F9: SOFT-DEPRECATION CONTRACT (2026-07-28)
+# ══════════════════════════════════════════════════════════════════════
+
+
+class TestCrosstalkSoftDeprecation:
+    """F9's competition_score does not measure competition at shared nodes.
+
+    Until the scoring definition is settled, the contract is: warn loudly on
+    construction, withhold from the public star-import surface, but stay
+    importable so existing code does not break. These tests pin all three.
+    """
+
+    def test_construction_emits_futurewarning(self):
+        with pytest.warns(FutureWarning, match="EXPERIMENTAL"):
+            CrosstalkDetector(kg=None)
+
+    def test_warning_names_the_actual_defect(self):
+        """The message must say *why*, not just 'experimental'."""
+        with pytest.warns(FutureWarning) as rec:
+            CrosstalkDetector(kg=None)
+        msg = str(rec[0].message)
+        assert "shared" in msg and "EXCLUSIVE" in msg
+        assert "competition_score" in msg
+
+    def test_withheld_from_public_surface(self):
+        import pathway_subtyping.qc as qc
+
+        for name in ("CrosstalkDetector", "CrosstalkResult", "InterferenceEdge"):
+            assert name not in qc.__all__, f"{name} must stay out of __all__ until F9 is fixed"
+
+    def test_still_importable_so_existing_code_does_not_break(self):
+        from pathway_subtyping.qc import CrosstalkDetector as _D
+        from pathway_subtyping.qc import CrosstalkResult as _R
+        from pathway_subtyping.qc import InterferenceEdge as _E
+
+        assert _D is not None and _R is not None and _E is not None
+
+    def test_score_is_insensitive_to_shared_nodes(self):
+        """Pins the defect itself, so a future 'fix' that does not fix it fails here.
+
+        Varying shared-node expression must currently leave the score unchanged.
+        When F9 is corrected this test SHOULD fail — that is the signal to
+        re-export the names and delete this class.
+        """
+        kg = KnowledgeGraph()
+        for g in ["A_only", "B_only", "S1"]:
+            kg.add_node(g, NodeType.GENE)
+        kg.add_node("PW_A", NodeType.PATHWAY)
+        kg.add_node("PW_B", NodeType.PATHWAY)
+        for g in ["A_only", "S1"]:
+            kg.add_edge(g, "PW_A", EdgeType.GENE_IN_PATHWAY)
+        for g in ["B_only", "S1"]:
+            kg.add_edge(g, "PW_B", EdgeType.GENE_IN_PATHWAY)
+
+        def score_at(shared_level):
+            expr = pd.DataFrame(
+                {
+                    "A_only": np.full(50, 5.0),
+                    "B_only": np.full(50, 5.0),
+                    "S1": np.full(50, shared_level),
+                },
+                index=[f"c{i}" for i in range(50)],
+            )
+            with pytest.warns(FutureWarning):
+                det = CrosstalkDetector(kg)
+            return det.detect(expr, pathways=["PW_A", "PW_B"]).interference_edges[0]
+
+        low, high = score_at(0.1), score_at(500.0)
+        assert low.competition_score == high.competition_score, (
+            "shared-node expression changed by 4 orders of magnitude and the score "
+            "moved — F9 may have been fixed; if so, re-export it and drop this test"
+        )

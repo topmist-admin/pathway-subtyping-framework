@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Deprecated
+- **F9 `CrosstalkDetector` soft-deprecated — its `competition_score` does not measure
+  what it claims.** `_compute_competition` subtracts the shared gene set from both
+  pathways and returns `mean(A-exclusive) - mean(B-exclusive)`, so the shared genes
+  never enter the arithmetic and serve only as a presence gate. Demonstrated: varying
+  shared-node expression across four orders of magnitude (0.1 → 500) leaves the score
+  bit-identical, while holding shared nodes perfectly balanced and varying only the
+  exclusive genes swings it from **+8.0 to −8.0** and flips `dominant`.
+  - `competition_score`, `dominant` and the PASS/FAIL summary are **uninterpretable**.
+    `n_significant` thresholds `abs(score)` at 0.3, which on log2-scale expression
+    would fail most real batches for an unrelated reason.
+  - Constructing the detector now emits a **`FutureWarning`** (not
+    `DeprecationWarning`, which Python hides by default outside `__main__`).
+  - The three names are withheld from `pathway_subtyping.qc.__all__` but remain
+    **importable**, so existing code does not break — only `import *` and generated
+    API docs are affected.
+  - **Not a regression:** the module shipped this way in the v0.5 QC layer. A
+    `shared_mean` local was computed and never used from the first commit, and was
+    removed as dead code in the 2026-07-28 lint cleanup — which is what surfaced it.
+  - **No published result is affected.** `CrosstalkDetector` is invoked only in its
+    own unit tests; no deposited artifact contains `competition_score`. The existing
+    tests could not have caught this: all three use i.i.d. `normal(5.0, 0.5)`
+    expression, under which the score is ~0 for any formula, and none asserts on the
+    score at all.
+  - Unrelated and unaffected: `KnowledgeGraph.get_pathway_crosstalk()` and
+    `get_shared_genes()`.
+  - Fixing requires deciding what the score should mean; candidate formulas are in
+    the module docstring. `TestCrosstalkSoftDeprecation` pins the current defect, so
+    a genuine fix will make it fail — that is the signal to re-export F9.
+
 ### Added
 - **`pathway_subtyping.kg_sensitivity` — Gate K, time-sliced knowledge-graph
   sensitivity.** Tests whether a partition survives being recomputed against a

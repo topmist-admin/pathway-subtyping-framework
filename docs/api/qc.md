@@ -51,7 +51,7 @@ print(decision.decision)  # RELEASE / HOLD / REJECT
 | F6 | Off-Target Detection | `OffTargetDetector` | No | Classifies activations as INTENDED/TOLERATED/OFF_TARGET/EXCLUDED_VIOLATION |
 | F7 | Heterogeneity | `HeterogeneityProfiler` | No | Batch uniformity: conformity scores, bimodality, subpopulation detection |
 | F8 | Dosage & Stoichiometry | `DosageAnalyzer` | No | UNDER/IN_RANGE/OVER classification with therapeutic windows |
-| F9 | Crosstalk Detection | `CrosstalkDetector` | Yes | Shared node competition between pathways |
+| F9 | Crosstalk Detection | `CrosstalkDetector` | Yes | ⚠️ **EXPERIMENTAL — do not interpret results.** See [F9 notice](#f9-experimental--do-not-interpret) |
 | F10 | Feedback Monitoring | `FeedbackMonitor` | No | Activator-inhibitor correlation (intact/decoupled/inverted) |
 | F11 | Stress Fingerprinting | `StressFingerprinter` | No | Matches pathway patterns to 6 known stressor signatures |
 | F12 | Atlas Comparison | `AtlasComparator` | No | Distance from reference atlas with nearest-type mapping |
@@ -227,8 +227,33 @@ result.drift_drivers  # Top pathways driving drift
 
 ### `CrosstalkDetector` (F9), `FeedbackMonitor` (F10), `StressFingerprinter` (F11)
 
+#### F9: EXPERIMENTAL — do not interpret
+
+> ⚠️ **`competition_score` does not currently measure competition at shared nodes.**
+> `_compute_competition` subtracts the shared gene set from both pathways and then
+> returns `mean(A-exclusive) - mean(B-exclusive)`; the shared genes never enter the
+> arithmetic and act only as a presence gate.
+>
+> Demonstrated: varying shared-node expression across four orders of magnitude
+> (0.1 → 500) leaves the score bit-identical, while holding the shared nodes
+> perfectly balanced and varying only the exclusive genes swings it from +8.0 to
+> −8.0 and flips `dominant`.
+>
+> Consequently **`competition_score`, `dominant`, and the PASS/FAIL summary are all
+> uninterpretable**, and `n_significant` (which thresholds `abs(score)` at 0.3)
+> would fail most real batches for an unrelated reason.
+>
+> F9 is therefore **soft-deprecated**: constructing the detector emits a
+> `FutureWarning`, and the names are withheld from `pathway_subtyping.qc.__all__`.
+> They remain importable, so existing code does not break. Fixing this requires
+> settling what the score should mean — see the module docstring in
+> `src/pathway_subtyping/qc/crosstalk.py` for the candidate formulas.
+>
+> This does **not** affect `KnowledgeGraph.get_pathway_crosstalk()` or
+> `get_shared_genes()`, which are unrelated topology helpers.
+
 ```python
-# F9: Crosstalk
+# F9: Crosstalk — EXPERIMENTAL, emits FutureWarning; results are not interpretable
 detector = CrosstalkDetector(kg, competition_threshold=0.3)
 result = detector.detect(expression, pathways=["PW_A", "PW_B"])
 

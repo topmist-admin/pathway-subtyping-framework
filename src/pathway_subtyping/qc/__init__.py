@@ -129,10 +129,16 @@ __all__ = [
     "DosageState",
     "PathwayDosageResult",
     "StoichiometryResult",
-    # F9: Crosstalk Detection
-    "CrosstalkDetector",
-    "CrosstalkResult",
-    "InterferenceEdge",
+    # F9: Crosstalk Detection — SOFT-DEPRECATED 2026-07-28, deliberately NOT
+    # listed here. `competition_score` does not measure competition at shared
+    # nodes (see pathway_subtyping/qc/crosstalk.py for the demonstration), so F9
+    # is withheld from the public surface until its scientific definition is
+    # settled. The names remain IMPORTABLE so existing code keeps working:
+    #     from pathway_subtyping.qc import CrosstalkDetector   # still resolves
+    # They are excluded only from `from pathway_subtyping.qc import *` and from
+    # generated API docs. Constructing the detector emits a FutureWarning.
+    # Re-add "CrosstalkDetector", "CrosstalkResult", "InterferenceEdge" here once
+    # the score is corrected and covered by discriminating tests.
     # F10: Feedback Monitoring
     "FeedbackMonitor",
     "FeedbackResult",
