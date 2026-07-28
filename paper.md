@@ -26,6 +26,34 @@ bibliography: paper.bib
 
 The Pathway Subtyping Framework is an open-source Python package for discovering molecular subtypes in genetically heterogeneous diseases. It shifts subtyping from individual genes to biological pathways — curated gene sets representing shared molecular processes — providing biologically motivated dimensionality reduction that improves statistical power and interpretability. The framework accepts gene expression matrices (bulk RNA-seq, microarray) or variant burden scores (VCF), aggregates them into pathway-level scores using ssGSEA, GSVA, or mean-Z methods, clusters patients using Gaussian Mixture Models (GMM), and enforces mandatory validation gates before accepting results. It is disease-agnostic: the same pipeline operates on any condition for which curated pathway definitions exist.
 
+> ## ⚠️ CORRECTION NOTICE (2026-07-08) — read before citing anything in this paper
+>
+> This paper describes the framework as of **v0.2/v0.3 (February 2026)** and several
+> of its empirical claims have since been **retracted**. It has not been rewritten;
+> this notice scopes what is still safe to cite.
+>
+> **Retracted or superseded:**
+> - The **adaptive bootstrap-threshold model** (R²=0.889) does not reproduce.
+> - The **47-dataset benchmark** contained an empty-input ARI artifact (14 invalid
+>   rows), an incorrect independence claim, and count discrepancies. A corrected
+>   dataset **v2.0 (`10.5281/zenodo.21262112`)** supersedes it.
+> - The cross-disease convergence figures quoted below (**ARI=0.870**, **bootstrap
+>   ARI=0.923** as a general validation claim, **CMS4 recovery ~76%**) come from that
+>   uncorrected analysis and must not be quoted as current results.
+> - The associated preprint (Research Square **rs-9284565**) has been **withdrawn**
+>   from journal review.
+> - The framing "**validated** molecular subtype discovery" in the title above
+>   overstates what the gates establish. Subsequent work (v0.8.0) found the original
+>   bootstrap-stability gate tested *pathway independence*, not *discreteness*, and
+>   could certify a continuous gradient as a subtype.
+>
+> **Still accurate:** the architecture, the scoring methods, the input handling, and
+> the general motivation in Statement of Need.
+>
+> Full notice and corrected artifacts:
+> [`CORRECTION_2026-07/ERRATUM_2026-07-08.md`](CORRECTION_2026-07/ERRATUM_2026-07-08.md).
+> Current gate design: [`docs/discreteness_gate.md`](docs/discreteness_gate.md).
+
 # Statement of Need
 
 Over 100 risk genes contribute to autism spectrum disorder alone, each explaining a small fraction of cases [@Satterstrom2020]. Similar genetic architectures characterize schizophrenia [@Trubetskoy2022], epilepsy, and intellectual disability. This heterogeneity means that patients sharing a single clinical diagnosis may have fundamentally different molecular disruptions — and may respond to different treatments. Gene-level clustering is underpowered for typical cohort sizes, and existing pathway analysis tools focus on differential enrichment between predefined groups rather than unsupervised subtype discovery.
@@ -64,7 +92,7 @@ The framework has been validated on ten independent transcriptome datasets spann
 
 - **GSE28521** [@Voineagu2011]: 32 frontal cortex samples (16 ASD, 16 control). Discovered a GABA-Collapsed subtype (n=9, 100% ASD, Cohen's d=3.21 for GABA signaling).
 - **GSE64018** [@Gupta2014]: 24 temporal cortex RNA-seq samples. Independent replication: disease-enriched subtype (83% ASD) with the same top 3 disrupted pathways (GABA, glutamate, cell adhesion).
-- **GSE80655** [@Ramaker2017]: 141 schizophrenia + control samples, 3 brain regions. Three subtypes identified (Dopamine-Hyperactive, Neurodevelopment-Activated, Synaptic-Collapsed). First real-data analysis to pass all 3 validation gates (bootstrap ARI=0.923). Cross-disease analysis showed ASD and SCZ pathway sets produce 87% identical subtypes (ARI=0.870).
+- **GSE80655** [@Ramaker2017]: 141 schizophrenia + control samples, 3 brain regions. Three subtypes identified (Dopamine-Hyperactive, Neurodevelopment-Activated, Synaptic-Collapsed). ⚠️ **Superseded — see the correction notice above.** This was originally reported as the first real-data analysis to pass all 3 validation gates (bootstrap ARI=0.923), with cross-disease convergence of ASD and SCZ pathway sets at ARI=0.870. Re-analysis found the partition tracks **brain region, not diagnosis** (region Cramér's V 0.66; diagnosis permutation p=0.234 at donor level, i.e. indistinguishable from chance), and that the 141 samples come from only 48 donors, so sample-level tests overstated significance. Do not cite the 0.870 convergence figure.
 - **GSE53987** [@Lanz2019]: 205 samples across 4 diagnoses (SCZ, BD, MDD, CTL) and 3 brain regions (Affymetrix microarray). Cross-platform replication from GSE80655 RNA-seq with projection ARI=0.319 and cross-disease ARI=0.792, confirming pathway convergence across platforms.
 
 **Blood and peripheral tissue (4 datasets, 880 samples, ASD + SCZ):**
@@ -82,7 +110,9 @@ Across 1,934 samples and 10 independent datasets, the framework demonstrated tha
 
 # Software Architecture
 
-The framework is implemented in Python (≥3.9) with core dependencies limited to NumPy, pandas, scikit-learn, and SciPy. Optional extras include `[vcf]` (pysam for VCF parsing), `[viz]` (Plotly for interactive visualization), and `[sc]` (anndata for single-cell data). It is distributed via PyPI (`pip install pathway-subtyping`, RRID:SCR_028051, bio.tools:pathway-subtyping), tested with 1,003 automated tests, archived on Zenodo (DOI: 10.5281/zenodo.18442426), and available as Docker images (`rohitdataops/pathway-subtyping` on Docker Hub). Twenty-one Jupyter notebooks are provided — ten tutorials with synthetic data and eleven real-data validation notebooks spanning autism, schizophrenia, and cancer datasets.
+The framework is implemented in Python (≥3.8) with core dependencies limited to NumPy, pandas, scikit-learn, and SciPy. Optional extras include `[vcf]` (pysam for VCF parsing), `[viz]` (Plotly for interactive visualization), and `[sc]` (anndata for single-cell data); the current release ships seventeen extras in total. It is distributed via PyPI (`pip install pathway-subtyping`, RRID:SCR_028051, bio.tools:pathway-subtyping), archived on Zenodo (concept DOI: 10.5281/zenodo.18638048, which resolves to the latest release), and available as Docker images (`rohitdataops/pathway-subtyping` on Docker Hub). Jupyter notebooks are provided spanning synthetic tutorials and real-data validation across autism, schizophrenia, and cancer datasets.
+
+*(Figures in this section were current at v0.2/v0.3. The test count, extras list, notebook count and DOI have all moved since; see `CHANGELOG.md` and `README.md` for current values. The Zenodo DOI originally printed here, `10.5281/zenodo.18442426`, is a retired concept DOI that no longer resolves.)*
 
 # Acknowledgements
 

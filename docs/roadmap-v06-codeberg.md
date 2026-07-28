@@ -8,7 +8,7 @@
 
 **Artefact DOIs (v0.6.3):**
 - PyPI: https://pypi.org/project/pathway-subtyping/0.6.3/
-- Zenodo: `10.5281/zenodo.19648024` (under concept `10.5281/zenodo.18442426`)
+- Zenodo: `10.5281/zenodo.19648024` (under concept `10.5281/zenodo.18442426` — retired; current concept DOI `10.5281/zenodo.18638048`)
 - Docker Hub: `rohitdataops/pathway-subtyping:0.6.3-runtime`, `:0.6.3-jupyter`, `:latest`
 
 > **About this document.** This is the original v0.6 planning roadmap,
@@ -519,7 +519,7 @@ Every user upgrading from v0.5 with zero configuration changes gets identical v0
 
 - ✅ **PyPI:** `pip install pathway-subtyping==0.6.3` — https://pypi.org/project/pathway-subtyping/0.6.3/
 - ✅ **Codeberg:** tag `v0.6.3` at `82bca36` + push; `v0.6.3-bitbucket` on bitbucket/main
-- ✅ **Zenodo:** `10.5281/zenodo.19648024` under concept `10.5281/zenodo.18442426`
+- ✅ **Zenodo:** `10.5281/zenodo.19648024` under concept `10.5281/zenodo.18442426` — retired; current concept DOI `10.5281/zenodo.18638048`
 - ✅ **Docker Hub:** `rohitdataops/pathway-subtyping:0.6.3-runtime`, `:0.6.3-jupyter`, `:latest`
 - ✅ **Confluence (PSF space, topmist.atlassian.net/wiki):** 14/14 pages refreshed via `scripts/publish_to_confluence.py`
 - ✅ **bio.tools:** version bumped

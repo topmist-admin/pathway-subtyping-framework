@@ -66,7 +66,7 @@ Or try the **[demo notebook](../examples/notebooks/00_quick_demo.ipynb)** (no in
 
 - **GitHub**: https://codeberg.org/pathways/pathway-subtyping-framework
 - **PyPI**: https://pypi.org/project/pathway-subtyping/
-- **DOI**: https://doi.org/10.5281/zenodo.18442426
+- **DOI**: https://doi.org/10.5281/zenodo.18638048
 - **Documentation**: https://codeberg.org/pathways/pathway-subtyping-framework/tree/main/docs
 
 ## Contact

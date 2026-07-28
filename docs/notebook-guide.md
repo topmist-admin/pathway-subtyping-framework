@@ -2,6 +2,21 @@
 
 > Complete guide to the 31 analysis notebooks (00-30, with 12b), their execution order, and how outputs flow between them.
 
+> ## ⚠️ CORRECTION NOTICE (2026-07-08)
+> Several "Key result" lines below, and the Manuscript Mapping table near the end,
+> quote figures from an analysis that has since been **retracted**. Specifically:
+> **ARI = 0.870** (cross-disease convergence), **bootstrap ARI = 0.923** used as a
+> general validation claim, and **CMS4 recovery ~76%** are superseded and must not
+> be cited as current results. Re-analysis found the GSE80655 partition tracks
+> **brain region, not diagnosis**, and the adaptive bootstrap-threshold model
+> (R²=0.889) does not reproduce.
+>
+> The notebooks themselves still run; it is their *recorded conclusions* that are
+> stale. Treat every "Key claim" in this guide as **what was originally reported**,
+> not as a verified finding. See
+> [`../CORRECTION_2026-07/ERRATUM_2026-07-08.md`](../CORRECTION_2026-07/ERRATUM_2026-07-08.md)
+> and [`discreteness_gate.md`](discreteness_gate.md).
+
 ---
 
 ## Notebook Inventory
@@ -12,16 +27,16 @@ These notebooks use synthetic data bundled with the framework. They run independ
 
 | # | Notebook | Topic | Runtime |
 |---|----------|-------|---------|
-| 00 | [quick_demo](examples/notebooks/00_quick_demo.ipynb) | 60-second end-to-end demo | <1 min |
-| 01 | [getting_started](examples/notebooks/01_getting_started.ipynb) | Installation, basic pipeline, validation gates | 5 min |
-| 02 | [expression_scoring](examples/notebooks/02_expression_scoring.ipynb) | ssGSEA, GSVA, mean-Z scoring comparison | 5 min |
-| 03 | [multi_omic_fusion](examples/notebooks/03_multi_omic_fusion.ipynb) | Multi-modal data fusion (VCF + expression + scRNA-seq) | 5 min |
-| 04 | [deconvolution](examples/notebooks/04_deconvolution.ipynb) | Cell-type deconvolution from bulk RNA-seq | 5 min |
-| 05 | [visualization](examples/notebooks/05_visualization.ipynb) | PCA, t-SNE, UMAP, interactive Plotly reports | 5 min |
-| 06 | [ancestry_batch_correction](examples/notebooks/06_ancestry_batch_correction.ipynb) | Population stratification and batch effects | 5 min |
-| 07 | [sensitivity_analysis](examples/notebooks/07_sensitivity_analysis.ipynb) | Parameter robustness testing | 5 min |
-| 08 | [characterization](examples/notebooks/08_characterization.ipynb) | Subtype profiling, heatmaps, gene contributions | 5 min |
-| 09 | [signaling_databases](examples/notebooks/09_signaling_databases.ipynb) | CellPhoneDB and CellChatDB integration | 5 min |
+| 00 | [quick_demo](../examples/notebooks/00_quick_demo.ipynb) | 60-second end-to-end demo | <1 min |
+| 01 | [getting_started](../examples/notebooks/01_getting_started.ipynb) | Installation, basic pipeline, validation gates | 5 min |
+| 02 | [expression_scoring](../examples/notebooks/02_expression_scoring.ipynb) | ssGSEA, GSVA, mean-Z scoring comparison | 5 min |
+| 03 | [multi_omic_fusion](../examples/notebooks/03_multi_omic_fusion.ipynb) | Multi-modal data fusion (VCF + expression + scRNA-seq) | 5 min |
+| 04 | [deconvolution](../examples/notebooks/04_deconvolution.ipynb) | Cell-type deconvolution from bulk RNA-seq | 5 min |
+| 05 | [visualization](../examples/notebooks/05_visualization.ipynb) | PCA, t-SNE, UMAP, interactive Plotly reports | 5 min |
+| 06 | [ancestry_batch_correction](../examples/notebooks/06_ancestry_batch_correction.ipynb) | Population stratification and batch effects | 5 min |
+| 07 | [sensitivity_analysis](../examples/notebooks/07_sensitivity_analysis.ipynb) | Parameter robustness testing | 5 min |
+| 08 | [characterization](../examples/notebooks/08_characterization.ipynb) | Subtype profiling, heatmaps, gene contributions | 5 min |
+| 09 | [signaling_databases](../examples/notebooks/09_signaling_databases.ipynb) | CellPhoneDB and CellChatDB integration | 5 min |
 
 ### Tier 2: Real Data Validation (GEO Datasets)
 
@@ -29,17 +44,17 @@ These notebooks download real transcriptomics data from NCBI GEO and reproduce t
 
 | # | Notebook | Dataset | Tissue | N | Platform | Depends On |
 |---|----------|---------|--------|---|----------|------------|
-| 10 | [geo_autism_bulk](examples/notebooks/10_geo_autism_bulk.ipynb) | GSE28521 | Brain (frontal + temporal cortex) | 79 | Affymetrix microarray | None |
-| 11 | [geo_autism_validation](examples/notebooks/11_geo_autism_validation.ipynb) | GSE64018 | Brain (temporal cortex) | 24 | Illumina RNA-seq | **10** |
-| 12 | [geo_schizophrenia_bulk](examples/notebooks/12_geo_schizophrenia_bulk.ipynb) | GSE80655 | Brain (3 regions) | 281 | Illumina RNA-seq | **10** (optional) |
-| 12b | [null_ari_permutation](examples/notebooks/12b_null_ari_permutation.ipynb) | GSE80655 | Brain (3 regions) | 141 | (reuses 12 outputs) | **12** |
-| 13 | [geo_blood_ados](examples/notebooks/13_geo_blood_ados.ipynb) | GSE111175 | Blood (leukocytes) | 141 | Illumina BeadChip | **10** (optional) |
-| 14 | [geo_blood_large_cohort](examples/notebooks/14_geo_blood_large_cohort.ipynb) | GSE18123 | Blood | 285 | Affymetrix (2 platforms) | **13**, **10** (optional) |
-| 15 | [geo_scz_replication](examples/notebooks/15_geo_scz_replication.ipynb) | GSE53987 | Brain (3 regions) | 205 | Affymetrix microarray | **12** |
-| 16 | [knowledge_graph_analysis](examples/notebooks/16_knowledge_graph_analysis.ipynb) | Multi-dataset | KG (STRING + DGIdb) | 1,075 | Network analysis | **10-15** |
-| 17 | [tcga_cancer_validation](examples/notebooks/17_tcga_cancer_validation.ipynb) | TCGA-COAD | Colon adenocarcinoma | 452 | RNA-seq (NCI GDC API) | None (standalone) |
-| 18 | [geo_clinical_phenotype](examples/notebooks/18_geo_clinical_phenotype.ipynb) | GSE15402 | LCL (lymphoblastoid) | 116 | TIGR 40K two-channel | None (standalone) |
-| 19 | [scz_blood_multi_cohort](examples/notebooks/19_scz_blood_multi_cohort.ipynb) | Multi-GEO (5) | Blood (SCZ) | 407 | Multi-platform | None (standalone) |
+| 10 | [geo_autism_bulk](../examples/notebooks/10_geo_autism_bulk.ipynb) | GSE28521 | Brain (frontal + temporal cortex) | 79 | Affymetrix microarray | None |
+| 11 | [geo_autism_validation](../examples/notebooks/11_geo_autism_validation.ipynb) | GSE64018 | Brain (temporal cortex) | 24 | Illumina RNA-seq | **10** |
+| 12 | [geo_schizophrenia_bulk](../examples/notebooks/12_geo_schizophrenia_bulk.ipynb) | GSE80655 | Brain (3 regions) | 281 | Illumina RNA-seq | **10** (optional) |
+| 12b | [null_ari_permutation](../examples/notebooks/12b_null_ari_permutation.ipynb) | GSE80655 | Brain (3 regions) | 141 | (reuses 12 outputs) | **12** |
+| 13 | [geo_blood_ados](../examples/notebooks/13_geo_blood_ados.ipynb) | GSE111175 | Blood (leukocytes) | 141 | Illumina BeadChip | **10** (optional) |
+| 14 | [geo_blood_large_cohort](../examples/notebooks/14_geo_blood_large_cohort.ipynb) | GSE18123 | Blood | 285 | Affymetrix (2 platforms) | **13**, **10** (optional) |
+| 15 | [geo_scz_replication](../examples/notebooks/15_geo_scz_replication.ipynb) | GSE53987 | Brain (3 regions) | 205 | Affymetrix microarray | **12** |
+| 16 | [knowledge_graph_analysis](../examples/notebooks/16_knowledge_graph_analysis.ipynb) | Multi-dataset | KG (STRING + DGIdb) | 1,075 | Network analysis | **10-15** |
+| 17 | [tcga_cancer_validation](../examples/notebooks/17_tcga_cancer_validation.ipynb) | TCGA-COAD | Colon adenocarcinoma | 452 | RNA-seq (NCI GDC API) | None (standalone) |
+| 18 | [geo_clinical_phenotype](../examples/notebooks/18_geo_clinical_phenotype.ipynb) | GSE15402 | LCL (lymphoblastoid) | 116 | TIGR 40K two-channel | None (standalone) |
+| 19 | [scz_blood_multi_cohort](../examples/notebooks/19_scz_blood_multi_cohort.ipynb) | Multi-GEO (5) | Blood (SCZ) | 407 | Multi-platform | None (standalone) |
 
 ### Tier 3: v0.6 Feature Walkthroughs (Standalone, any order)
 
@@ -47,16 +62,16 @@ Each of these is a focused, self-contained tour of one v0.6 feature module. They
 
 | # | Notebook | Feature | Extra | Topic | Runtime |
 |---|----------|---------|-------|-------|---------|
-| 21 | [uncertainty](examples/notebooks/21_uncertainty.ipynb) | F1 | (core) | Conformal intervals + bootstrap MSV + Bayesian GMM + calibration report | 5 min |
-| 22 | [cross_platform](examples/notebooks/22_cross_platform.ipynb) | F2 | `[harmonize]` | UCE harmonization + per-platform alignment across 10x / Smart-seq2 / bulk | 10 min |
-| 23 | [perturbation](examples/notebooks/23_perturbation.ipynb) | F5 | `[perturb]` | Geneformer in-silico KO + `MSVFromEmbedding` head + perturbation screens | 15 min |
-| 24 | [embeddings](examples/notebooks/24_embeddings.ipynb) | F6 | `[embed]` | scGPT embeddings + content-hashed cache + cross-run reuse | 10 min |
-| 25 | [gene_set_expansion](examples/notebooks/25_gene_set_expansion.ipynb) | F7 | `[genesets]` | `RegulatoryGeneSetExpander` with Borzoi or co-expression backend | 10 min |
-| 26 | [spatial_joint](examples/notebooks/26_spatial_joint.ipynb) | F8 | `[embed]` | Nicheformer joint embedding of dissociated + spatial cohorts | 10 min |
-| 27 | [evo2_offtarget](examples/notebooks/27_evo2_offtarget.ipynb) | F9 | `[qc-sequence]` | Evo 2 off-target scoring vs Hamming-distance baseline | 10 min |
-| 28 | [multi_omics](examples/notebooks/28_multi_omics.ipynb) | F10 | (core) | RNA + ATAC + proteomics fusion + RNA-vs-protein discordance | 10 min |
-| 29 | [causal_inference](examples/notebooks/29_causal_inference.ipynb) | F11 | (core) | Invariant causal prediction across environments | 10 min |
-| 30 | [active_learning](examples/notebooks/30_active_learning.ipynb) | F12 | (core) | Uncertainty / diversity / hybrid sample selection strategies | 10 min |
+| 21 | [uncertainty](../examples/notebooks/21_uncertainty.ipynb) | F1 | (core) | Conformal intervals + bootstrap MSV + Bayesian GMM + calibration report | 5 min |
+| 22 | [cross_platform](../examples/notebooks/22_cross_platform.ipynb) | F2 | `[harmonize]` | UCE harmonization + per-platform alignment across 10x / Smart-seq2 / bulk | 10 min |
+| 23 | [perturbation](../examples/notebooks/23_perturbation.ipynb) | F5 | `[perturb]` | Geneformer in-silico KO + `MSVFromEmbedding` head + perturbation screens | 15 min |
+| 24 | [embeddings](../examples/notebooks/24_embeddings.ipynb) | F6 | `[embed]` | scGPT embeddings + content-hashed cache + cross-run reuse | 10 min |
+| 25 | [gene_set_expansion](../examples/notebooks/25_gene_set_expansion.ipynb) | F7 | `[genesets]` | `RegulatoryGeneSetExpander` with Borzoi or co-expression backend | 10 min |
+| 26 | [spatial_joint](../examples/notebooks/26_spatial_joint.ipynb) | F8 | `[embed]` | Nicheformer joint embedding of dissociated + spatial cohorts | 10 min |
+| 27 | [evo2_offtarget](../examples/notebooks/27_evo2_offtarget.ipynb) | F9 | `[qc-sequence]` | Evo 2 off-target scoring vs Hamming-distance baseline | 10 min |
+| 28 | [multi_omics](../examples/notebooks/28_multi_omics.ipynb) | F10 | (core) | RNA + ATAC + proteomics fusion + RNA-vs-protein discordance | 10 min |
+| 29 | [causal_inference](../examples/notebooks/29_causal_inference.ipynb) | F11 | (core) | Invariant causal prediction across environments | 10 min |
+| 30 | [active_learning](../examples/notebooks/30_active_learning.ipynb) | F12 | (core) | Uncertainty / diversity / hybrid sample selection strategies | 10 min |
 
 **If you are new to v0.6**, start with **21 (uncertainty)** for the core idea of calibrated pathway predictions, then pick any feature notebook that matches your use case. Notebook 28 (multi-omics) is the most common second stop.
 
@@ -176,7 +191,7 @@ outputs/gse80655/
 └── results_summary.json
 ```
 
-**Key result:** ARI = 0.870 cross-disease convergence, bootstrap ARI = 0.923, all 3 gates PASS
+**Key result (⚠️ RETRACTED — originally reported):** ARI = 0.870 cross-disease convergence, bootstrap ARI = 0.923, all 3 gates PASS. Superseded: the partition tracks brain region, not diagnosis. See the correction notice at the top.
 
 ### Step 4: Notebook 12b -- Null ARI Permutation Test
 
@@ -400,7 +415,7 @@ research-results/tcga/
 **Key results:**
 - 452 TCGA-COAD primary tumors (6 TCGA-A6 batch outliers removed)
 - 50 MSigDB Hallmark gene sets, k=3 (forced after degenerate BIC k=2)
-- Subtype 0 (19%): Stromal/EMT → CMS4 at 76% (Fisher OR=16.7, p=1.4e-25)
+- Subtype 0 (19%): Stromal/EMT → CMS4 at 76% (Fisher OR=16.7, p=1.4e-25) ⚠️ RETRACTED as a headline validation figure — single-subtype enrichment flatters subtyping; the honest k-way test on this data gives a much weaker ARI. See the correction notice at the top.
 - Subtype 1 (29%): Immune-cold → CMS2 at 60%
 - Subtype 2 (52%): Proliferative/Metabolic → spread across CMS1-3
 - CMS classification rate: 436/452 (96.5%, FDR ≤ 0.05)
@@ -586,13 +601,13 @@ Each Tier 2 notebook corresponds to a section in the manuscript:
 |----------|-------------------|-----------|
 | 10 | Section 5 (ASD Application) | GABA-Collapsed subtype, 56/44 split |
 | 11 | Section 5.9 (Cross-Cohort Validation) | Cross-platform replication |
-| 12 | Section 6 (Cross-Disease Validation) | ARI = 0.870, all 3 gates pass |
+| 12 | Section 6 (Cross-Disease Validation) | ⚠️ RETRACTED — originally reported ARI = 0.870, all 3 gates pass |
 | 12b | Section 6.5 (Supplementary) | Permutation p < 0.001 |
 | 13 | Section 6.10 (Blood Validation) | ADOS-pathway correlation |
 | 14 | Section 6.10 (Blood Validation) | Cross-cohort replication ARI = 0.374 |
 | 15 | Section 6.11 (SCZ Replication) | Cross-platform ARI = 0.319, cross-disease ARI = 0.792 |
 | 16 | Section 7 (Knowledge Graph) | 20 hub genes, 1,546 drug candidates, 6 cross-disease communities |
-| 17 | Section 7 (Cancer Validation) | CMS4 recovery at 76% (Fisher p=1.4e-25), survival analysis |
+| 17 | Section 7 (Cancer Validation) | ⚠️ RETRACTED — originally reported CMS4 recovery at 76% (Fisher p=1.4e-25), survival analysis |
 | 18 | Section 6.10 (Clinical Validation) | ADI-R subgroup association chi-sq p=0.001 |
 | 19 | Section 6.11 (SCZ Replication) | Multi-cohort SCZ blood, Hertzberg concordance |
 

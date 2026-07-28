@@ -186,7 +186,7 @@ Artefact DOIs:
 Artefact DOIs:
 - **PyPI:** https://pypi.org/project/pathway-subtyping/0.6.3/
 - **Zenodo:** `10.5281/zenodo.19648024` (https://doi.org/10.5281/zenodo.19648024)
-  — released under concept DOI `10.5281/zenodo.18442426`
+  — released under concept DOI `10.5281/zenodo.18442426` (retired — now resolves to nothing; current concept DOI `10.5281/zenodo.18638048`)
 - **Docker Hub:** `rohitdataops/pathway-subtyping:0.6.3-runtime`,
   `:0.6.3-jupyter`, `:latest`
 
@@ -268,7 +268,7 @@ the wt_vs_ko subtests that only run against the Geneformer artefact.
 Artefact DOIs:
 - **PyPI:** https://pypi.org/project/pathway-subtyping/0.6.2/
 - **Zenodo:** `10.5281/zenodo.19646697` (https://doi.org/10.5281/zenodo.19646697)
-  — released under concept DOI `10.5281/zenodo.18442426`
+  — released under concept DOI `10.5281/zenodo.18442426` (retired — now resolves to nothing; current concept DOI `10.5281/zenodo.18638048`)
 - **Docker Hub:** `rohitdataops/pathway-subtyping:0.6.2-runtime`,
   `:0.6.2-jupyter`, `:latest`
 

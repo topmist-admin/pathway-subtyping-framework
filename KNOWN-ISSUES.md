@@ -2,6 +2,12 @@
 
 > **⚠️ 2026-07-08 — Correction issued.** The empty-input `adjusted_rand_score` artifact documented below (NB17) was **also present, uncorrected, in the 47-dataset calibration benchmark** — it produced 14 degenerate rows (`n_true_clusters=1`), 13 of which carried a spurious ARI=1.0, that drove the retracted R²=0.889 adaptive-threshold model. The calibration model is **retracted** and the benchmark **corrected**. See [`CORRECTION_2026-07/ERRATUM_2026-07-08.md`](CORRECTION_2026-07/ERRATUM_2026-07-08.md).
 >
+> **⚠️ 2026-07 — Scope of this notice.** The correction above covers the ARI artifact
+> and the retracted R²=0.889 model. It does **not** cover the **CMS4 recovery
+> 75.9%/76%** figure quoted later in this file, which is also superseded as a headline
+> validation claim — see the "Framing" section at the end, whose guidance has been
+> **reversed**.
+>
 > **✅ 2026-07-09 — Fixed at the source.** The empty-input / single-true-cluster ARI artifact is now guarded framework-wide by `pathway_subtyping.utils.metrics.safe_adjusted_rand_score` / `ari_with_validity`, which return NaN (not a spurious score) on degenerate ground truth and are wired into `benchmark.py` and `pipeline.py`. The guard keys on ground-truth *structure* (`n_true_clusters < 2`), so it also catches the one degenerate row that returned ARI=0.0 (GSE136196), which a value-based (`== 1.0`) guard would miss. Regression tests: `tests/test_metrics_ari_guard.py`.
 
 ## NB17: MSI ARI reports 1.0 when no MSI data available
@@ -96,6 +102,25 @@ Refitted GMM at k=4 on the same 452 samples, reusing existing CMS NTP prediction
 
 k=4 **worsened** global ARI (0.0824 vs 0.1016, delta=-0.019) and did not produce a clean 1:1 CMS mapping. Three of four subtypes map to CMS2 (no CMS1 or CMS3 recovery). CMS4 recovery is maintained (76.2%) but the additional cluster (Subtype 2, n=26) is a small near-degenerate split. **k=3 remains the primary result.**
 
-### R21 Framing
+### Framing — ⚠️ REVERSED 2026-07 (this section previously said the opposite)
 
-Use CMS4 recovery at 76% (Fisher p=1.4e-25) as the validation line, not global ARI. The k=4 sensitivity analysis confirms that the low global ARI reflects irreducible granularity mismatch, not a framework failure.
+**Superseded guidance.** This section used to read: *"Use CMS4 recovery at 76%
+(Fisher p=1.4e-25) as the validation line, not global ARI."* **Do not follow that.**
+
+Preferring a single-subtype enrichment figure over the k-way ARI is exactly the
+metric substitution the framework's own cautionary analysis identifies as the way
+subtyping results get flattered. The same partition can look strong or weak purely
+by metric choice — on TCGA-BRCA, one partition gives k-way ARI 0.218 while LumA
+single-subtype enrichment reads 87.6%. Quoting only the second is not a validation
+line, it is a selection effect.
+
+**Current guidance.** Report the k-way ARI as the primary recovery metric, and
+report single-subtype enrichment *alongside* it, never instead of it. If the two
+disagree, that disagreement is the finding and should be stated. The underlying
+observation in this section is still valid and worth keeping: 3 subtypes cannot
+biject onto 4 CMS classes, so some ARI loss here is genuine granularity mismatch
+rather than framework failure. That explains part of the gap — it does not license
+swapping in the more flattering number.
+
+See [`consolidation-cautionary/cross-domain/cancer_r38/README.md`](consolidation-cautionary/cross-domain/cancer_r38/README.md)
+for the worked example and [`CORRECTION_2026-07/ERRATUM_2026-07-08.md`](CORRECTION_2026-07/ERRATUM_2026-07-08.md).
