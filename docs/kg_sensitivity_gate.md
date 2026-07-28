@@ -42,11 +42,63 @@ survive a change of *any* kind, curated or arbitrary.
 `rewire_kg` perturbs the baseline graph at random while matching the observed
 diff's **per-edge-type** addition and removal counts. It changes the same number
 of edges of the same types as the real curation did, but chooses which ones at
-random. Node set and edge-type composition are preserved; candidate additions are
-drawn from nodes already participating in that edge type, so every proposal is
-schema-valid.
+random. Node set and edge-type composition are always preserved; candidate
+additions are drawn from nodes already participating in that edge type, so every
+proposal is schema-valid.
 
-That gives the reading rule:
+### Choosing the null: `rewiring=`
+
+What *else* the null preserves sets how strict it is. This is the single most
+consequential parameter in the gate — it can change the verdict on identical data.
+
+| mode | preserves | when to use |
+|---|---|---|
+| `uniform` | node set, edge-type counts | comparison baseline only; the weakest null |
+| `degree` **(default)** | + exact in/out-degree sequence | general use |
+| `module` | + the diff's within-/cross-module split | when a release concentrated its edits in a few pathways |
+
+**`degree`** performs Maslov–Sneppen double-edge swaps: two edges `a→b` and `c→d`
+become `a→d` and `c→b`, so every node keeps its exact in- and out-degree. Hubs
+stay hubs. Each swap consumes one removal and one addition, so it covers the
+*balanced* part of the budget; any residual (a release that mostly grows) is
+degree-*weighted*, which preserves the shape of the degree distribution but not
+its exact values. Strict preservation is impossible for the residual, because
+adding an edge necessarily raises somebody's degree — the docstring says so
+rather than implying otherwise.
+
+**`module`** additionally constrains swaps to reproduce the observed diff's
+within-module / cross-module ratio, computed by `within_module_fractions()`.
+Modules come from `GENE_IN_PATHWAY` membership via `module_map_from_pathways()` —
+two genes share a module when they share a pathway — so no external community
+detection is needed. Use it when a release concentrated its edits in
+actively-researched pathways, so that a `kg-sensitive` verdict cannot be
+explained away as "the real change was concentrated and the null was not." Gate K
+**abstains** if the graph has no `GENE_IN_PATHWAY` edges, rather than silently
+falling back.
+
+### Why `uniform` is not the default
+
+`uniform` destroys the degree sequence, and that misreads changes at *both* ends
+of the degree distribution:
+
+- **Hub edges** — removing one of a hub's many edges is an ordinary consequence
+  of any curation, because hubs have more edges to lose. Uniform rewiring treats
+  it as rare and so overstates how special the real change was.
+- **Peripheral edges** — uniform rewiring hits them constantly, making a genuinely
+  targeted peripheral change look unremarkable.
+
+`tests/test_kg_sensitivity.py::test_null_choice_can_change_the_verdict` pins the
+second case: the same cohort, the same real KG change, an **identical** observed
+ARI of −0.026, and opposite verdicts — `generically-fragile` under `uniform`
+(p = 0.066) versus `kg-sensitive` under `degree` (p = 0.016).
+
+**Report which null you used.** `KGSensitivityResult.rewiring` records it and
+`to_dict()` serializes it, because a verdict is not interpretable without it.
+Running both modes and reporting the pair is more informative than either alone.
+
+## Reading the result
+
+Whichever null you choose, it gives the same reading rule:
 
 | observed vs null | verdict | meaning |
 |---|---|---|
@@ -54,8 +106,8 @@ That gives the reading rule:
 | observed ≪ null | `kg-sensitive` | the *specific* curated change matters |
 | observed ≈ null | `generically-fragile` | any perturbation of this size breaks it |
 
-The middle and bottom rows are the point of the gate. **They are not
-distinguishable from the agreement number alone** — `tests/test_kg_sensitivity.py`
+The middle and bottom rows are the point of the gate, and **they are not
+distinguishable from the agreement number alone**. `test_kg_sensitivity.py`
 constructs two cases with an identical observed ARI of −0.026 that receive
 opposite verdicts, separated only by where the null sits (median 1.000 versus
 −0.026).
@@ -117,11 +169,13 @@ res = kg_timeslice_sensitivity(
     n_null=50,                 # size-matched random rewirings
     ari_min=0.80,
     seed=42,
+    rewiring="degree",         # "uniform" | "degree" (default) | "module"
 )
 
 print(res.verdict)             # "robust" | "kg-sensitive" | "generically-fragile" | "not-testable (...)"
 print(res.observed_ari, res.null_median, res.empirical_p)
 print(res.diff.summary)        # what actually changed between the two graphs
+print(res.rewiring)            # which null produced that verdict — always report it
 ```
 
 Pass `score_fns=[...]` to get a `run_kg_regression` report alongside the
@@ -145,11 +199,13 @@ curation in general — two adjacent releases that barely differ will return
 `robust` almost by construction, which is why `res.diff.summary` should be
 reported alongside every verdict.
 
-The null holds the *number* of changed edges fixed but not their **importance**.
-Curated changes are not random: a real release concentrates edits in
-actively-researched regions of the graph, so a `kg-sensitive` verdict may partly
-reflect that concentration rather than the finding's fragility. Degree-preserving
-or module-aware rewiring would tighten this and is the obvious next refinement.
+The null holds the *number* of changed edges fixed. It does not model **which**
+edges a curator would plausibly touch beyond degree and module structure — the
+`degree` and `module` modes address the two largest such biases, but a release
+also concentrates edits by evidence type, publication recency and organism, none
+of which the null represents. A `kg-sensitive` verdict under `module` is
+considerably harder to explain away than one under `uniform`, but it is still a
+statement about *this* null, not about all plausible curations.
 
 Finally, it inherits `partition_fn`'s determinism. A partition function with
 unseeded internal randomness will produce a null that measures its own noise

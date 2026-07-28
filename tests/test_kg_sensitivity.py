@@ -11,11 +11,16 @@ import numpy as np
 import pytest
 
 from pathway_subtyping.kg_sensitivity import (
+    REWIRING_DEGREE,
+    REWIRING_MODULE,
+    REWIRING_UNIFORM,
     VERDICT_FRAGILE,
     VERDICT_KG_SENSITIVE,
     VERDICT_ROBUST,
     kg_timeslice_sensitivity,
+    module_map_from_pathways,
     rewire_kg,
+    within_module_fractions,
 )
 from pathway_subtyping.knowledge_graph.builder import KnowledgeGraph
 from pathway_subtyping.knowledge_graph.schema import EdgeType, NodeType
@@ -42,6 +47,40 @@ def _chain_kg(n_genes: int = 101) -> KnowledgeGraph:
         kg.add_node(f"G{i}", NodeType.GENE)
     for i in range(n_genes - 1):
         kg.add_edge(f"G{i}", f"G{i + 1}", EdgeType.GENE_INTERACTS)
+    return kg
+
+
+def _hub_kg(n_genes: int = 40) -> KnowledgeGraph:
+    """A star-plus-chain graph with a pronounced degree skew.
+
+    G0 is a hub wired to a third of the graph; the rest form a chain. Uniform
+    rewiring flattens that skew, degree-preserving rewiring must not.
+    """
+    kg = KnowledgeGraph()
+    for i in range(n_genes):
+        kg.add_node(f"G{i}", NodeType.GENE)
+    for i in range(1, n_genes // 3):
+        kg.add_edge("G0", f"G{i}", EdgeType.GENE_INTERACTS)
+    for i in range(n_genes // 3, n_genes - 1):
+        kg.add_edge(f"G{i}", f"G{i + 1}", EdgeType.GENE_INTERACTS)
+    return kg
+
+
+def _pathway_kg(n_per: int = 10) -> KnowledgeGraph:
+    """Two disjoint pathway modules, each an internally-wired gene clique-ish chain.
+
+    Genes G0..G9 belong to P0, G10..G19 to P1, with GENE_IN_PATHWAY edges so
+    ``module_map_from_pathways`` has something to read.
+    """
+    kg = KnowledgeGraph()
+    kg.add_node("P0", NodeType.PATHWAY)
+    kg.add_node("P1", NodeType.PATHWAY)
+    for i in range(2 * n_per):
+        kg.add_node(f"G{i}", NodeType.GENE)
+        kg.add_edge(f"G{i}", "P0" if i < n_per else "P1", EdgeType.GENE_IN_PATHWAY)
+    for block in (range(n_per - 1), range(n_per, 2 * n_per - 1)):
+        for i in block:
+            kg.add_edge(f"G{i}", f"G{i + 1}", EdgeType.GENE_INTERACTS)
     return kg
 
 
@@ -85,6 +124,148 @@ def test_rewire_actually_changes_something():
     assert sorted((s, t) for (s, t, _) in p._edge_types) != sorted(
         (s, t) for (s, t, _) in kg._edge_types
     )
+
+
+def test_rewire_rejects_unknown_mode():
+    kg = _chain_kg(20)
+    with pytest.raises(ValueError, match="rewiring must be one of"):
+        rewire_kg(kg, {}, {}, np.random.default_rng(0), rewiring="shuffle")
+
+
+def test_module_mode_requires_a_module_map():
+    kg = _chain_kg(20)
+    with pytest.raises(ValueError, match="requires a non-empty module_map"):
+        rewire_kg(kg, {"gene_interacts_gene": 1}, {"gene_interacts_gene": 1},
+                  np.random.default_rng(0), rewiring=REWIRING_MODULE)
+
+
+# --------------------------------------------------------------------------- #
+# Degree-preserving null
+# --------------------------------------------------------------------------- #
+
+def _degree_sequence(kg):
+    return sorted((n, kg.graph.in_degree(n), kg.graph.out_degree(n))
+                  for n in kg.graph.nodes())
+
+
+def test_degree_mode_preserves_the_degree_sequence_exactly():
+    """The whole point of the refinement: hubs must stay hubs."""
+    kg = _hub_kg()
+    before = _degree_sequence(kg)
+
+    p = rewire_kg(
+        kg,
+        {"gene_interacts_gene": 5},
+        {"gene_interacts_gene": 5},   # balanced -> fully swap-able
+        np.random.default_rng(3),
+        rewiring=REWIRING_DEGREE,
+    )
+
+    assert _degree_sequence(p) == before
+    assert p.n_edges == kg.n_edges
+    # ...and it did actually rewire, so preservation is not vacuous.
+    assert sorted((s, t) for (s, t, _) in p._edge_types) != sorted(
+        (s, t) for (s, t, _) in kg._edge_types
+    )
+
+
+def test_uniform_mode_does_not_preserve_degrees():
+    """Contrast case — this is why 'degree' is the stronger null."""
+    kg = _hub_kg()
+    before = _degree_sequence(kg)
+    p = rewire_kg(
+        kg,
+        {"gene_interacts_gene": 5},
+        {"gene_interacts_gene": 5},
+        np.random.default_rng(3),
+        rewiring=REWIRING_UNIFORM,
+    )
+    assert _degree_sequence(p) != before
+
+
+# --------------------------------------------------------------------------- #
+# Module-aware null
+# --------------------------------------------------------------------------- #
+
+def test_module_map_derives_from_pathway_membership():
+    kg = _pathway_kg()
+    mm = module_map_from_pathways(kg)
+    assert mm["G0"] == frozenset({"P0"})
+    assert mm["G10"] == frozenset({"P1"})
+    assert mm["G0"].isdisjoint(mm["G10"]), "different pathways are different modules"
+
+
+def test_within_module_fractions_reads_the_observed_diff():
+    from pathway_subtyping.knowledge_graph.diff import diff_kgs
+
+    v1 = _pathway_kg()
+    v2 = _drop_edge(v1, "G0", "G1")  # both in P0 -> a within-module removal
+    mm = module_map_from_pathways(v1)
+    frac = within_module_fractions(diff_kgs(v1, v2), mm)
+    assert frac["gene_interacts_gene"] == pytest.approx(1.0)
+
+
+def test_module_mode_runs_and_preserves_degrees():
+    kg = _pathway_kg()
+    before = _degree_sequence(kg)
+    mm = module_map_from_pathways(kg)
+    p = rewire_kg(
+        kg,
+        {"gene_interacts_gene": 2},
+        {"gene_interacts_gene": 2},
+        np.random.default_rng(5),
+        rewiring=REWIRING_MODULE,
+        module_map=mm,
+        within_module_frac={"gene_interacts_gene": 1.0},
+    )
+    assert _degree_sequence(p) == before
+
+
+def test_null_choice_can_change_the_verdict():
+    """The refinement is load-bearing, not cosmetic.
+
+    Identical data, identical observed ARI, opposite conclusions -- separated
+    only by whether the null respects the degree sequence. The real change
+    removes a *peripheral* edge; uniform rewiring hits peripheral edges often
+    (so the disruption looks ordinary), while a degree-aware null hits them
+    rarely (so the disruption looks specific).
+
+    This is why ``degree`` is the default: ``uniform`` misreads changes at both
+    ends of the degree distribution.
+    """
+    v1 = _hub_kg(60)
+    peripheral = ("G45", "G46")
+    v2 = _drop_edge(v1, *peripheral)
+
+    def partition_fn(kg, cohort):
+        return LABELS_A if kg.graph.has_edge(*peripheral) else LABELS_B
+
+    uniform = kg_timeslice_sensitivity(
+        v1, v2, partition_fn, None, n_null=60, seed=42, rewiring=REWIRING_UNIFORM
+    )
+    degree = kg_timeslice_sensitivity(
+        v1, v2, partition_fn, None, n_null=60, seed=42, rewiring=REWIRING_DEGREE
+    )
+
+    assert uniform.observed_ari == pytest.approx(degree.observed_ari), (
+        "the observed statistic is identical; only the reference differs"
+    )
+    assert uniform.verdict == VERDICT_FRAGILE
+    assert degree.verdict == VERDICT_KG_SENSITIVE
+    assert degree.empirical_p < uniform.empirical_p
+    assert degree.rewiring == REWIRING_DEGREE  # recorded on the result
+
+
+def test_module_mode_abstains_without_pathway_edges():
+    """A chain graph has no GENE_IN_PATHWAY edges, so modules are undefined."""
+    v1 = _chain_kg(30)
+    v2 = _drop_edge(v1, *CRITICAL)
+    res = kg_timeslice_sensitivity(
+        v1, v2, lambda kg, c: LABELS_A, None,
+        n_null=5, seed=42, rewiring=REWIRING_MODULE,
+    )
+    assert not res.testable
+    assert "module-aware" in res.verdict
 
 
 # --------------------------------------------------------------------------- #

@@ -64,6 +64,11 @@ VERDICT_ROBUST = "robust"
 VERDICT_KG_SENSITIVE = "kg-sensitive"
 VERDICT_FRAGILE = "generically-fragile"
 
+#: Null models, weakest to strongest. See :func:`rewire_kg`.
+REWIRING_UNIFORM = "uniform"
+REWIRING_DEGREE = "degree"
+REWIRING_MODULE = "module"
+
 
 @dataclass
 class KGSensitivityResult:
@@ -100,6 +105,7 @@ class KGSensitivityResult:
     n_clusters_v2: int = 0
     ari_min: float = 0.0
     alpha: float = 0.05
+    rewiring: str = REWIRING_DEGREE
     diff: Optional[KGDiff] = None
     regression: Optional[KGRegressionReport] = None
 
@@ -129,6 +135,7 @@ class KGSensitivityResult:
             "n_clusters_v2": self.n_clusters_v2,
             "ari_min": self.ari_min,
             "alpha": self.alpha,
+            "rewiring": self.rewiring,
             "diff_summary": dict(self.diff.summary) if self.diff else None,
             "regression": self.regression.to_dict() if self.regression else None,
         }
@@ -143,6 +150,136 @@ def _edges_by_type(kg: KnowledgeGraph) -> Dict[str, List[Tuple[str, str]]]:
     for (src, tgt, _key), edge_type in kg._edge_types.items():
         out.setdefault(edge_type.value, []).append((src, tgt))
     return out
+
+
+def _edge_key_index(kg: KnowledgeGraph) -> Dict[Tuple[str, str, str], List[int]]:
+    """{(src, tgt, edge_type_value): [multigraph keys]} for O(1) typed removal."""
+    idx: Dict[Tuple[str, str, str], List[int]] = {}
+    for (src, tgt, key), edge_type in kg._edge_types.items():
+        idx.setdefault((src, tgt, edge_type.value), []).append(key)
+    return idx
+
+
+def _drop_typed_edge(kg: KnowledgeGraph, src: str, tgt: str, et_value: str) -> None:
+    """Remove every edge of ``et_value`` between src and tgt, in place."""
+    keys = [
+        k for (s, t, k), et in list(kg._edge_types.items())
+        if s == src and t == tgt and et.value == et_value
+    ]
+    for k in keys:
+        if kg.graph.has_edge(src, tgt, k):
+            kg.graph.remove_edge(src, tgt, k)
+        kg._edge_types.pop((src, tgt, k), None)
+
+
+def module_map_from_pathways(kg: KnowledgeGraph) -> Dict[str, frozenset]:
+    """Derive a module assignment from ``GENE_IN_PATHWAY`` membership.
+
+    Two genes count as same-module when they share at least one pathway. This is
+    the KG's own native notion of a module, so module-aware rewiring needs no
+    external community detection and no caller-supplied partition.
+
+    Returns:
+        {gene_id: frozenset(pathway_ids)}. Genes in no pathway map to an empty
+        frozenset and are treated as sharing a module with nobody.
+    """
+    membership: Dict[str, set] = {}
+    for (src, tgt, _key), edge_type in kg._edge_types.items():
+        if edge_type is EdgeType.GENE_IN_PATHWAY:
+            membership.setdefault(src, set()).add(tgt)
+    return {gene: frozenset(paths) for gene, paths in membership.items()}
+
+
+def _same_module(module_map: Dict[str, frozenset], a: str, b: str) -> bool:
+    ma = module_map.get(a)
+    mb = module_map.get(b)
+    if not ma or not mb:
+        return False
+    return not ma.isdisjoint(mb)
+
+
+def _degree_preserving_swaps(
+    kg: KnowledgeGraph,
+    et_value: str,
+    n_swaps: int,
+    rng: np.random.Generator,
+    module_map: Optional[Dict[str, frozenset]] = None,
+    within_module: Optional[bool] = None,
+) -> int:
+    """Maslov–Sneppen double-edge swaps on one edge type, in place.
+
+    Takes two edges ``a->b`` and ``c->d`` and rewrites them as ``a->d`` and
+    ``c->b``. Every node keeps its exact in-degree and out-degree, so the null
+    perturbs topology without touching the degree sequence — which is what stops
+    hub genes from being stripped or peripheral genes from being inflated.
+
+    Each swap changes two edges (two removed, two added), so it consumes one unit
+    of the removal budget and one of the addition budget.
+
+    Args:
+        module_map: When supplied with ``within_module``, only accept swaps whose
+            *resulting* edges are within-module (True) or cross-module (False).
+
+    Returns:
+        Number of swaps actually performed. May be fewer than requested on dense
+        or highly constrained graphs; the caller logs the shortfall.
+    """
+    performed = 0
+    for _ in range(max(1, int(n_swaps)) * 40):
+        if performed >= int(n_swaps):
+            break
+        present = _edges_by_type(kg).get(et_value, [])
+        if len(present) < 2:
+            break
+        i, j = rng.choice(len(present), size=2, replace=False)
+        a, b = present[int(i)]
+        c, d = present[int(j)]
+        if len({a, b, c, d}) < 4:
+            continue
+        if kg.graph.has_edge(a, d) or kg.graph.has_edge(c, b):
+            continue
+        if module_map is not None and within_module is not None:
+            keep = (
+                _same_module(module_map, a, d) == within_module
+                and _same_module(module_map, c, b) == within_module
+            )
+            if not keep:
+                continue
+        try:
+            edge_type = EdgeType(et_value)
+        except ValueError:
+            break
+        try:
+            kg.add_edge(a, d, edge_type, weight=1.0)
+            kg.add_edge(c, b, edge_type, weight=1.0)
+        except ValueError:
+            _drop_typed_edge(kg, a, d, et_value)
+            _drop_typed_edge(kg, c, b, et_value)
+            continue
+        _drop_typed_edge(kg, a, b, et_value)
+        _drop_typed_edge(kg, c, d, et_value)
+        performed += 1
+    return performed
+
+
+def _degree_weighted_choice(
+    kg: KnowledgeGraph,
+    candidates: Sequence[str],
+    rng: np.random.Generator,
+) -> str:
+    """Sample a node with probability proportional to its total degree.
+
+    Used for the residual when a diff is unbalanced (more additions than
+    removals, or vice versa). Strict degree preservation is impossible there —
+    adding an edge necessarily raises somebody's degree — so the residual instead
+    preserves the *shape* of the degree distribution by attaching preferentially
+    to already-connected nodes, which is how curated releases actually grow.
+    """
+    degrees = np.array([kg.graph.degree(n) for n in candidates], dtype=float)
+    total = degrees.sum()
+    if total <= 0:
+        return candidates[int(rng.integers(len(candidates)))]
+    return candidates[int(rng.choice(len(candidates), p=degrees / total))]
 
 
 def _clone_kg(kg: KnowledgeGraph) -> KnowledgeGraph:
@@ -166,87 +303,189 @@ def rewire_kg(
     n_remove_by_type: Dict[str, int],
     n_add_by_type: Dict[str, int],
     rng: np.random.Generator,
+    *,
+    rewiring: str = REWIRING_DEGREE,
+    module_map: Optional[Dict[str, frozenset]] = None,
+    within_module_frac: Optional[Dict[str, float]] = None,
 ) -> KnowledgeGraph:
-    """Randomly perturb ``kg`` by a per-edge-type budget of removals and additions.
+    """Perturb ``kg`` by a per-edge-type budget of removals and additions.
 
     The perturbation is *size-matched* to an observed diff: it changes the same
     number of edges of the same types, but chooses which edges at random. That
-    is what makes it a fair reference for "how much would a curated change of
-    this magnitude move the partition if it carried no information?"
+    is what makes it a reference for "how much would a curated change of this
+    magnitude move the partition if it carried no information?"
 
-    Node set and edge-type composition are preserved. Candidate additions are
-    drawn from nodes that already participate in that edge type, which keeps
-    every proposed edge schema-valid; proposals that are already present or that
-    the schema rejects are skipped rather than retried indefinitely.
+    Node set and edge-type composition are always preserved. What varies is how
+    much *else* is preserved, and that choice sets how strict the null is:
+
+    ``uniform``
+        Remove random edges; attach additions to uniformly-chosen endpoints. The
+        weakest null, and **anti-conservative for the ``kg-sensitive`` verdict**:
+        it destroys the degree sequence, so it disrupts the partition more than a
+        real release would, making the real change look comparatively benign.
+
+    ``degree`` (default)
+        Maslov–Sneppen double-edge swaps for the balanced part of the budget, so
+        every node keeps its exact in- and out-degree. Hubs stay hubs. Any
+        residual (when additions and removals are unequal, as in a release that
+        mostly grows) is degree-weighted, preserving the shape of the degree
+        distribution but not its exact values — strict preservation is impossible
+        there, because adding an edge necessarily raises somebody's degree.
+
+    ``module``
+        Degree-preserving swaps additionally constrained to reproduce the
+        observed diff's within-module / cross-module split. Modules come from
+        ``GENE_IN_PATHWAY`` membership via :func:`module_map_from_pathways`, so a
+        release that concentrated its edits inside a few actively-researched
+        pathways is matched by a null that does the same.
 
     Args:
         kg: Baseline graph to perturb.
         n_remove_by_type: {edge_type_value: count} edges to delete.
         n_add_by_type: {edge_type_value: count} edges to introduce.
         rng: Seeded generator; the same seed reproduces the same rewiring.
+        rewiring: One of ``uniform``, ``degree``, ``module``.
+        module_map: Required for ``module``; see :func:`module_map_from_pathways`.
+        within_module_frac: {edge_type_value: fraction in [0, 1]} of changes to
+            place within-module. Required for ``module``.
 
     Returns:
         A new ``KnowledgeGraph``. The input is not modified.
+
+    Raises:
+        ValueError: on an unknown ``rewiring`` mode, or ``module`` without a
+            ``module_map``.
     """
+    if rewiring not in (REWIRING_UNIFORM, REWIRING_DEGREE, REWIRING_MODULE):
+        raise ValueError(
+            f"rewiring must be one of 'uniform', 'degree', 'module'; got {rewiring!r}"
+        )
+    if rewiring == REWIRING_MODULE and not module_map:
+        raise ValueError("rewiring='module' requires a non-empty module_map")
+
     clone = _clone_kg(kg)
-    by_type = _edges_by_type(clone)
 
-    # --- removals ---------------------------------------------------------- #
-    for et_value, n_remove in n_remove_by_type.items():
-        present = by_type.get(et_value, [])
-        if not present or n_remove <= 0:
+    for et_value in sorted(set(n_remove_by_type) | set(n_add_by_type)):
+        n_remove = int(n_remove_by_type.get(et_value, 0))
+        n_add = int(n_add_by_type.get(et_value, 0))
+        if n_remove <= 0 and n_add <= 0:
             continue
-        n = min(int(n_remove), len(present))
-        idx = rng.choice(len(present), size=n, replace=False)
-        for i in idx:
-            src, tgt = present[int(i)]
-            keys = [
-                k for (s, t, k) in list(clone._edge_types)
-                if s == src and t == tgt and clone._edge_types[(s, t, k)].value == et_value
-            ]
-            for k in keys:
-                if clone.graph.has_edge(src, tgt, k):
-                    clone.graph.remove_edge(src, tgt, k)
-                clone._edge_types.pop((src, tgt, k), None)
 
-    # --- additions --------------------------------------------------------- #
-    for et_value, n_add in n_add_by_type.items():
-        if n_add <= 0:
-            continue
-        present = by_type.get(et_value, [])
-        if not present:
-            # No exemplar of this edge type in the baseline -> no way to infer a
-            # schema-valid endpoint pair. Skip rather than guess.
-            logger.debug("[GateK] no baseline exemplar for %s; skipping additions", et_value)
-            continue
-        try:
-            edge_type = EdgeType(et_value)
-        except ValueError:
-            continue
-        sources = sorted({s for s, _ in present})
-        targets = sorted({t for _, t in present})
-        added = 0
-        # Bounded attempts: a dense graph may have few free slots, and we would
-        # rather under-perturb (and say so) than spin.
-        for _ in range(int(n_add) * 20):
-            if added >= int(n_add):
-                break
-            src = sources[int(rng.integers(len(sources)))]
-            tgt = targets[int(rng.integers(len(targets)))]
-            if src == tgt or clone.graph.has_edge(src, tgt):
+        if rewiring in (REWIRING_DEGREE, REWIRING_MODULE):
+            # Each swap consumes one removal AND one addition, so the balanced
+            # part of the budget is what can be done degree-preservingly.
+            n_paired = min(n_remove, n_add)
+            if n_paired > 0:
+                if rewiring == REWIRING_MODULE:
+                    frac = float((within_module_frac or {}).get(et_value, 0.0))
+                    n_within = int(round(n_paired * max(0.0, min(1.0, frac))))
+                    done_w = _degree_preserving_swaps(
+                        clone, et_value, n_within, rng, module_map, True
+                    )
+                    done_c = _degree_preserving_swaps(
+                        clone, et_value, n_paired - n_within, rng, module_map, False
+                    )
+                    done = done_w + done_c
+                else:
+                    done = _degree_preserving_swaps(clone, et_value, n_paired, rng)
+                if done < n_paired:
+                    logger.debug(
+                        "[GateK] %s: %d/%d degree-preserving swaps on %s "
+                        "(graph too constrained); residual falls back to weighted",
+                        rewiring, done, n_paired, et_value,
+                    )
+                n_remove -= done
+                n_add -= done
+
+        # --- residual removals -------------------------------------------- #
+        if n_remove > 0:
+            present = _edges_by_type(clone).get(et_value, [])
+            if present:
+                n = min(n_remove, len(present))
+                if rewiring == REWIRING_UNIFORM:
+                    idx = rng.choice(len(present), size=n, replace=False)
+                    chosen = [present[int(i)] for i in idx]
+                else:
+                    # Weight by endpoint degree so hubs shed edges in proportion
+                    # to how many they have, rather than uniformly.
+                    w = np.array(
+                        [clone.graph.degree(s) + clone.graph.degree(t) for s, t in present],
+                        dtype=float,
+                    )
+                    p = w / w.sum() if w.sum() > 0 else None
+                    idx = rng.choice(len(present), size=n, replace=False, p=p)
+                    chosen = [present[int(i)] for i in idx]
+                for src, tgt in chosen:
+                    _drop_typed_edge(clone, src, tgt, et_value)
+
+        # --- residual additions -------------------------------------------- #
+        if n_add > 0:
+            present = _edges_by_type(clone).get(et_value, [])
+            if not present:
+                # No exemplar of this edge type -> no way to infer a
+                # schema-valid endpoint pair. Skip rather than guess.
+                logger.debug("[GateK] no exemplar for %s; skipping additions", et_value)
                 continue
             try:
-                clone.add_edge(src, tgt, edge_type, weight=1.0)
+                edge_type = EdgeType(et_value)
             except ValueError:
-                continue  # schema rejected this endpoint pair
-            added += 1
-        if added < int(n_add):
-            logger.debug(
-                "[GateK] rewiring added %d/%d edges of type %s (graph too dense)",
-                added, int(n_add), et_value,
-            )
+                continue
+            sources = sorted({s for s, _ in present})
+            targets = sorted({t for _, t in present})
+            added = 0
+            # Bounded attempts: a dense graph may have few free slots, and we
+            # would rather under-perturb (and log it) than spin.
+            for _ in range(n_add * 20):
+                if added >= n_add:
+                    break
+                if rewiring == REWIRING_UNIFORM:
+                    src = sources[int(rng.integers(len(sources)))]
+                    tgt = targets[int(rng.integers(len(targets)))]
+                else:
+                    src = _degree_weighted_choice(clone, sources, rng)
+                    tgt = _degree_weighted_choice(clone, targets, rng)
+                if src == tgt or clone.graph.has_edge(src, tgt):
+                    continue
+                if rewiring == REWIRING_MODULE and module_map is not None:
+                    want = rng.random() < float(
+                        (within_module_frac or {}).get(et_value, 0.0)
+                    )
+                    if _same_module(module_map, src, tgt) != want:
+                        continue
+                try:
+                    clone.add_edge(src, tgt, edge_type, weight=1.0)
+                except ValueError:
+                    continue  # schema rejected this endpoint pair
+                added += 1
+            if added < n_add:
+                logger.debug(
+                    "[GateK] added %d/%d edges of type %s (graph too dense)",
+                    added, n_add, et_value,
+                )
 
     return clone
+
+
+def within_module_fractions(
+    diff: KGDiff, module_map: Dict[str, frozenset]
+) -> Dict[str, float]:
+    """Per-edge-type fraction of an observed diff that is within-module.
+
+    This is what ``rewiring='module'`` matches. A release that concentrated 80%
+    of its new edges inside shared pathways yields ``{edge_type: 0.8}``, and the
+    null then places 80% of its own changes within-module — so a `kg-sensitive`
+    verdict cannot be explained away by "the real change was concentrated."
+    """
+    out: Dict[str, float] = {}
+    for et_value in set(diff.edges_added) | set(diff.edges_removed):
+        pairs = list(diff.edges_added.get(et_value, [])) + list(
+            diff.edges_removed.get(et_value, [])
+        )
+        if not pairs:
+            continue
+        within = sum(1 for s, t in pairs if _same_module(module_map, s, t))
+        out[et_value] = within / len(pairs)
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -263,6 +502,7 @@ def kg_timeslice_sensitivity(
     ari_min: float = 0.80,
     alpha: float = 0.05,
     seed: int = 42,
+    rewiring: str = REWIRING_DEGREE,
     score_fns: Optional[Iterable[ScoreFn]] = None,
     tolerance: float = 0.05,
 ) -> KGSensitivityResult:
@@ -312,6 +552,7 @@ def kg_timeslice_sensitivity(
             diff=diff,
             ari_min=ari_min,
             alpha=alpha,
+            rewiring=rewiring,
         )
 
     labels_v1 = np.asarray(partition_fn(v1, cohort))
@@ -324,6 +565,7 @@ def kg_timeslice_sensitivity(
             diff=diff,
             ari_min=ari_min,
             alpha=alpha,
+            rewiring=rewiring,
         )
 
     k1, k2 = len(np.unique(labels_v1)), len(np.unique(labels_v2))
@@ -336,6 +578,7 @@ def kg_timeslice_sensitivity(
             diff=diff,
             ari_min=ari_min,
             alpha=alpha,
+            rewiring=rewiring,
         )
 
     observed_ari = float(safe_adjusted_rand_score(labels_v1, labels_v2))
@@ -348,16 +591,38 @@ def kg_timeslice_sensitivity(
             diff=diff,
             ari_min=ari_min,
             alpha=alpha,
+            rewiring=rewiring,
         )
 
     # Size-match the perturbation to the real diff, per edge type.
     n_remove_by_type = {k: len(v) for k, v in diff.edges_removed.items()}
     n_add_by_type = {k: len(v) for k, v in diff.edges_added.items()}
 
+    module_map: Optional[Dict[str, frozenset]] = None
+    frac: Optional[Dict[str, float]] = None
+    if rewiring == REWIRING_MODULE:
+        module_map = module_map_from_pathways(v1)
+        if not module_map:
+            return KGSensitivityResult(
+                verdict="not-testable (no GENE_IN_PATHWAY edges for module-aware null)",
+                testable=False,
+                observed_ari=observed_ari,
+                n_clusters_v1=k1,
+                n_clusters_v2=k2,
+                diff=diff,
+                ari_min=ari_min,
+                alpha=alpha,
+                rewiring=rewiring,
+            )
+        frac = within_module_fractions(diff, module_map)
+
     rng = np.random.default_rng(seed)
     null_aris: List[float] = []
     for _ in range(int(n_null)):
-        perturbed = rewire_kg(v1, n_remove_by_type, n_add_by_type, rng)
+        perturbed = rewire_kg(
+            v1, n_remove_by_type, n_add_by_type, rng,
+            rewiring=rewiring, module_map=module_map, within_module_frac=frac,
+        )
         labels_p = np.asarray(partition_fn(perturbed, cohort))
         if labels_p.shape[0] != labels_v1.shape[0]:
             continue
@@ -375,6 +640,7 @@ def kg_timeslice_sensitivity(
             diff=diff,
             ari_min=ari_min,
             alpha=alpha,
+            rewiring=rewiring,
         )
 
     null_arr = np.asarray(null_aris, dtype=float)
@@ -409,6 +675,7 @@ def kg_timeslice_sensitivity(
         n_clusters_v2=k2,
         ari_min=ari_min,
         alpha=alpha,
+        rewiring=rewiring,
         diff=diff,
         regression=regression,
     )
@@ -421,6 +688,11 @@ __all__ = [
     "PartitionFn",
     "kg_timeslice_sensitivity",
     "rewire_kg",
+    "module_map_from_pathways",
+    "within_module_fractions",
+    "REWIRING_UNIFORM",
+    "REWIRING_DEGREE",
+    "REWIRING_MODULE",
     "VERDICT_ROBUST",
     "VERDICT_KG_SENSITIVE",
     "VERDICT_FRAGILE",

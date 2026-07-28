@@ -22,6 +22,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     chosen at random. Without it the raw agreement number cannot be read — the
     test suite constructs two cases with an identical observed ARI of −0.026 that
     receive opposite verdicts, separated only by the null (median 1.000 vs −0.026).
+  - **Three null models via `rewiring=`**, weakest to strongest:
+    `uniform` (node set + edge-type counts only), **`degree` (default)** —
+    Maslov–Sneppen double-edge swaps preserving every node's exact in/out-degree,
+    and `module` — degree-preserving swaps additionally matched to the observed
+    diff's within-/cross-module split, with modules derived from
+    `GENE_IN_PATHWAY` membership by `module_map_from_pathways()` /
+    `within_module_fractions()`.
+  - **The null choice can change the verdict**, so it is not cosmetic and it is
+    recorded on the result (`KGSensitivityResult.rewiring`). On identical data
+    with an identical observed ARI, `uniform` returns `generically-fragile`
+    (p=0.066) where `degree` returns `kg-sensitive` (p=0.016) — pinned by
+    `test_null_choice_can_change_the_verdict`. `uniform` destroys the degree
+    sequence and so misreads changes at both ends of it: hub edges look specially
+    targeted when losing one is ordinary, and peripheral edges look ordinary when
+    losing one is specific. It is retained as a comparison baseline only.
+  - `module` **abstains** when the graph carries no `GENE_IN_PATHWAY` edges rather
+    than silently falling back to a weaker null.
   - Reuses `diff_kgs()` to size the perturbation and optionally
     `run_kg_regression()` for a scalar view. **Neither decides the verdict**; a
     regression test asserts a flagged scalar score leaves the partition verdict
