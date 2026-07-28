@@ -100,6 +100,7 @@ def _drop_edge(kg: KnowledgeGraph, src: str, tgt: str) -> KnowledgeGraph:
 # rewire_kg
 # --------------------------------------------------------------------------- #
 
+
 def test_rewire_preserves_nodes_and_edge_count_and_is_deterministic():
     kg = _chain_kg(20)
     budget_rm = {"gene_interacts_gene": 3}
@@ -119,8 +120,9 @@ def test_rewire_preserves_nodes_and_edge_count_and_is_deterministic():
 
 def test_rewire_actually_changes_something():
     kg = _chain_kg(20)
-    p = rewire_kg(kg, {"gene_interacts_gene": 4}, {"gene_interacts_gene": 4},
-                  np.random.default_rng(1))
+    p = rewire_kg(
+        kg, {"gene_interacts_gene": 4}, {"gene_interacts_gene": 4}, np.random.default_rng(1)
+    )
     assert sorted((s, t) for (s, t, _) in p._edge_types) != sorted(
         (s, t) for (s, t, _) in kg._edge_types
     )
@@ -135,17 +137,22 @@ def test_rewire_rejects_unknown_mode():
 def test_module_mode_requires_a_module_map():
     kg = _chain_kg(20)
     with pytest.raises(ValueError, match="requires a non-empty module_map"):
-        rewire_kg(kg, {"gene_interacts_gene": 1}, {"gene_interacts_gene": 1},
-                  np.random.default_rng(0), rewiring=REWIRING_MODULE)
+        rewire_kg(
+            kg,
+            {"gene_interacts_gene": 1},
+            {"gene_interacts_gene": 1},
+            np.random.default_rng(0),
+            rewiring=REWIRING_MODULE,
+        )
 
 
 # --------------------------------------------------------------------------- #
 # Degree-preserving null
 # --------------------------------------------------------------------------- #
 
+
 def _degree_sequence(kg):
-    return sorted((n, kg.graph.in_degree(n), kg.graph.out_degree(n))
-                  for n in kg.graph.nodes())
+    return sorted((n, kg.graph.in_degree(n), kg.graph.out_degree(n)) for n in kg.graph.nodes())
 
 
 def test_degree_mode_preserves_the_degree_sequence_exactly():
@@ -156,7 +163,7 @@ def test_degree_mode_preserves_the_degree_sequence_exactly():
     p = rewire_kg(
         kg,
         {"gene_interacts_gene": 5},
-        {"gene_interacts_gene": 5},   # balanced -> fully swap-able
+        {"gene_interacts_gene": 5},  # balanced -> fully swap-able
         np.random.default_rng(3),
         rewiring=REWIRING_DEGREE,
     )
@@ -186,6 +193,7 @@ def test_uniform_mode_does_not_preserve_degrees():
 # --------------------------------------------------------------------------- #
 # Module-aware null
 # --------------------------------------------------------------------------- #
+
 
 def test_module_map_derives_from_pathway_membership():
     kg = _pathway_kg()
@@ -247,9 +255,9 @@ def test_null_choice_can_change_the_verdict():
         v1, v2, partition_fn, None, n_null=60, seed=42, rewiring=REWIRING_DEGREE
     )
 
-    assert uniform.observed_ari == pytest.approx(degree.observed_ari), (
-        "the observed statistic is identical; only the reference differs"
-    )
+    assert uniform.observed_ari == pytest.approx(
+        degree.observed_ari
+    ), "the observed statistic is identical; only the reference differs"
     assert uniform.verdict == VERDICT_FRAGILE
     assert degree.verdict == VERDICT_KG_SENSITIVE
     assert degree.empirical_p < uniform.empirical_p
@@ -261,8 +269,13 @@ def test_module_mode_abstains_without_pathway_edges():
     v1 = _chain_kg(30)
     v2 = _drop_edge(v1, *CRITICAL)
     res = kg_timeslice_sensitivity(
-        v1, v2, lambda kg, c: LABELS_A, None,
-        n_null=5, seed=42, rewiring=REWIRING_MODULE,
+        v1,
+        v2,
+        lambda kg, c: LABELS_A,
+        None,
+        n_null=5,
+        seed=42,
+        rewiring=REWIRING_MODULE,
     )
     assert not res.testable
     assert "module-aware" in res.verdict
@@ -272,14 +285,13 @@ def test_module_mode_abstains_without_pathway_edges():
 # Verdicts
 # --------------------------------------------------------------------------- #
 
+
 def test_robust_when_partition_ignores_the_graph():
     """A finding that does not depend on the KG must come back robust."""
     v1 = _chain_kg()
     v2 = _drop_edge(v1, *CRITICAL)
 
-    res = kg_timeslice_sensitivity(
-        v1, v2, lambda kg, cohort: LABELS_A, None, n_null=20, seed=42
-    )
+    res = kg_timeslice_sensitivity(v1, v2, lambda kg, cohort: LABELS_A, None, n_null=20, seed=42)
 
     assert res.testable
     assert res.verdict == VERDICT_ROBUST
@@ -295,9 +307,7 @@ def test_kg_sensitive_when_the_specific_curated_edge_drives_the_partition():
     def partition_fn(kg, cohort):
         return LABELS_A if kg.has_edge(*CRITICAL) else LABELS_B
 
-    res = kg_timeslice_sensitivity(
-        v1, v2, partition_fn, None, n_null=50, seed=42
-    )
+    res = kg_timeslice_sensitivity(v1, v2, partition_fn, None, n_null=50, seed=42)
 
     assert res.testable
     assert res.verdict == VERDICT_KG_SENSITIVE
@@ -317,9 +327,7 @@ def test_generically_fragile_when_any_perturbation_breaks_it():
         # disrupts it exactly as much as the real change does.
         return LABELS_A if kg.n_edges % 2 == 0 else LABELS_B
 
-    res = kg_timeslice_sensitivity(
-        v1, v2, partition_fn, None, n_null=30, seed=42
-    )
+    res = kg_timeslice_sensitivity(v1, v2, partition_fn, None, n_null=30, seed=42)
 
     assert res.testable
     assert res.verdict == VERDICT_FRAGILE
@@ -330,6 +338,7 @@ def test_generically_fragile_when_any_perturbation_breaks_it():
 # --------------------------------------------------------------------------- #
 # Abstentions -- must be distinguishable from rejections
 # --------------------------------------------------------------------------- #
+
 
 def test_abstains_when_graphs_are_identical():
     v1 = _chain_kg(20)
@@ -346,9 +355,7 @@ def test_abstains_on_degenerate_partition():
     v2 = _drop_edge(v1, *CRITICAL)
     single = np.zeros(N_SAMPLES, dtype=int)
 
-    res = kg_timeslice_sensitivity(
-        v1, v2, lambda kg, c: single, None, n_null=5, seed=42
-    )
+    res = kg_timeslice_sensitivity(v1, v2, lambda kg, c: single, None, n_null=5, seed=42)
     assert not res.testable
     assert "degenerate" in res.verdict
 
@@ -370,12 +377,11 @@ def test_abstention_is_not_a_rejection():
 # Reporting
 # --------------------------------------------------------------------------- #
 
+
 def test_result_serializes_and_carries_the_diff():
     v1 = _chain_kg()
     v2 = _drop_edge(v1, *CRITICAL)
-    res = kg_timeslice_sensitivity(
-        v1, v2, lambda kg, c: LABELS_A, None, n_null=10, seed=42
-    )
+    res = kg_timeslice_sensitivity(v1, v2, lambda kg, c: LABELS_A, None, n_null=10, seed=42)
     d = res.to_dict()
     assert d["verdict"] == VERDICT_ROBUST
     assert d["diff_summary"]["edges_removed_total"] == 1
@@ -392,8 +398,14 @@ def test_optional_scalar_regression_is_reported_but_does_not_decide():
         return {"n_edges": float(kg.n_edges)}  # differs between v1 and v2
 
     res = kg_timeslice_sensitivity(
-        v1, v2, lambda kg, c: LABELS_A, None,
-        n_null=10, seed=42, score_fns=[score_fn], tolerance=0.0,
+        v1,
+        v2,
+        lambda kg, c: LABELS_A,
+        None,
+        n_null=10,
+        seed=42,
+        score_fns=[score_fn],
+        tolerance=0.0,
     )
     assert res.regression is not None
     assert not res.regression.passed, "scalar score did move"

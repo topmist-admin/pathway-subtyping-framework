@@ -145,6 +145,7 @@ class KGSensitivityResult:
 # Size-matched random rewiring (the null)
 # --------------------------------------------------------------------------- #
 
+
 def _edges_by_type(kg: KnowledgeGraph) -> Dict[str, List[Tuple[str, str]]]:
     out: Dict[str, List[Tuple[str, str]]] = {}
     for (src, tgt, _key), edge_type in kg._edge_types.items():
@@ -163,7 +164,8 @@ def _edge_key_index(kg: KnowledgeGraph) -> Dict[Tuple[str, str, str], List[int]]
 def _drop_typed_edge(kg: KnowledgeGraph, src: str, tgt: str, et_value: str) -> None:
     """Remove every edge of ``et_value`` between src and tgt, in place."""
     keys = [
-        k for (s, t, k), et in list(kg._edge_types.items())
+        k
+        for (s, t, k), et in list(kg._edge_types.items())
         if s == src and t == tgt and et.value == et_value
     ]
     for k in keys:
@@ -357,9 +359,7 @@ def rewire_kg(
             ``module_map``.
     """
     if rewiring not in (REWIRING_UNIFORM, REWIRING_DEGREE, REWIRING_MODULE):
-        raise ValueError(
-            f"rewiring must be one of 'uniform', 'degree', 'module'; got {rewiring!r}"
-        )
+        raise ValueError(f"rewiring must be one of 'uniform', 'degree', 'module'; got {rewiring!r}")
     if rewiring == REWIRING_MODULE and not module_map:
         raise ValueError("rewiring='module' requires a non-empty module_map")
 
@@ -392,7 +392,10 @@ def rewire_kg(
                     logger.debug(
                         "[GateK] %s: %d/%d degree-preserving swaps on %s "
                         "(graph too constrained); residual falls back to weighted",
-                        rewiring, done, n_paired, et_value,
+                        rewiring,
+                        done,
+                        n_paired,
+                        et_value,
                     )
                 n_remove -= done
                 n_add -= done
@@ -447,9 +450,7 @@ def rewire_kg(
                 if src == tgt or clone.graph.has_edge(src, tgt):
                     continue
                 if rewiring == REWIRING_MODULE and module_map is not None:
-                    want = rng.random() < float(
-                        (within_module_frac or {}).get(et_value, 0.0)
-                    )
+                    want = rng.random() < float((within_module_frac or {}).get(et_value, 0.0))
                     if _same_module(module_map, src, tgt) != want:
                         continue
                 try:
@@ -460,15 +461,15 @@ def rewire_kg(
             if added < n_add:
                 logger.debug(
                     "[GateK] added %d/%d edges of type %s (graph too dense)",
-                    added, n_add, et_value,
+                    added,
+                    n_add,
+                    et_value,
                 )
 
     return clone
 
 
-def within_module_fractions(
-    diff: KGDiff, module_map: Dict[str, frozenset]
-) -> Dict[str, float]:
+def within_module_fractions(diff: KGDiff, module_map: Dict[str, frozenset]) -> Dict[str, float]:
     """Per-edge-type fraction of an observed diff that is within-module.
 
     This is what ``rewiring='module'`` matches. A release that concentrated 80%
@@ -491,6 +492,7 @@ def within_module_fractions(
 # --------------------------------------------------------------------------- #
 # Public entry point
 # --------------------------------------------------------------------------- #
+
 
 def kg_timeslice_sensitivity(
     v1: KnowledgeGraph,
@@ -620,8 +622,13 @@ def kg_timeslice_sensitivity(
     null_aris: List[float] = []
     for _ in range(int(n_null)):
         perturbed = rewire_kg(
-            v1, n_remove_by_type, n_add_by_type, rng,
-            rewiring=rewiring, module_map=module_map, within_module_frac=frac,
+            v1,
+            n_remove_by_type,
+            n_add_by_type,
+            rng,
+            rewiring=rewiring,
+            module_map=module_map,
+            within_module_frac=frac,
         )
         labels_p = np.asarray(partition_fn(perturbed, cohort))
         if labels_p.shape[0] != labels_v1.shape[0]:
@@ -659,9 +666,7 @@ def kg_timeslice_sensitivity(
     if score_fns is not None:
         score_fns = list(score_fns)
         if score_fns:
-            regression = run_kg_regression(
-                v1, v2, score_fns, [cohort], tolerance=tolerance
-            )
+            regression = run_kg_regression(v1, v2, score_fns, [cohort], tolerance=tolerance)
 
     result = KGSensitivityResult(
         verdict=verdict,
