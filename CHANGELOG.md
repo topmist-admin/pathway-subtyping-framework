@@ -5,6 +5,37 @@ All notable changes to the Pathway Subtyping Framework will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`pathway_subtyping.kg_sensitivity` — Gate K, time-sliced knowledge-graph
+  sensitivity.** Tests whether a partition survives being recomputed against a
+  different KG version. Every existing gate holds the knowledge graph fixed and
+  varies the data; none checks whether a finding is an artifact of the database
+  release it was derived under.
+  - `kg_timeslice_sensitivity(v1, v2, partition_fn, cohort, ...)` returns one of
+    **`robust`**, **`kg-sensitive`**, **`generically-fragile`**, or a
+    `not-testable (...)` abstention, with a `testable` flag so abstentions can be
+    excluded from failure-rate denominators.
+  - `rewire_kg()` builds the reference: a **size-matched random perturbation**
+    that changes the same number of edges of the same types as the observed diff,
+    chosen at random. Without it the raw agreement number cannot be read — the
+    test suite constructs two cases with an identical observed ARI of −0.026 that
+    receive opposite verdicts, separated only by the null (median 1.000 vs −0.026).
+  - Reuses `diff_kgs()` to size the perturbation and optionally
+    `run_kg_regression()` for a scalar view. **Neither decides the verdict**; a
+    regression test asserts a flagged scalar score leaves the partition verdict
+    unchanged.
+  - Decision rule, in full: `robust` if `observed_ari >= ari_min`, else
+    `kg-sensitive` if `empirical_p < alpha`, else `generically-fragile`. Both
+    terms are live — stated explicitly because the v0.8.0 gate shipped documenting
+    three criteria of which only one decided.
+  - Docs: `docs/kg_sensitivity_gate.md`. Tests: `tests/test_kg_sensitivity.py`.
+
+### Documentation
+- `docs/roadmap-trajectory-gate.md` — proposed Gate T spec (trajectory validation).
+  **Design only; no implementation exists.**
+
 ## [0.8.0] - 2026-07-25
 
 Artefacts:

@@ -1,0 +1,427 @@
+"""
+Time-sliced knowledge-graph sensitivity (Gate K).
+
+Asks one question about a finding that was derived with help from a knowledge
+graph: **does it survive being recomputed against a different KG version?**
+
+A subtype that appears under Reactome 2026 and vanishes under Reactome 2025 is a
+knowledge artifact, not a property of the cohort. Nothing in the existing gate
+battery checks for that, because every other gate holds the KG fixed and varies
+the data.
+
+WHY A RAW AGREEMENT NUMBER IS NOT ENOUGH
+----------------------------------------
+The obvious implementation is: partition the cohort under KG v1, partition it
+under KG v2, report the ARI between the two labelings. That number is
+uninterpretable on its own, for exactly the reason the pre-v0.8.0 stability gate
+was uninterpretable -- there is no reference telling you what value to expect.
+
+An ARI of 0.6 between two KG versions could mean either:
+
+  (a) the curated change was substantive and specifically disrupted this finding; or
+  (b) this partition is fragile to *any* perturbation of comparable size, and the
+      KG version is incidental.
+
+These have opposite implications. (a) is a statement about the knowledge base;
+(b) is a statement about the partition, and a much worse one. Distinguishing them
+requires a null, so this module builds one: rewire the baseline KG at random,
+matching the observed diff's edge-addition and edge-removal counts, and measure
+how much the partition moves under that size-matched random perturbation.
+
+  observed agreement >> null  ->  robust
+  observed agreement ~  null  ->  generically fragile (any perturbation breaks it)
+  observed agreement << null  ->  KG-sensitive (this specific curated change matters)
+
+Reuses ``diff_kgs`` to size the perturbation and, optionally, ``run_kg_regression``
+for scalar score deltas alongside the partition-level verdict.
+
+Research use only. Not for clinical decision-making.
+"""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
+
+import numpy as np
+
+from .knowledge_graph.builder import KnowledgeGraph
+from .knowledge_graph.diff import KGDiff, diff_kgs
+from .knowledge_graph.regression import KGRegressionReport, ScoreFn, run_kg_regression
+from .knowledge_graph.schema import EdgeType
+from .utils.metrics import safe_adjusted_rand_score
+
+logger = logging.getLogger(__name__)
+
+
+#: A caller-supplied function that turns (knowledge graph, cohort payload) into
+#: cluster labels. Mirrors ``regression.ScoreFn``, but returns a labeling rather
+#: than a dict of scalars.
+PartitionFn = Callable[[KnowledgeGraph, Any], np.ndarray]
+
+VERDICT_ROBUST = "robust"
+VERDICT_KG_SENSITIVE = "kg-sensitive"
+VERDICT_FRAGILE = "generically-fragile"
+
+
+@dataclass
+class KGSensitivityResult:
+    """Outcome of one time-sliced sensitivity run.
+
+    Attributes:
+        verdict: One of ``robust``, ``kg-sensitive``, ``generically-fragile``, or
+            a ``not-testable (...)`` string. Four outcomes, not two -- an
+            abstention is not a failure and must never be counted as one.
+        passed: True only for ``robust``. Abstentions are False but are NOT
+            rejections; see ``testable``.
+        testable: False when the run abstained. Any false-positive or
+            failure rate computed over many runs MUST use the testable subset as
+            its denominator.
+        observed_ari: Agreement between the v1 and v2 partitions.
+        null_aris: Agreement between the v1 partition and each size-matched
+            randomly-rewired partition.
+        null_p05: 5th percentile of ``null_aris`` (the low tail is the one that
+            matters -- we ask whether the real change disrupted *more* than chance).
+        empirical_p: Add-one empirical p that the observed agreement is at or
+            below the null distribution.
+        diff: The structural ``KGDiff`` between the two graphs.
+        regression: Optional scalar-score report from ``run_kg_regression``.
+    """
+
+    verdict: str
+    testable: bool
+    observed_ari: float = float("nan")
+    null_aris: List[float] = field(default_factory=list)
+    null_median: float = float("nan")
+    null_p05: float = float("nan")
+    empirical_p: float = float("nan")
+    n_clusters_v1: int = 0
+    n_clusters_v2: int = 0
+    ari_min: float = 0.0
+    alpha: float = 0.05
+    diff: Optional[KGDiff] = None
+    regression: Optional[KGRegressionReport] = None
+
+    @property
+    def passed(self) -> bool:
+        return self.verdict == VERDICT_ROBUST
+
+    def summary(self) -> str:
+        if not self.testable:
+            return f"KGSensitivity({self.verdict})"
+        return (
+            f"KGSensitivity({self.verdict}, observed_ari={self.observed_ari:.3f}, "
+            f"null_median={self.null_median:.3f}, p={self.empirical_p:.3f})"
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "verdict": self.verdict,
+            "passed": self.passed,
+            "testable": self.testable,
+            "observed_ari": self.observed_ari,
+            "null_median": self.null_median,
+            "null_p05": self.null_p05,
+            "empirical_p": self.empirical_p,
+            "n_null_draws": len(self.null_aris),
+            "n_clusters_v1": self.n_clusters_v1,
+            "n_clusters_v2": self.n_clusters_v2,
+            "ari_min": self.ari_min,
+            "alpha": self.alpha,
+            "diff_summary": dict(self.diff.summary) if self.diff else None,
+            "regression": self.regression.to_dict() if self.regression else None,
+        }
+
+
+# --------------------------------------------------------------------------- #
+# Size-matched random rewiring (the null)
+# --------------------------------------------------------------------------- #
+
+def _edges_by_type(kg: KnowledgeGraph) -> Dict[str, List[Tuple[str, str]]]:
+    out: Dict[str, List[Tuple[str, str]]] = {}
+    for (src, tgt, _key), edge_type in kg._edge_types.items():
+        out.setdefault(edge_type.value, []).append((src, tgt))
+    return out
+
+
+def _clone_kg(kg: KnowledgeGraph) -> KnowledgeGraph:
+    """Structural copy preserving node types, edge types and weights."""
+    clone = KnowledgeGraph(schema=kg.schema)
+    for node_id, node_type in kg._node_types.items():
+        node = kg.get_node(node_id)
+        clone.add_node(
+            node_id,
+            node_type,
+            attributes=dict(node.attributes) if node is not None else None,
+        )
+    for (src, tgt, key), edge_type in kg._edge_types.items():
+        data = kg.graph.edges[src, tgt, key]
+        clone.add_edge(src, tgt, edge_type, weight=float(data.get("weight", 1.0)))
+    return clone
+
+
+def rewire_kg(
+    kg: KnowledgeGraph,
+    n_remove_by_type: Dict[str, int],
+    n_add_by_type: Dict[str, int],
+    rng: np.random.Generator,
+) -> KnowledgeGraph:
+    """Randomly perturb ``kg`` by a per-edge-type budget of removals and additions.
+
+    The perturbation is *size-matched* to an observed diff: it changes the same
+    number of edges of the same types, but chooses which edges at random. That
+    is what makes it a fair reference for "how much would a curated change of
+    this magnitude move the partition if it carried no information?"
+
+    Node set and edge-type composition are preserved. Candidate additions are
+    drawn from nodes that already participate in that edge type, which keeps
+    every proposed edge schema-valid; proposals that are already present or that
+    the schema rejects are skipped rather than retried indefinitely.
+
+    Args:
+        kg: Baseline graph to perturb.
+        n_remove_by_type: {edge_type_value: count} edges to delete.
+        n_add_by_type: {edge_type_value: count} edges to introduce.
+        rng: Seeded generator; the same seed reproduces the same rewiring.
+
+    Returns:
+        A new ``KnowledgeGraph``. The input is not modified.
+    """
+    clone = _clone_kg(kg)
+    by_type = _edges_by_type(clone)
+
+    # --- removals ---------------------------------------------------------- #
+    for et_value, n_remove in n_remove_by_type.items():
+        present = by_type.get(et_value, [])
+        if not present or n_remove <= 0:
+            continue
+        n = min(int(n_remove), len(present))
+        idx = rng.choice(len(present), size=n, replace=False)
+        for i in idx:
+            src, tgt = present[int(i)]
+            keys = [
+                k for (s, t, k) in list(clone._edge_types)
+                if s == src and t == tgt and clone._edge_types[(s, t, k)].value == et_value
+            ]
+            for k in keys:
+                if clone.graph.has_edge(src, tgt, k):
+                    clone.graph.remove_edge(src, tgt, k)
+                clone._edge_types.pop((src, tgt, k), None)
+
+    # --- additions --------------------------------------------------------- #
+    for et_value, n_add in n_add_by_type.items():
+        if n_add <= 0:
+            continue
+        present = by_type.get(et_value, [])
+        if not present:
+            # No exemplar of this edge type in the baseline -> no way to infer a
+            # schema-valid endpoint pair. Skip rather than guess.
+            logger.debug("[GateK] no baseline exemplar for %s; skipping additions", et_value)
+            continue
+        try:
+            edge_type = EdgeType(et_value)
+        except ValueError:
+            continue
+        sources = sorted({s for s, _ in present})
+        targets = sorted({t for _, t in present})
+        added = 0
+        # Bounded attempts: a dense graph may have few free slots, and we would
+        # rather under-perturb (and say so) than spin.
+        for _ in range(int(n_add) * 20):
+            if added >= int(n_add):
+                break
+            src = sources[int(rng.integers(len(sources)))]
+            tgt = targets[int(rng.integers(len(targets)))]
+            if src == tgt or clone.graph.has_edge(src, tgt):
+                continue
+            try:
+                clone.add_edge(src, tgt, edge_type, weight=1.0)
+            except ValueError:
+                continue  # schema rejected this endpoint pair
+            added += 1
+        if added < int(n_add):
+            logger.debug(
+                "[GateK] rewiring added %d/%d edges of type %s (graph too dense)",
+                added, int(n_add), et_value,
+            )
+
+    return clone
+
+
+# --------------------------------------------------------------------------- #
+# Public entry point
+# --------------------------------------------------------------------------- #
+
+def kg_timeslice_sensitivity(
+    v1: KnowledgeGraph,
+    v2: KnowledgeGraph,
+    partition_fn: PartitionFn,
+    cohort: Any,
+    *,
+    n_null: int = 50,
+    ari_min: float = 0.80,
+    alpha: float = 0.05,
+    seed: int = 42,
+    score_fns: Optional[Iterable[ScoreFn]] = None,
+    tolerance: float = 0.05,
+) -> KGSensitivityResult:
+    """Test whether a partition survives swapping the knowledge graph.
+
+    THE DECISION RULE, in full::
+
+        if observed_ari >= ari_min:              verdict = "robust"
+        elif empirical_p < alpha:                verdict = "kg-sensitive"
+        else:                                    verdict = "generically-fragile"
+
+    Both terms are live: ``ari_min`` decides robustness and ``empirical_p``
+    decides how a non-robust result is *explained*. Nothing else in this module
+    enters the rule -- the ``KGDiff`` and the optional ``run_kg_regression``
+    report are context, not criteria. (Gate A shipped documenting three criteria
+    of which only one decided; that gap was found by hostile review. If a future
+    revision wants the regression report to decide, it must change this rule in
+    the same commit as the docstring.)
+
+    Abstains, rather than ruling, when: the two graphs are identical (nothing to
+    test), either partition has fewer than two clusters, or the two partitions
+    cover different numbers of samples.
+
+    Args:
+        v1: Baseline knowledge graph (e.g. Reactome 2025).
+        v2: Comparison knowledge graph (e.g. Reactome 2026).
+        partition_fn: ``f(kg, cohort) -> labels``. Must be deterministic given
+            its inputs; seed any internal clustering yourself.
+        cohort: Opaque payload handed to ``partition_fn`` (expression matrix,
+            pathway-score frame, whatever the caller's pipeline consumes).
+        n_null: Size-matched random rewirings to draw.
+        ari_min: Agreement at or above which the finding is called robust.
+        alpha: Significance level for the empirical p.
+        seed: Seeds the rewiring generator; the run is reproducible.
+        score_fns: Optional scalar scoring callables, forwarded verbatim to
+            ``run_kg_regression`` for a side-by-side scalar view.
+        tolerance: Relative-delta tolerance for that regression report.
+
+    Returns:
+        A ``KGSensitivityResult``.
+    """
+    diff = diff_kgs(v1, v2)
+    if diff.is_identical():
+        return KGSensitivityResult(
+            verdict="not-testable (knowledge graphs are identical)",
+            testable=False,
+            diff=diff,
+            ari_min=ari_min,
+            alpha=alpha,
+        )
+
+    labels_v1 = np.asarray(partition_fn(v1, cohort))
+    labels_v2 = np.asarray(partition_fn(v2, cohort))
+
+    if labels_v1.shape[0] != labels_v2.shape[0]:
+        return KGSensitivityResult(
+            verdict="not-testable (partitions cover different sample counts)",
+            testable=False,
+            diff=diff,
+            ari_min=ari_min,
+            alpha=alpha,
+        )
+
+    k1, k2 = len(np.unique(labels_v1)), len(np.unique(labels_v2))
+    if k1 < 2 or k2 < 2:
+        return KGSensitivityResult(
+            verdict="not-testable (degenerate partition under at least one KG)",
+            testable=False,
+            n_clusters_v1=k1,
+            n_clusters_v2=k2,
+            diff=diff,
+            ari_min=ari_min,
+            alpha=alpha,
+        )
+
+    observed_ari = float(safe_adjusted_rand_score(labels_v1, labels_v2))
+    if not np.isfinite(observed_ari):
+        return KGSensitivityResult(
+            verdict="not-testable (ARI undefined on these partitions)",
+            testable=False,
+            n_clusters_v1=k1,
+            n_clusters_v2=k2,
+            diff=diff,
+            ari_min=ari_min,
+            alpha=alpha,
+        )
+
+    # Size-match the perturbation to the real diff, per edge type.
+    n_remove_by_type = {k: len(v) for k, v in diff.edges_removed.items()}
+    n_add_by_type = {k: len(v) for k, v in diff.edges_added.items()}
+
+    rng = np.random.default_rng(seed)
+    null_aris: List[float] = []
+    for _ in range(int(n_null)):
+        perturbed = rewire_kg(v1, n_remove_by_type, n_add_by_type, rng)
+        labels_p = np.asarray(partition_fn(perturbed, cohort))
+        if labels_p.shape[0] != labels_v1.shape[0]:
+            continue
+        value = float(safe_adjusted_rand_score(labels_v1, labels_p))
+        if np.isfinite(value):
+            null_aris.append(value)
+
+    if len(null_aris) < 2:
+        return KGSensitivityResult(
+            verdict="not-testable (null distribution could not be constructed)",
+            testable=False,
+            observed_ari=observed_ari,
+            n_clusters_v1=k1,
+            n_clusters_v2=k2,
+            diff=diff,
+            ari_min=ari_min,
+            alpha=alpha,
+        )
+
+    null_arr = np.asarray(null_aris, dtype=float)
+    # Add-one empirical p in the LOW tail: how often does a size-matched random
+    # rewiring disrupt the partition at least as much as the real KG change?
+    empirical_p = float((np.sum(null_arr <= observed_ari) + 1) / (null_arr.size + 1))
+
+    if observed_ari >= ari_min:
+        verdict = VERDICT_ROBUST
+    elif empirical_p < alpha:
+        verdict = VERDICT_KG_SENSITIVE
+    else:
+        verdict = VERDICT_FRAGILE
+
+    regression: Optional[KGRegressionReport] = None
+    if score_fns is not None:
+        score_fns = list(score_fns)
+        if score_fns:
+            regression = run_kg_regression(
+                v1, v2, score_fns, [cohort], tolerance=tolerance
+            )
+
+    result = KGSensitivityResult(
+        verdict=verdict,
+        testable=True,
+        observed_ari=observed_ari,
+        null_aris=null_aris,
+        null_median=float(np.median(null_arr)),
+        null_p05=float(np.percentile(null_arr, 5)),
+        empirical_p=empirical_p,
+        n_clusters_v1=k1,
+        n_clusters_v2=k2,
+        ari_min=ari_min,
+        alpha=alpha,
+        diff=diff,
+        regression=regression,
+    )
+    logger.info("[GateK] %s", result.summary())
+    return result
+
+
+__all__ = [
+    "KGSensitivityResult",
+    "PartitionFn",
+    "kg_timeslice_sensitivity",
+    "rewire_kg",
+    "VERDICT_ROBUST",
+    "VERDICT_KG_SENSITIVE",
+    "VERDICT_FRAGILE",
+]

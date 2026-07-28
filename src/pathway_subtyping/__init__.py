@@ -140,6 +140,11 @@ from .multi_omic import (
     fuse_modalities,
     prepare_modality,
 )
+from .kg_sensitivity import (
+    KGSensitivityResult,
+    kg_timeslice_sensitivity,
+    rewire_kg,
+)
 from .network_propagation import (
     NetworkPropagator,
     PropagationConfig,
@@ -435,6 +440,9 @@ __all__ = [
     "to_neo4j_cypher",
     "to_pyg",
     # Network propagation
+    "KGSensitivityResult",
+    "kg_timeslice_sensitivity",
+    "rewire_kg",
     "NetworkPropagator",
     "PropagationConfig",
     "PropagationMethod",
