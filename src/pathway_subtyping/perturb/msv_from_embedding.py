@@ -48,13 +48,10 @@ class MSVFromEmbedding:
         pathway_scores: pd.DataFrame,
     ) -> "MSVFromEmbedding":
         if len(embeddings) != len(pathway_scores):
-            raise ValueError(
-                "embeddings and pathway_scores must have the same number of rows"
-            )
+            raise ValueError("embeddings and pathway_scores must have the same number of rows")
         if len(embeddings) < 5:
             raise ValueError("need >= 5 cells to fit the MSV head")
-        X = np.hstack([np.asarray(embeddings, dtype=float),
-                       np.ones((len(embeddings), 1))])
+        X = np.hstack([np.asarray(embeddings, dtype=float), np.ones((len(embeddings), 1))])
         Y = pathway_scores.to_numpy(dtype=float)
         d = X.shape[1]
         reg = self.ridge_alpha * np.eye(d)
@@ -64,7 +61,9 @@ class MSVFromEmbedding:
         self._fitted = True
         logger.info(
             "[MSVFromEmbedding] fit: n_cells=%d embedding_dim=%d n_pathways=%d",
-            len(embeddings), embeddings.shape[1], Y.shape[1],
+            len(embeddings),
+            embeddings.shape[1],
+            Y.shape[1],
         )
         return self
 
@@ -72,8 +71,7 @@ class MSVFromEmbedding:
     def transform(self, embeddings: np.ndarray) -> pd.DataFrame:
         if not self._fitted or self._beta is None:
             raise RuntimeError("MSVFromEmbedding.fit() must be called first")
-        X = np.hstack([np.asarray(embeddings, dtype=float),
-                       np.ones((len(embeddings), 1))])
+        X = np.hstack([np.asarray(embeddings, dtype=float), np.ones((len(embeddings), 1))])
         Y_hat = X @ self._beta
         return pd.DataFrame(Y_hat, columns=self._pathway_names)
 

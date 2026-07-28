@@ -22,21 +22,33 @@ class GNNConfig:
     use_layer_norm: bool = True
     aggregation: str = "mean"
     activation: str = "relu"
-    edge_types: List[str] = field(default_factory=lambda: [
-        "gene_interacts_gene",
-        "gene_regulates_gene",
-        "gene_in_pathway",
-        "gene_has_go",
-    ])
-    node_types: List[str] = field(default_factory=lambda: [
-        "gene", "pathway", "go_term",
-    ])
-    prior_types: List[str] = field(default_factory=lambda: [
-        "pli", "expression", "sfari_score",
-    ])
-    task_heads: List[str] = field(default_factory=lambda: [
-        "gene_classification",
-    ])
+    edge_types: List[str] = field(
+        default_factory=lambda: [
+            "gene_interacts_gene",
+            "gene_regulates_gene",
+            "gene_in_pathway",
+            "gene_has_go",
+        ]
+    )
+    node_types: List[str] = field(
+        default_factory=lambda: [
+            "gene",
+            "pathway",
+            "go_term",
+        ]
+    )
+    prior_types: List[str] = field(
+        default_factory=lambda: [
+            "pli",
+            "expression",
+            "sfari_score",
+        ]
+    )
+    task_heads: List[str] = field(
+        default_factory=lambda: [
+            "gene_classification",
+        ]
+    )
 
     def to_dict(self) -> dict:
         return {

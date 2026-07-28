@@ -28,10 +28,10 @@ from pathway_subtyping.embed import (
     OfficialNicheformerBackend,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Fixtures
 # --------------------------------------------------------------------------- #
+
 
 @pytest.fixture
 def paired_cortex():
@@ -62,11 +62,13 @@ def paired_cortex():
     pathway_cols = [f"PATH_{i}" for i in range(5)]
     diss_path = pd.DataFrame(
         (base + diss_noise) @ rng.standard_normal((n_genes, 5)),
-        index=cell_idx, columns=pathway_cols,
+        index=cell_idx,
+        columns=pathway_cols,
     )
     spat_path = pd.DataFrame(
         (base + spat_noise) @ rng.standard_normal((n_genes, 5)),
-        index=cell_idx, columns=pathway_cols,
+        index=cell_idx,
+        columns=pathway_cols,
     )
     return dissociated, spatial, diss_path, spat_path
 
@@ -74,6 +76,7 @@ def paired_cortex():
 # --------------------------------------------------------------------------- #
 # Fallback embedder
 # --------------------------------------------------------------------------- #
+
 
 class TestFallbackNicheformer:
 
@@ -97,9 +100,7 @@ class TestFallbackNicheformer:
         diss_emb = embedder.embed(diss)
         spat_emb = embedder.embed(spat)
         # Paired cells should be near each other in the embedding space
-        per_cell_delta = np.linalg.norm(
-            diss_emb.embeddings - spat_emb.embeddings, axis=1
-        )
+        per_cell_delta = np.linalg.norm(diss_emb.embeddings - spat_emb.embeddings, axis=1)
         # Compare against the magnitude of the dissociated embedding
         norm_diss = np.linalg.norm(diss_emb.embeddings, axis=1)
         # Inter-modality distance should be a fraction of within-modality magnitude
@@ -118,6 +119,7 @@ class TestFallbackNicheformer:
 # Official backend stub
 # --------------------------------------------------------------------------- #
 
+
 class TestOfficialStub:
 
     def test_informative_error(self):
@@ -134,6 +136,7 @@ class TestOfficialStub:
 # --------------------------------------------------------------------------- #
 # NicheformerEmbedder (high-level)
 # --------------------------------------------------------------------------- #
+
 
 class TestNicheformerEmbedder:
 
@@ -163,6 +166,7 @@ class TestNicheformerEmbedder:
 # Roadmap acceptance: dissociated vs spatial pathway-score rho > 0.7
 # --------------------------------------------------------------------------- #
 
+
 class TestJointSpaceAcceptance:
 
     def test_dissociated_spatial_rho_exceeds_threshold(self, paired_cortex):
@@ -181,7 +185,8 @@ class TestJointSpaceAcceptance:
 
         # Train a shared head on the dissociated modality; evaluate on both.
         head = MSVFromEmbedding(ridge_alpha=1e-2).fit(
-            d_emb.embeddings, diss_path,
+            d_emb.embeddings,
+            diss_path,
         )
         diss_pred = head.transform(d_emb.embeddings)
         spat_pred = head.transform(s_emb.embeddings)

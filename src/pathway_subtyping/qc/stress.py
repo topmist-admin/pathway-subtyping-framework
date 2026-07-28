@@ -96,8 +96,15 @@ class StressFingerprinter:
         self.signatures = [
             StressSignature(
                 name="hypoxia",
-                activated_pathways=["HALLMARK_HYPOXIA", "HALLMARK_GLYCOLYSIS", "HALLMARK_ANGIOGENESIS"],
-                suppressed_pathways=["HALLMARK_OXIDATIVE_PHOSPHORYLATION", "HALLMARK_FATTY_ACID_METABOLISM"],
+                activated_pathways=[
+                    "HALLMARK_HYPOXIA",
+                    "HALLMARK_GLYCOLYSIS",
+                    "HALLMARK_ANGIOGENESIS",
+                ],
+                suppressed_pathways=[
+                    "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+                    "HALLMARK_FATTY_ACID_METABOLISM",
+                ],
                 remediation="Check dissolved oxygen in bioreactor; verify gas exchange rate",
             ),
             StressSignature(
@@ -114,7 +121,10 @@ class StressFingerprinter:
             ),
             StressSignature(
                 name="mechanical",
-                activated_pathways=["HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION", "HALLMARK_MYOGENESIS"],
+                activated_pathways=[
+                    "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION",
+                    "HALLMARK_MYOGENESIS",
+                ],
                 suppressed_pathways=["HALLMARK_ADIPOGENESIS"],
                 remediation="Reduce bioreactor agitation speed; check shear stress parameters",
             ),
@@ -127,7 +137,10 @@ class StressFingerprinter:
             StressSignature(
                 name="ph",
                 activated_pathways=["HALLMARK_UNFOLDED_PROTEIN_RESPONSE"],
-                suppressed_pathways=["HALLMARK_MTORC1_SIGNALING", "HALLMARK_OXIDATIVE_PHOSPHORYLATION"],
+                suppressed_pathways=[
+                    "HALLMARK_MTORC1_SIGNALING",
+                    "HALLMARK_OXIDATIVE_PHOSPHORYLATION",
+                ],
                 remediation="Check media pH buffering capacity; verify CO2 levels",
             ),
         ]
@@ -159,12 +172,14 @@ class StressFingerprinter:
         matches: List[StressMatch] = []
         for sig in self.signatures:
             sim = self._compute_similarity(diff, sig)
-            matches.append(StressMatch(
-                stressor=sig.name,
-                similarity=sim,
-                confidence=max(0.0, sim),
-                remediation=sig.remediation,
-            ))
+            matches.append(
+                StressMatch(
+                    stressor=sig.name,
+                    similarity=sim,
+                    confidence=max(0.0, sim),
+                    remediation=sig.remediation,
+                )
+            )
 
         matches.sort(key=lambda m: -m.similarity)
 

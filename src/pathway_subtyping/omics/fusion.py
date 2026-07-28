@@ -30,6 +30,7 @@ MODALITIES = ("rna", "atac", "protein")
 # Types
 # --------------------------------------------------------------------------- #
 
+
 @dataclass
 class FusionWeights:
     """Per-modality scalar weights. Auto-normalises to sum to 1.0.
@@ -88,6 +89,7 @@ class FusionResult:
 # Fusion class
 # --------------------------------------------------------------------------- #
 
+
 class MultiOmicsFusion:
     """Combine per-modality pathway-score matrices into a single MSV.
 
@@ -130,7 +132,9 @@ class MultiOmicsFusion:
         pathway_idx: Optional[pd.Index] = None
         for df in supplied.values():
             sample_idx = df.index if sample_idx is None else sample_idx.intersection(df.index)
-            pathway_idx = df.columns if pathway_idx is None else pathway_idx.intersection(df.columns)
+            pathway_idx = (
+                df.columns if pathway_idx is None else pathway_idx.intersection(df.columns)
+            )
         if sample_idx is None or pathway_idx is None:
             raise ValueError("no shared samples or pathways across modalities")
         if len(sample_idx) == 0:
@@ -150,7 +154,10 @@ class MultiOmicsFusion:
             )
 
         fused = pd.DataFrame(
-            0.0, index=sample_idx, columns=pathway_idx, dtype=float,
+            0.0,
+            index=sample_idx,
+            columns=pathway_idx,
+            dtype=float,
         )
         for name in MODALITIES:
             if name not in aligned:
@@ -162,7 +169,9 @@ class MultiOmicsFusion:
 
         logger.info(
             "[MultiOmicsFusion] fused n_samples=%d n_pathways=%d modalities=%s",
-            len(sample_idx), len(pathway_idx), sorted(aligned.keys()),
+            len(sample_idx),
+            len(pathway_idx),
+            sorted(aligned.keys()),
         )
 
         return FusionResult(
@@ -189,8 +198,7 @@ class MultiOmicsFusion:
         highest-scoring weight vector.
         """
         supplied = {
-            k: v for k, v in [("rna", rna), ("atac", atac), ("protein", protein)]
-            if v is not None
+            k: v for k, v in [("rna", rna), ("atac", atac), ("protein", protein)] if v is not None
         }
         if not supplied:
             raise ValueError("at least one modality must be supplied")
@@ -227,7 +235,8 @@ class MultiOmicsFusion:
             raise RuntimeError("weight search produced no candidates")
         logger.info(
             "[MultiOmicsFusion] learned weights %s (LOO-NN acc=%.3f)",
-            best_w.as_dict(), best_acc,
+            best_w.as_dict(),
+            best_acc,
         )
         return best_w
 
@@ -235,6 +244,7 @@ class MultiOmicsFusion:
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
+
 
 def _loo_nn_accuracy(features: pd.DataFrame, labels: pd.Series) -> float:
     """Leave-one-out 1-NN accuracy (cosine similarity)."""

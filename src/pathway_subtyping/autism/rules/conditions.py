@@ -124,9 +124,7 @@ class ConditionEvaluator:
         """
         evaluator = self._evaluators.get(condition.predicate)
         if evaluator is None:
-            logger.warning(
-                "[Autism Rules] Unknown predicate: %s", condition.predicate
-            )
+            logger.warning("[Autism Rules] Unknown predicate: %s", condition.predicate)
             return ConditionResult(satisfied=False, explanation=f"Unknown: {condition.predicate}")
 
         result = evaluator(condition.arguments, individual_data, gene, bindings or {})
@@ -146,7 +144,8 @@ class ConditionEvaluator:
         if gene:
             variants = individual.get_gene_variants(gene)
             has = any(
-                getattr(v, "consequence", "") in ("frameshift", "stop_gained", "splice_donor", "splice_acceptor")
+                getattr(v, "consequence", "")
+                in ("frameshift", "stop_gained", "splice_donor", "splice_acceptor")
                 or getattr(v, "is_lof", False)
                 for v in variants
             )
@@ -232,9 +231,7 @@ class ConditionEvaluator:
     def _eval_cell_type_enriched(self, args, individual, gene, bindings):
         cell_type = args.get("cell_type", "")
         if gene and cell_type:
-            return ConditionResult(
-                satisfied=self.ctx.is_enriched_in_cell_type(gene, cell_type)
-            )
+            return ConditionResult(satisfied=self.ctx.is_enriched_in_cell_type(gene, cell_type))
         return ConditionResult(satisfied=False)
 
     # ── Pathway evaluators ────────────────────────────────────────────

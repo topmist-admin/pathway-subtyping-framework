@@ -13,8 +13,8 @@ import pandas as pd
 import pytest
 
 from pathway_subtyping.qc.dosage import (
-    DosageAnalyzer,
     DosageAnalysisResult,
+    DosageAnalyzer,
     DosageState,
 )
 from pathway_subtyping.qc.heterogeneity import (
@@ -32,8 +32,8 @@ from pathway_subtyping.qc.testing.simulator import (
     StressorType,
 )
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def simulator():
@@ -66,6 +66,7 @@ def healthy_batch(simulator, spec):
 # ══════════════════════════════════════════════════════════════════════
 # F6: OFF-TARGET DETECTION
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestOffTargetDetector:
 
@@ -169,6 +170,7 @@ class TestOffTargetDetector:
 # F7: HETEROGENEITY PROFILING
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestHeterogeneityProfiler:
 
     def test_healthy_batch_low_heterogeneity(self, healthy_batch):
@@ -180,9 +182,7 @@ class TestHeterogeneityProfiler:
         assert result.n_total == 200
 
     def test_detects_subpopulation(self, simulator, healthy_batch):
-        injected = simulator.inject_subpopulation(
-            healthy_batch, fraction=0.2
-        )
+        injected = simulator.inject_subpopulation(healthy_batch, fraction=0.2)
         # Use tight conformity threshold to catch deviations
         profiler = HeterogeneityProfiler(
             conformity_threshold=1.0,
@@ -195,9 +195,7 @@ class TestHeterogeneityProfiler:
 
     def test_custom_target_profile(self, healthy_batch):
         target = {pw: 0.0 for pw in healthy_batch.pathway_scores.columns}
-        profiler = HeterogeneityProfiler(
-            target_profile=target, conformity_threshold=2.0
-        )
+        profiler = HeterogeneityProfiler(target_profile=target, conformity_threshold=2.0)
         result = profiler.profile(healthy_batch.pathway_scores)
         assert result.n_total == 200
 
@@ -227,9 +225,7 @@ class TestHeterogeneityProfiler:
         assert profiler.target_profile == target
 
     def test_small_batch_no_crash(self):
-        scores = pd.DataFrame(
-            np.random.randn(5, 3), columns=["A", "B", "C"]
-        )
+        scores = pd.DataFrame(np.random.randn(5, 3), columns=["A", "B", "C"])
         profiler = HeterogeneityProfiler(conformity_threshold=2.0)
         result = profiler.profile(scores)
         assert result.n_total == 5
@@ -239,14 +235,13 @@ class TestHeterogeneityProfiler:
 # F8: DOSAGE & STOICHIOMETRY
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestDosageAnalyzer:
 
     def test_healthy_batch_in_range(self, healthy_batch, spec):
         # Use wide windows so healthy batch passes
         analyzer = DosageAnalyzer(
-            therapeutic_windows={
-                pw: (-5.0, 5.0) for pw in spec.therapeutic_windows
-            },
+            therapeutic_windows={pw: (-5.0, 5.0) for pw in spec.therapeutic_windows},
         )
         result = analyzer.analyze(healthy_batch.pathway_scores)
         assert isinstance(result, DosageAnalysisResult)
@@ -270,8 +265,7 @@ class TestDosageAnalyzer:
         result = analyzer.analyze(injected.pathway_scores)
         # With such a tight window, nearly all cells should be outside
         pw_result = [
-            r for r in result.pathway_dosages
-            if r.pathway == "HALLMARK_INFLAMMATORY_RESPONSE"
+            r for r in result.pathway_dosages if r.pathway == "HALLMARK_INFLAMMATORY_RESPONSE"
         ][0]
         assert pw_result.n_cells_over + pw_result.n_cells_under > 0
 
@@ -359,11 +353,12 @@ class TestDosageAnalyzer:
         )
         result = analyzer.analyze(healthy_batch.pathway_scores)
         pw_result = [
-            r for r in result.pathway_dosages
-            if r.pathway == "HALLMARK_INFLAMMATORY_RESPONSE"
+            r for r in result.pathway_dosages if r.pathway == "HALLMARK_INFLAMMATORY_RESPONSE"
         ]
         assert len(pw_result) == 1
-        total = pw_result[0].n_cells_under + pw_result[0].n_cells_in_range + pw_result[0].n_cells_over
+        total = (
+            pw_result[0].n_cells_under + pw_result[0].n_cells_in_range + pw_result[0].n_cells_over
+        )
         assert total == 200
 
     def test_missing_pathway_ignored(self, healthy_batch):
@@ -379,6 +374,7 @@ class TestDosageAnalyzer:
 # ══════════════════════════════════════════════════════════════════════
 # INTEGRATION: Features work together on simulator data
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestFeatureIntegration:
 
@@ -401,9 +397,7 @@ class TestFeatureIntegration:
 
         # F8
         analyzer = DosageAnalyzer(
-            therapeutic_windows={
-                pw: (-5.0, 5.0) for pw in spec.therapeutic_windows
-            },
+            therapeutic_windows={pw: (-5.0, 5.0) for pw in spec.therapeutic_windows},
         )
         f8 = analyzer.analyze(batch.pathway_scores)
         assert f8.passed
@@ -415,11 +409,14 @@ class TestFeatureIntegration:
         injected = simulator.inject_combined(
             batch,
             defect_list=[
-                ("inject_offtarget", {
-                    "pathways": ["HALLMARK_APOPTOSIS"],
-                    "cell_fraction": 0.5,
-                    "activation_level": 0.9,
-                }),
+                (
+                    "inject_offtarget",
+                    {
+                        "pathways": ["HALLMARK_APOPTOSIS"],
+                        "cell_fraction": 0.5,
+                        "activation_level": 0.9,
+                    },
+                ),
                 ("inject_subpopulation", {"fraction": 0.2}),
             ],
         )

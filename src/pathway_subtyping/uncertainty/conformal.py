@@ -121,9 +121,7 @@ class ConformalPathwayPredictor:
         X_cal = np.asarray(X_cal)
         y_cal = np.asarray(y_cal)
         if len(y_cal) < 10:
-            raise ValueError(
-                "Need at least 10 calibration samples for a meaningful quantile"
-            )
+            raise ValueError("Need at least 10 calibration samples for a meaningful quantile")
 
         predictions = np.asarray(self.score_fn(X_cal))
 
@@ -131,9 +129,7 @@ class ConformalPathwayPredictor:
             nonconformity = np.abs(y_cal - predictions)
         else:  # classification
             if predictions.ndim != 2:
-                raise ValueError(
-                    "Classification score_fn must return (n, n_classes) probabilities"
-                )
+                raise ValueError("Classification score_fn must return (n, n_classes) probabilities")
             if labels is None:
                 labels = list(np.unique(y_cal))
             self._labels = np.asarray(labels)
@@ -153,7 +149,10 @@ class ConformalPathwayPredictor:
 
         logger.info(
             "[Conformal] calibrated: n=%d alpha=%.3f q=%.4f mode=%s",
-            n, self.alpha, self._quantile, self.mode,
+            n,
+            self.alpha,
+            self._quantile,
+            self.mode,
         )
         return self
 
@@ -214,7 +213,9 @@ class ConformalPathwayPredictor:
                 y_cmp = int(yi)
                 if ival.label_set is None:
                     continue
-                normalized = [int(lbl) if isinstance(lbl, (np.integer,)) else lbl for lbl in ival.label_set]
+                normalized = [
+                    int(lbl) if isinstance(lbl, (np.integer,)) else lbl for lbl in ival.label_set
+                ]
                 if y_cmp in normalized:
                     hits += 1
         return float(hits) / max(len(intervals), 1)

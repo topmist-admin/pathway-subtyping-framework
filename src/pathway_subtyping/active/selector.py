@@ -41,6 +41,7 @@ class SelectionStrategy(str, Enum):
 # Result type
 # --------------------------------------------------------------------------- #
 
+
 @dataclass
 class SelectionResult:
     """Outcome of an :class:`ActiveSampleSelector` run.
@@ -72,6 +73,7 @@ class SelectionResult:
 # Core algorithms
 # --------------------------------------------------------------------------- #
 
+
 def _categorical_entropy(probs: np.ndarray) -> np.ndarray:
     """Per-row Shannon entropy on a (n, k) probability matrix."""
     eps = 1e-12
@@ -100,6 +102,7 @@ def _greedy_k_center(features: np.ndarray, k: int, seed_idx: int = 0) -> np.ndar
 # --------------------------------------------------------------------------- #
 # Selector
 # --------------------------------------------------------------------------- #
+
 
 class ActiveSampleSelector:
     """Select informative samples to label under a fixed budget.
@@ -155,7 +158,11 @@ class ActiveSampleSelector:
             SelectionResult with the selected indices, per-sample
             scores, strategy, and budget.
         """
-        X = features.to_numpy(dtype=float) if isinstance(features, pd.DataFrame) else np.asarray(features, dtype=float)
+        X = (
+            features.to_numpy(dtype=float)
+            if isinstance(features, pd.DataFrame)
+            else np.asarray(features, dtype=float)
+        )
         n = len(X)
         if budget < 1:
             raise ValueError("budget must be >= 1")
@@ -185,9 +192,7 @@ class ActiveSampleSelector:
             selected_list: List[int] = [seed_idx]
             min_d = np.linalg.norm(X - X[seed_idx], axis=1)
             for _ in range(budget - 1):
-                d_norm = (
-                    (min_d - min_d.min()) / max(min_d.max() - min_d.min(), 1e-12)
-                )
+                d_norm = (min_d - min_d.min()) / max(min_d.max() - min_d.min(), 1e-12)
                 score = self.alpha * u_norm + (1.0 - self.alpha) * d_norm
                 score[selected_list] = -np.inf
                 next_idx = int(np.argmax(score))
@@ -201,15 +206,14 @@ class ActiveSampleSelector:
 
         score_series = pd.Series(
             scores,
-            index=(
-                features.index if isinstance(features, pd.DataFrame)
-                else pd.RangeIndex(n)
-            ),
+            index=(features.index if isinstance(features, pd.DataFrame) else pd.RangeIndex(n)),
             name="score",
         )
         logger.info(
             "[ActiveSampleSelector] strategy=%s budget=%d selected=%d",
-            self.strategy.value, budget, len(selected),
+            self.strategy.value,
+            budget,
+            len(selected),
         )
         return SelectionResult(
             selected_indices=np.asarray(selected),
@@ -228,9 +232,7 @@ class ActiveSampleSelector:
         if uncertainty_scores is not None:
             u = np.asarray(uncertainty_scores, dtype=float)
             if len(u) != n:
-                raise ValueError(
-                    f"uncertainty_scores has length {len(u)}; expected {n}"
-                )
+                raise ValueError(f"uncertainty_scores has length {len(u)}; expected {n}")
             return u
         if probs is None:
             raise ValueError(
@@ -239,7 +241,5 @@ class ActiveSampleSelector:
             )
         probs_arr = np.asarray(probs, dtype=float)
         if probs_arr.shape[0] != n:
-            raise ValueError(
-                f"probs has {probs_arr.shape[0]} rows; expected {n}"
-            )
+            raise ValueError(f"probs has {probs_arr.shape[0]} rows; expected {n}")
         return _categorical_entropy(probs_arr)

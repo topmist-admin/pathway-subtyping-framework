@@ -23,7 +23,7 @@ Research use only. Not for clinical decision-making.
 
 from .atac import ATACScorer, score_atac_pathways
 from .discordance import DiscordanceReport, flag_discordant_pathways
-from .fusion import FusionWeights, FusionResult, MultiOmicsFusion
+from .fusion import FusionResult, FusionWeights, MultiOmicsFusion
 from .proteomics import ProteomicsScorer, score_proteomics_pathways
 
 __all__ = [

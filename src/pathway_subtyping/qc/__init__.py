@@ -30,24 +30,6 @@ from .atlas import (
     AtlasEntry,
     CellMapping,
 )
-from .dosage import (
-    DosageAnalyzer,
-    DosageAnalysisResult,
-    DosageState,
-    PathwayDosageResult,
-    StoichiometryResult,
-)
-from .heterogeneity import (
-    HeterogeneityProfiler,
-    HeterogeneityResult,
-    SubpopulationInfo,
-)
-from .offtarget import (
-    ActivationClass,
-    OffTargetDetector,
-    OffTargetResult,
-    PathwayActivationResult,
-)
 
 # Workstream B — KG-dependent
 from .cascade import (
@@ -59,6 +41,13 @@ from .crosstalk import (
     CrosstalkDetector,
     CrosstalkResult,
     InterferenceEdge,
+)
+from .dosage import (
+    DosageAnalysisResult,
+    DosageAnalyzer,
+    DosageState,
+    PathwayDosageResult,
+    StoichiometryResult,
 )
 from .drift import (
     DriftDetector,
@@ -75,6 +64,17 @@ from .gates import (
     ReleaseDecision,
     ResolutionGate,
     ResolutionResult,
+)
+from .heterogeneity import (
+    HeterogeneityProfiler,
+    HeterogeneityResult,
+    SubpopulationInfo,
+)
+from .offtarget import (
+    ActivationClass,
+    OffTargetDetector,
+    OffTargetResult,
+    PathwayActivationResult,
 )
 from .stress import (
     StressFingerprinter,
@@ -94,27 +94,56 @@ from .tension import (
 
 __all__ = [
     # F1: Cascade Detection
-    "CascadeAnalyzer", "CascadeResult", "LayerScores",
+    "CascadeAnalyzer",
+    "CascadeResult",
+    "LayerScores",
     # F2: Temporal Tracking
-    "TemporalTracker", "TemporalResult", "PathwayTrajectory", "TrajectoryType",
+    "TemporalTracker",
+    "TemporalResult",
+    "PathwayTrajectory",
+    "TrajectoryType",
     # F3: Tension Scoring
-    "TensionScorer", "TensionResult",
+    "TensionScorer",
+    "TensionResult",
     # F4: Resolution Gates
-    "ResolutionGate", "ResolutionResult", "ReleaseDecision", "GateCheck",
+    "ResolutionGate",
+    "ResolutionResult",
+    "ReleaseDecision",
+    "GateCheck",
     # F5: Drift Detection
-    "DriftDetector", "DriftResult", "DriftMeasurement",
+    "DriftDetector",
+    "DriftResult",
+    "DriftMeasurement",
     # F6: Off-Target Detection
-    "OffTargetDetector", "OffTargetResult", "ActivationClass", "PathwayActivationResult",
+    "OffTargetDetector",
+    "OffTargetResult",
+    "ActivationClass",
+    "PathwayActivationResult",
     # F7: Batch Heterogeneity
-    "HeterogeneityProfiler", "HeterogeneityResult", "SubpopulationInfo",
+    "HeterogeneityProfiler",
+    "HeterogeneityResult",
+    "SubpopulationInfo",
     # F8: Dosage & Stoichiometry
-    "DosageAnalyzer", "DosageAnalysisResult", "DosageState", "PathwayDosageResult", "StoichiometryResult",
+    "DosageAnalyzer",
+    "DosageAnalysisResult",
+    "DosageState",
+    "PathwayDosageResult",
+    "StoichiometryResult",
     # F9: Crosstalk Detection
-    "CrosstalkDetector", "CrosstalkResult", "InterferenceEdge",
+    "CrosstalkDetector",
+    "CrosstalkResult",
+    "InterferenceEdge",
     # F10: Feedback Monitoring
-    "FeedbackMonitor", "FeedbackResult", "FeedbackStatus",
+    "FeedbackMonitor",
+    "FeedbackResult",
+    "FeedbackStatus",
     # F11: Stress Fingerprinting
-    "StressFingerprinter", "StressResult", "StressSignature",
+    "StressFingerprinter",
+    "StressResult",
+    "StressSignature",
     # F12: Atlas Comparison
-    "AtlasComparator", "AtlasComparisonResult", "AtlasEntry", "CellMapping",
+    "AtlasComparator",
+    "AtlasComparisonResult",
+    "AtlasEntry",
+    "CellMapping",
 ]

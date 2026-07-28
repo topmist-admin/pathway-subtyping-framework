@@ -248,7 +248,7 @@ class AtlasComparator:
         distances = np.zeros((n_cells, len(ref_names)))
         for i in range(len(ref_names)):
             diff = batch_matrix - ref_matrix[i]
-            distances[:, i] = np.sqrt(np.sum(diff ** 2, axis=1))
+            distances[:, i] = np.sqrt(np.sum(diff**2, axis=1))
 
         # Nearest reference per cell
         nearest_indices = np.argmin(distances, axis=1)

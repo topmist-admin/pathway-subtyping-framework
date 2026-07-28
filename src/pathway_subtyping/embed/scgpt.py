@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 # Official backend (opt-in)
 # --------------------------------------------------------------------------- #
 
+
 class OfficialSCGPTBackend(Embedder):
     """Production scGPT wrapper — requires ``pathway-subtyping[embed]``.
 
@@ -59,8 +60,8 @@ class OfficialSCGPTBackend(Embedder):
         if self._model is not None:
             return
         try:
-            import torch  # noqa: F401
             import scgpt  # type: ignore  # noqa: F401
+            import torch  # noqa: F401
         except ImportError as exc:  # pragma: no cover - optional dep
             raise ImportError(
                 "OfficialSCGPTBackend requires torch + scgpt. "
@@ -91,6 +92,7 @@ class OfficialSCGPTBackend(Embedder):
 # --------------------------------------------------------------------------- #
 # Deterministic fallback
 # --------------------------------------------------------------------------- #
+
 
 class FallbackSCGPTEmbedder(Embedder):
     """Deterministic PCA substitute for scGPT.
@@ -131,17 +133,14 @@ class FallbackSCGPTEmbedder(Embedder):
         self._components = Vt[:k]
         if k < self.embedding_dim:
             rng = np.random.default_rng(self.seed)
-            extra = rng.standard_normal(
-                (self.embedding_dim - k, centered.shape[1])
-            )
+            extra = rng.standard_normal((self.embedding_dim - k, centered.shape[1]))
             extra = np.linalg.qr(extra.T)[0].T
-            self._components = np.vstack(
-                [self._components, extra]
-            )[: self.embedding_dim]
+            self._components = np.vstack([self._components, extra])[: self.embedding_dim]
         self._fitted = True
         logger.info(
             "[FallbackSCGPTEmbedder] fit: embedding_dim=%d n_genes=%d",
-            self.embedding_dim, centered.shape[1],
+            self.embedding_dim,
+            centered.shape[1],
         )
         return self
 
@@ -168,6 +167,7 @@ class FallbackSCGPTEmbedder(Embedder):
 # --------------------------------------------------------------------------- #
 # High-level wrapper
 # --------------------------------------------------------------------------- #
+
 
 class scGPTEmbedder(Embedder):
     """Public scGPT interface — delegates to an :class:`Embedder` backend.

@@ -18,10 +18,10 @@ true value could be anywhere from 0.4 to 0.9." This module closes that gap.
 Research use only. Not for clinical decision-making.
 """
 
+from .bayesian_pathway import BayesianPathwayGMM, PosteriorSample
 from .bootstrap import BootstrapMSV, BootstrapResult
 from .calibration import CalibrationReport, brier_score, ece, reliability_curve
 from .conformal import ConformalInterval, ConformalPathwayPredictor
-from .bayesian_pathway import BayesianPathwayGMM, PosteriorSample
 
 __all__ = [
     "BootstrapMSV",

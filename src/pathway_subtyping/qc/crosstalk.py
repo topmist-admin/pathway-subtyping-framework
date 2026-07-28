@@ -100,9 +100,7 @@ class CrosstalkDetector:
                 if not shared:
                     continue
 
-                score, dominant = self._compute_competition(
-                    expression, pw_a, pw_b, shared
-                )
+                score, dominant = self._compute_competition(expression, pw_a, pw_b, shared)
 
                 edge = InterferenceEdge(
                     pathway_a=pw_a,

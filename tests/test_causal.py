@@ -21,10 +21,10 @@ from pathway_subtyping.causal import (
     invariance_pvalue,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Primitive
 # --------------------------------------------------------------------------- #
+
 
 class TestInvariancePvalue:
 
@@ -45,10 +45,12 @@ class TestInvariancePvalue:
         rng = np.random.default_rng(0)
         n_per = 120
         envs = np.repeat(["A", "B"], n_per)
-        residuals = np.concatenate([
-            rng.normal(0, 1.0, n_per),
-            rng.normal(2.5, 1.0, n_per),
-        ])
+        residuals = np.concatenate(
+            [
+                rng.normal(0, 1.0, n_per),
+                rng.normal(2.5, 1.0, n_per),
+            ]
+        )
         assert invariance_pvalue(residuals, envs) < 1e-6
 
     def test_constant_residuals_return_one(self):
@@ -60,6 +62,7 @@ class TestInvariancePvalue:
 # --------------------------------------------------------------------------- #
 # Predictor validation
 # --------------------------------------------------------------------------- #
+
 
 class TestValidation:
 
@@ -82,13 +85,17 @@ class TestValidation:
         predictor = InvariantPathwayPredictor()
         with pytest.raises(ValueError, match="same length"):
             predictor.fit(
-                X=X, y=y, target_name="Y", environments=["e1"],  # len 1 vs 2
+                X=X,
+                y=y,
+                target_name="Y",
+                environments=["e1"],  # len 1 vs 2
             )
 
 
 # --------------------------------------------------------------------------- #
 # Roadmap acceptance: identifiable-parent recall >= 0.7
 # --------------------------------------------------------------------------- #
+
 
 def _synthetic_causal_cohort(n_per_env: int = 300, seed: int = 0):
     """Two environments that differ in parent-variable distributions.
@@ -112,18 +119,34 @@ def _synthetic_causal_cohort(n_per_env: int = 300, seed: int = 0):
         # X3 is a noisy child of Y — correlates with Y but is not a parent
         X3 = 0.7 * Y + rng.standard_normal(n_per_env) * 0.4
         X4 = rng.standard_normal(n_per_env) + mu_x4
-        return pd.DataFrame({
-            "X1": X1, "X2": X2, "X3": X3, "X4": X4, "Y": Y,
-            "env": [env] * n_per_env,
-        })
+        return pd.DataFrame(
+            {
+                "X1": X1,
+                "X2": X2,
+                "X3": X3,
+                "X4": X4,
+                "Y": Y,
+                "env": [env] * n_per_env,
+            }
+        )
 
     df_a = generate(
-        "envA", mu_x1=0.0, mu_x2=0.0, sigma_x1=1.0, sigma_x2=1.0, mu_x4=0.0,
+        "envA",
+        mu_x1=0.0,
+        mu_x2=0.0,
+        sigma_x1=1.0,
+        sigma_x2=1.0,
+        mu_x4=0.0,
     )
     # envB shifts both mean and variance of the causal parents so that any
     # non-parent subset produces residuals with env-specific dispersion.
     df_b = generate(
-        "envB", mu_x1=2.0, mu_x2=-1.5, sigma_x1=2.0, sigma_x2=0.4, mu_x4=-2.0,
+        "envB",
+        mu_x1=2.0,
+        mu_x2=-1.5,
+        sigma_x1=2.0,
+        sigma_x2=0.4,
+        mu_x4=-2.0,
     )
     df = pd.concat([df_a, df_b], ignore_index=True)
     return df
@@ -203,13 +226,18 @@ class TestSingleEnvironmentEdgeCase:
     def test_single_env_returns_all_subsets_invariant(self):
         rng = np.random.default_rng(0)
         n = 80
-        X = pd.DataFrame({
-            "A": rng.standard_normal(n),
-            "B": rng.standard_normal(n),
-        })
+        X = pd.DataFrame(
+            {
+                "A": rng.standard_normal(n),
+                "B": rng.standard_normal(n),
+            }
+        )
         y = pd.Series(X["A"] * 0.5 + rng.normal(0, 0.1, n))
         report = InvariantPathwayPredictor(alpha=0.05, max_subset_size=2).fit(
-            X=X, y=y, target_name="Y", environments=["only"] * n,
+            X=X,
+            y=y,
+            target_name="Y",
+            environments=["only"] * n,
         )
         # With one environment, every subset trivially "passes" invariance
         # → identifiable parent set is the empty intersection

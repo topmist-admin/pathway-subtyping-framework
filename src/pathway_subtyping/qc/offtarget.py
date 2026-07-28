@@ -212,8 +212,9 @@ class OffTargetDetector:
         # Sort by severity: excluded violations first, then off-target
         results.sort(
             key=lambda r: (
-                0 if r.classification == ActivationClass.EXCLUDED_VIOLATION else
-                1 if r.classification == ActivationClass.OFF_TARGET else 2
+                0
+                if r.classification == ActivationClass.EXCLUDED_VIOLATION
+                else 1 if r.classification == ActivationClass.OFF_TARGET else 2
             )
         )
 

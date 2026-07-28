@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 # Official backend (opt-in)
 # --------------------------------------------------------------------------- #
 
+
 class OfficialNicheformerBackend(Embedder):
     """Production Nicheformer wrapper — requires ``pathway-subtyping[embed]``.
 
@@ -60,8 +61,8 @@ class OfficialNicheformerBackend(Embedder):
         if self._model is not None:
             return
         try:
-            import torch  # noqa: F401
             import nicheformer  # type: ignore  # noqa: F401
+            import torch  # noqa: F401
         except ImportError as exc:  # pragma: no cover - optional dep
             raise ImportError(
                 "OfficialNicheformerBackend requires torch + nicheformer. "
@@ -91,6 +92,7 @@ class OfficialNicheformerBackend(Embedder):
 # --------------------------------------------------------------------------- #
 # Deterministic fallback
 # --------------------------------------------------------------------------- #
+
 
 class FallbackNicheformerEmbedder(Embedder):
     """Deterministic PCA substitute for Nicheformer.
@@ -132,17 +134,14 @@ class FallbackNicheformerEmbedder(Embedder):
         self._components = Vt[:k]
         if k < self.embedding_dim:
             rng = np.random.default_rng(self.seed)
-            extra = rng.standard_normal(
-                (self.embedding_dim - k, centered.shape[1])
-            )
+            extra = rng.standard_normal((self.embedding_dim - k, centered.shape[1]))
             extra = np.linalg.qr(extra.T)[0].T
-            self._components = np.vstack(
-                [self._components, extra]
-            )[: self.embedding_dim]
+            self._components = np.vstack([self._components, extra])[: self.embedding_dim]
         self._fitted = True
         logger.info(
             "[FallbackNicheformerEmbedder] fit: dim=%d n_genes=%d",
-            self.embedding_dim, centered.shape[1],
+            self.embedding_dim,
+            centered.shape[1],
         )
         return self
 
@@ -169,6 +168,7 @@ class FallbackNicheformerEmbedder(Embedder):
 # --------------------------------------------------------------------------- #
 # High-level wrapper
 # --------------------------------------------------------------------------- #
+
 
 class NicheformerEmbedder(Embedder):
     """Public Nicheformer interface — delegates to a backend.
@@ -208,9 +208,7 @@ class NicheformerEmbedder(Embedder):
         with modality labels to produce a joint-frame score matrix.
         """
         if list(dissociated.columns) != list(spatial.columns):
-            raise ValueError(
-                "dissociated and spatial inputs must share the same gene columns"
-            )
+            raise ValueError("dissociated and spatial inputs must share the same gene columns")
         diss = self.embed(dissociated)
         spat = self.embed(spatial)
         return diss, spat

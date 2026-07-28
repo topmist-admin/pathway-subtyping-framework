@@ -47,6 +47,7 @@ class PerturbationMode(str, Enum):
 # Backend ABC + official stub
 # --------------------------------------------------------------------------- #
 
+
 class GeneformerBackend:
     """Abstract base class for Geneformer inference backends.
 
@@ -120,9 +121,7 @@ class OfficialBackend(GeneformerBackend):
         # expression bytes), so zeroed-gene perturbation inputs produce a
         # distinct key from the baseline automatically. Reruns with the
         # same cohort hit the cache and skip the 40-minute forward pass.
-        self.cache_dir: Optional[Path] = (
-            Path(cache_dir).expanduser() if cache_dir else None
-        )
+        self.cache_dir: Optional[Path] = Path(cache_dir).expanduser() if cache_dir else None
         self._model: Any = None
         self._torch: Any = None
         self._gene_median: Optional[Dict[str, float]] = None
@@ -153,17 +152,11 @@ class OfficialBackend(GeneformerBackend):
         self._torch = torch
         geneformer_pkg = Path(geneformer.__file__).parent
 
-        with open(
-            geneformer_pkg / "gene_median_dictionary_gc104M.pkl", "rb"
-        ) as f:
+        with open(geneformer_pkg / "gene_median_dictionary_gc104M.pkl", "rb") as f:
             self._gene_median = pickle.load(f)
-        with open(
-            geneformer_pkg / "token_dictionary_gc104M.pkl", "rb"
-        ) as f:
+        with open(geneformer_pkg / "token_dictionary_gc104M.pkl", "rb") as f:
             self._token_dict = pickle.load(f)
-        with open(
-            geneformer_pkg / "ensembl_mapping_dict_gc104M.pkl", "rb"
-        ) as f:
+        with open(geneformer_pkg / "ensembl_mapping_dict_gc104M.pkl", "rb") as f:
             self._gene_mapping = pickle.load(f)
 
         self._cls_token_id = self._token_dict["<cls>"]
@@ -189,7 +182,8 @@ class OfficialBackend(GeneformerBackend):
 
     # ----------------------------------------------------- preprocessing ---
     def _symbols_to_ensembl(
-        self, symbols: List[str],
+        self,
+        symbols: List[str],
     ) -> Tuple[List[str], List[int]]:
         """Map a list of gene symbols to Ensembl IDs, filtering unmapped.
 
@@ -212,7 +206,9 @@ class OfficialBackend(GeneformerBackend):
         return ens, keep
 
     def _rank_tokenize_one(
-        self, raw_counts: np.ndarray, ensembl_ids: List[str],
+        self,
+        raw_counts: np.ndarray,
+        ensembl_ids: List[str],
         target_sum: float = 10_000.0,
     ) -> List[int]:
         """Rank-based tokenization mirroring Geneformer's tokenizer.
@@ -249,7 +245,8 @@ class OfficialBackend(GeneformerBackend):
         return [self._cls_token_id] + tokens + [self._eos_token_id]
 
     def _tokenize_df(
-        self, expression: pd.DataFrame,
+        self,
+        expression: pd.DataFrame,
     ) -> Tuple[List[List[int]], List[int]]:
         """Convert a samples x genes DataFrame to per-sample token sequences.
 
@@ -288,7 +285,9 @@ class OfficialBackend(GeneformerBackend):
             batch = token_seqs[start : start + self.forward_batch_size]
             max_len = max(len(s) for s in batch)
             input_ids = np.full(
-                (len(batch), max_len), self._pad_token_id, dtype=np.int64,
+                (len(batch), max_len),
+                self._pad_token_id,
+                dtype=np.int64,
             )
             attn = np.zeros((len(batch), max_len), dtype=np.int64)
             for i, seq in enumerate(batch):
@@ -298,7 +297,8 @@ class OfficialBackend(GeneformerBackend):
             attn_t = torch.as_tensor(attn, device=self.device)
             with torch.no_grad():
                 res = self._model(
-                    input_ids=input_ids_t, attention_mask=attn_t,
+                    input_ids=input_ids_t,
+                    attention_mask=attn_t,
                 )
             hidden = res.last_hidden_state.cpu().numpy()  # (b, L, H)
             if self.emb_mode == "cls":
@@ -312,20 +312,19 @@ class OfficialBackend(GeneformerBackend):
     # ----------------------------------------------- content-hash cache ---
     def _backend_id(self) -> str:
         """Stable identifier that scopes cache keys to checkpoint + config."""
-        checkpoint_tag = (
-            Path(self.model_directory).name if self.model_directory else "none"
-        )
+        checkpoint_tag = Path(self.model_directory).name if self.model_directory else "none"
         return (
-            f"geneformer:official:{checkpoint_tag}"
-            f":{self.emb_mode}:maxlen{self.max_input_len}"
+            f"geneformer:official:{checkpoint_tag}" f":{self.emb_mode}:maxlen{self.max_input_len}"
         )
 
     def _cache_lookup(
-        self, expression: pd.DataFrame,
+        self,
+        expression: pd.DataFrame,
     ) -> Optional[np.ndarray]:
         if self.cache_dir is None:
             return None
         from pathway_subtyping.embed.cache import cache_key_for
+
         key = cache_key_for(
             backend=self._backend_id(),
             expression=expression,
@@ -334,17 +333,21 @@ class OfficialBackend(GeneformerBackend):
         if path.exists():
             logger.info(
                 "[OfficialBackend] cache hit: %s… n=%d",
-                key[:12], len(expression),
+                key[:12],
+                len(expression),
             )
             return np.load(path)
         return None
 
     def _cache_store(
-        self, expression: pd.DataFrame, arr: np.ndarray,
+        self,
+        expression: pd.DataFrame,
+        arr: np.ndarray,
     ) -> None:
         if self.cache_dir is None:
             return
         from pathway_subtyping.embed.cache import cache_key_for
+
         key = cache_key_for(
             backend=self._backend_id(),
             expression=expression,
@@ -353,7 +356,9 @@ class OfficialBackend(GeneformerBackend):
         np.save(self.cache_dir / f"{key}.npy", arr)
         logger.info(
             "[OfficialBackend] cache stored: %s… n=%d d=%d",
-            key[:12], arr.shape[0], arr.shape[1],
+            key[:12],
+            arr.shape[0],
+            arr.shape[1],
         )
 
     # ------------------------------------------------------ public API ---
@@ -394,6 +399,7 @@ class OfficialBackend(GeneformerBackend):
 # --------------------------------------------------------------------------- #
 # Deterministic fallback
 # --------------------------------------------------------------------------- #
+
 
 class FallbackPerturber(GeneformerBackend):
     """Deterministic PCA-based substitute for Geneformer.
@@ -438,17 +444,14 @@ class FallbackPerturber(GeneformerBackend):
         self._components = Vt[:k]
         if k < self.embedding_dim:
             rng = np.random.default_rng(self.seed)
-            extra = rng.standard_normal(
-                (self.embedding_dim - k, centered.shape[1])
-            )
+            extra = rng.standard_normal((self.embedding_dim - k, centered.shape[1]))
             extra = np.linalg.qr(extra.T)[0].T
-            self._components = np.vstack(
-                [self._components, extra]
-            )[: self.embedding_dim]
+            self._components = np.vstack([self._components, extra])[: self.embedding_dim]
         self._fitted = True
         logger.info(
             "[FallbackPerturber] fitted: embedding_dim=%d n_genes=%d",
-            self.embedding_dim, centered.shape[1],
+            self.embedding_dim,
+            centered.shape[1],
         )
         return self
 
@@ -492,6 +495,7 @@ class FallbackPerturber(GeneformerBackend):
 # --------------------------------------------------------------------------- #
 # High-level wrapper
 # --------------------------------------------------------------------------- #
+
 
 @dataclass
 class PerturbationResult:

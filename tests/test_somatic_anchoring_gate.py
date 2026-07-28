@@ -37,8 +37,10 @@ class TestSomaticAlignmentCore:
     def test_driver_anchors_random_does_not(self):
         clusters, braf, rnd = self._scenario()
         res = somatic_alignment(
-            clusters, {"BRAF_V600E": braf, "random": rnd},
-            cramers_v_min=0.30, alpha=0.05,
+            clusters,
+            {"BRAF_V600E": braf, "random": rnd},
+            cramers_v_min=0.30,
+            alpha=0.05,
         )
         assert res["passed"] is True
         assert "BRAF_V600E" in res["anchored_strata"]
@@ -51,9 +53,7 @@ class TestSomaticAlignmentCore:
     def test_missing_values_dropped_per_stratum(self):
         clusters = np.array([0] * 50 + [1] * 50)
         # MSI known for only half the tumors; aligned where known
-        msi = np.array(
-            ["high" if c == 0 else "low" for c in clusters], dtype=object
-        )
+        msi = np.array(["high" if c == 0 else "low" for c in clusters], dtype=object)
         msi[25:75] = None  # unknown for a middle block
         res = somatic_alignment(clusters, {"MSI": msi})
         assert res["per_stratum"]["MSI"]["n"] == 50  # only the non-missing tumors
@@ -110,12 +110,8 @@ class TestSomaticAnchoringGate:
 
         rng = np.random.default_rng(20260716)
         n = 60
-        pathway_scores = pd.DataFrame(
-            rng.normal(size=(n, 8)), columns=[f"PW{i}" for i in range(8)]
-        )
-        gene_burdens = pd.DataFrame(
-            rng.normal(size=(n, 12)), columns=[f"G{i}" for i in range(12)]
-        )
+        pathway_scores = pd.DataFrame(rng.normal(size=(n, 8)), columns=[f"PW{i}" for i in range(8)])
+        gene_burdens = pd.DataFrame(rng.normal(size=(n, 12)), columns=[f"G{i}" for i in range(12)])
         pathways = {f"PW{i}": [f"G{i}", f"G{(i + 1) % 12}"] for i in range(8)}
         clusters = np.array([0] * 30 + [1] * 30)
         braf = np.where(clusters == 0, "mut", "wt")

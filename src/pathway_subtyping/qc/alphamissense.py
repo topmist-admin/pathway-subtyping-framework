@@ -67,9 +67,7 @@ class AlphaMissenseScorer:
 
     @classmethod
     def empty(cls) -> "AlphaMissenseScorer":
-        return cls(
-            table=pd.DataFrame(columns=list(REQUIRED_SCORE_COLS))
-        )
+        return cls(table=pd.DataFrame(columns=list(REQUIRED_SCORE_COLS)))
 
     # -------------------------------------------------------------- validate ---
     def __post_init__(self) -> None:
@@ -81,15 +79,13 @@ class AlphaMissenseScorer:
                 )
         # Normalise am_score into [0, 1] floats
         self.table = self.table.copy()
-        self.table["am_score"] = pd.to_numeric(
-            self.table["am_score"], errors="coerce"
-        ).clip(0.0, 1.0)
+        self.table["am_score"] = pd.to_numeric(self.table["am_score"], errors="coerce").clip(
+            0.0, 1.0
+        )
         self._by_variant: Dict[str, float] = dict(
             zip(self.table["variant_id"], self.table["am_score"])
         )
-        logger.info(
-            "[AlphaMissenseScorer] loaded %d variant scores", len(self._by_variant)
-        )
+        logger.info("[AlphaMissenseScorer] loaded %d variant scores", len(self._by_variant))
 
     # -------------------------------------------------------------- lookup ---
     def lookup(self, variant_id: str) -> float:

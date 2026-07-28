@@ -35,12 +35,11 @@ _DNA_ALPHABET = "ACGT"
 # Helpers
 # --------------------------------------------------------------------------- #
 
+
 def _validate_dna(sequence: str) -> None:
     bad = set(sequence.upper()) - set(_DNA_ALPHABET + "N")
     if bad:
-        raise ValueError(
-            f"sequence contains non-DNA characters: {sorted(bad)[:5]}"
-        )
+        raise ValueError(f"sequence contains non-DNA characters: {sorted(bad)[:5]}")
 
 
 def _hamming_similarity(guide: str, candidate: str) -> float:
@@ -66,6 +65,7 @@ def _hamming_similarity(guide: str, candidate: str) -> float:
 # --------------------------------------------------------------------------- #
 # Result type
 # --------------------------------------------------------------------------- #
+
 
 @dataclass
 class OffTargetScore:
@@ -109,6 +109,7 @@ class OffTargetScore:
 # --------------------------------------------------------------------------- #
 # Backend interface
 # --------------------------------------------------------------------------- #
+
 
 class OffTargetBackend:
     """Abstract sequence-level off-target backend."""
@@ -176,8 +177,8 @@ class Evo2OffTargetScorer(OffTargetBackend):
         if self._model is not None:
             return
         try:
-            import torch  # noqa: F401
             import evo2  # type: ignore  # noqa: F401
+            import torch  # noqa: F401
         except ImportError as exc:  # pragma: no cover - optional dep
             raise ImportError(
                 "Evo2OffTargetScorer requires torch + evo2. "
@@ -246,6 +247,7 @@ class SimulatedEvo2Backend(OffTargetBackend):
 # --------------------------------------------------------------------------- #
 # Benchmarking utility
 # --------------------------------------------------------------------------- #
+
 
 def auroc(scores: Sequence[float], labels: Sequence[int]) -> float:
     """Area under the ROC curve (binary ``labels`` in {0, 1}).

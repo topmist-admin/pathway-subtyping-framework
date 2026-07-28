@@ -128,15 +128,23 @@ class BootstrapMSV:
         point = np.asarray(score_fn(X))
         logger.info(
             "[BootstrapMSV] point shape=%s, n_bootstrap=%d, per_cell=%s",
-            point.shape, self.n_bootstrap, per_cell,
+            point.shape,
+            self.n_bootstrap,
+            per_cell,
         )
 
         if per_cell:
             samples, cell_counts = self._run_per_cell(
-                X, score_fn, n_cells, rng, point.shape,
+                X,
+                score_fn,
+                n_cells,
+                rng,
+                point.shape,
             )
             lower, upper = self._percentile_per_cell(
-                samples, cell_counts, self.ci_level,
+                samples,
+                cell_counts,
+                self.ci_level,
             )
         else:
             samples = self._run_stat(X, score_fn, n_cells, rng, point.shape)
@@ -177,9 +185,7 @@ class BootstrapMSV:
                 _, samples[b] = one_replicate(int(s))
         else:
             with ThreadPoolExecutor(max_workers=self.n_jobs) as pool:
-                futures = {
-                    pool.submit(one_replicate, int(s)): b for b, s in enumerate(seeds)
-                }
+                futures = {pool.submit(one_replicate, int(s)): b for b, s in enumerate(seeds)}
                 for fut in as_completed(futures):
                     b = futures[fut]
                     _, samples[b] = fut.result()
@@ -236,9 +242,7 @@ class BootstrapMSV:
 
         # Reshape per-cell accumulator into (n_bootstrap_max, n_cells, *extra)
         max_draws = int(cell_counts.max()) if len(cell_counts) else 0
-        padded = np.full(
-            (max_draws, n_cells, *extra_shape), fill_value=np.nan, dtype=float
-        )
+        padded = np.full((max_draws, n_cells, *extra_shape), fill_value=np.nan, dtype=float)
         for cell_id, vals in enumerate(per_cell_values):
             for k, v in enumerate(vals):
                 padded[k, cell_id] = v
@@ -270,6 +274,7 @@ class BootstrapMSV:
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
+
 
 def _index(X: ArrayLike, idx: np.ndarray) -> ArrayLike:
     """Index with replacement; works for DataFrame and ndarray."""

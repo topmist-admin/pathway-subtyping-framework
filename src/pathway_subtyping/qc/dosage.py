@@ -148,9 +148,7 @@ class DosageAnalyzer:
         self.toxicity_weights = toxicity_weights or {}
         self.max_violations = max_violations
 
-    def define_therapeutic_window(
-        self, pathway: str, window_min: float, window_max: float
-    ) -> None:
+    def define_therapeutic_window(self, pathway: str, window_min: float, window_max: float) -> None:
         """Define or update a therapeutic window for a pathway."""
         self.therapeutic_windows[pathway] = (window_min, window_max)
 
@@ -246,8 +244,7 @@ class DosageAnalyzer:
         # Sort dosages: OVER first (most dangerous), then UNDER, then IN_RANGE
         dosages.sort(
             key=lambda d: (
-                0 if d.state == DosageState.OVER else
-                1 if d.state == DosageState.UNDER else 2
+                0 if d.state == DosageState.OVER else 1 if d.state == DosageState.UNDER else 2
             )
         )
 

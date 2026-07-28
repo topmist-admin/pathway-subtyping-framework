@@ -47,10 +47,12 @@ try:
     from .config import GNNConfig
     from .model import GNNOutput, OntologyAwareGNN
 
-    __all__.extend([
-        "GNNConfig",
-        "OntologyAwareGNN",
-        "GNNOutput",
-    ])
+    __all__.extend(
+        [
+            "GNNConfig",
+            "OntologyAwareGNN",
+            "GNNOutput",
+        ]
+    )
 except ImportError:
     pass

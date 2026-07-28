@@ -17,8 +17,8 @@ import pytest
 from pathway_subtyping.knowledge_graph.builder import KnowledgeGraph
 from pathway_subtyping.knowledge_graph.schema import EdgeType, NodeType
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def signaling_kg():
@@ -81,6 +81,7 @@ def ppi_only_kg():
 
 # ── Pathway Gene Extraction ──────────────────────────────────────────
 
+
 class TestGetPathwayGenes:
 
     def test_returns_pathway_genes(self, signaling_kg):
@@ -98,6 +99,7 @@ class TestGetPathwayGenes:
 
 
 # ── Pathway Subgraph ─────────────────────────────────────────────────
+
 
 class TestGetPathwaySubgraph:
 
@@ -119,6 +121,7 @@ class TestGetPathwaySubgraph:
 
 
 # ── Directed Edge Filtering ──────────────────────────────────────────
+
 
 class TestDirectedEdges:
 
@@ -143,6 +146,7 @@ class TestDirectedEdges:
 
 # ── In/Out Degree ─────────────────────────────────────────────────────
 
+
 class TestDegree:
 
     def test_in_degree_upstream(self, signaling_kg):
@@ -163,7 +167,9 @@ class TestDegree:
     def test_out_degree_downstream(self, signaling_kg):
         gene_set = set(signaling_kg.get_pathway_genes("MAPK_PATHWAY"))
         # TF1 has no outgoing edges to pathway genes
-        assert signaling_kg.get_out_degree("TF1", EdgeType.GENE_REGULATES, within_nodes=gene_set) == 0
+        assert (
+            signaling_kg.get_out_degree("TF1", EdgeType.GENE_REGULATES, within_nodes=gene_set) == 0
+        )
 
     def test_degree_nonexistent_node(self, signaling_kg):
         assert signaling_kg.get_in_degree("NONEXISTENT") == 0
@@ -171,6 +177,7 @@ class TestDegree:
 
 
 # ── Pathway Gene Partitioning ─────────────────────────────────────────
+
 
 class TestPartitionPathwayGenes:
 
@@ -210,6 +217,7 @@ class TestPartitionPathwayGenes:
 
 # ── Topological Sort ──────────────────────────────────────────────────
 
+
 class TestTopologicalSort:
 
     def test_topological_order(self, signaling_kg):
@@ -228,6 +236,7 @@ class TestTopologicalSort:
 
 
 # ── Cascade Path Finding ─────────────────────────────────────────────
+
 
 class TestCascadePaths:
 
@@ -249,15 +258,18 @@ class TestCascadePaths:
 
 # ── GENE_REGULATES Edge Type ──────────────────────────────────────────
 
+
 class TestGeneRegulatesEdge:
 
     def test_gene_regulates_is_directed(self):
         from pathway_subtyping.knowledge_graph.schema import EDGE_TYPE_METADATA
+
         meta = EDGE_TYPE_METADATA.get(EdgeType.GENE_REGULATES, {})
         assert meta.get("symmetric") is False
 
     def test_gene_regulates_in_schema(self):
         from pathway_subtyping.knowledge_graph.schema import GraphSchema
+
         schema = GraphSchema.default_schema()
         assert EdgeType.GENE_REGULATES in schema.edge_types
 
@@ -270,6 +282,7 @@ class TestGeneRegulatesEdge:
 
 
 # ── Shared Genes & Crosstalk ─────────────────────────────────────────
+
 
 class TestCrosstalk:
 
@@ -315,10 +328,12 @@ class TestCrosstalk:
 
 # ── KnowledgeGraphBuilder Signaling Edges ─────────────────────────────
 
+
 class TestBuilderSignalingEdges:
 
     def test_add_signaling_edges(self):
         from pathway_subtyping.knowledge_graph.builder import KnowledgeGraphBuilder
+
         builder = KnowledgeGraphBuilder()
         builder.add_genes(["RAS", "RAF", "MEK"])
         builder.add_signaling_edges([("RAS", "RAF"), ("RAF", "MEK")])
@@ -330,23 +345,31 @@ class TestBuilderSignalingEdges:
 
     def test_add_signaling_edges_from_dict(self):
         from pathway_subtyping.knowledge_graph.builder import KnowledgeGraphBuilder
+
         builder = KnowledgeGraphBuilder()
         builder.add_genes(["A", "B", "C", "D"])
-        builder.add_signaling_edges_from_dict({
-            "MAPK": [("A", "B"), ("B", "C")],
-            "PI3K": [("C", "D")],
-        })
+        builder.add_signaling_edges_from_dict(
+            {
+                "MAPK": [("A", "B"), ("B", "C")],
+                "PI3K": [("C", "D")],
+            }
+        )
         kg = builder.build()
         assert kg.has_edge("A", "B", EdgeType.GENE_REGULATES)
         assert kg.has_edge("C", "D", EdgeType.GENE_REGULATES)
 
     def test_signaling_edges_with_pathways(self):
         from pathway_subtyping.knowledge_graph.builder import KnowledgeGraphBuilder
+
         builder = KnowledgeGraphBuilder()
         builder.add_pathways_from_dict({"MAPK": ["RAS", "RAF", "MEK", "ERK"]})
-        builder.add_signaling_edges([
-            ("RAS", "RAF"), ("RAF", "MEK"), ("MEK", "ERK"),
-        ])
+        builder.add_signaling_edges(
+            [
+                ("RAS", "RAF"),
+                ("RAF", "MEK"),
+                ("MEK", "ERK"),
+            ]
+        )
         kg = builder.build()
 
         # Should partition correctly
@@ -356,6 +379,7 @@ class TestBuilderSignalingEdges:
 
     def test_clear_resets_signaling(self):
         from pathway_subtyping.knowledge_graph.builder import KnowledgeGraphBuilder
+
         builder = KnowledgeGraphBuilder()
         builder.add_signaling_edges([("A", "B")])
         builder.clear()

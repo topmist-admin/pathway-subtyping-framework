@@ -26,8 +26,8 @@ from pathway_subtyping.qc.testing.simulator import (
     StressorType,
 )
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def simulator():
@@ -56,6 +56,7 @@ def healthy_batch(simulator, spec):
 
 
 # ── Healthy Batch ─────────────────────────────────────────────────────
+
 
 class TestHealthyBatch:
 
@@ -109,12 +110,11 @@ class TestHealthyBatch:
         sim2 = ManufacturingSimulator(seed=123)
         b1 = sim1.generate_healthy_batch(n_cells=20)
         b2 = sim2.generate_healthy_batch(n_cells=20)
-        np.testing.assert_array_almost_equal(
-            b1.expression.values, b2.expression.values
-        )
+        np.testing.assert_array_almost_equal(b1.expression.values, b2.expression.values)
 
 
 # ── Injection Methods ─────────────────────────────────────────────────
+
 
 class TestStalledCascades:
 
@@ -135,30 +135,21 @@ class TestStalledCascades:
             severity=0.9,
         )
         # Expression should differ
-        assert not np.allclose(
-            healthy_batch.expression.values, injected.expression.values
-        )
+        assert not np.allclose(healthy_batch.expression.values, injected.expression.values)
 
 
 class TestTemporalDrift:
 
     def test_returns_list_of_passages(self, simulator, healthy_batch):
-        passages = simulator.inject_temporal_drift(
-            healthy_batch, n_passages=5, drift_rate=0.03
-        )
+        passages = simulator.inject_temporal_drift(healthy_batch, n_passages=5, drift_rate=0.03)
         assert len(passages) == 6  # baseline + 5 passages
         assert isinstance(passages[0], InjectedBatch)
 
     def test_drift_increases_over_passages(self, simulator, healthy_batch):
-        passages = simulator.inject_temporal_drift(
-            healthy_batch, n_passages=5, drift_rate=0.05
-        )
+        passages = simulator.inject_temporal_drift(healthy_batch, n_passages=5, drift_rate=0.05)
         # Later passages should differ more from baseline
         baseline = passages[0].pathway_scores.values
-        diffs = [
-            np.abs(p.pathway_scores.values - baseline).mean()
-            for p in passages[1:]
-        ]
+        diffs = [np.abs(p.pathway_scores.values - baseline).mean() for p in passages[1:]]
         # Generally increasing (allow some noise)
         assert diffs[-1] > diffs[0]
 
@@ -185,9 +176,7 @@ class TestOfftarget:
             activation_level=0.9,
         )
         # Z-scored mean won't show absolute difference, but raw expression will
-        assert not np.allclose(
-            healthy_batch.expression.values, injected.expression.values
-        )
+        assert not np.allclose(healthy_batch.expression.values, injected.expression.values)
 
     def test_metadata_correct(self, simulator, healthy_batch):
         injected = simulator.inject_offtarget(
@@ -226,9 +215,7 @@ class TestOverdose:
 class TestSubpopulation:
 
     def test_injects_deviant_fraction(self, simulator, healthy_batch):
-        injected = simulator.inject_subpopulation(
-            healthy_batch, fraction=0.15
-        )
+        injected = simulator.inject_subpopulation(healthy_batch, fraction=0.15)
         n_affected = injected.affected_mask.sum()
         expected = int(100 * 0.15)
         assert abs(n_affected - expected) <= 2
@@ -298,18 +285,14 @@ class TestStress:
 
     def test_all_stressor_types(self, simulator, healthy_batch):
         for stressor in StressorType:
-            injected = simulator.inject_stress(
-                healthy_batch, stressor=stressor, severity=0.5
-            )
+            injected = simulator.inject_stress(healthy_batch, stressor=stressor, severity=0.5)
             assert len(injected.defect_metadata) > 0
 
 
 class TestAtlasDrift:
 
     def test_drift_shifts_expression(self, simulator, healthy_batch):
-        injected = simulator.inject_atlas_drift(
-            healthy_batch, drift_distance=0.7
-        )
+        injected = simulator.inject_atlas_drift(healthy_batch, drift_distance=0.7)
         assert all(l.affected for l in injected.cell_labels)
         assert injected.defect_metadata[-1].defect_type == DefectType.ATLAS_DRIFT
 
@@ -327,21 +310,28 @@ class TestCombinedInjection:
         injected = simulator.inject_combined(
             healthy_batch,
             defect_list=[
-                ("inject_offtarget", {
-                    "pathways": ["HALLMARK_APOPTOSIS"],
-                    "cell_fraction": 0.2,
-                    "activation_level": 0.5,
-                }),
-                ("inject_stress", {
-                    "stressor": StressorType.HYPOXIA,
-                    "severity": 0.5,
-                }),
+                (
+                    "inject_offtarget",
+                    {
+                        "pathways": ["HALLMARK_APOPTOSIS"],
+                        "cell_fraction": 0.2,
+                        "activation_level": 0.5,
+                    },
+                ),
+                (
+                    "inject_stress",
+                    {
+                        "stressor": StressorType.HYPOXIA,
+                        "severity": 0.5,
+                    },
+                ),
             ],
         )
         assert len(injected.defect_metadata) >= 2
 
 
 # ── Data Classes ──────────────────────────────────────────────────────
+
 
 class TestDataClasses:
 
@@ -373,10 +363,12 @@ class TestDataClasses:
 
 # ── Orthogonality Matrix ─────────────────────────────────────────────
 
+
 class TestOrthogonalityMatrix:
 
     def test_matrix_runs_with_stubs(self):
         from pathway_subtyping.qc.testing.orthogonality import OrthogonalityMatrix
+
         ortho = OrthogonalityMatrix(seed=42)
         result = ortho.run(n_trials=2, severity=0.5, n_cells=30)
         assert result.matrix.shape[0] == len(DefectType)
@@ -388,6 +380,7 @@ class TestOrthogonalityMatrix:
             FeatureDetection,
             OrthogonalityMatrix,
         )
+
         ortho = OrthogonalityMatrix(seed=42)
 
         # Register a detector that always fires
@@ -401,12 +394,14 @@ class TestOrthogonalityMatrix:
 
     def test_invalid_feature_id_raises(self):
         from pathway_subtyping.qc.testing.orthogonality import OrthogonalityMatrix
+
         ortho = OrthogonalityMatrix(seed=42)
         with pytest.raises(ValueError, match="Unknown feature ID"):
             ortho.register_detector("F99_nonexistent", lambda b: None)
 
 
 # ── Severity Titration ────────────────────────────────────────────────
+
 
 class TestSeverityTitration:
 
@@ -419,16 +414,15 @@ class TestSeverityTitration:
         # Register a detector that fires above severity 0.5
         def threshold_detector(batch):
             # Check if any defect metadata has severity > 0.4
-            detected = any(
-                m.severity > 0.4 for m in batch.defect_metadata
-            )
+            detected = any(m.severity > 0.4 for m in batch.defect_metadata)
             return FeatureDetection(
                 feature_id="F6_offtarget", detected=detected, score=1.0 if detected else 0.0
             )
 
         titration.register_detector("F6_offtarget", threshold_detector)
         result = titration.run(
-            n_trials=3, n_cells=30,
+            n_trials=3,
+            n_cells=30,
             defect_types=[DefectType.OFFTARGET],
         )
         assert len(result.curves) == 1
@@ -439,12 +433,14 @@ class TestSeverityTitration:
 
 # ── Scenarios ─────────────────────────────────────────────────────────
 
+
 class TestScenarios:
 
     def test_cart_scenario_runs(self):
         from pathway_subtyping.qc.testing.scenarios.cart_manufacturing import (
             CARTManufacturingScenario,
         )
+
         scenario = CARTManufacturingScenario(seed=42)
         report = scenario.run()
         assert report.scenario_name == "CARTManufacturingScenario"
@@ -454,6 +450,7 @@ class TestScenarios:
         from pathway_subtyping.qc.testing.scenarios.passage_stability import (
             PassageStabilityScenario,
         )
+
         scenario = PassageStabilityScenario(seed=42)
         report = scenario.run()
         assert report.scenario_name == "PassageStabilityScenario"
@@ -466,6 +463,7 @@ class TestScenarios:
         from pathway_subtyping.qc.testing.scenarios.report_validator import (
             ReportValidator,
         )
+
         scenario = CARTManufacturingScenario(seed=42)
         report = scenario.run()
         validator = ReportValidator()

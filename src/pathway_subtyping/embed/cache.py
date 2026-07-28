@@ -45,6 +45,7 @@ logger = logging.getLogger(__name__)
 # Hashing
 # --------------------------------------------------------------------------- #
 
+
 def _hash_expression(expression: pd.DataFrame) -> str:
     """Deterministic hash over the expression content.
 
@@ -57,9 +58,7 @@ def _hash_expression(expression: pd.DataFrame) -> str:
     h.update(b"|")
     h.update(str(list(expression.index)).encode("utf-8"))
     h.update(b"|")
-    arr = np.ascontiguousarray(
-        expression.to_numpy(dtype=float), dtype=np.float64
-    )
+    arr = np.ascontiguousarray(expression.to_numpy(dtype=float), dtype=np.float64)
     h.update(arr.tobytes())
     return h.hexdigest()
 
@@ -83,15 +82,14 @@ def cache_key_for(
     h.update(_hash_expression(expression).encode("utf-8"))
     if extra is not None:
         h.update(b"|")
-        h.update(
-            json.dumps(extra, sort_keys=True, default=str).encode("utf-8")
-        )
+        h.update(json.dumps(extra, sort_keys=True, default=str).encode("utf-8"))
     return h.hexdigest()
 
 
 # --------------------------------------------------------------------------- #
 # On-disk cache
 # --------------------------------------------------------------------------- #
+
 
 class EmbeddingCache:
     """Simple filesystem cache for :class:`EmbeddingResult` objects.
@@ -145,7 +143,9 @@ class EmbeddingCache:
             json.dump(payload, fh, default=str)
         logger.info(
             "[EmbeddingCache] stored: %s… (n=%d, d=%d)",
-            key[:12], result.n_cells, result.embedding_dim,
+            key[:12],
+            result.n_cells,
+            result.embedding_dim,
         )
 
     def delete(self, key: str) -> bool:

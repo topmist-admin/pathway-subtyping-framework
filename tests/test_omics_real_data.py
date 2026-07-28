@@ -55,8 +55,7 @@ class TestRealDataFusion:
             f"below chance ({chance:.4f}) — feature pipeline is broken"
         )
         assert report["fused_accuracy"] > chance, (
-            f"fused accuracy {report['fused_accuracy']:.4f} at or below "
-            f"chance ({chance:.4f})"
+            f"fused accuracy {report['fused_accuracy']:.4f} at or below " f"chance ({chance:.4f})"
         )
 
     def test_fusion_uplift_at_least_3pct(self):

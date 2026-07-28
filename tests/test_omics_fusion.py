@@ -30,10 +30,10 @@ from pathway_subtyping.omics import (
     score_proteomics_pathways,
 )
 
-
 # --------------------------------------------------------------------------- #
 # ATAC scorer
 # --------------------------------------------------------------------------- #
+
 
 @pytest.fixture
 def atac_cohort():
@@ -98,6 +98,7 @@ class TestATACScorer:
 # Proteomics scorer
 # --------------------------------------------------------------------------- #
 
+
 class TestProteomicsScorer:
 
     def test_direct_protein_ids(self):
@@ -118,14 +119,13 @@ class TestProteomicsScorer:
         )
         pathways = {"PATH_1": ["GENE_A", "GENE_B"]}
         mapping = {"GENE_A": "P01", "GENE_B": "P02", "GENE_C": "P99"}
-        scored = ProteomicsScorer(gene_to_protein=mapping).score(
-            abundance, pathways
-        )
+        scored = ProteomicsScorer(gene_to_protein=mapping).score(abundance, pathways)
         assert scored.shape == (20, 1)
 
     def test_min_members_filter(self):
         abundance = pd.DataFrame(
-            np.zeros((5, 3)), columns=["A", "B", "C"],
+            np.zeros((5, 3)),
+            columns=["A", "B", "C"],
         )
         pathways = {"PATH": ["A"]}  # only 1 member — below default 2
         scored = ProteomicsScorer().score(abundance, pathways)
@@ -146,6 +146,7 @@ class TestProteomicsScorer:
 # --------------------------------------------------------------------------- #
 # FusionWeights
 # --------------------------------------------------------------------------- #
+
 
 class TestFusionWeights:
 
@@ -170,9 +171,8 @@ class TestFusionWeights:
 # MultiOmicsFusion
 # --------------------------------------------------------------------------- #
 
-def _synthetic_citeseq(
-    n_per_cluster: int = 50, n_pathways: int = 8, seed: int = 0
-):
+
+def _synthetic_citeseq(n_per_cluster: int = 50, n_pathways: int = 8, seed: int = 0):
     """Synthetic paired RNA + protein cohort with 3 cell types.
 
     True pathway profile per cluster; RNA and protein observations are
@@ -207,10 +207,8 @@ class TestMultiOmicsFusion:
             MultiOmicsFusion().fuse()
 
     def test_rejects_disjoint_samples(self):
-        df_a = pd.DataFrame(np.zeros((3, 2)), index=["a", "b", "c"],
-                            columns=["P1", "P2"])
-        df_b = pd.DataFrame(np.zeros((3, 2)), index=["x", "y", "z"],
-                            columns=["P1", "P2"])
+        df_a = pd.DataFrame(np.zeros((3, 2)), index=["a", "b", "c"], columns=["P1", "P2"])
+        df_b = pd.DataFrame(np.zeros((3, 2)), index=["x", "y", "z"], columns=["P1", "P2"])
         with pytest.raises(ValueError, match="shared samples"):
             MultiOmicsFusion().fuse(rna=df_a, protein=df_b)
 
@@ -232,6 +230,7 @@ class TestMultiOmicsFusion:
 # Roadmap acceptance: fused >= RNA-only + 3%
 # --------------------------------------------------------------------------- #
 
+
 class TestRoadmapAccuracyUplift:
 
     def _accuracy(self, features: pd.DataFrame, labels: pd.Series) -> float:
@@ -249,7 +248,8 @@ class TestRoadmapAccuracyUplift:
         rna, prot, labels = _synthetic_citeseq()
         rna_acc = self._accuracy(rna, labels)
         fused = MultiOmicsFusion().fuse(
-            rna=rna, protein=prot,
+            rna=rna,
+            protein=prot,
             weights=FusionWeights(rna=1.0, protein=1.0),
         )
         fused_acc = self._accuracy(fused.fused, labels)
@@ -262,7 +262,10 @@ class TestRoadmapAccuracyUplift:
         rna, prot, labels = _synthetic_citeseq()
         fusion = MultiOmicsFusion()
         weights = fusion.learn_weights(
-            labels=labels, rna=rna, protein=prot, grid_step=0.2,
+            labels=labels,
+            rna=rna,
+            protein=prot,
+            grid_step=0.2,
         )
         # A non-degenerate mix should result (not all RNA nor all protein)
         assert 0.0 < weights.rna < 1.0
@@ -272,6 +275,7 @@ class TestRoadmapAccuracyUplift:
 # --------------------------------------------------------------------------- #
 # Discordance
 # --------------------------------------------------------------------------- #
+
 
 class TestDiscordance:
 
@@ -289,11 +293,17 @@ class TestDiscordance:
         n = 50
         rna = pd.DataFrame({"PATH_X": rng.standard_normal(n)})
         # Protein: uncorrelated AND large absolute difference (shift + noise)
-        prot = pd.DataFrame({
-            "PATH_X": 3.0 + rng.standard_normal(n) * 1.5,
-        }, index=rna.index)
+        prot = pd.DataFrame(
+            {
+                "PATH_X": 3.0 + rng.standard_normal(n) * 1.5,
+            },
+            index=rna.index,
+        )
         report = flag_discordant_pathways(
-            rna, prot, threshold_rho=0.3, threshold_abs_diff=1.0,
+            rna,
+            prot,
+            threshold_rho=0.3,
+            threshold_abs_diff=1.0,
         )
         assert "PATH_X" in report.discordant_pathways
 

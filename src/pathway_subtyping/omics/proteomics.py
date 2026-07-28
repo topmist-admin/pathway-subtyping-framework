@@ -66,8 +66,7 @@ class ProteomicsScorer:
             return [
                 self.gene_to_protein[m]
                 for m in members
-                if m in self.gene_to_protein
-                and self.gene_to_protein[m] in available
+                if m in self.gene_to_protein and self.gene_to_protein[m] in available
             ]
 
         records = {}
@@ -89,6 +88,7 @@ class ProteomicsScorer:
 # --------------------------------------------------------------------------- #
 # Convenience entry point
 # --------------------------------------------------------------------------- #
+
 
 def score_proteomics_pathways(
     abundance: pd.DataFrame,

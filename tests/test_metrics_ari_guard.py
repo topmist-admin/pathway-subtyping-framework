@@ -58,7 +58,7 @@ class TestGSE136196Fixture:
     """
 
     def test_gse136196_returns_zero_from_sklearn(self):
-        true = [0] * 20            # single true cluster (the degeneracy)
+        true = [0] * 20  # single true cluster (the degeneracy)
         pred = [i % 4 for i in range(20)]  # multi-way prediction
         assert adjusted_rand_score(true, pred) == 0.0  # not 1.0 -> value guard fails
 
@@ -77,8 +77,8 @@ class TestValidInputUnaffected:
     @pytest.mark.parametrize(
         "true,pred",
         [
-            ([0, 0, 1, 1], [1, 1, 0, 0]),      # perfect (label-swapped)
-            ([0, 0, 1, 1], [0, 1, 0, 1]),      # poor agreement
+            ([0, 0, 1, 1], [1, 1, 0, 0]),  # perfect (label-swapped)
+            ([0, 0, 1, 1], [0, 1, 0, 1]),  # poor agreement
             ([0, 0, 1, 1, 2, 2], [0, 0, 1, 1, 2, 2]),
         ],
     )
@@ -111,12 +111,8 @@ class TestBenchmarkIntegration:
 
         rng = np.random.default_rng(20260708)
         n = 40
-        pathway_scores = pd.DataFrame(
-            rng.normal(size=(n, 6)), columns=[f"PW{i}" for i in range(6)]
-        )
-        gene_burdens = pd.DataFrame(
-            rng.normal(size=(n, 10)), columns=[f"G{i}" for i in range(10)]
-        )
+        pathway_scores = pd.DataFrame(rng.normal(size=(n, 6)), columns=[f"PW{i}" for i in range(6)])
+        gene_burdens = pd.DataFrame(rng.normal(size=(n, 10)), columns=[f"G{i}" for i in range(10)])
         true_labels = np.zeros(n, dtype=int)  # single true cluster = degenerate
 
         result = run_single_benchmark(

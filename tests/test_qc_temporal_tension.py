@@ -14,10 +14,10 @@ from pathway_subtyping.qc.temporal import (
 )
 from pathway_subtyping.qc.tension import TensionResult, TensionScorer
 
-
 # ══════════════════════════════════════════════════════════════════════
 # F2: TEMPORAL TRACKER
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestTrajectoryClassification:
 
@@ -33,7 +33,9 @@ class TestTrajectoryClassification:
 
     def test_to_dict(self):
         t = PathwayTrajectory(
-            pathway="PW", timepoint_ids=["t0", "t1"], scores=[0.5, 0.8],
+            pathway="PW",
+            timepoint_ids=["t0", "t1"],
+            scores=[0.5, 0.8],
             trajectory_type=TrajectoryType.RESOLVING,
         )
         d = t.to_dict()
@@ -120,9 +122,7 @@ class TestTemporalTracker:
         assert types["A"] == TrajectoryType.RESOLVING
 
     def test_get_problem_pathways(self, rng):
-        tracker = TemporalTracker(
-            expected_profile={"PW": 0.8}, stall_threshold=0.05
-        )
+        tracker = TemporalTracker(expected_profile={"PW": 0.8}, stall_threshold=0.05)
         for base in [0.3, 0.3, 0.3, 0.3]:
             df = self._make_scores(rng, ["PW"], 50, [base])
             tracker.register_timepoint(df, f"t{len(tracker._timepoints)}")
@@ -149,6 +149,7 @@ class TestTemporalTracker:
 # ══════════════════════════════════════════════════════════════════════
 # F3: TENSION SCORER
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestTensionScorer:
 
@@ -192,6 +193,7 @@ class TestTensionScorer:
 
     def test_score_batch(self):
         from pathway_subtyping.qc.cascade import CascadeResult, LayerScores
+
         ccr = pd.DataFrame(
             {"PW": np.full(30, 0.4)},
             index=[f"cell_{i}" for i in range(30)],
@@ -220,13 +222,17 @@ class TestTensionScorer:
 
     def test_empty_cascade_result(self):
         from pathway_subtyping.qc.cascade import CascadeResult
-        empty = CascadeResult(per_pathway=[], per_cell_ccr=None, n_incomplete=0, mean_completion_ratio=1.0)
+
+        empty = CascadeResult(
+            per_pathway=[], per_cell_ccr=None, n_incomplete=0, mean_completion_ratio=1.0
+        )
         scorer = TensionScorer()
         result = scorer.score_batch(empty)
         assert len(result.per_cell_tension) == 0
 
     def test_to_dict(self, stalled_ccr):
         from pathway_subtyping.qc.cascade import CascadeResult, LayerScores
+
         cascade_result = CascadeResult(
             per_pathway=[LayerScores(pathway="PW_A"), LayerScores(pathway="PW_B")],
             per_cell_ccr=stalled_ccr,

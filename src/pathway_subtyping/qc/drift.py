@@ -101,9 +101,7 @@ class DriftDetector:
         """
         self._baseline = dict(ccr_dict)
         self._measurements = []
-        logger.info(
-            "[QC Drift] Baseline established: %d pathways", len(self._baseline)
-        )
+        logger.info("[QC Drift] Baseline established: %d pathways", len(self._baseline))
 
     def measure_drift(
         self,
@@ -143,7 +141,9 @@ class DriftDetector:
         if alarm:
             logger.warning(
                 "[QC Drift] ALARM at %s: drift=%.3f (threshold=%.3f)",
-                timepoint_id, total_drift, self.max_drift,
+                timepoint_id,
+                total_drift,
+                self.max_drift,
             )
 
         return measurement
@@ -165,9 +165,7 @@ class DriftDetector:
         drivers: List[str] = []
         if self._measurements:
             latest = self._measurements[-1]
-            sorted_pw = sorted(
-                latest.per_pathway_drift.items(), key=lambda x: -x[1]
-            )
+            sorted_pw = sorted(latest.per_pathway_drift.items(), key=lambda x: -x[1])
             drivers = [pw for pw, _ in sorted_pw[:3]]
 
         summary = (

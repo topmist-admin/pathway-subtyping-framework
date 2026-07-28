@@ -108,8 +108,7 @@ class DrugTargetDatabase:
             "n_drugs": len(self.drugs),
             "n_gene_targets": len(self.gene_to_drugs),
             "by_status": {
-                s.value: sum(1 for d in self.drugs.values() if d.status == s)
-                for s in DrugStatus
+                s.value: sum(1 for d in self.drugs.values() if d.status == s) for s in DrugStatus
             },
         }
 

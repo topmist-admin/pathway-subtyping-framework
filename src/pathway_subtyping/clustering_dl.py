@@ -20,6 +20,7 @@ References
 - VaDE / VAE-GMM: Jiang et al., "Variational Deep Embedding: An Unsupervised and
   Generative Approach to Clustering", IJCAI 2017. arXiv:1611.05148
 """
+
 from __future__ import annotations
 
 from typing import Optional, Tuple
@@ -34,6 +35,7 @@ from sklearn.preprocessing import StandardScaler
 def _require_torch():
     try:
         import torch  # noqa: F401
+
         return torch
     except ImportError as e:  # pragma: no cover - environment-dependent
         raise ImportError(
@@ -123,7 +125,7 @@ def run_dec(
         z = enc(Xt)
         q = soft_assign(z)
         # target distribution p (sharpened, normalised by cluster frequency)
-        weight = q ** 2 / q.sum(0)
+        weight = q**2 / q.sum(0)
         p = (weight.t() / weight.sum(1)).t().detach()
         kl = (p * (torch.log(p + 1e-9) - torch.log(q + 1e-9))).sum(1).mean()
         kl.backward()
@@ -180,14 +182,15 @@ def run_vae_gmm(
         opt.zero_grad()
         recon, mu, logvar = model(Xt)
         recon_loss = ((recon - Xt) ** 2).sum(1).mean()
-        kld = -0.5 * (1 + logvar - mu ** 2 - logvar.exp()).sum(1).mean()
+        kld = -0.5 * (1 + logvar - mu**2 - logvar.exp()).sum(1).mean()
         (recon_loss + beta * kld).backward()
         opt.step()
 
     with torch.no_grad():
         Z = model.mu(model.enc(Xt)).numpy()
-    gmm = GaussianMixture(n_components=k, covariance_type="full", n_init=10,
-                          random_state=seed, reg_covar=1e-6).fit(Z)
+    gmm = GaussianMixture(
+        n_components=k, covariance_type="full", n_init=10, random_state=seed, reg_covar=1e-6
+    ).fit(Z)
     labels = gmm.predict(Z)
     return labels, _safe_silhouette(Xz, labels)
 

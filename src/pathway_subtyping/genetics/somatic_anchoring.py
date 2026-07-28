@@ -103,9 +103,7 @@ def somatic_alignment(
     for name, values in somatic_strata.items():
         vals = np.asarray(list(values))
         if len(vals) != n_total:
-            raise ValueError(
-                f"Somatic stratum '{name}' length {len(vals)} != n_samples {n_total}"
-            )
+            raise ValueError(f"Somatic stratum '{name}' length {len(vals)} != n_samples {n_total}")
         # Drop samples missing this stratum (None/NaN) so each test uses its own n.
         mask = pd.notna(pd.Series(vals))
         lab = labels[mask.to_numpy()]
@@ -113,15 +111,23 @@ def somatic_alignment(
         table = pd.crosstab(pd.Series(lab, name="cluster"), pd.Series(v, name=name)).values
         if table.shape[0] < 2 or table.shape[1] < 2:
             per_stratum[name] = StratumAlignment(
-                stratum=name, chi2=None, p_value=None, cramers_v=0.0,
-                dof=0, n=int(mask.sum()),
+                stratum=name,
+                chi2=None,
+                p_value=None,
+                cramers_v=0.0,
+                dof=0,
+                n=int(mask.sum()),
             ).to_dict()
             per_stratum[name]["note"] = "degenerate table (single cluster or single stratum level)"
             continue
         chi2, p, dof, _ = chi2_contingency(table, correction=False)
         entry = StratumAlignment(
-            stratum=name, chi2=float(chi2), p_value=float(p),
-            cramers_v=float(_cramers_v(table)), dof=int(dof), n=int(mask.sum()),
+            stratum=name,
+            chi2=float(chi2),
+            p_value=float(p),
+            cramers_v=float(_cramers_v(table)),
+            dof=int(dof),
+            n=int(mask.sum()),
         ).to_dict()
         per_stratum[name] = entry
         names.append(name)

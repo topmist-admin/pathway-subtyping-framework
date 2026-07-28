@@ -27,10 +27,10 @@ from pathway_subtyping.harmonize import (
     simulate_platform_distortion,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Shared fixtures
 # --------------------------------------------------------------------------- #
+
 
 @pytest.fixture
 def reference_scores():
@@ -52,6 +52,7 @@ def reference_scores():
 # --------------------------------------------------------------------------- #
 # Fallback embedder
 # --------------------------------------------------------------------------- #
+
 
 class TestFallbackEmbedder:
 
@@ -90,8 +91,11 @@ class TestUCEEmbedderStub:
         try:
             emb._lazy_load()
         except (ImportError, NotImplementedError) as exc:
-            assert "harmonize" in str(exc) or "uce" in str(exc).lower() or \
-                   "checkpoint" in str(exc).lower()
+            assert (
+                "harmonize" in str(exc)
+                or "uce" in str(exc).lower()
+                or "checkpoint" in str(exc).lower()
+            )
         else:
             pytest.skip("UCE is installed — skipping stub error test")
 
@@ -100,14 +104,15 @@ class TestUCEEmbedderStub:
 # Cross-platform aligner
 # --------------------------------------------------------------------------- #
 
+
 class TestCrossPlatformAligner:
 
     def test_fit_transform_shapes(self, reference_scores):
         emb = FallbackEmbedder(embedding_dim=8).fit(reference_scores)
         embeddings = emb.embed(reference_scores)
-        platforms = ["p1"] * (len(reference_scores) // 2) + [
-            "p2"
-        ] * (len(reference_scores) - len(reference_scores) // 2)
+        platforms = ["p1"] * (len(reference_scores) // 2) + ["p2"] * (
+            len(reference_scores) - len(reference_scores) // 2
+        )
         aligner = CrossPlatformAligner()
         result = aligner.fit_transform(reference_scores, platforms, embeddings)
         assert isinstance(result, AlignmentResult)
@@ -151,12 +156,17 @@ class TestCrossPlatformAligner:
     def test_transform_requires_fit(self, reference_scores):
         aligner = CrossPlatformAligner()
         with pytest.raises(RuntimeError):
-            aligner.transform(reference_scores, ["p1"] * len(reference_scores), np.zeros((len(reference_scores), 4)))
+            aligner.transform(
+                reference_scores,
+                ["p1"] * len(reference_scores),
+                np.zeros((len(reference_scores), 4)),
+            )
 
 
 # --------------------------------------------------------------------------- #
 # Harmonization report
 # --------------------------------------------------------------------------- #
+
 
 class TestHarmonizationReport:
 
@@ -165,9 +175,7 @@ class TestHarmonizationReport:
         embeddings = emb.embed(reference_scores)
         half = len(reference_scores) // 2
         platforms = ["p1"] * half + ["p2"] * (len(reference_scores) - half)
-        result = CrossPlatformAligner().fit_transform(
-            reference_scores, platforms, embeddings
-        )
+        result = CrossPlatformAligner().fit_transform(reference_scores, platforms, embeddings)
         return HarmonizationReport.from_alignment(result)
 
     def test_report_basic(self, reference_scores):
@@ -185,9 +193,7 @@ class TestHarmonizationReport:
 
     def test_correlate_with_constant_quality_is_nan(self, reference_scores):
         report = self._make_report(reference_scores)
-        quality = pd.Series(
-            np.ones(len(report.confidence)), index=report.confidence.index
-        )
+        quality = pd.Series(np.ones(len(report.confidence)), index=report.confidence.index)
         rho = report.correlate_with_quality(quality)
         assert np.isnan(rho)
 
@@ -208,6 +214,7 @@ class TestHarmonizationReport:
 # Benchmark + roadmap acceptance
 # --------------------------------------------------------------------------- #
 
+
 class TestCrossPlatformBenchmark:
 
     def test_simulate_distortion_shape_and_determinism(self, reference_scores):
@@ -220,9 +227,7 @@ class TestCrossPlatformBenchmark:
 
     def test_benchmark_rejects_single_platform(self, reference_scores):
         with pytest.raises(ValueError):
-            CrossPlatformBenchmark(
-                reference_scores=reference_scores, platforms=["10x"]
-            )
+            CrossPlatformBenchmark(reference_scores=reference_scores, platforms=["10x"])
 
     def test_pre_rho_below_threshold(self, reference_scores):
         """Sanity: pre-harmonization rho should be below the 0.75 target
@@ -242,9 +247,9 @@ class TestCrossPlatformBenchmark:
             platforms=["10x", "smartseq2"],
         )
         summary = bench.run_many(n_seeds=5)
-        assert summary["post_rho_mean"] > 0.75, (
-            f"post_rho mean {summary['post_rho_mean']:.3f} below 0.75 target"
-        )
+        assert (
+            summary["post_rho_mean"] > 0.75
+        ), f"post_rho mean {summary['post_rho_mean']:.3f} below 0.75 target"
         # Improvement over pre-harmonization must be real
         assert summary["improvement_mean"] > 0.1
 

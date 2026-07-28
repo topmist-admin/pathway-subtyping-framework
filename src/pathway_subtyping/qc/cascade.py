@@ -195,11 +195,7 @@ class CascadeAnalyzer:
             stds[stds == 0] = 1.0
             z = (vals - means) / stds
             if gene_weights is not None:
-                w = (
-                    gene_weights.reindex(
-                        index=expression.index, columns=present
-                    ).fillna(1.0).values
-                )
+                w = gene_weights.reindex(index=expression.index, columns=present).fillna(1.0).values
                 z = z * w
             return z.mean(axis=1)
 
@@ -262,6 +258,7 @@ class CascadeAnalyzer:
         """
         if pathways is None:
             from pathway_subtyping.knowledge_graph.schema import NodeType
+
             pathways = self.kg.get_nodes_by_type(NodeType.PATHWAY)
 
         per_pathway: List[LayerScores] = []
@@ -272,7 +269,9 @@ class CascadeAnalyzer:
             if not layers["upstream"] and not layers["downstream"]:
                 continue
 
-            up, mid, down = self.score_layer_activation(expression, layers, gene_weights=gene_weights)
+            up, mid, down = self.score_layer_activation(
+                expression, layers, gene_weights=gene_weights
+            )
 
             ls = LayerScores(
                 pathway=pw,

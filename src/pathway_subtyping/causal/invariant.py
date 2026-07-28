@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 # Core statistics
 # --------------------------------------------------------------------------- #
 
+
 def invariance_pvalue(
     residuals: np.ndarray,
     environments: np.ndarray,
@@ -150,6 +151,7 @@ def _fit_residuals(
 # Result types
 # --------------------------------------------------------------------------- #
 
+
 @dataclass
 class CausalParentReport:
     """Outcome of an :class:`InvariantPathwayPredictor` run.
@@ -190,9 +192,7 @@ class CausalParentReport:
         if not self.identifiable_parents:
             return float("nan")
         gt = set(ground_truth)
-        return float(len(self.identifiable_parents & gt)) / float(
-            len(self.identifiable_parents)
-        )
+        return float(len(self.identifiable_parents & gt)) / float(len(self.identifiable_parents))
 
     def summary(self) -> str:
         return (
@@ -216,6 +216,7 @@ class CausalParentReport:
 # --------------------------------------------------------------------------- #
 # ICP driver
 # --------------------------------------------------------------------------- #
+
 
 class InvariantPathwayPredictor:
     """Fit ICP for a single target variable over pathway-level data.
@@ -265,9 +266,7 @@ class InvariantPathwayPredictor:
         if len(X) != len(y) or len(X) != len(environments):
             raise ValueError("X, y, environments must share the same length")
         if target_name in X.columns:
-            raise ValueError(
-                f"target_name={target_name!r} must not be a column of X"
-            )
+            raise ValueError(f"target_name={target_name!r} must not be a column of X")
 
         X_values = X.to_numpy(dtype=float)
         y_values = np.asarray(y, dtype=float)
@@ -311,7 +310,9 @@ class InvariantPathwayPredictor:
 
         logger.info(
             "[ICP] target=%s invariant_subsets=%d identifiable=%s",
-            target_name, len(invariant), sorted(identifiable),
+            target_name,
+            len(invariant),
+            sorted(identifiable),
         )
 
         return CausalParentReport(

@@ -51,15 +51,15 @@ class NodeEmbeddings:
         emb = self.get(node_id)
         if emb is None:
             return []
-        sims = self.embeddings @ emb / (
-            np.linalg.norm(self.embeddings, axis=1) * np.linalg.norm(emb) + 1e-10
+        sims = (
+            self.embeddings
+            @ emb
+            / (np.linalg.norm(self.embeddings, axis=1) * np.linalg.norm(emb) + 1e-10)
         )
-        top_idx = np.argsort(-sims)[:k + 1]
-        return [
-            (self.node_ids[i], float(sims[i]))
-            for i in top_idx
-            if self.node_ids[i] != node_id
-        ][:k]
+        top_idx = np.argsort(-sims)[: k + 1]
+        return [(self.node_ids[i], float(sims[i])) for i in top_idx if self.node_ids[i] != node_id][
+            :k
+        ]
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -154,21 +154,19 @@ class BaseEmbeddingModel:
         n_relations = len(self._relation_to_idx)
 
         # Initialize embeddings
-        self._entity_embeddings = self._rng.normal(
-            0, 0.1, (n_entities, self.embedding_dim)
-        )
-        self._relation_embeddings = self._rng.normal(
-            0, 0.1, (n_relations, self.embedding_dim)
-        )
+        self._entity_embeddings = self._rng.normal(0, 0.1, (n_entities, self.embedding_dim))
+        self._relation_embeddings = self._rng.normal(0, 0.1, (n_relations, self.embedding_dim))
         # Normalize entities
         norms = np.linalg.norm(self._entity_embeddings, axis=1, keepdims=True)
         self._entity_embeddings /= np.maximum(norms, 1e-10)
 
         # Convert triples to indices
-        idx_triples = np.array([
-            [self._entity_to_idx[h], self._relation_to_idx[r], self._entity_to_idx[t]]
-            for h, r, t in triples
-        ])
+        idx_triples = np.array(
+            [
+                [self._entity_to_idx[h], self._relation_to_idx[r], self._entity_to_idx[t]]
+                for h, r, t in triples
+            ]
+        )
 
         history = TrainingHistory()
 
@@ -178,7 +176,7 @@ class BaseEmbeddingModel:
             n_batches = 0
 
             for start in range(0, len(idx_triples), batch_size):
-                batch = idx_triples[start:start + batch_size]
+                batch = idx_triples[start : start + batch_size]
                 # Generate negative samples
                 neg_batch = batch.copy()
                 for i in range(len(neg_batch)):
@@ -197,9 +195,7 @@ class BaseEmbeddingModel:
             history.add(epoch, avg_loss)
 
             if epoch % 20 == 0:
-                logger.info(
-                    "[GNN KG Embeddings] Epoch %d/%d, loss=%.4f", epoch, epochs, avg_loss
-                )
+                logger.info("[GNN KG Embeddings] Epoch %d/%d, loss=%.4f", epoch, epochs, avg_loss)
 
         return history
 
@@ -298,7 +294,11 @@ class TransEModel(BaseEmbeddingModel):
             )
 
             if self.margin + pos_d - neg_d > 0:
-                grad = self._entity_embeddings[h_p] + self._relation_embeddings[r_p] - self._entity_embeddings[t_p]
+                grad = (
+                    self._entity_embeddings[h_p]
+                    + self._relation_embeddings[r_p]
+                    - self._entity_embeddings[t_p]
+                )
                 sign = np.sign(grad) if self.norm == 1 else grad
 
                 self._entity_embeddings[h_p] -= lr * sign
@@ -340,12 +340,8 @@ class RotatEModel(BaseEmbeddingModel):
         return -float(dist)
 
     def _compute_loss(self, pos: np.ndarray, neg: np.ndarray) -> float:
-        pos_scores = np.array([
-            self._score_triple(h, r, t) for h, r, t in pos
-        ])
-        neg_scores = np.array([
-            self._score_triple(h, r, t) for h, r, t in neg
-        ])
+        pos_scores = np.array([self._score_triple(h, r, t) for h, r, t in pos])
+        neg_scores = np.array([self._score_triple(h, r, t) for h, r, t in neg])
         loss = np.maximum(0, self.margin - pos_scores + neg_scores)
         return float(np.mean(loss))
 

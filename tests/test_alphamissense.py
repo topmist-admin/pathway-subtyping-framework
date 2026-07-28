@@ -21,10 +21,10 @@ from pathway_subtyping.knowledge_graph.schema import EdgeType, NodeType
 from pathway_subtyping.qc.alphamissense import AlphaMissenseScorer
 from pathway_subtyping.qc.cascade import CascadeAnalyzer
 
-
 # --------------------------------------------------------------------------- #
 # Shared fixtures
 # --------------------------------------------------------------------------- #
+
 
 @pytest.fixture
 def mapk_kg():
@@ -35,8 +35,7 @@ def mapk_kg():
     kg.add_node("MAPK", NodeType.PATHWAY, {"name": "MAPK"})
     for g in ["RAS", "RAF", "MEK", "ERK", "TF1", "TF2"]:
         kg.add_edge(g, "MAPK", EdgeType.GENE_IN_PATHWAY)
-    for a, b in [("RAS", "RAF"), ("RAF", "MEK"), ("MEK", "ERK"),
-                 ("ERK", "TF1"), ("ERK", "TF2")]:
+    for a, b in [("RAS", "RAF"), ("RAF", "MEK"), ("MEK", "ERK"), ("ERK", "TF1"), ("ERK", "TF2")]:
         kg.add_edge(a, b, EdgeType.GENE_REGULATES)
     return kg
 
@@ -55,15 +54,18 @@ def healthy_expression():
 @pytest.fixture
 def score_table():
     """Small AlphaMissense score table: one benign, two pathogenic."""
-    return pd.DataFrame({
-        "variant_id": ["RAF:p.V600E", "MEK:p.P124S", "TF1:p.S50A"],
-        "am_score":   [0.95, 0.80, 0.10],
-    })
+    return pd.DataFrame(
+        {
+            "variant_id": ["RAF:p.V600E", "MEK:p.P124S", "TF1:p.S50A"],
+            "am_score": [0.95, 0.80, 0.10],
+        }
+    )
 
 
 # --------------------------------------------------------------------------- #
 # Scorer basics
 # --------------------------------------------------------------------------- #
+
 
 class TestAlphaMissenseScorer:
 
@@ -80,15 +82,17 @@ class TestAlphaMissenseScorer:
 
     def test_missing_column_raises(self):
         with pytest.raises(ValueError, match="variant_id"):
-            AlphaMissenseScorer.from_table(
-                pd.DataFrame({"foo": [], "am_score": []})
-            )
+            AlphaMissenseScorer.from_table(pd.DataFrame({"foo": [], "am_score": []}))
 
     def test_score_clipped_to_0_1(self):
-        scorer = AlphaMissenseScorer.from_table(pd.DataFrame({
-            "variant_id": ["A", "B", "C"],
-            "am_score":   [-0.2, 1.5, 0.5],
-        }))
+        scorer = AlphaMissenseScorer.from_table(
+            pd.DataFrame(
+                {
+                    "variant_id": ["A", "B", "C"],
+                    "am_score": [-0.2, 1.5, 0.5],
+                }
+            )
+        )
         assert scorer.lookup("A") == 0.0
         assert scorer.lookup("B") == 1.0
         assert scorer.lookup("C") == pytest.approx(0.5)
@@ -112,14 +116,13 @@ class TestAlphaMissenseScorer:
 # Weight construction
 # --------------------------------------------------------------------------- #
 
+
 class TestWeightsFromCarriers:
 
     def test_default_weight_is_one(self, score_table):
         scorer = AlphaMissenseScorer.from_table(score_table)
         weights = scorer.weights_from_carriers(
-            carriers=pd.DataFrame(
-                columns=["cell_id", "gene", "variant_id"]
-            ),
+            carriers=pd.DataFrame(columns=["cell_id", "gene", "variant_id"]),
             cells=["c1", "c2"],
             genes=["RAF", "MEK"],
         )
@@ -127,9 +130,11 @@ class TestWeightsFromCarriers:
 
     def test_carrier_downweighted(self, score_table):
         scorer = AlphaMissenseScorer.from_table(score_table)
-        carriers = pd.DataFrame([
-            {"cell_id": "c1", "gene": "RAF", "variant_id": "RAF:p.V600E"},
-        ])
+        carriers = pd.DataFrame(
+            [
+                {"cell_id": "c1", "gene": "RAF", "variant_id": "RAF:p.V600E"},
+            ]
+        )
         weights = scorer.weights_from_carriers(
             carriers=carriers,
             cells=["c1", "c2"],
@@ -141,9 +146,11 @@ class TestWeightsFromCarriers:
 
     def test_damage_floor(self, score_table):
         scorer = AlphaMissenseScorer.from_table(score_table)
-        carriers = pd.DataFrame([
-            {"cell_id": "c1", "gene": "RAF", "variant_id": "RAF:p.V600E"},
-        ])
+        carriers = pd.DataFrame(
+            [
+                {"cell_id": "c1", "gene": "RAF", "variant_id": "RAF:p.V600E"},
+            ]
+        )
         weights = scorer.weights_from_carriers(
             carriers=carriers,
             cells=["c1"],
@@ -154,33 +161,53 @@ class TestWeightsFromCarriers:
 
     def test_multiple_variants_retain_most_damaging(self, score_table):
         scorer = AlphaMissenseScorer.from_table(score_table)
-        carriers = pd.DataFrame([
-            {"cell_id": "c1", "gene": "RAF", "variant_id": "TF1:p.S50A"},       # benign, 0.10 -> weight 0.90
-            {"cell_id": "c1", "gene": "RAF", "variant_id": "RAF:p.V600E"},      # pathogenic, 0.95 -> weight 0.05
-        ])
+        carriers = pd.DataFrame(
+            [
+                {
+                    "cell_id": "c1",
+                    "gene": "RAF",
+                    "variant_id": "TF1:p.S50A",
+                },  # benign, 0.10 -> weight 0.90
+                {
+                    "cell_id": "c1",
+                    "gene": "RAF",
+                    "variant_id": "RAF:p.V600E",
+                },  # pathogenic, 0.95 -> weight 0.05
+            ]
+        )
         weights = scorer.weights_from_carriers(
-            carriers=carriers, cells=["c1"], genes=["RAF"],
+            carriers=carriers,
+            cells=["c1"],
+            genes=["RAF"],
         )
         assert weights.at["c1", "RAF"] == pytest.approx(0.05)
 
     def test_unknown_variant_skipped(self, score_table):
         scorer = AlphaMissenseScorer.from_table(score_table)
-        carriers = pd.DataFrame([
-            {"cell_id": "c1", "gene": "RAF", "variant_id": "UNKNOWN"},
-        ])
+        carriers = pd.DataFrame(
+            [
+                {"cell_id": "c1", "gene": "RAF", "variant_id": "UNKNOWN"},
+            ]
+        )
         weights = scorer.weights_from_carriers(
-            carriers=carriers, cells=["c1"], genes=["RAF"],
+            carriers=carriers,
+            cells=["c1"],
+            genes=["RAF"],
         )
         assert weights.at["c1", "RAF"] == 1.0
 
     def test_missing_cell_or_gene_skipped(self, score_table):
         scorer = AlphaMissenseScorer.from_table(score_table)
-        carriers = pd.DataFrame([
-            {"cell_id": "c_missing", "gene": "RAF", "variant_id": "RAF:p.V600E"},
-            {"cell_id": "c1", "gene": "NOT_A_GENE", "variant_id": "RAF:p.V600E"},
-        ])
+        carriers = pd.DataFrame(
+            [
+                {"cell_id": "c_missing", "gene": "RAF", "variant_id": "RAF:p.V600E"},
+                {"cell_id": "c1", "gene": "NOT_A_GENE", "variant_id": "RAF:p.V600E"},
+            ]
+        )
         weights = scorer.weights_from_carriers(
-            carriers=carriers, cells=["c1"], genes=["RAF"],
+            carriers=carriers,
+            cells=["c1"],
+            genes=["RAF"],
         )
         assert (weights == 1.0).all().all()
 
@@ -189,7 +216,8 @@ class TestWeightsFromCarriers:
         with pytest.raises(ValueError, match="variant_id"):
             scorer.weights_from_carriers(
                 carriers=pd.DataFrame({"cell_id": [], "gene": []}),
-                cells=["c1"], genes=["RAF"],
+                cells=["c1"],
+                genes=["RAF"],
             )
 
     def test_damage_floor_bounds(self, score_table):
@@ -197,7 +225,9 @@ class TestWeightsFromCarriers:
         with pytest.raises(ValueError, match="damage_floor"):
             scorer.weights_from_carriers(
                 carriers=pd.DataFrame(columns=["cell_id", "gene", "variant_id"]),
-                cells=["c1"], genes=["g"], damage_floor=1.5,
+                cells=["c1"],
+                genes=["g"],
+                damage_floor=1.5,
             )
 
 
@@ -205,16 +235,13 @@ class TestWeightsFromCarriers:
 # CascadeAnalyzer integration
 # --------------------------------------------------------------------------- #
 
+
 class TestCascadeIntegration:
 
-    def test_none_weights_bit_identical_to_baseline(
-        self, mapk_kg, healthy_expression
-    ):
+    def test_none_weights_bit_identical_to_baseline(self, mapk_kg, healthy_expression):
         analyzer = CascadeAnalyzer(mapk_kg)
         r_baseline = analyzer.analyze(healthy_expression, pathways=["MAPK"])
-        r_none = analyzer.analyze(
-            healthy_expression, pathways=["MAPK"], gene_weights=None
-        )
+        r_none = analyzer.analyze(healthy_expression, pathways=["MAPK"], gene_weights=None)
         # Bit-identical score per pathway
         assert len(r_baseline.per_pathway) == len(r_none.per_pathway)
         for a, b in zip(r_baseline.per_pathway, r_none.per_pathway):
@@ -222,38 +249,37 @@ class TestCascadeIntegration:
             assert a.intermediate_score == b.intermediate_score
             assert a.downstream_score == b.downstream_score
 
-    def test_carrier_downweighting_shifts_scores(
-        self, mapk_kg, healthy_expression, score_table
-    ):
+    def test_carrier_downweighting_shifts_scores(self, mapk_kg, healthy_expression, score_table):
         """Knocking down ERK via carriers should depress downstream score."""
         # Put a strong signal into ERK so zeroing its weight has effect
         expr = healthy_expression.copy()
         expr["ERK"] = 10.0 + 0.01 * np.arange(len(expr))  # strongly high
 
-        scorer = AlphaMissenseScorer.from_table(pd.DataFrame({
-            "variant_id": ["ERK:p.K71R"],
-            "am_score":   [0.99],
-        }))
-        carriers = pd.DataFrame([
-            {"cell_id": cid, "gene": "ERK", "variant_id": "ERK:p.K71R"}
-            for cid in expr.index
-        ])
+        scorer = AlphaMissenseScorer.from_table(
+            pd.DataFrame(
+                {
+                    "variant_id": ["ERK:p.K71R"],
+                    "am_score": [0.99],
+                }
+            )
+        )
+        carriers = pd.DataFrame(
+            [{"cell_id": cid, "gene": "ERK", "variant_id": "ERK:p.K71R"} for cid in expr.index]
+        )
         weights = scorer.weights_from_carriers(
-            carriers=carriers, cells=expr.index, genes=expr.columns,
+            carriers=carriers,
+            cells=expr.index,
+            genes=expr.columns,
         )
         analyzer = CascadeAnalyzer(mapk_kg)
         r_naive = analyzer.analyze_pathway(expr, pathway="MAPK")
-        r_weighted = analyzer.analyze_pathway(
-            expr, pathway="MAPK", gene_weights=weights
-        )
+        r_weighted = analyzer.analyze_pathway(expr, pathway="MAPK", gene_weights=weights)
         # ERK is an intermediate gene in the MAPK cascade. Down-weighting
         # its contribution should decrease the intermediate-layer mean
         # (the elevated ERK signal no longer fully counts).
         assert r_weighted.intermediate_score < r_naive.intermediate_score
 
-    def test_empty_carriers_no_op(
-        self, mapk_kg, healthy_expression
-    ):
+    def test_empty_carriers_no_op(self, mapk_kg, healthy_expression):
         scorer = AlphaMissenseScorer.empty()
         weights = scorer.weights_from_carriers(
             carriers=pd.DataFrame(columns=["cell_id", "gene", "variant_id"]),
@@ -262,9 +288,7 @@ class TestCascadeIntegration:
         )
         analyzer = CascadeAnalyzer(mapk_kg)
         r_baseline = analyzer.analyze(healthy_expression, pathways=["MAPK"])
-        r_weighted = analyzer.analyze(
-            healthy_expression, pathways=["MAPK"], gene_weights=weights
-        )
+        r_weighted = analyzer.analyze(healthy_expression, pathways=["MAPK"], gene_weights=weights)
         for a, b in zip(r_baseline.per_pathway, r_weighted.per_pathway):
             assert a.upstream_score == pytest.approx(b.upstream_score)
             assert a.downstream_score == pytest.approx(b.downstream_score)

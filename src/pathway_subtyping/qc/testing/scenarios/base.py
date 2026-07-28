@@ -117,9 +117,7 @@ class BaseScenario(ABC):
                     qc_scores[fid] = result.get("score", 0.0)
                     detections[fid] = result.get("detected", False)
                 except Exception as e:
-                    logger.warning(
-                        "[QC Scenario] Feature %s failed at %s: %s", fid, tp_id, e
-                    )
+                    logger.warning("[QC Scenario] Feature %s failed at %s: %s", fid, tp_id, e)
                     qc_scores[fid] = 0.0
                     detections[fid] = False
 

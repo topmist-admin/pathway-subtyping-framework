@@ -156,24 +156,28 @@ class ExplanationGenerator:
         hypotheses = []
         for fr in fired_rules:
             if fr.rule.conclusion.type == "therapeutic_hypothesis":
-                hypotheses.append({
-                    "rule_id": fr.rule.id,
-                    "gene": fr.gene,
-                    "confidence": fr.confidence,
-                    "bindings": fr.bindings,
-                })
+                hypotheses.append(
+                    {
+                        "rule_id": fr.rule.id,
+                        "gene": fr.gene,
+                        "confidence": fr.confidence,
+                        "bindings": fr.bindings,
+                    }
+                )
         return hypotheses
 
     def _generate_steps(self, fired_rules: List[Any]) -> List[ReasoningStep]:
         steps = []
         for i, fr in enumerate(fired_rules, 1):
-            steps.append(ReasoningStep(
-                step_number=i,
-                description=fr.explanation,
-                evidence=fr.evidence,
-                rule_id=fr.rule.id,
-                confidence=fr.confidence,
-            ))
+            steps.append(
+                ReasoningStep(
+                    step_number=i,
+                    description=fr.explanation,
+                    evidence=fr.evidence,
+                    rule_id=fr.rule.id,
+                    confidence=fr.confidence,
+                )
+            )
         return steps
 
     def _generate_explanation_text(self, chain: ReasoningChain) -> str:

@@ -34,10 +34,10 @@ from pathway_subtyping.knowledge_graph import (
     run_kg_regression,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Source manifest
 # --------------------------------------------------------------------------- #
+
 
 class TestKGSources:
 
@@ -119,12 +119,13 @@ class TestKGSources:
 # KG diff
 # --------------------------------------------------------------------------- #
 
+
 def _gene_kg(edges, extra_genes=()):
     kg = KnowledgeGraph()
     genes = {e[0] for e in edges} | {e[1] for e in edges} | set(extra_genes)
     for g in sorted(genes):
         kg.add_node(g, NodeType.GENE)
-    for (src, tgt, etype) in edges:
+    for src, tgt, etype in edges:
         kg.add_edge(src, tgt, etype, weight=1.0)
     return kg
 
@@ -151,9 +152,7 @@ class TestKGDiff:
         assert "gene" not in diff.nodes_removed
 
     def test_nodes_removed(self):
-        kg1 = _gene_kg(
-            [("A", "B", EdgeType.GENE_INTERACTS)], extra_genes=["X"]
-        )
+        kg1 = _gene_kg([("A", "B", EdgeType.GENE_INTERACTS)], extra_genes=["X"])
         kg2 = _gene_kg([("A", "B", EdgeType.GENE_INTERACTS)])
         diff = diff_kgs(kg1, kg2)
         assert diff.nodes_removed["gene"] == ["X"]
@@ -176,12 +175,8 @@ class TestKGDiff:
         diff = diff_kgs(kg1, kg2)
         assert ("A", "B", "gene_regulates_gene") in diff.edges_flipped
         # Non-flipped directed edges should still be in added/removed
-        assert (
-            ("A", "B") in diff.edges_removed["gene_regulates_gene"]
-        )
-        assert (
-            ("B", "A") in diff.edges_added["gene_regulates_gene"]
-        )
+        assert ("A", "B") in diff.edges_removed["gene_regulates_gene"]
+        assert ("B", "A") in diff.edges_added["gene_regulates_gene"]
 
     def test_diff_to_dict(self):
         kg1 = _gene_kg([("A", "B", EdgeType.GENE_REGULATES)])
@@ -198,18 +193,16 @@ class TestKGDiff:
 # KG regression
 # --------------------------------------------------------------------------- #
 
+
 class TestKGRegression:
 
     def _edge_count_score(self):
         def score(kg: KnowledgeGraph, _input) -> dict:
             return {
-                "n_edges_gene_interacts": len(
-                    kg.get_edges_by_type(EdgeType.GENE_INTERACTS)
-                ),
-                "n_edges_gene_regulates": len(
-                    kg.get_edges_by_type(EdgeType.GENE_REGULATES)
-                ),
+                "n_edges_gene_interacts": len(kg.get_edges_by_type(EdgeType.GENE_INTERACTS)),
+                "n_edges_gene_regulates": len(kg.get_edges_by_type(EdgeType.GENE_REGULATES)),
             }
+
         return score
 
     def test_identical_kgs_no_deltas_flagged(self):
@@ -217,7 +210,8 @@ class TestKGRegression:
         kg1 = _gene_kg(edges)
         kg2 = _gene_kg(edges)
         report = run_kg_regression(
-            kg1, kg2,
+            kg1,
+            kg2,
             score_fns=[self._edge_count_score()],
             benchmark_inputs=["placeholder"],
             tolerance=0.05,
@@ -227,35 +221,29 @@ class TestKGRegression:
 
     def test_small_change_under_tolerance(self):
         # KG2 grows edge count by 4 / 100 = 4% — under 5% tolerance
-        base_edges = [
-            (f"G{i}", f"G{i+1}", EdgeType.GENE_INTERACTS) for i in range(100)
-        ]
-        extra_edges = [
-            (f"G{i}", f"G{i+2}", EdgeType.GENE_INTERACTS) for i in range(4)
-        ]
+        base_edges = [(f"G{i}", f"G{i+1}", EdgeType.GENE_INTERACTS) for i in range(100)]
+        extra_edges = [(f"G{i}", f"G{i+2}", EdgeType.GENE_INTERACTS) for i in range(4)]
         kg1 = _gene_kg(base_edges)
         kg2 = _gene_kg(base_edges + extra_edges)
         report = run_kg_regression(
-            kg1, kg2,
+            kg1,
+            kg2,
             score_fns=[self._edge_count_score()],
             benchmark_inputs=["placeholder"],
             tolerance=0.05,
         )
-        assert report.passed, (
-            f"expected passage; flagged={[d.score_name for d in report.flagged_scores]}"
-        )
+        assert (
+            report.passed
+        ), f"expected passage; flagged={[d.score_name for d in report.flagged_scores]}"
 
     def test_large_change_flagged(self):
-        base_edges = [
-            (f"G{i}", f"G{i+1}", EdgeType.GENE_INTERACTS) for i in range(100)
-        ]
-        extra_edges = [
-            (f"G{i}", f"G{i+2}", EdgeType.GENE_INTERACTS) for i in range(20)
-        ]
+        base_edges = [(f"G{i}", f"G{i+1}", EdgeType.GENE_INTERACTS) for i in range(100)]
+        extra_edges = [(f"G{i}", f"G{i+2}", EdgeType.GENE_INTERACTS) for i in range(20)]
         kg1 = _gene_kg(base_edges)
         kg2 = _gene_kg(base_edges + extra_edges)
         report = run_kg_regression(
-            kg1, kg2,
+            kg1,
+            kg2,
             score_fns=[self._edge_count_score()],
             benchmark_inputs=["placeholder"],
             tolerance=0.05,
@@ -269,14 +257,13 @@ class TestKGRegression:
         with pytest.raises(ValueError, match="score_fns"):
             run_kg_regression(kg, kg, score_fns=[], benchmark_inputs=["x"])
         with pytest.raises(ValueError, match="benchmark_inputs"):
-            run_kg_regression(
-                kg, kg, score_fns=[self._edge_count_score()], benchmark_inputs=[]
-            )
+            run_kg_regression(kg, kg, score_fns=[self._edge_count_score()], benchmark_inputs=[])
 
     def test_report_to_dict_structure(self):
         kg = _gene_kg([("A", "B", EdgeType.GENE_INTERACTS)])
         report = run_kg_regression(
-            kg, kg,
+            kg,
+            kg,
             score_fns=[self._edge_count_score()],
             benchmark_inputs=["placeholder"],
         )
@@ -288,10 +275,12 @@ class TestKGRegression:
     def test_score_fn_non_dict_rejected(self):
         def bad_score_fn(_kg, _input):
             return "not a dict"
+
         kg = _gene_kg([("A", "B", EdgeType.GENE_INTERACTS)])
         with pytest.raises(TypeError):
             run_kg_regression(
-                kg, kg,
+                kg,
+                kg,
                 score_fns=[bad_score_fn],  # type: ignore[list-item]
                 benchmark_inputs=["x"],
             )

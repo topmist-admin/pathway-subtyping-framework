@@ -46,9 +46,7 @@ class ATACScorer:
 
     def __post_init__(self) -> None:
         if self.aggregation not in _VALID_AGG:
-            raise ValueError(
-                f"aggregation must be one of {sorted(_VALID_AGG)}"
-            )
+            raise ValueError(f"aggregation must be one of {sorted(_VALID_AGG)}")
 
     def _gene_scores(self, accessibility: pd.DataFrame) -> pd.DataFrame:
         """Collapse peak-level accessibility to gene-level scores."""
@@ -95,9 +93,7 @@ class ATACScorer:
         """
         gene_scores = self._gene_scores(accessibility)
         if gene_scores.empty:
-            logger.warning(
-                "[ATACScorer] no peaks in accessibility matched peak_to_gene"
-            )
+            logger.warning("[ATACScorer] no peaks in accessibility matched peak_to_gene")
             return pd.DataFrame(index=accessibility.index)
 
         available = set(gene_scores.columns)
@@ -122,6 +118,7 @@ class ATACScorer:
 # Convenience entry point
 # --------------------------------------------------------------------------- #
 
+
 def score_atac_pathways(
     accessibility: pd.DataFrame,
     peak_to_gene: Mapping[str, str],
@@ -130,9 +127,7 @@ def score_atac_pathways(
     min_genes_per_pathway: int = 2,
 ) -> pd.DataFrame:
     """One-shot helper mirroring ``score_pathways_from_expression``."""
-    return ATACScorer(
-        peak_to_gene=peak_to_gene, aggregation=aggregation
-    ).score(
+    return ATACScorer(peak_to_gene=peak_to_gene, aggregation=aggregation).score(
         accessibility=accessibility,
         pathways=pathways,
         min_genes_per_pathway=min_genes_per_pathway,

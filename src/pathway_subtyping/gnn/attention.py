@@ -54,9 +54,9 @@ if HAS_TORCH:
             # Biological prior bias projections
             self.prior_types = prior_types or []
             if self.prior_types:
-                self.prior_bias = nn.ModuleDict({
-                    pt: nn.Linear(1, num_heads) for pt in self.prior_types
-                })
+                self.prior_bias = nn.ModuleDict(
+                    {pt: nn.Linear(1, num_heads) for pt in self.prior_types}
+                )
 
         def forward(
             self,
@@ -86,7 +86,7 @@ if HAS_TORCH:
             v = self.v_proj(value).view(m, self.num_heads, self.head_dim)
 
             # Scaled dot-product attention
-            scale = self.head_dim ** 0.5
+            scale = self.head_dim**0.5
             attn = torch.einsum("nhd,mhd->hnm", q, k) / scale
 
             # Inject biological priors as attention bias
@@ -129,12 +129,20 @@ if HAS_TORCH:
         ):
             super().__init__()
             self.gene_to_pathway = nn.MultiheadAttention(
-                gene_dim, num_heads, kdim=pathway_dim, vdim=pathway_dim,
-                batch_first=True, dropout=dropout,
+                gene_dim,
+                num_heads,
+                kdim=pathway_dim,
+                vdim=pathway_dim,
+                batch_first=True,
+                dropout=dropout,
             )
             self.pathway_to_gene = nn.MultiheadAttention(
-                pathway_dim, num_heads, kdim=gene_dim, vdim=gene_dim,
-                batch_first=True, dropout=dropout,
+                pathway_dim,
+                num_heads,
+                kdim=gene_dim,
+                vdim=gene_dim,
+                batch_first=True,
+                dropout=dropout,
             )
 
         def forward(
@@ -160,6 +168,7 @@ if HAS_TORCH:
             return gene_attended.squeeze(0), pathway_attended.squeeze(0)
 
 else:
+
     class BiologicalAttention:
         pass
 

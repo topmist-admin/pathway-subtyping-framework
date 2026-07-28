@@ -133,9 +133,7 @@ def run_kg_regression(
             v1_out = score_fn(v1, benchmark_input)
             v2_out = score_fn(v2, benchmark_input)
             if not isinstance(v1_out, dict) or not isinstance(v2_out, dict):
-                raise TypeError(
-                    f"score_fn index {score_idx} must return Dict[str, float]"
-                )
+                raise TypeError(f"score_fn index {score_idx} must return Dict[str, float]")
             keys = set(v1_out) | set(v2_out)
             for key in sorted(keys):
                 v1_v = float(v1_out.get(key, 0.0))

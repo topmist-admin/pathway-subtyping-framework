@@ -10,16 +10,16 @@ real-data result.
 Reduced reference/bootstrap counts keep the run fast while preserving the
 direction; seeds are fixed for determinism.
 """
+
 import numpy as np
 import pandas as pd
 import pytest
 
 from pathway_subtyping.discreteness import DiscretenessGateA, ReframedMembershipGate
 
-
 SEED = 42
-N = 48          # small-n regime (tens of samples), like a rare-tumor cohort
-P = 8           # pathway-score dimensions
+N = 48  # small-n regime (tens of samples), like a rare-tumor cohort
+P = 8  # pathway-score dimensions
 
 
 def _df(mat: np.ndarray) -> pd.DataFrame:
@@ -56,8 +56,9 @@ def _two_clusters(n=N, p=P, seed=SEED, sep=5.0):
 
 def _gate():
     # reduced counts for test speed; direction of the verdict is robust to N_ref
-    return DiscretenessGateA(seed=SEED, n_ref=40, n_bootstrap=12,
-                             n_jobs=1, gap_n_ref=12, k_range=(1, 2, 3))
+    return DiscretenessGateA(
+        seed=SEED, n_ref=40, n_bootstrap=12, n_jobs=1, gap_n_ref=12, k_range=(1, 2, 3)
+    )
 
 
 @pytest.mark.slow
@@ -88,10 +89,12 @@ def test_reframed_gate_c_runs_and_is_conditional():
     """Smoke test: reframed Gate C reports a single-target coverage with a CI and
     carries the explicit conditional-on-A/B framing."""
     from sklearn.mixture import GaussianMixture
+
     scores = _two_clusters()
     labels = GaussianMixture(n_components=2, random_state=SEED).fit_predict(scores.values)
     res = ReframedMembershipGate(seed=SEED, n_splits=20).run(
-        "two_clusters", scores, labels, k=2, gate_a_pass=True, gate_b_pass=True)
+        "two_clusters", scores, labels, k=2, gate_a_pass=True, gate_b_pass=True
+    )
     assert res.target_coverage == 0.90
     assert np.isfinite(res.achieved_coverage)
     assert len(res.coverage_ci95) == 2

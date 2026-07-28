@@ -18,8 +18,8 @@ from pathway_subtyping.knowledge_graph.builder import KnowledgeGraph
 from pathway_subtyping.knowledge_graph.schema import EdgeType, NodeType
 from pathway_subtyping.qc.cascade import CascadeAnalyzer, CascadeResult, LayerScores
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def mapk_kg():
@@ -61,17 +61,18 @@ def stalled_expression():
     rng = np.random.default_rng(42)
     n_cells = 100
     data = {
-        "RAS": rng.normal(8.0, 0.5, n_cells),    # High upstream
-        "RAF": rng.normal(7.0, 0.5, n_cells),     # High upstream
-        "MEK": rng.normal(5.0, 0.5, n_cells),     # Mid
-        "ERK": rng.normal(2.0, 0.5, n_cells),     # Low downstream
-        "TF1": rng.normal(1.0, 0.5, n_cells),     # Very low downstream
-        "TF2": rng.normal(1.0, 0.5, n_cells),     # Very low downstream
+        "RAS": rng.normal(8.0, 0.5, n_cells),  # High upstream
+        "RAF": rng.normal(7.0, 0.5, n_cells),  # High upstream
+        "MEK": rng.normal(5.0, 0.5, n_cells),  # Mid
+        "ERK": rng.normal(2.0, 0.5, n_cells),  # Low downstream
+        "TF1": rng.normal(1.0, 0.5, n_cells),  # Very low downstream
+        "TF2": rng.normal(1.0, 0.5, n_cells),  # Very low downstream
     }
     return pd.DataFrame(data, index=[f"cell_{i}" for i in range(n_cells)])
 
 
 # ── LayerScores ───────────────────────────────────────────────────────
+
 
 class TestLayerScores:
 
@@ -110,6 +111,7 @@ class TestLayerScores:
 
 
 # ── CascadeAnalyzer ───────────────────────────────────────────────────
+
 
 class TestCascadeAnalyzer:
 
@@ -209,6 +211,7 @@ class TestCascadeAnalyzer:
 
 # ── Multi-pathway Analysis ────────────────────────────────────────────
 
+
 class TestMultiPathway:
 
     @pytest.fixture
@@ -256,6 +259,7 @@ class TestMultiPathway:
 
 # ── Integration with Simulator ────────────────────────────────────────
 
+
 class TestCascadeSimulatorIntegration:
 
     def test_simulator_stalled_cascade_detected(self):
@@ -287,9 +291,7 @@ class TestCascadeSimulatorIntegration:
 
         # Inject stalled cascade — severity 0.9 should create visible
         # upstream vs downstream divergence in raw expression
-        stalled = sim.inject_stalled_cascades(
-            batch, pathways=[target_pw], severity=0.9
-        )
+        stalled = sim.inject_stalled_cascades(batch, pathways=[target_pw], severity=0.9)
 
         # Check raw expression divergence between upstream and downstream genes
         layers = analyzer.define_cascade_layers(target_pw)
@@ -300,6 +302,6 @@ class TestCascadeSimulatorIntegration:
             up_mean = stalled.expression[up_genes].values.mean()
             down_mean = stalled.expression[down_genes].values.mean()
             # Upstream should be higher than downstream after stall injection
-            assert up_mean > down_mean, (
-                f"Expected upstream ({up_mean:.2f}) > downstream ({down_mean:.2f})"
-            )
+            assert (
+                up_mean > down_mean
+            ), f"Expected upstream ({up_mean:.2f}) > downstream ({down_mean:.2f})"

@@ -129,13 +129,15 @@ class FeedbackMonitor:
 
         for activator, inhibitor in self.loops:
             if activator not in pathway_scores.columns or inhibitor not in pathway_scores.columns:
-                results.append(FeedbackLoopResult(
-                    activator=activator,
-                    inhibitor=inhibitor,
-                    integrity_score=0.0,
-                    status=FeedbackStatus.UNKNOWN,
-                    description="Missing pathway data",
-                ))
+                results.append(
+                    FeedbackLoopResult(
+                        activator=activator,
+                        inhibitor=inhibitor,
+                        integrity_score=0.0,
+                        status=FeedbackStatus.UNKNOWN,
+                        description="Missing pathway data",
+                    )
+                )
                 continue
 
             act_vals = pathway_scores[activator].values
@@ -162,13 +164,15 @@ class FeedbackMonitor:
                 w = self.pathway_weights.get(activator, 1.0)
                 risk += w * 0.5
 
-            results.append(FeedbackLoopResult(
-                activator=activator,
-                inhibitor=inhibitor,
-                integrity_score=fi,
-                status=status,
-                description=f"{activator} -> {inhibitor}: {status.value} (FI={fi:.3f})",
-            ))
+            results.append(
+                FeedbackLoopResult(
+                    activator=activator,
+                    inhibitor=inhibitor,
+                    integrity_score=fi,
+                    status=status,
+                    description=f"{activator} -> {inhibitor}: {status.value} (FI={fi:.3f})",
+                )
+            )
 
         summary = (
             f"Feedback: {len(results)} loops checked. "

@@ -33,8 +33,8 @@ from pathway_subtyping.autism.rules.engine import (
 )
 from pathway_subtyping.autism.rules.explanation import ExplanationGenerator, ReasoningChain
 
-
 # ── Mock variant for testing ──────────────────────────────────────────
+
 
 @dataclass
 class MockVariant:
@@ -45,6 +45,7 @@ class MockVariant:
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def context():
@@ -92,6 +93,7 @@ def individual_shank3():
 # BIOLOGICAL RULES
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestBiologicalRules:
 
     def test_get_all_rules(self):
@@ -114,9 +116,7 @@ class TestBiologicalRules:
         assert BiologicalRules.get_rule_by_id("R99") is None
 
     def test_get_rules_by_conclusion_type(self):
-        disruption = BiologicalRules.get_rules_by_conclusion_type(
-            ConclusionType.PATHWAY_DISRUPTION
-        )
+        disruption = BiologicalRules.get_rules_by_conclusion_type(ConclusionType.PATHWAY_DISRUPTION)
         assert len(disruption) >= 2
 
     def test_rule_to_dict(self):
@@ -136,6 +136,7 @@ class TestBiologicalRules:
 # ══════════════════════════════════════════════════════════════════════
 # RULE ENGINE
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestAutismRuleEngine:
 
@@ -203,6 +204,7 @@ class TestAutismRuleEngine:
 # EXPLANATION GENERATOR
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestExplanationGenerator:
 
     def test_generate_chain(self, context, individual_chd8):
@@ -249,6 +251,7 @@ class TestExplanationGenerator:
 # NEUROSYMBOLIC COMBINER
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestNeurosymbolicCombiner:
 
     def test_weighted_sum(self):
@@ -256,6 +259,7 @@ class TestNeurosymbolicCombiner:
             CombinerConfig,
             NeurosymbolicCombiner,
         )
+
         combiner = NeurosymbolicCombiner()
         result = combiner.combine(
             neural_scores={"CHD8": 0.9, "SHANK3": 0.7},
@@ -271,6 +275,7 @@ class TestNeurosymbolicCombiner:
             CombinerConfig,
             NeurosymbolicCombiner,
         )
+
         config = CombinerConfig(method=CombinationMethod.MAX)
         combiner = NeurosymbolicCombiner(config)
         result = combiner.combine(
@@ -284,6 +289,7 @@ class TestNeurosymbolicCombiner:
         from pathway_subtyping.autism.neurosymbolic.combiner import (
             create_symbolic_score_vector,
         )
+
         engine = AutismRuleEngine(BiologicalRules.get_all_rules(), context)
         fired = engine.evaluate(individual_chd8)
         genes = ["CHD8", "SHANK3", "NRXN1"]
@@ -292,6 +298,7 @@ class TestNeurosymbolicCombiner:
 
     def test_to_dict(self):
         from pathway_subtyping.autism.neurosymbolic.combiner import NeurosymbolicCombiner
+
         combiner = NeurosymbolicCombiner()
         result = combiner.combine({"A": 0.5}, {"B": 0.5})
         d = result.to_dict()
@@ -303,10 +310,12 @@ class TestNeurosymbolicCombiner:
 # EVIDENCE SCORING (#27)
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestEvidenceScorer:
 
     def test_basic_scoring(self):
         from pathway_subtyping.autism.therapeutic.evidence import EvidenceScorer
+
         scorer = EvidenceScorer()
         result = scorer.score(
             drug_id="SORAFENIB",
@@ -319,13 +328,19 @@ class TestEvidenceScorer:
 
     def test_safety_flags(self):
         from pathway_subtyping.autism.therapeutic.evidence import EvidenceScorer, SafetyFlag
+
         scorer = EvidenceScorer(
             safety_db={
-                "DRUG_X": [SafetyFlag.CONTRAINDICATED_PEDIATRIC.value, SafetyFlag.TERATOGENIC.value],
+                "DRUG_X": [
+                    SafetyFlag.CONTRAINDICATED_PEDIATRIC.value,
+                    SafetyFlag.TERATOGENIC.value,
+                ],
             }
         )
         result = scorer.score(
-            drug_id="DRUG_X", target_pathway="PW", target_genes=["G"],
+            drug_id="DRUG_X",
+            target_pathway="PW",
+            target_genes=["G"],
             mechanism="inhibitor",
         )
         assert result.has_critical_safety_flags
@@ -333,18 +348,25 @@ class TestEvidenceScorer:
 
     def test_literature_boost(self):
         from pathway_subtyping.autism.therapeutic.evidence import EvidenceScorer
+
         scorer = EvidenceScorer(literature_db={"DRUG_A": 0.8})
         result = scorer.score(
-            drug_id="DRUG_A", target_pathway="PW",
-            target_genes=["G"], mechanism="inhibitor",
+            drug_id="DRUG_A",
+            target_pathway="PW",
+            target_genes=["G"],
+            mechanism="inhibitor",
         )
         assert result.literature_support == 0.8
 
     def test_to_dict(self):
         from pathway_subtyping.autism.therapeutic.evidence import EvidenceScorer
+
         scorer = EvidenceScorer()
         result = scorer.score(
-            drug_id="D", target_pathway="P", target_genes=["G"], mechanism="mod",
+            drug_id="D",
+            target_pathway="P",
+            target_genes=["G"],
+            mechanism="mod",
         )
         d = result.to_dict()
         assert "overall" in d
@@ -356,6 +378,7 @@ class TestEvidenceScorer:
 # DRUG MAPPING (#27)
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestDrugMapping:
 
     @pytest.fixture
@@ -366,19 +389,30 @@ class TestDrugMapping:
             DrugStatus,
             DrugTargetDatabase,
         )
+
         db = DrugTargetDatabase()
-        db.add_drug(DrugCandidate(
-            drug_id="SORAFENIB", drug_name="Sorafenib",
-            target_genes=["RAF", "VEGFR"],
-            mechanism="inhibitor", mechanism_type=DrugMechanism.INHIBITOR,
-            status=DrugStatus.APPROVED, asd_relevance_score=0.3,
-        ))
-        db.add_drug(DrugCandidate(
-            drug_id="MEMANTINE", drug_name="Memantine",
-            target_genes=["GRIN1", "GRIN2A"],
-            mechanism="antagonist", mechanism_type=DrugMechanism.ANTAGONIST,
-            status=DrugStatus.APPROVED, asd_relevance_score=0.7,
-        ))
+        db.add_drug(
+            DrugCandidate(
+                drug_id="SORAFENIB",
+                drug_name="Sorafenib",
+                target_genes=["RAF", "VEGFR"],
+                mechanism="inhibitor",
+                mechanism_type=DrugMechanism.INHIBITOR,
+                status=DrugStatus.APPROVED,
+                asd_relevance_score=0.3,
+            )
+        )
+        db.add_drug(
+            DrugCandidate(
+                drug_id="MEMANTINE",
+                drug_name="Memantine",
+                target_genes=["GRIN1", "GRIN2A"],
+                mechanism="antagonist",
+                mechanism_type=DrugMechanism.ANTAGONIST,
+                status=DrugStatus.APPROVED,
+                asd_relevance_score=0.7,
+            )
+        )
         return db
 
     def test_add_and_get_drug(self, drug_db):
@@ -393,11 +427,13 @@ class TestDrugMapping:
 
     def test_search_by_status(self, drug_db):
         from pathway_subtyping.autism.therapeutic.drug_mapping import DrugStatus
+
         approved = drug_db.search_drugs(status=DrugStatus.APPROVED)
         assert len(approved) == 2
 
     def test_pathway_mapper(self, drug_db):
         from pathway_subtyping.autism.therapeutic.drug_mapping import PathwayDrugMapper
+
         mapper = PathwayDrugMapper(drug_db)
         candidates = mapper.map_pathway("MAPK", pathway_genes=["RAF", "MEK"])
         assert len(candidates) >= 1
@@ -410,6 +446,7 @@ class TestDrugMapping:
 # ══════════════════════════════════════════════════════════════════════
 # THERAPEUTIC RANKING (#27)
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestTherapeuticRanking:
 
@@ -426,18 +463,28 @@ class TestTherapeuticRanking:
         from pathway_subtyping.autism.therapeutic.ranking import HypothesisRanker
 
         db = DrugTargetDatabase()
-        db.add_drug(DrugCandidate(
-            drug_id="DRUG_A", drug_name="Drug A",
-            target_genes=["GENE_1", "GENE_2"],
-            mechanism="inhibitor", mechanism_type=DrugMechanism.INHIBITOR,
-            status=DrugStatus.APPROVED, asd_relevance_score=0.6,
-        ))
-        db.add_drug(DrugCandidate(
-            drug_id="DRUG_B", drug_name="Drug B",
-            target_genes=["GENE_3"],
-            mechanism="agonist", mechanism_type=DrugMechanism.AGONIST,
-            status=DrugStatus.APPROVED, asd_relevance_score=0.4,
-        ))
+        db.add_drug(
+            DrugCandidate(
+                drug_id="DRUG_A",
+                drug_name="Drug A",
+                target_genes=["GENE_1", "GENE_2"],
+                mechanism="inhibitor",
+                mechanism_type=DrugMechanism.INHIBITOR,
+                status=DrugStatus.APPROVED,
+                asd_relevance_score=0.6,
+            )
+        )
+        db.add_drug(
+            DrugCandidate(
+                drug_id="DRUG_B",
+                drug_name="Drug B",
+                target_genes=["GENE_3"],
+                mechanism="agonist",
+                mechanism_type=DrugMechanism.AGONIST,
+                status=DrugStatus.APPROVED,
+                asd_relevance_score=0.4,
+            )
+        )
 
         mapper = PathwayDrugMapper(db)
         scorer = EvidenceScorer()
@@ -468,6 +515,7 @@ class TestTherapeuticRanking:
 
     def test_diversity_caps(self, ranker):
         from pathway_subtyping.autism.therapeutic.ranking import RankingConfig
+
         ranker.config = RankingConfig(max_per_pathway=1)
         result = ranker.rank(
             pathway_scores={"PW1": 3.0},

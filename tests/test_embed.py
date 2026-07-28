@@ -28,10 +28,10 @@ from pathway_subtyping.embed import (
     scGPTEmbedder,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Fixtures
 # --------------------------------------------------------------------------- #
+
 
 @pytest.fixture
 def expression():
@@ -49,6 +49,7 @@ def expression():
 # --------------------------------------------------------------------------- #
 # FallbackSCGPTEmbedder
 # --------------------------------------------------------------------------- #
+
 
 class TestFallback:
 
@@ -102,6 +103,7 @@ class TestOfficialBackendStub:
 # scGPTEmbedder (high-level)
 # --------------------------------------------------------------------------- #
 
+
 class TestSCGPTEmbedder:
 
     def test_default_is_fallback(self):
@@ -125,6 +127,7 @@ class TestSCGPTEmbedder:
 # --------------------------------------------------------------------------- #
 # EmbeddingCache
 # --------------------------------------------------------------------------- #
+
 
 class TestEmbeddingCache:
 
@@ -199,6 +202,7 @@ class TestEmbeddingCache:
 # Integration with F2 harmonize (scGPT as drop-in UCE substitute)
 # --------------------------------------------------------------------------- #
 
+
 class TestHarmonizeIntegration:
 
     def test_scgpt_embeddings_work_with_cross_platform_aligner(self, expression):
@@ -214,9 +218,7 @@ class TestHarmonizeIntegration:
             index=expression.index,
             columns=[f"PATH_{i}" for i in range(5)],
         )
-        embeddings = (
-            FallbackSCGPTEmbedder(embedding_dim=16).embed(expression).embeddings
-        )
+        embeddings = FallbackSCGPTEmbedder(embedding_dim=16).embed(expression).embeddings
         aligner = CrossPlatformAligner()
         result = aligner.fit_transform(pathway_scores, platforms, embeddings)
         assert result.aligned_scores.shape == pathway_scores.shape

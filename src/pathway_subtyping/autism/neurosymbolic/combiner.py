@@ -56,9 +56,7 @@ class CombinedOutput:
         return {
             "method": self.method,
             "n_genes": len(self.combined_scores),
-            "top_genes": dict(
-                sorted(self.combined_scores.items(), key=lambda x: -x[1])[:10]
-            ),
+            "top_genes": dict(sorted(self.combined_scores.items(), key=lambda x: -x[1])[:10]),
             "metadata": self.metadata,
         }
 

@@ -52,12 +52,8 @@ class KGSource:
     notes: str = ""
 
     def __post_init__(self) -> None:
-        if len(self.sha256) != 64 or not all(
-            c in "0123456789abcdef" for c in self.sha256
-        ):
-            raise ValueError(
-                f"{self.source_id} sha256 must be 64 lowercase hex characters"
-            )
+        if len(self.sha256) != 64 or not all(c in "0123456789abcdef" for c in self.sha256):
+            raise ValueError(f"{self.source_id} sha256 must be 64 lowercase hex characters")
 
     def verify_archive(self, path: Path) -> bool:
         """Return True if the archive at ``path`` matches the pinned hash."""
@@ -71,7 +67,10 @@ class KGSource:
         if observed != self.sha256:
             logger.warning(
                 "[KGSource:%s/%s] hash mismatch: expected %s observed %s",
-                self.source_id, self.release, self.sha256, observed,
+                self.source_id,
+                self.release,
+                self.sha256,
+                observed,
             )
             return False
         return True
@@ -172,6 +171,7 @@ KG_SOURCES: Dict[str, KGSource] = KG_SOURCES_V06
 # Access helpers
 # --------------------------------------------------------------------------- #
 
+
 def list_sources(registry: Optional[Dict[str, KGSource]] = None) -> List[KGSource]:
     """Return all pinned sources in the registry (defaults to v0.6)."""
     reg = registry if registry is not None else KG_SOURCES
@@ -186,8 +186,7 @@ def get_source(
     reg = registry if registry is not None else KG_SOURCES
     if source_id not in reg:
         raise KeyError(
-            f"no pinned source '{source_id}' in registry; "
-            f"available: {sorted(reg.keys())}"
+            f"no pinned source '{source_id}' in registry; " f"available: {sorted(reg.keys())}"
         )
     return reg[source_id]
 

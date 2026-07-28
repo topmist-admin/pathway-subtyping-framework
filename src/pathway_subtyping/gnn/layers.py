@@ -28,9 +28,7 @@ if HAS_TORCH:
 
         def __init__(self, in_dim: int, out_dim: int, edge_types: List[str]):
             super().__init__()
-            self.transforms = nn.ModuleDict({
-                et: nn.Linear(in_dim, out_dim) for et in edge_types
-            })
+            self.transforms = nn.ModuleDict({et: nn.Linear(in_dim, out_dim) for et in edge_types})
             self.edge_types = edge_types
 
         def forward(self, x: torch.Tensor, edge_type: str) -> torch.Tensor:
@@ -86,9 +84,7 @@ if HAS_TORCH:
 
             # Transform source node features by edge type
             src_features = x[src]
-            transformed = self.edge_transform.forward_all(
-                src_features, edge_type, edge_type_names
-            )
+            transformed = self.edge_transform.forward_all(src_features, edge_type, edge_type_names)
 
             if edge_weight is not None:
                 transformed = transformed * edge_weight.unsqueeze(-1)
@@ -100,7 +96,9 @@ if HAS_TORCH:
             else:  # mean
                 counts = torch.zeros(n_nodes, 1, device=x.device)
                 out.scatter_add_(0, dst.unsqueeze(-1).expand_as(transformed), transformed)
-                counts.scatter_add_(0, dst.unsqueeze(-1), torch.ones_like(dst.unsqueeze(-1).float()))
+                counts.scatter_add_(
+                    0, dst.unsqueeze(-1), torch.ones_like(dst.unsqueeze(-1).float())
+                )
                 out = out / counts.clamp(min=1)
 
             out = self.update_mlp(out)
@@ -116,9 +114,7 @@ if HAS_TORCH:
 
         def __init__(self, hidden_dim: int, num_heads: int = 4):
             super().__init__()
-            self.attention = nn.MultiheadAttention(
-                hidden_dim, num_heads, batch_first=True
-            )
+            self.attention = nn.MultiheadAttention(hidden_dim, num_heads, batch_first=True)
             self.norm = nn.LayerNorm(hidden_dim)
 
         def forward(
@@ -143,13 +139,15 @@ if HAS_TORCH:
             combination: str = "multiplicative",
         ):
             super().__init__()
-            self.prior_transforms = nn.ModuleDict({
-                pt: nn.Sequential(
-                    nn.Linear(1, hidden_dim),
-                    nn.Sigmoid(),
-                )
-                for pt in prior_types
-            })
+            self.prior_transforms = nn.ModuleDict(
+                {
+                    pt: nn.Sequential(
+                        nn.Linear(1, hidden_dim),
+                        nn.Sigmoid(),
+                    )
+                    for pt in prior_types
+                }
+            )
             self.combination = combination
             if combination == "learned":
                 self.combiner = nn.Linear(len(prior_types) * hidden_dim, hidden_dim)

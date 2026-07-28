@@ -49,25 +49,19 @@ class PassageStabilityScenario(BaseScenario):
         self, timepoint_id: str, previous: Optional[InjectedBatch]
     ) -> InjectedBatch:
         spec = self.get_spec()
-        batch = self.simulator.generate_healthy_batch(
-            n_cells=self.N_CELLS, spec=spec
-        )
+        batch = self.simulator.generate_healthy_batch(n_cells=self.N_CELLS, spec=spec)
 
         passage = int(timepoint_id[1:])
 
         if 6 <= passage <= 10:
             # Gradual drift
             drift_severity = (passage - 5) * 0.1
-            batch = self.simulator.inject_atlas_drift(
-                batch, drift_distance=drift_severity
-            )
+            batch = self.simulator.inject_atlas_drift(batch, drift_distance=drift_severity)
 
         elif 11 <= passage <= 15:
             # Drift + feedback breakdown
             drift_severity = min(1.0, (passage - 5) * 0.1)
-            batch = self.simulator.inject_atlas_drift(
-                batch, drift_distance=drift_severity
-            )
+            batch = self.simulator.inject_atlas_drift(batch, drift_distance=drift_severity)
             batch = self.simulator.inject_broken_feedback(
                 batch,
                 loops=[("HALLMARK_TNFA_SIGNALING_VIA_NFKB", "HALLMARK_APOPTOSIS")],
@@ -76,17 +70,13 @@ class PassageStabilityScenario(BaseScenario):
 
         elif passage > 15:
             # Compounding failure
-            batch = self.simulator.inject_atlas_drift(
-                batch, drift_distance=0.8
-            )
+            batch = self.simulator.inject_atlas_drift(batch, drift_distance=0.8)
             batch = self.simulator.inject_broken_feedback(
                 batch,
                 loops=[("HALLMARK_TNFA_SIGNALING_VIA_NFKB", "HALLMARK_APOPTOSIS")],
                 break_type=FeedbackBreakType.INVERTED,
             )
-            batch = self.simulator.inject_subpopulation(
-                batch, fraction=0.1 + (passage - 15) * 0.05
-            )
+            batch = self.simulator.inject_subpopulation(batch, fraction=0.1 + (passage - 15) * 0.05)
 
         return batch
 

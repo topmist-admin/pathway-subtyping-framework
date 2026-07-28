@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 # Metric primitives
 # --------------------------------------------------------------------------- #
 
+
 def reliability_curve(
     y_true: np.ndarray,
     y_prob: np.ndarray,
@@ -131,6 +132,7 @@ def brier_score(y_true: np.ndarray, y_prob: np.ndarray) -> float:
 # Aggregator
 # --------------------------------------------------------------------------- #
 
+
 @dataclass
 class CalibrationReport:
     """Full calibration assessment for a set of probabilistic predictions.
@@ -156,9 +158,7 @@ class CalibrationReport:
     def __post_init__(self) -> None:
         self.y_true = np.asarray(self.y_true).astype(float)
         self.y_prob = np.clip(np.asarray(self.y_prob).astype(float), 0.0, 1.0)
-        self._ece = ece(
-            self.y_true, self.y_prob, n_bins=self.n_bins, strategy=self.strategy
-        )
+        self._ece = ece(self.y_true, self.y_prob, n_bins=self.n_bins, strategy=self.strategy)
         self._brier = brier_score(self.y_true, self.y_prob)
         self._centers, self._mean_pred, self._observed = reliability_curve(
             self.y_true, self.y_prob, n_bins=self.n_bins, strategy=self.strategy
@@ -198,9 +198,7 @@ class CalibrationReport:
 
     def summary(self) -> str:
         n = len(self.y_prob)
-        return (
-            f"CalibrationReport(n={n}, ECE={self._ece:.4f}, Brier={self._brier:.4f})"
-        )
+        return f"CalibrationReport(n={n}, ECE={self._ece:.4f}, Brier={self._brier:.4f})"
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -209,9 +207,7 @@ class CalibrationReport:
             "brier": self._brier,
             "n_bins": self.n_bins,
             "strategy": self.strategy,
-            "reliability": {
-                k: v.tolist() for k, v in self.reliability.items()
-            },
+            "reliability": {k: v.tolist() for k, v in self.reliability.items()},
         }
 
     # ------------------------------------------------------------ plotting ---

@@ -29,10 +29,10 @@ from pathway_subtyping.uncertainty import (
     reliability_curve,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Shared fixtures
 # --------------------------------------------------------------------------- #
+
 
 @pytest.fixture
 def regression_data():
@@ -50,9 +50,7 @@ def gmm_data():
     rng = np.random.default_rng(42)
     means = np.array([[-3.0, 0.0], [3.0, 0.0], [0.0, 4.0]])
     n_per = 200
-    X = np.vstack([
-        m + rng.normal(0, 0.5, size=(n_per, 2)) for m in means
-    ])
+    X = np.vstack([m + rng.normal(0, 0.5, size=(n_per, 2)) for m in means])
     y = np.repeat(np.arange(3), n_per)
     return X, y
 
@@ -71,12 +69,16 @@ def binary_labels_and_probs():
 # Conformal
 # --------------------------------------------------------------------------- #
 
+
 class TestConformalRegression:
 
     def test_interval_dataclass_basics(self):
         ival = ConformalInterval(
-            prediction=1.0, lower=0.5, upper=1.5,
-            coverage=0.9, n_calibration=100,
+            prediction=1.0,
+            lower=0.5,
+            upper=1.5,
+            coverage=0.9,
+            n_calibration=100,
         )
         assert ival.width == pytest.approx(1.0)
         assert ival.contains(1.2)
@@ -115,8 +117,8 @@ class TestConformalRegression:
 
             perm = rng.permutation(n)
             fit_idx = perm[: int(0.50 * n)]
-            cal_idx = perm[int(0.50 * n): int(0.75 * n)]
-            te_idx = perm[int(0.75 * n):]
+            cal_idx = perm[int(0.50 * n) : int(0.75 * n)]
+            te_idx = perm[int(0.75 * n) :]
 
             coef = np.polyfit(x[fit_idx, 0], y[fit_idx], deg=1)
             score_fn = lambda X, _c=coef: _c[0] * X[:, 0] + _c[1]
@@ -130,9 +132,9 @@ class TestConformalRegression:
         for target, devs in deviations.items():
             mean_dev = float(np.mean(devs))
             # Mean deviation across seeds should be within ±2% (roadmap).
-            assert abs(mean_dev) < 0.02, (
-                f"target={target} mean deviation={mean_dev:.3f} devs={devs}"
-            )
+            assert (
+                abs(mean_dev) < 0.02
+            ), f"target={target} mean deviation={mean_dev:.3f} devs={devs}"
 
     def test_quantile_monotone_in_coverage(self, regression_data):
         x, y = regression_data
@@ -175,11 +177,9 @@ class TestConformalClassification:
         rng = np.random.default_rng(1)
         perm = rng.permutation(n)
         cal_idx = perm[: int(0.5 * n)]
-        te_idx = perm[int(0.5 * n):]
+        te_idx = perm[int(0.5 * n) :]
 
-        pred = ConformalPathwayPredictor(
-            score_fn=score_fn, coverage=0.9, mode="classification"
-        )
+        pred = ConformalPathwayPredictor(score_fn=score_fn, coverage=0.9, mode="classification")
         pred.calibrate(X[cal_idx], y[cal_idx], labels=[0, 1, 2])
         empirical = pred.coverage_on(X[te_idx], y[te_idx])
         assert empirical >= 0.88
@@ -188,6 +188,7 @@ class TestConformalClassification:
 # --------------------------------------------------------------------------- #
 # Calibration
 # --------------------------------------------------------------------------- #
+
 
 class TestCalibrationMetrics:
 
@@ -211,7 +212,7 @@ class TestCalibrationMetrics:
         n = 2000
         p = rng.uniform(0.0, 1.0, size=n)
         # Miscalibration: true rate is p^2 (squeezed toward 0)
-        y = (rng.uniform(size=n) < p ** 2).astype(int)
+        y = (rng.uniform(size=n) < p**2).astype(int)
         assert ece(y, p, n_bins=15) > 0.1
 
     def test_brier_bounds(self, binary_labels_and_probs):
@@ -258,6 +259,7 @@ class TestCalibrationReport:
 # --------------------------------------------------------------------------- #
 # Bootstrap
 # --------------------------------------------------------------------------- #
+
 
 class TestBootstrap:
 
@@ -337,6 +339,7 @@ class TestBootstrap:
 # BayesianPathwayGMM
 # --------------------------------------------------------------------------- #
 
+
 class TestBayesianPathwayGMM:
 
     def test_fit_predict_recovers_clusters(self, gmm_data):
@@ -361,11 +364,7 @@ class TestBayesianPathwayGMM:
             .fit(X)
             .predict(X)
         )
-        mode_labels = (
-            BayesianPathwayGMM(n_components=3, random_state=0)
-            .fit(X)
-            .predict(X)
-        )
+        mode_labels = BayesianPathwayGMM(n_components=3, random_state=0).fit(X).predict(X)
         ari = adjusted_rand_score(point_labels, mode_labels)
         assert ari > 0.99, f"mode-collapsed ARI vs point GMM = {ari:.4f}"
 

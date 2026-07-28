@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 # Synthetic platform distortions
 # --------------------------------------------------------------------------- #
 
+
 def simulate_platform_distortion(
     scores: pd.DataFrame,
     platform: str,
@@ -84,13 +85,8 @@ def simulate_platform_distortion(
     if cell_covariate is not None:
         cov = np.asarray(cell_covariate)
         if cov.shape[0] != n_cells:
-            raise ValueError(
-                f"cell_covariate has {cov.shape[0]} rows; expected {n_cells}"
-            )
-        coupling = (
-            platform_rng.standard_normal((cov.shape[1], n_pathways))
-            * coupling_scale
-        )
+            raise ValueError(f"cell_covariate has {cov.shape[0]} rows; expected {n_cells}")
+        coupling = platform_rng.standard_normal((cov.shape[1], n_pathways)) * coupling_scale
         distorted = distorted + cov @ coupling
 
     noise = rng.standard_normal(distorted.shape) * noise_scale
@@ -116,6 +112,7 @@ def _pairwise_rho(a: pd.DataFrame, b: pd.DataFrame) -> float:
 # --------------------------------------------------------------------------- #
 # Benchmark harness
 # --------------------------------------------------------------------------- #
+
 
 @dataclass
 class CrossPlatformBenchmark:
@@ -151,9 +148,9 @@ class CrossPlatformBenchmark:
         # simulates UCE's behaviour: the upstream model has seen cells across
         # many platforms and provides a platform-invariant embedding. At run
         # time we project distorted data through this frozen embedder.
-        self._embedder = FallbackEmbedder(
-            embedding_dim=self.embedding_dim, seed=0
-        ).fit(self.reference_scores)
+        self._embedder = FallbackEmbedder(embedding_dim=self.embedding_dim, seed=0).fit(
+            self.reference_scores
+        )
         # Biological covariate used to apply the platform-specific coupling:
         # top covariate_dim PCs of the reference scores, normalised to
         # unit stddev per dimension so coupling_scale has an interpretable
@@ -188,9 +185,7 @@ class CrossPlatformBenchmark:
 
         # Stack platforms for fitting; per-cell platform label
         all_scores = pd.concat(distorted.values(), axis=0).reset_index(drop=True)
-        platform_labels = np.concatenate([
-            np.full(len(df), plat) for plat, df in distorted.items()
-        ])
+        platform_labels = np.concatenate([np.full(len(df), plat) for plat, df in distorted.items()])
 
         # Platform-invariant reference embedding for each cell: UCE returns
         # a biology-only embedding that does NOT drift with platform, so
@@ -207,7 +202,9 @@ class CrossPlatformBenchmark:
         counts = [len(df) for df in distorted.values()]
         boundaries = np.cumsum([0] + counts)
         per_plat_aligned = {
-            plat: aligned.aligned_scores.iloc[boundaries[i]: boundaries[i + 1]].reset_index(drop=True)
+            plat: aligned.aligned_scores.iloc[boundaries[i] : boundaries[i + 1]].reset_index(
+                drop=True
+            )
             for i, plat in enumerate(distorted)
         }
 

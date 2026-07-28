@@ -84,9 +84,7 @@ class TestRealDataPerturb:
             pytest.skip("no TCGA conformal section in artefact")
         conformal = report["conformal"]
         if conformal.get("status") != "ok":
-            pytest.skip(
-                f"conformal sub-test did not run: {conformal.get('status')}"
-            )
+            pytest.skip(f"conformal sub-test did not run: {conformal.get('status')}")
         oracle_dev = conformal["mean_oracle_deviation"]
         target = report["acceptance"]["conformal_oracle_target_abs"]
         assert abs(oracle_dev) < target, (
@@ -115,7 +113,12 @@ class TestRealDataPerturb:
         """Artefact section present and well-formed when wt_vs_ko runs."""
         report = _load_or_skip()
         wtko = report.get("wt_vs_ko_gse123753")
-        if wtko is None or isinstance(wtko, dict) and "status" in wtko and "n_pathways_evaluated" not in wtko:
+        if (
+            wtko is None
+            or isinstance(wtko, dict)
+            and "status" in wtko
+            and "n_pathways_evaluated" not in wtko
+        ):
             pytest.skip("wt_vs_ko_gse123753 section not present or skipped")
         assert wtko["n_wt_samples"] >= 2 and wtko["n_ko_samples"] >= 2
         assert wtko["n_pathways_evaluated"] >= 10

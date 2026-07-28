@@ -56,9 +56,7 @@ class CARTManufacturingScenario(BaseScenario):
         self, timepoint_id: str, previous: Optional[InjectedBatch]
     ) -> InjectedBatch:
         spec = self.get_spec()
-        batch = self.simulator.generate_healthy_batch(
-            n_cells=self.N_CELLS, spec=spec
-        )
+        batch = self.simulator.generate_healthy_batch(n_cells=self.N_CELLS, spec=spec)
 
         if timepoint_id == "day_7":
             # Inject nutrient depletion stress

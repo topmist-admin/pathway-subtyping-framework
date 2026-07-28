@@ -179,9 +179,7 @@ class HypothesisRanker:
 
             candidates: List[DrugCandidate] = []
             if self.drug_mapper:
-                candidates = self.drug_mapper.map_pathway(
-                    pw, pw_genes.get(pw, []), disrupted_genes
-                )
+                candidates = self.drug_mapper.map_pathway(pw, pw_genes.get(pw, []), disrupted_genes)
 
             for drug in candidates:
                 drugs_seen.add(drug.drug_id)
@@ -216,17 +214,19 @@ class HypothesisRanker:
                     f"[Computational hypothesis — requires validation.]"
                 )
 
-                all_hypotheses.append(TherapeuticHypothesis(
-                    drug_id=drug.drug_id,
-                    drug_name=drug.drug_name,
-                    target_pathway=pw,
-                    target_genes=drug.target_genes,
-                    mechanism=drug.mechanism,
-                    score=combined,
-                    evidence=evidence,
-                    explanation=explanation,
-                    confidence=evidence.confidence,
-                ))
+                all_hypotheses.append(
+                    TherapeuticHypothesis(
+                        drug_id=drug.drug_id,
+                        drug_name=drug.drug_name,
+                        target_pathway=pw,
+                        target_genes=drug.target_genes,
+                        mechanism=drug.mechanism,
+                        score=combined,
+                        evidence=evidence,
+                        explanation=explanation,
+                        confidence=evidence.confidence,
+                    )
+                )
 
         # Sort by score, apply diversity, assign ranks
         all_hypotheses.sort(key=lambda h: -h.score)
@@ -235,7 +235,7 @@ class HypothesisRanker:
             h.rank = i + 1
 
         # Trim to max
-        all_hypotheses = all_hypotheses[:self.config.max_hypotheses]
+        all_hypotheses = all_hypotheses[: self.config.max_hypotheses]
 
         logger.info(
             "[Autism Therapeutic] Ranked %d hypotheses across %d pathways",

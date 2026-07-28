@@ -108,33 +108,40 @@ class PerturbationReport:
         for gene, pathway_map in signature.items():
             for pathway, expected in pathway_map.items():
                 if gene not in delta.index or pathway not in delta.columns:
-                    records.append({
-                        "gene": gene, "pathway": pathway,
-                        "expected_sign": int(expected),
-                        "observed_sign": float("nan"),
-                        "delta_value": float("nan"),
-                        "passed": False,
-                        "reason": "missing gene or pathway",
-                    })
+                    records.append(
+                        {
+                            "gene": gene,
+                            "pathway": pathway,
+                            "expected_sign": int(expected),
+                            "observed_sign": float("nan"),
+                            "delta_value": float("nan"),
+                            "passed": False,
+                            "reason": "missing gene or pathway",
+                        }
+                    )
                     continue
                 value = float(delta.loc[gene, pathway])
                 observed = int(np.sign(value))
-                passes = (
-                    observed == int(np.sign(expected))
-                    and abs(value) >= float(min_magnitude)
+                passes = observed == int(np.sign(expected)) and abs(value) >= float(min_magnitude)
+                records.append(
+                    {
+                        "gene": gene,
+                        "pathway": pathway,
+                        "expected_sign": int(np.sign(expected)),
+                        "observed_sign": observed,
+                        "delta_value": value,
+                        "passed": bool(passes),
+                        "reason": (
+                            ""
+                            if passes
+                            else (
+                                "sign mismatch"
+                                if observed != int(np.sign(expected))
+                                else "below min_magnitude"
+                            )
+                        ),
+                    }
                 )
-                records.append({
-                    "gene": gene,
-                    "pathway": pathway,
-                    "expected_sign": int(np.sign(expected)),
-                    "observed_sign": observed,
-                    "delta_value": value,
-                    "passed": bool(passes),
-                    "reason": "" if passes else (
-                        "sign mismatch" if observed != int(np.sign(expected))
-                        else "below min_magnitude"
-                    ),
-                })
 
         df = pd.DataFrame.from_records(records)
         if not df.empty:

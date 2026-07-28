@@ -17,10 +17,10 @@ from pathway_subtyping.qc.gates import ReleaseDecision, ResolutionGate, Resoluti
 from pathway_subtyping.qc.stress import StressFingerprinter, StressResult
 from pathway_subtyping.qc.tension import TensionResult
 
-
 # ══════════════════════════════════════════════════════════════════════
 # F4: RESOLUTION GATE
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestResolutionGate:
 
@@ -36,7 +36,9 @@ class TestResolutionGate:
         return TensionResult(
             per_cell_tension=np.full(10, mean),
             per_pathway_contribution={"PW": mean},
-            mean_tension=mean, median_tension=mean, max_tension=max_val,
+            mean_tension=mean,
+            median_tension=mean,
+            max_tension=max_val,
         )
 
     def test_all_pass_release(self):
@@ -77,6 +79,7 @@ class TestResolutionGate:
 # ══════════════════════════════════════════════════════════════════════
 # F5: DRIFT DETECTOR
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestDriftDetector:
 
@@ -128,6 +131,7 @@ class TestDriftDetector:
 # ══════════════════════════════════════════════════════════════════════
 # F9: CROSSTALK DETECTOR
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestCrosstalkDetector:
 
@@ -187,6 +191,7 @@ class TestCrosstalkDetector:
 # F10: FEEDBACK MONITOR
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestFeedbackMonitor:
 
     def test_intact_feedback(self):
@@ -229,11 +234,13 @@ class TestFeedbackMonitor:
     def test_multiple_loops(self):
         rng = np.random.default_rng(42)
         n = 100
-        scores = pd.DataFrame({
-            "A": rng.normal(5, 1, n),
-            "B": rng.normal(5, 1, n),
-            "C": rng.normal(5, 1, n),
-        })
+        scores = pd.DataFrame(
+            {
+                "A": rng.normal(5, 1, n),
+                "B": rng.normal(5, 1, n),
+                "C": rng.normal(5, 1, n),
+            }
+        )
         # Make A-B correlated
         scores["B"] = scores["A"] * 0.9 + rng.normal(0, 0.2, n)
         monitor = FeedbackMonitor(loops=[("A", "B"), ("A", "C")])
@@ -252,6 +259,7 @@ class TestFeedbackMonitor:
 # ══════════════════════════════════════════════════════════════════════
 # F11: STRESS FINGERPRINTER
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestStressFingerprinter:
 
@@ -314,13 +322,17 @@ class TestStressFingerprinter:
         fp = StressFingerprinter()
         fp.load_default_signatures()
         rng = np.random.default_rng(42)
-        batch = pd.DataFrame({
-            "HALLMARK_HYPOXIA": rng.normal(3.0, 0.1, 30),
-            "HALLMARK_OXIDATIVE_PHOSPHORYLATION": rng.normal(-1.0, 0.1, 30),
-        })
-        reference = pd.DataFrame({
-            "HALLMARK_HYPOXIA": rng.normal(0.0, 0.1, 30),
-            "HALLMARK_OXIDATIVE_PHOSPHORYLATION": rng.normal(0.0, 0.1, 30),
-        })
+        batch = pd.DataFrame(
+            {
+                "HALLMARK_HYPOXIA": rng.normal(3.0, 0.1, 30),
+                "HALLMARK_OXIDATIVE_PHOSPHORYLATION": rng.normal(-1.0, 0.1, 30),
+            }
+        )
+        reference = pd.DataFrame(
+            {
+                "HALLMARK_HYPOXIA": rng.normal(0.0, 0.1, 30),
+                "HALLMARK_OXIDATIVE_PHOSPHORYLATION": rng.normal(0.0, 0.1, 30),
+            }
+        )
         result = fp.fingerprint(batch, reference_scores=reference)
         assert isinstance(result, StressResult)

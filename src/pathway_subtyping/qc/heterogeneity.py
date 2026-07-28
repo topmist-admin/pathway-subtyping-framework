@@ -132,9 +132,7 @@ class HeterogeneityProfiler:
 
         # Build target vector
         if self.target_profile is not None:
-            target = np.array([
-                self.target_profile.get(pw, 0.0) for pw in pathway_scores.columns
-            ])
+            target = np.array([self.target_profile.get(pw, 0.0) for pw in pathway_scores.columns])
         else:
             target = pathway_scores.values.mean(axis=0)
 
@@ -199,7 +197,7 @@ class HeterogeneityProfiler:
         denom = kurt + adjustment
         if denom == 0:
             return 0.0
-        return (skew ** 2 + 1) / denom
+        return (skew**2 + 1) / denom
 
     def _detect_subpopulations(
         self,
@@ -209,9 +207,9 @@ class HeterogeneityProfiler:
         target: np.ndarray,
     ) -> List[SubpopulationInfo]:
         """Detect subpopulations among non-conforming cells using DBSCAN."""
-        clustering = DBSCAN(
-            eps=self.dbscan_eps, min_samples=self.dbscan_min_samples
-        ).fit(nonconf_scores)
+        clustering = DBSCAN(eps=self.dbscan_eps, min_samples=self.dbscan_min_samples).fit(
+            nonconf_scores
+        )
 
         labels = clustering.labels_
         unique_labels = set(labels)

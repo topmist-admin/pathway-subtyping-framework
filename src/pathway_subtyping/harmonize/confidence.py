@@ -65,9 +65,7 @@ class HarmonizationReport:
 
         self._platform_abs_drift = {}
         for plat, per_pw in self.alignment.per_platform_drift.items():
-            self._platform_abs_drift[plat] = {
-                pw: float(abs(val)) for pw, val in per_pw.items()
-            }
+            self._platform_abs_drift[plat] = {pw: float(abs(val)) for pw, val in per_pw.items()}
 
     # --------------------------------------------------------- factories ---
     @classmethod
@@ -106,14 +104,10 @@ class HarmonizationReport:
         c = self._confidence[valid].to_numpy()
         if np.std(q) == 0 or np.std(c) == 0:
             return float("nan")
-        return float(
-            pd.Series(q).corr(pd.Series(c), method="spearman")
-        )
+        return float(pd.Series(q).corr(pd.Series(c), method="spearman"))
 
     def summary(self) -> str:
-        platform_drifts = ", ".join(
-            f"{p}={d:.3f}" for p, d in self.mean_platform_drift.items()
-        )
+        platform_drifts = ", ".join(f"{p}={d:.3f}" for p, d in self.mean_platform_drift.items())
         return (
             f"HarmonizationReport(n={len(self._confidence)}, "
             f"mean_confidence={self._confidence.mean():.3f}, "

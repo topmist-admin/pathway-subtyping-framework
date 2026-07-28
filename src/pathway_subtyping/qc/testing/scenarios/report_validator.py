@@ -37,10 +37,7 @@ class RubricResult:
         return {
             "all_passed": self.all_passed,
             "summary": self.summary,
-            "items": [
-                {"name": i.name, "passed": i.passed, "reason": i.reason}
-                for i in self.items
-            ],
+            "items": [{"name": i.name, "passed": i.passed, "reason": i.reason} for i in self.items],
         }
 
 
@@ -71,15 +68,17 @@ class ReportValidator:
         )
 
         # 2. Per-timepoint scores
-        has_scores = all(
-            len(tp.qc_scores) > 0 for tp in report.timepoints
-        )
+        has_scores = all(len(tp.qc_scores) > 0 for tp in report.timepoints)
         items.append(
             RubricItem(
                 name="per_timepoint_scores",
                 description="All timepoints have QC scores",
                 passed=has_scores,
-                reason=f"{len(report.timepoints)} timepoints scored" if has_scores else "Missing scores",
+                reason=(
+                    f"{len(report.timepoints)} timepoints scored"
+                    if has_scores
+                    else "Missing scores"
+                ),
             )
         )
 
@@ -90,9 +89,11 @@ class ReportValidator:
                 name="identified_defects",
                 description="Defects identified with details",
                 passed=has_defects_listed,
-                reason=f"{len(report.identified_defects)} defects identified"
-                if has_defects_listed
-                else "No defects identified (may be correct for healthy batches)",
+                reason=(
+                    f"{len(report.identified_defects)} defects identified"
+                    if has_defects_listed
+                    else "No defects identified (may be correct for healthy batches)"
+                ),
             )
         )
 
@@ -103,9 +104,11 @@ class ReportValidator:
                 name="remediation",
                 description="Actionable remediation recommendations provided",
                 passed=has_remediation or not has_defects_listed,
-                reason=f"{len(report.remediation_recommendations)} recommendations"
-                if has_remediation
-                else "No recommendations (acceptable if no defects)",
+                reason=(
+                    f"{len(report.remediation_recommendations)} recommendations"
+                    if has_remediation
+                    else "No recommendations (acceptable if no defects)"
+                ),
             )
         )
 

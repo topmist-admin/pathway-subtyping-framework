@@ -134,7 +134,8 @@ class CrossPlatformAligner:
                 logger.warning(
                     "[CrossPlatformAligner] platform %r has only %d cells; "
                     "skipping platform-specific fit (will fall back to reference)",
-                    plat, int(mask.sum()),
+                    plat,
+                    int(mask.sum()),
                 )
                 continue
             X_plat = self._design(emb[mask])
@@ -152,7 +153,9 @@ class CrossPlatformAligner:
         self._fitted = True
         logger.info(
             "[CrossPlatformAligner] fit complete: ref=%s platforms=%s pathways=%d",
-            self._reference_platform, unique_platforms, Y.shape[1],
+            self._reference_platform,
+            unique_platforms,
+            Y.shape[1],
         )
         return self
 
@@ -165,14 +168,10 @@ class CrossPlatformAligner:
     ) -> AlignmentResult:
         self._require_fitted()
         if list(scores.columns) != self._pathway_names:
-            raise ValueError(
-                "scores columns must match those seen at fit time"
-            )
+            raise ValueError("scores columns must match those seen at fit time")
 
         assert self._reference_platform is not None
-        platforms_ = pd.Series(
-            [str(p) for p in platforms], index=scores.index, name="platform"
-        )
+        platforms_ = pd.Series([str(p) for p in platforms], index=scores.index, name="platform")
         emb = np.asarray(embeddings, dtype=float)
 
         Y_raw = scores.to_numpy(dtype=float)
@@ -203,7 +202,8 @@ class CrossPlatformAligner:
         if unseen:
             logger.warning(
                 "[CrossPlatformAligner] unseen platforms at transform time: "
-                "%s (no shift applied)", sorted(set(unseen)),
+                "%s (no shift applied)",
+                sorted(set(unseen)),
             )
 
         aligned = pd.DataFrame(Y_out, index=scores.index, columns=scores.columns)
@@ -217,8 +217,7 @@ class CrossPlatformAligner:
         per_platform_drift: Dict[str, Dict[str, float]] = {}
         for plat, offset in self._platform_offsets.items():
             per_platform_drift[plat] = {
-                name: float(val)
-                for name, val in zip(self._pathway_names, offset)
+                name: float(val) for name, val in zip(self._pathway_names, offset)
             }
 
         return AlignmentResult(
@@ -253,7 +252,8 @@ class CrossPlatformAligner:
         if platform not in self._platform_offsets:
             raise KeyError(f"platform '{platform}' not seen at fit time")
         return pd.Series(
-            self._platform_offsets[platform], index=self._pathway_names,
+            self._platform_offsets[platform],
+            index=self._pathway_names,
         )
 
     def _require_fitted(self) -> None:

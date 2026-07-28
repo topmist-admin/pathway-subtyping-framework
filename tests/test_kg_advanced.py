@@ -10,8 +10,8 @@ import pytest
 from pathway_subtyping.knowledge_graph.builder import KnowledgeGraph
 from pathway_subtyping.knowledge_graph.schema import EdgeType, NodeType
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def rich_kg():
@@ -82,6 +82,7 @@ def expression(rich_kg):
 # TOPOLOGY-WEIGHTED SCORING
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestCentrality:
 
     def test_degree_centrality(self, rich_kg):
@@ -132,15 +133,14 @@ class TestTopologyWeightedScoring:
         assert not np.allclose(weighted, uniform, atol=0.01)
 
     def test_missing_pathway(self, rich_kg, expression):
-        scores = rich_kg.topology_weighted_pathway_score(
-            expression, "NONEXISTENT"
-        )
+        scores = rich_kg.topology_weighted_pathway_score(expression, "NONEXISTENT")
         assert np.allclose(scores, 0.0)
 
 
 # ══════════════════════════════════════════════════════════════════════
 # HIERARCHICAL PATHWAY QUERIES
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestHierarchicalQueries:
 
@@ -190,6 +190,7 @@ class TestHierarchicalQueries:
 # ══════════════════════════════════════════════════════════════════════
 # CROSS-OMICS ENTITY RESOLUTION
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestEntityResolution:
 

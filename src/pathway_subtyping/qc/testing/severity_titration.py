@@ -179,5 +179,6 @@ class SeverityTitration:
     ) -> "InjectedBatch":
         """Generate a defect batch at a specific severity level."""
         from .orthogonality import OrthogonalityMatrix
+
         ortho = OrthogonalityMatrix(simulator=self.simulator)
         return ortho._generate_defect_batch(defect_type, severity, n_cells)

@@ -202,12 +202,16 @@ class BiologicalRules:
             conditions=[
                 Condition(predicate="has_lof_variant"),
                 Condition(predicate="is_synaptic_gene"),
-                Condition(predicate="cell_type_enriched",
-                         arguments={"cell_type": "excitatory_neuron"}),
+                Condition(
+                    predicate="cell_type_enriched", arguments={"cell_type": "excitatory_neuron"}
+                ),
             ],
             conclusion=Conclusion(
                 type=ConclusionType.SUBTYPE_INDICATOR.value,
-                attributes={"subtype": "excitatory_inhibitory_imbalance", "direction": "excitatory"},
+                attributes={
+                    "subtype": "excitatory_inhibitory_imbalance",
+                    "direction": "excitatory",
+                },
             ),
             base_confidence=0.82,
             evidence_sources=[
@@ -325,11 +329,6 @@ class BiologicalRules:
         return None
 
     @classmethod
-    def get_rules_by_conclusion_type(
-        cls, conclusion_type: ConclusionType
-    ) -> List[Rule]:
+    def get_rules_by_conclusion_type(cls, conclusion_type: ConclusionType) -> List[Rule]:
         """Get rules producing a specific conclusion type."""
-        return [
-            r for r in cls.get_all_rules()
-            if r.conclusion.type == conclusion_type.value
-        ]
+        return [r for r in cls.get_all_rules() if r.conclusion.type == conclusion_type.value]

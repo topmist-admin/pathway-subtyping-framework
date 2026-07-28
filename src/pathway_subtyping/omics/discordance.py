@@ -69,6 +69,7 @@ class DiscordanceReport:
 # Entry point
 # --------------------------------------------------------------------------- #
 
+
 def flag_discordant_pathways(
     rna: pd.DataFrame,
     protein: pd.DataFrame,
@@ -98,9 +99,7 @@ def flag_discordant_pathways(
     shared_samples = rna.index.intersection(protein.index)
     shared_pathways = rna.columns.intersection(protein.columns)
     if len(shared_samples) == 0 or len(shared_pathways) == 0:
-        raise ValueError(
-            "rna and protein must share at least one sample and pathway"
-        )
+        raise ValueError("rna and protein must share at least one sample and pathway")
 
     rna_sub = rna.loc[shared_samples, shared_pathways]
     prot_sub = protein.loc[shared_samples, shared_pathways]
@@ -116,17 +115,20 @@ def flag_discordant_pathways(
             rho = float(rho_value) if not np.isnan(rho_value) else 0.0
         mad = float(np.abs(rna_v - prot_v).mean())
         discordant = (rho < threshold_rho) and (mad > threshold_abs_diff)
-        rows.append({
-            "pathway": pw,
-            "rho": rho,
-            "mean_absolute_diff": mad,
-            "discordant": bool(discordant),
-        })
+        rows.append(
+            {
+                "pathway": pw,
+                "rho": rho,
+                "mean_absolute_diff": mad,
+                "discordant": bool(discordant),
+            }
+        )
 
     stats = pd.DataFrame.from_records(rows).set_index("pathway")
     logger.info(
         "[Discordance] n_pathways=%d n_discordant=%d",
-        len(stats), int(stats["discordant"].sum()),
+        len(stats),
+        int(stats["discordant"].sum()),
     )
     return DiscordanceReport(
         pathway_stats=stats,

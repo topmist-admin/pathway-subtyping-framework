@@ -26,10 +26,10 @@ from pathway_subtyping.genesets import (
     RegulatoryGeneSetExpander,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Fixtures
 # --------------------------------------------------------------------------- #
+
 
 @pytest.fixture
 def coexpressed_cohort():
@@ -57,6 +57,7 @@ def coexpressed_cohort():
 # CoexpressionBackend
 # --------------------------------------------------------------------------- #
 
+
 class TestCoexpressionBackend:
 
     def test_similarity_shape_and_diagonal(self, coexpressed_cohort):
@@ -82,9 +83,7 @@ class TestCoexpressionBackend:
     def test_missing_genes_zero_similarity(self, coexpressed_cohort):
         df, _, _ = coexpressed_cohort
         backend = CoexpressionBackend(df)
-        sim = backend.similarity_matrix(
-            df.columns.tolist() + ["NOT_IN_EXPRESSION"]
-        )
+        sim = backend.similarity_matrix(df.columns.tolist() + ["NOT_IN_EXPRESSION"])
         # Missing gene row/col all zero except diagonal
         assert (sim.loc["NOT_IN_EXPRESSION", df.columns.tolist()] == 0.0).all()
         assert sim.at["NOT_IN_EXPRESSION", "NOT_IN_EXPRESSION"] == 1.0
@@ -95,14 +94,13 @@ class TestCoexpressionBackend:
 
     def test_rejects_tiny_cohort(self):
         with pytest.raises(ValueError, match=">= 3 samples"):
-            CoexpressionBackend(
-                pd.DataFrame({"g1": [1.0, 2.0], "g2": [3.0, 4.0]})
-            )
+            CoexpressionBackend(pd.DataFrame({"g1": [1.0, 2.0], "g2": [3.0, 4.0]}))
 
 
 # --------------------------------------------------------------------------- #
 # Borzoi stub
 # --------------------------------------------------------------------------- #
+
 
 class TestBorzoiBackendStub:
 
@@ -120,6 +118,7 @@ class TestBorzoiBackendStub:
 # --------------------------------------------------------------------------- #
 # RegulatoryGeneSetExpander
 # --------------------------------------------------------------------------- #
+
 
 class TestExpander:
 
@@ -204,9 +203,7 @@ class TestExpander:
 
     def test_source_genes_populated(self, coexpressed_cohort):
         df, pathway_genes, _ = coexpressed_cohort
-        expander = RegulatoryGeneSetExpander(
-            backend=CoexpressionBackend(df), source_k=2
-        )
+        expander = RegulatoryGeneSetExpander(backend=CoexpressionBackend(df), source_k=2)
         result = expander.expand(
             seed_genes=pathway_genes[:4],
             candidate_genes=df.columns.tolist(),

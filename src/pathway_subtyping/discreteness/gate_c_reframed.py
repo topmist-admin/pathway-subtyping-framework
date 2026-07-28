@@ -29,9 +29,12 @@ CONDITIONAL on Gate A and Gate B.
 
 Research use only.
 """
+
 from __future__ import annotations
-from dataclasses import dataclass, asdict
+
+from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional
+
 import numpy as np
 import pandas as pd
 
@@ -43,7 +46,7 @@ from .gate_c_conformal_membership import ConformalMembershipGate
 # at 30 and additionally require the achieved calibration fold to have held.
 MIN_N_GATE_C = 30
 PRIMARY_COVERAGE = 0.90
-COVERAGE_TOL = 0.05          # |achieved - target| <= tol  => "coverage achieved"
+COVERAGE_TOL = 0.05  # |achieved - target| <= tol  => "coverage achieved"
 
 
 @dataclass
@@ -55,12 +58,12 @@ class GateCReframedResult:
     target_coverage: float
     achieved_coverage: float
     coverage_ci95: List[float]
-    coverage_achieved: bool          # achieved within tol of the single target
-    sharpness_confident_fraction: float   # singleton-set fraction at 0.90
+    coverage_achieved: bool  # achieved within tol of the single target
+    sharpness_confident_fraction: float  # singleton-set fraction at 0.90
     sharpness_ci95: List[float]
     mean_set_size: float
     n_splits_used: int
-    under_powered: bool              # n < MIN_N_GATE_C
+    under_powered: bool  # n < MIN_N_GATE_C
     interpretation: str
 
     def to_dict(self) -> Dict[str, Any]:
@@ -80,24 +83,37 @@ class ReframedMembershipGate:
     """Gate C at a single 0.90 operating point, with a coverage CI, a min-n
     rule, and explicit conditional-on-A/B framing."""
 
-    def __init__(self, seed: int = 42, n_splits: int = 80,
-                 primary_coverage: float = PRIMARY_COVERAGE,
-                 tol: float = COVERAGE_TOL, min_n: int = MIN_N_GATE_C):
+    def __init__(
+        self,
+        seed: int = 42,
+        n_splits: int = 80,
+        primary_coverage: float = PRIMARY_COVERAGE,
+        tol: float = COVERAGE_TOL,
+        min_n: int = MIN_N_GATE_C,
+    ):
         self.seed = seed
         self.n_splits = n_splits
         self.primary_coverage = primary_coverage
         self.tol = tol
         self.min_n = min_n
 
-    def run(self, tumor: str, pathway_scores: pd.DataFrame,
-            cluster_labels: np.ndarray, k: int,
-            gate_a_pass: Optional[bool] = None,
-            gate_b_pass: Optional[bool] = None) -> GateCReframedResult:
+    def run(
+        self,
+        tumor: str,
+        pathway_scores: pd.DataFrame,
+        cluster_labels: np.ndarray,
+        k: int,
+        gate_a_pass: Optional[bool] = None,
+        gate_b_pass: Optional[bool] = None,
+    ) -> GateCReframedResult:
         n = pathway_scores.shape[0]
         base = ConformalMembershipGate(
-            seed=self.seed, n_splits=self.n_splits,
+            seed=self.seed,
+            n_splits=self.n_splits,
             target_coverages=(self.primary_coverage,),
-            primary_coverage=self.primary_coverage, calib_tol=self.tol)
+            primary_coverage=self.primary_coverage,
+            calib_tol=self.tol,
+        )
         res = base.membership_gate(tumor, pathway_scores, cluster_labels, k)
         key = f"{self.primary_coverage:.2f}"
         cov_splits = np.asarray(base._last_cov_per_split[key], float)
@@ -118,26 +134,37 @@ class ReframedMembershipGate:
         cond = "; ".join(cond_bits) if cond_bits else "not conditioned"
 
         if under:
-            interp = (f"n={n} < {self.min_n}: the 3-way split-conformal partition is under-powered; "
-                      f"assignment sharpness is reported for reference only, not as a gate. "
-                      f"Achieved coverage {achieved:.3f} (95% CI {cov_ci}).")
+            interp = (
+                f"n={n} < {self.min_n}: the 3-way split-conformal partition is under-powered; "
+                f"assignment sharpness is reported for reference only, not as a gate. "
+                f"Achieved coverage {achieved:.3f} (95% CI {cov_ci})."
+            )
         else:
-            base_txt = (f"At the single 0.90 target, achieved coverage {achieved:.3f} "
-                        f"(95% CI {cov_ci}); assignment sharpness (singleton fraction) "
-                        f"{sharp:.3f} (95% CI {sharp_ci}). ")
-            gate_txt = ("This quantifies how sharply patients are assigned GIVEN a partition; "
-                        "it is meaningful only when that partition is itself certified. "
-                        f"Conditioning: {cond}.")
+            base_txt = (
+                f"At the single 0.90 target, achieved coverage {achieved:.3f} "
+                f"(95% CI {cov_ci}); assignment sharpness (singleton fraction) "
+                f"{sharp:.3f} (95% CI {sharp_ci}). "
+            )
+            gate_txt = (
+                "This quantifies how sharply patients are assigned GIVEN a partition; "
+                "it is meaningful only when that partition is itself certified. "
+                f"Conditioning: {cond}."
+            )
             interp = base_txt + gate_txt
 
         return GateCReframedResult(
-            tumor=tumor, n=int(n), k=int(k),
+            tumor=tumor,
+            n=int(n),
+            k=int(k),
             conditional_on=cond,
             target_coverage=self.primary_coverage,
             achieved_coverage=round(achieved, 4),
-            coverage_ci95=cov_ci, coverage_achieved=cov_ok,
-            sharpness_confident_fraction=round(sharp, 4), sharpness_ci95=sharp_ci,
+            coverage_ci95=cov_ci,
+            coverage_achieved=cov_ok,
+            sharpness_confident_fraction=round(sharp, 4),
+            sharpness_ci95=sharp_ci,
             mean_set_size=res.mean_set_size[key],
-            n_splits_used=int(len(cov_splits)), under_powered=under,
+            n_splits_used=int(len(cov_splits)),
+            under_powered=under,
             interpretation=interp,
         )

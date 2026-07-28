@@ -42,15 +42,16 @@ Import path::
 
     from pathway_subtyping.discreteness import DiscretenessGateA, ReframedMembershipGate
 """
+
 from .gate_a_discreteness_null import (
     DiscretenessGateA,
     GateAv2Result,
     gap_statistic,
-    reduced_dim,
     reduce_scores,
+    reduced_dim,
 )
 from .gate_c_conformal_membership import ConformalMembershipGate
-from .gate_c_reframed import ReframedMembershipGate, GateCReframedResult
+from .gate_c_reframed import GateCReframedResult, ReframedMembershipGate
 
 __all__ = [
     "DiscretenessGateA",

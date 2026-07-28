@@ -77,9 +77,10 @@ and confound-control statistics so all are strictly comparable.
 
 Research use only.
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict, field
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -142,12 +143,19 @@ def _stability_of(
 ) -> float:
     """Fit GMM at fixed k -> reference labels, then framework bootstrap-ARI."""
     df = pd.DataFrame(data, columns=[f"z{j}" for j in range(data.shape[1])])
-    gmm = GaussianMixture(n_components=n_clusters, covariance_type="full",
-                          n_init=5, random_state=gmm_seed, reg_covar=1e-6)
+    gmm = GaussianMixture(
+        n_components=n_clusters,
+        covariance_type="full",
+        n_init=5,
+        random_state=gmm_seed,
+        reg_covar=1e-6,
+    )
     gmm.fit(data)
     labels = gmm.predict(data)
     vg = ValidationGates(seed=seed, n_bootstrap=n_bootstrap, show_progress=False)
-    return float(vg.stability_test_bootstrap(df, labels, n_clusters, gmm_seed=gmm_seed).metric_value)
+    return float(
+        vg.stability_test_bootstrap(df, labels, n_clusters, gmm_seed=gmm_seed).metric_value
+    )
 
 
 def _single_gaussian_once(mean, var, n, n_clusters, seed, n_bootstrap, gmm_seed) -> float:
@@ -187,30 +195,43 @@ def gap_statistic(Z: np.ndarray, k_range, seed: int, n_ref: int = 50) -> Dict[st
     n = Z.shape[0]
     logW, gaps, sk = [], [], []
     for k in k_range:
-        gm = GaussianMixture(n_components=k, covariance_type="full", n_init=5,
-                             random_state=seed, reg_covar=1e-6).fit(Z)
+        gm = GaussianMixture(
+            n_components=k, covariance_type="full", n_init=5, random_state=seed, reg_covar=1e-6
+        ).fit(Z)
         lab = gm.predict(Z)
         lw = np.log(_within_dispersion(Z, lab, k) + 1e-12)
         ref_lw = []
         for b in range(n_ref):
             U = rng.uniform(lo, hi, size=(n, Z.shape[1]))
-            gmb = GaussianMixture(n_components=k, covariance_type="full", n_init=3,
-                                  random_state=seed + b + 1, reg_covar=1e-6).fit(U)
+            gmb = GaussianMixture(
+                n_components=k,
+                covariance_type="full",
+                n_init=3,
+                random_state=seed + b + 1,
+                reg_covar=1e-6,
+            ).fit(U)
             ref_lw.append(np.log(_within_dispersion(U, gmb.predict(U), k) + 1e-12))
         ref_lw = np.array(ref_lw)
         gap = ref_lw.mean() - lw
         s = ref_lw.std() * np.sqrt(1 + 1.0 / n_ref)
-        logW.append(lw); gaps.append(gap); sk.append(s)
+        logW.append(lw)
+        gaps.append(gap)
+        sk.append(s)
     gaps, sk = np.array(gaps), np.array(sk)
     ks = list(k_range)
     # first-SE rule: smallest k with gap(k) >= gap(k+1) - s(k+1)
     gap_opt = ks[-1]
     for i in range(len(ks) - 1):
         if gaps[i] >= gaps[i + 1] - sk[i + 1]:
-            gap_opt = ks[i]; break
-    return {"k_range": ks, "gap": [round(float(x), 4) for x in gaps],
-            "gap_se": [round(float(x), 4) for x in sk],
-            "logW": [round(float(x), 4) for x in logW], "gap_optimal_k": int(gap_opt)}
+            gap_opt = ks[i]
+            break
+    return {
+        "k_range": ks,
+        "gap": [round(float(x), 4) for x in gaps],
+        "gap_se": [round(float(x), 4) for x in sk],
+        "logW": [round(float(x), 4) for x in logW],
+        "gap_optimal_k": int(gap_opt),
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -273,9 +294,17 @@ class DiscretenessGateA(ValidationGates):
     """Gate A v2 — discreteness null (single-Gaussian primary + gap + dip),
     with the independence null demoted to a confound control."""
 
-    def __init__(self, seed: int = 42, n_ref: int = 200, n_bootstrap: int = 50,
-                 n_jobs: int = -1, alpha: float = 0.05, gap_n_ref: int = 50,
-                 k_range=(1, 2, 3, 4, 5, 6), **kw):
+    def __init__(
+        self,
+        seed: int = 42,
+        n_ref: int = 200,
+        n_bootstrap: int = 50,
+        n_jobs: int = -1,
+        alpha: float = 0.05,
+        gap_n_ref: int = 50,
+        k_range=(1, 2, 3, 4, 5, 6),
+        **kw,
+    ):
         super().__init__(seed=seed, n_bootstrap=n_bootstrap, show_progress=False, **kw)
         self.n_ref = n_ref
         self.n_jobs = n_jobs
@@ -292,7 +321,9 @@ class DiscretenessGateA(ValidationGates):
         discrete structure yields a high frac at a stable modal k; a continuum
         scatters k across bootstraps -> low frac -> route to not-testable."""
         from collections import Counter
+
         from sklearn.metrics import silhouette_score
+
         rng = np.random.default_rng(self.seed + 777)
         n = Z.shape[0]
         kmax = min(6, n // 5)
@@ -307,8 +338,13 @@ class DiscretenessGateA(ValidationGates):
                 if k >= len(idx):
                     break
                 try:
-                    gm = GaussianMixture(n_components=k, covariance_type="full",
-                                         n_init=3, random_state=self.seed, reg_covar=1e-6).fit(Zi)
+                    gm = GaussianMixture(
+                        n_components=k,
+                        covariance_type="full",
+                        n_init=3,
+                        random_state=self.seed,
+                        reg_covar=1e-6,
+                    ).fit(Zi)
                     lab = gm.predict(Zi)
                     if len(set(lab)) < 2:
                         continue
@@ -323,8 +359,13 @@ class DiscretenessGateA(ValidationGates):
         modal_k, modal_n = c.most_common(1)[0]
         return float(modal_n / len(picks)), int(modal_k)
 
-    def run(self, tumor: str, pathway_scores: pd.DataFrame, n_clusters: int,
-            gmm_seed: Optional[int] = None) -> GateAv2Result:
+    def run(
+        self,
+        tumor: str,
+        pathway_scores: pd.DataFrame,
+        n_clusters: int,
+        gmm_seed: Optional[int] = None,
+    ) -> GateAv2Result:
         gmm_seed = self.seed if gmm_seed is None else gmm_seed
         scores = pathway_scores.values
         n, p = scores.shape
@@ -332,13 +373,18 @@ class DiscretenessGateA(ValidationGates):
 
         # ---- dimensionality reduction (shared by observed + references) ---- #
         Z, pca = reduce_scores(scores, d, self.seed)
-        d = Z.shape[1]          # effective dim after capping at (p, n-1)
-        var = Z.var(0)          # per-PC variances -> diagonal single-Gaussian
-        mean = Z.mean(0)        # ~0 after PCA centring
+        d = Z.shape[1]  # effective dim after capping at (p, n-1)
+        var = Z.var(0)  # per-PC variances -> diagonal single-Gaussian
+        mean = Z.mean(0)  # ~0 after PCA centring
 
         # ---- observed partition + statistic in the reduced space ---------- #
-        gmm = GaussianMixture(n_components=n_clusters, covariance_type="full",
-                              n_init=10, random_state=gmm_seed, reg_covar=1e-6).fit(Z)
+        gmm = GaussianMixture(
+            n_components=n_clusters,
+            covariance_type="full",
+            n_init=10,
+            random_state=gmm_seed,
+            reg_covar=1e-6,
+        ).fit(Z)
         obs_labels = gmm.predict(Z)
         Zdf = pd.DataFrame(Z, columns=[f"z{j}" for j in range(d)])
         obs_res = self.stability_test_bootstrap(Zdf, obs_labels, n_clusters, gmm_seed=gmm_seed)
@@ -352,9 +398,11 @@ class DiscretenessGateA(ValidationGates):
         ss = np.random.SeedSequence(self.seed)
         seeds = [int(np.random.default_rng(s).integers(1, 2**31)) for s in ss.spawn(self.n_ref)]
         sg = Parallel(n_jobs=self.n_jobs, prefer="threads")(
-            delayed(_single_gaussian_once)(mean, var, n, n_clusters, seeds[i],
-                                           self.n_bootstrap, gmm_seed + i + 1)
-            for i in range(self.n_ref))
+            delayed(_single_gaussian_once)(
+                mean, var, n, n_clusters, seeds[i], self.n_bootstrap, gmm_seed + i + 1
+            )
+            for i in range(self.n_ref)
+        )
         sg = np.asarray([x for x in sg if np.isfinite(x)])
         sg_mu, sg_sd = float(sg.mean()), float(sg.std())
         sg_p05, sg_p50, sg_p95 = [float(np.percentile(sg, q)) for q in (5, 50, 95)]
@@ -363,16 +411,22 @@ class DiscretenessGateA(ValidationGates):
 
         # ---- confound control: independence (feature-permute) null -------- #
         fp = Parallel(n_jobs=self.n_jobs, prefer="threads")(
-            delayed(_feature_permute_once)(scores, n_clusters, seeds[i],
-                                           self.n_bootstrap, gmm_seed + i + 1)
-            for i in range(self.n_ref))
+            delayed(_feature_permute_once)(
+                scores, n_clusters, seeds[i], self.n_bootstrap, gmm_seed + i + 1
+            )
+            for i in range(self.n_ref)
+        )
         fp = np.asarray([x for x in fp if np.isfinite(x)])
         fp_mu, fp_p95 = float(fp.mean()), float(np.percentile(fp, 95))
         fp_p = float((np.sum(fp >= obs) + 1) / (len(fp) + 1))
 
         # ---- (B) gap statistic -------------------------------------------- #
         gap = gap_statistic(Z, self.k_range, self.seed, n_ref=self.gap_n_ref)
-        gap_at_k = float(gap["gap"][gap["k_range"].index(n_clusters)]) if n_clusters in gap["k_range"] else float("nan")
+        gap_at_k = (
+            float(gap["gap"][gap["k_range"].index(n_clusters)])
+            if n_clusters in gap["k_range"]
+            else float("nan")
+        )
         gap_supports = bool(gap["gap_optimal_k"] >= 2 and gap["gap_optimal_k"] == n_clusters)
 
         # ---- (C) dip test on PC1 and GMM discriminant axis ---------------- #
@@ -381,8 +435,11 @@ class DiscretenessGateA(ValidationGates):
         means = gmm.means_
         if len(means) >= 2:
             from itertools import combinations
-            pair = max(combinations(range(len(means)), 2),
-                       key=lambda ij: np.sum((means[ij[0]] - means[ij[1]]) ** 2))
+
+            pair = max(
+                combinations(range(len(means)), 2),
+                key=lambda ij: np.sum((means[ij[0]] - means[ij[1]]) ** 2),
+            )
             axis = means[pair[0]] - means[pair[1]]
             axis = axis / (np.linalg.norm(axis) + 1e-12)
             disc = Z @ axis
@@ -394,7 +451,7 @@ class DiscretenessGateA(ValidationGates):
 
         # ---- k-stability + testability ------------------------------------ #
         kfrac, modal_k = self._k_stability(Z, n_clusters)
-        testable = bool(kfrac >= 0.5)          # a reproducible modal k exists
+        testable = bool(kfrac >= 0.5)  # a reproducible modal k exists
         modal_matches_fixed = bool(modal_k == n_clusters)
 
         passed = bool(obs > sg_p95 and sg_p < self.alpha)
@@ -416,20 +473,37 @@ class DiscretenessGateA(ValidationGates):
         )
 
         res = GateAv2Result(
-            tumor=tumor, n=n, n_clusters=n_clusters, reduced_d=d,
-            observed_stability=round(obs, 4), observed_ci95=ci,
-            sg_ref_mean=round(sg_mu, 4), sg_ref_p05=round(sg_p05, 4),
-            sg_ref_p50=round(sg_p50, 4), sg_ref_p95=round(sg_p95, 4),
-            sg_empirical_p=round(sg_p, 4), sg_effect_z=round(sg_z, 3) if np.isfinite(sg_z) else float("nan"),
+            tumor=tumor,
+            n=n,
+            n_clusters=n_clusters,
+            reduced_d=d,
+            observed_stability=round(obs, 4),
+            observed_ci95=ci,
+            sg_ref_mean=round(sg_mu, 4),
+            sg_ref_p05=round(sg_p05, 4),
+            sg_ref_p50=round(sg_p50, 4),
+            sg_ref_p95=round(sg_p95, 4),
+            sg_empirical_p=round(sg_p, 4),
+            sg_effect_z=round(sg_z, 3) if np.isfinite(sg_z) else float("nan"),
             passed=passed,
-            gap_optimal_k=gap["gap_optimal_k"], gap_supports_k=gap_supports,
+            gap_optimal_k=gap["gap_optimal_k"],
+            gap_supports_k=gap_supports,
             gap_at_k=round(gap_at_k, 4) if np.isfinite(gap_at_k) else float("nan"),
-            dip_pc1_p=dip_pc1["p"], dip_discriminant_p=dip_disc["p"], unimodal_flag=unimodal,
-            k_stability_frac=round(kfrac, 4), modal_k=modal_k,
-            modal_matches_fixed=modal_matches_fixed, testable=testable, verdict=verdict,
-            fp_ref_mean=round(fp_mu, 4), fp_ref_p95=round(fp_p95, 4),
-            fp_empirical_p=round(fp_p, 4), fp_would_pass=bool(obs > fp_p95),
-            n_ref=int(len(sg)), n_bootstrap=self.n_bootstrap, interpretation=interp,
+            dip_pc1_p=dip_pc1["p"],
+            dip_discriminant_p=dip_disc["p"],
+            unimodal_flag=unimodal,
+            k_stability_frac=round(kfrac, 4),
+            modal_k=modal_k,
+            modal_matches_fixed=modal_matches_fixed,
+            testable=testable,
+            verdict=verdict,
+            fp_ref_mean=round(fp_mu, 4),
+            fp_ref_p95=round(fp_p95, 4),
+            fp_empirical_p=round(fp_p, 4),
+            fp_would_pass=bool(obs > fp_p95),
+            n_ref=int(len(sg)),
+            n_bootstrap=self.n_bootstrap,
+            interpretation=interp,
         )
         # attach raw distributions for plotting (not in to_dict)
         res.sg_distribution = sg

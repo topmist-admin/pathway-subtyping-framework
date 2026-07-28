@@ -42,9 +42,7 @@ class TestConfoundGateGSE80655Like:
         flip = rng.random(len(clusters)) < 0.12
         clusters = np.where(flip, rng.integers(0, 3, len(clusters)), clusters)
         # diagnosis independent of cluster (SCZ vs Control, ~balanced per region)
-        diagnosis = rng.permutation(
-            np.array(["SCZ"] * 70 + ["Control"] * 71)
-        )
+        diagnosis = rng.permutation(np.array(["SCZ"] * 70 + ["Control"] * 71))
         return clusters, regions, diagnosis
 
     def test_region_flagged_diagnosis_cleared(self):
@@ -88,12 +86,8 @@ class TestConfoundGateGSE80655Like:
 
         rng = np.random.default_rng(20260708)
         n = 60
-        pathway_scores = pd.DataFrame(
-            rng.normal(size=(n, 8)), columns=[f"PW{i}" for i in range(8)]
-        )
-        gene_burdens = pd.DataFrame(
-            rng.normal(size=(n, 12)), columns=[f"G{i}" for i in range(12)]
-        )
+        pathway_scores = pd.DataFrame(rng.normal(size=(n, 8)), columns=[f"PW{i}" for i in range(8)])
+        gene_burdens = pd.DataFrame(rng.normal(size=(n, 12)), columns=[f"G{i}" for i in range(12)])
         pathways = {f"PW{i}": [f"G{i}", f"G{(i+1) % 12}"] for i in range(8)}
         clusters = rng.integers(0, 2, n)
         region = np.where(clusters == 0, "A", "B")  # perfectly confounded

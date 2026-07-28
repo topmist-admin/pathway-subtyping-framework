@@ -565,9 +565,7 @@ class KnowledgeGraph:
         gene_set = set(genes)
 
         # Check if we have directed (non-symmetric) edges in this pathway
-        directed_edges = self.get_directed_edges_in_pathway(
-            pathway_id, exclude_symmetric=True
-        )
+        directed_edges = self.get_directed_edges_in_pathway(pathway_id, exclude_symmetric=True)
 
         if directed_edges:
             # Use directed edges for topology-aware partitioning
@@ -670,9 +668,7 @@ class KnowledgeGraph:
             return []
 
         try:
-            paths = list(
-                nx.all_simple_paths(graph, source, target, cutoff=max_depth)
-            )
+            paths = list(nx.all_simple_paths(graph, source, target, cutoff=max_depth))
             return paths
         except nx.NodeNotFound:
             return []
@@ -724,8 +720,9 @@ class KnowledgeGraph:
         # Count edges between pathway A genes and pathway B genes
         inter_edges = []
         for source, target, data in self._graph.edges(data=True):
-            if (source in genes_a and target in genes_b and source not in shared) or \
-               (source in genes_b and target in genes_a and source not in shared):
+            if (source in genes_a and target in genes_b and source not in shared) or (
+                source in genes_b and target in genes_a and source not in shared
+            ):
                 inter_edges.append((source, target, data.get("weight", 1.0)))
 
         max_inter = len(genes_a - shared) * len(genes_b - shared)
@@ -879,9 +876,7 @@ class KnowledgeGraph:
             "name": name,
             "n_genes": len(genes),
             "genes": genes,
-            "children": [
-                self.get_pathway_hierarchy(child) for child in children
-            ],
+            "children": [self.get_pathway_hierarchy(child) for child in children],
         }
 
     def get_all_descendant_genes(self, pathway_id: str) -> List[str]:

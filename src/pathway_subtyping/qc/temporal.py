@@ -85,7 +85,8 @@ class TemporalResult:
     def get_problem_pathways(self) -> List[str]:
         """Return pathways with stalled or reversing trajectories."""
         return [
-            t.pathway for t in self.trajectories
+            t.pathway
+            for t in self.trajectories
             if t.trajectory_type in (TrajectoryType.STALLED, TrajectoryType.REVERSING)
         ]
 
@@ -207,7 +208,9 @@ class TemporalTracker:
 
         n_stalled = sum(1 for t in trajectories if t.trajectory_type == TrajectoryType.STALLED)
         n_reversing = sum(1 for t in trajectories if t.trajectory_type == TrajectoryType.REVERSING)
-        n_oscillating = sum(1 for t in trajectories if t.trajectory_type == TrajectoryType.OSCILLATING)
+        n_oscillating = sum(
+            1 for t in trajectories if t.trajectory_type == TrajectoryType.OSCILLATING
+        )
 
         summary = (
             f"Temporal: {len(trajectories)} pathways across {self.n_timepoints} timepoints. "
@@ -252,10 +255,7 @@ class TemporalTracker:
                 return TrajectoryType.STALLED
 
         # Check for oscillation BEFORE reversal: multiple sign changes in diffs
-        sign_changes = sum(
-            1 for i in range(len(diffs) - 1)
-            if diffs[i] * diffs[i + 1] < 0
-        )
+        sign_changes = sum(1 for i in range(len(diffs) - 1) if diffs[i] * diffs[i + 1] < 0)
         if sign_changes >= 2:
             return TrajectoryType.OSCILLATING
 

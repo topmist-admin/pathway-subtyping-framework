@@ -60,12 +60,8 @@ class KGDiff:
         return {
             "nodes_added": {k: sorted(v) for k, v in self.nodes_added.items()},
             "nodes_removed": {k: sorted(v) for k, v in self.nodes_removed.items()},
-            "edges_added": {
-                k: sorted(list(v)) for k, v in self.edges_added.items()
-            },
-            "edges_removed": {
-                k: sorted(list(v)) for k, v in self.edges_removed.items()
-            },
+            "edges_added": {k: sorted(list(v)) for k, v in self.edges_added.items()},
+            "edges_removed": {k: sorted(list(v)) for k, v in self.edges_removed.items()},
             "edges_flipped": sorted(self.edges_flipped),
             "summary": dict(self.summary),
         }
@@ -74,6 +70,7 @@ class KGDiff:
 # --------------------------------------------------------------------------- #
 # Internals
 # --------------------------------------------------------------------------- #
+
 
 def _nodes_by_type(kg: KnowledgeGraph) -> Dict[str, Set[str]]:
     out: Dict[str, Set[str]] = {}
@@ -99,6 +96,7 @@ def _directed_edges(kg: KnowledgeGraph) -> Set[Tuple[str, str, str]]:
 # --------------------------------------------------------------------------- #
 # Public entry point
 # --------------------------------------------------------------------------- #
+
 
 def diff_kgs(v1: KnowledgeGraph, v2: KnowledgeGraph) -> KGDiff:
     """Compute a structural diff between two knowledge graphs.
@@ -164,7 +162,7 @@ def diff_kgs(v1: KnowledgeGraph, v2: KnowledgeGraph) -> KGDiff:
         b = v2_edges.get(et_value, set())
         if not a or not b:
             continue
-        for (src, tgt) in a:
+        for src, tgt in a:
             if (src, tgt) in b:
                 continue
             if (tgt, src) in b:

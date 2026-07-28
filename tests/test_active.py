@@ -24,10 +24,10 @@ from pathway_subtyping.active import (
     SelectionStrategy,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Validation
 # --------------------------------------------------------------------------- #
+
 
 class TestValidation:
 
@@ -43,7 +43,8 @@ class TestValidation:
         sel = ActiveSampleSelector(strategy="uncertainty")
         with pytest.raises(ValueError, match="budget"):
             sel.select(
-                features=np.zeros((5, 3)), budget=0,
+                features=np.zeros((5, 3)),
+                budget=0,
                 probs=np.ones((5, 2)) / 2,
             )
 
@@ -56,7 +57,8 @@ class TestValidation:
         sel = ActiveSampleSelector(strategy="uncertainty")
         with pytest.raises(ValueError, match="probs has"):
             sel.select(
-                features=np.zeros((5, 3)), budget=2,
+                features=np.zeros((5, 3)),
+                budget=2,
                 probs=np.ones((3, 2)) / 2,
             )
 
@@ -64,7 +66,8 @@ class TestValidation:
         sel = ActiveSampleSelector(strategy="uncertainty")
         with pytest.raises(ValueError, match="uncertainty_scores has"):
             sel.select(
-                features=np.zeros((5, 3)), budget=2,
+                features=np.zeros((5, 3)),
+                budget=2,
                 uncertainty_scores=np.zeros(3),
             )
 
@@ -73,20 +76,25 @@ class TestValidation:
 # Uncertainty strategy
 # --------------------------------------------------------------------------- #
 
+
 class TestUncertaintyStrategy:
 
     def test_prefers_high_entropy(self):
         """A sample with uniform posterior (max entropy) should rank
         above samples whose posterior collapses on one component."""
-        probs = np.array([
-            [0.9, 0.1],    # confident
-            [0.5, 0.5],    # most uncertain
-            [0.95, 0.05],  # most confident
-            [0.6, 0.4],    # mid
-        ])
+        probs = np.array(
+            [
+                [0.9, 0.1],  # confident
+                [0.5, 0.5],  # most uncertain
+                [0.95, 0.05],  # most confident
+                [0.6, 0.4],  # mid
+            ]
+        )
         sel = ActiveSampleSelector(strategy="uncertainty")
         result = sel.select(
-            features=np.zeros((4, 2)), budget=2, probs=probs,
+            features=np.zeros((4, 2)),
+            budget=2,
+            probs=probs,
         )
         # Top-2 should be the uniform posterior (idx 1) and the mid one (idx 3)
         top = set(result.selected_indices.tolist())
@@ -97,7 +105,9 @@ class TestUncertaintyStrategy:
         scores = np.array([0.1, 0.9, 0.2, 0.8])
         sel = ActiveSampleSelector(strategy="uncertainty")
         result = sel.select(
-            features=np.zeros((4, 2)), budget=2, uncertainty_scores=scores,
+            features=np.zeros((4, 2)),
+            budget=2,
+            uncertainty_scores=scores,
         )
         top = set(result.selected_indices.tolist())
         assert top == {1, 3}  # top-2 uncertainty scores
@@ -106,6 +116,7 @@ class TestUncertaintyStrategy:
 # --------------------------------------------------------------------------- #
 # Diversity strategy
 # --------------------------------------------------------------------------- #
+
 
 class TestDiversityStrategy:
 
@@ -121,10 +132,12 @@ class TestDiversityStrategy:
         rng = np.random.default_rng(0)
         X = rng.standard_normal((60, 4))
         a = ActiveSampleSelector(strategy="diversity", seed=42).select(
-            features=X, budget=8,
+            features=X,
+            budget=8,
         )
         b = ActiveSampleSelector(strategy="diversity", seed=42).select(
-            features=X, budget=8,
+            features=X,
+            budget=8,
         )
         np.testing.assert_array_equal(a.selected_indices, b.selected_indices)
 
@@ -133,6 +146,7 @@ class TestDiversityStrategy:
 # Hybrid strategy
 # --------------------------------------------------------------------------- #
 
+
 class TestHybridStrategy:
 
     def test_hybrid_uses_both_signals(self):
@@ -140,10 +154,14 @@ class TestHybridStrategy:
         X = rng.standard_normal((50, 3))
         probs = rng.dirichlet(np.ones(2), size=50)
         a = ActiveSampleSelector(strategy="hybrid", alpha=1.0).select(
-            features=X, budget=10, probs=probs,
+            features=X,
+            budget=10,
+            probs=probs,
         )
         b = ActiveSampleSelector(strategy="hybrid", alpha=0.0).select(
-            features=X, budget=10, probs=probs,
+            features=X,
+            budget=10,
+            probs=probs,
         )
         # alpha=1.0 is pure uncertainty; alpha=0.0 is pure-distance
         # The selected sets should typically differ.
@@ -154,6 +172,7 @@ class TestHybridStrategy:
 # Roadmap acceptance: 90% accuracy at 40% labels
 # --------------------------------------------------------------------------- #
 
+
 def _autism_style_cohort(n_per_class: int = 120, n_pathways: int = 10, seed: int = 0):
     """Three-subtype synthetic cohort modelled after autism-style PSF data."""
     rng = np.random.default_rng(seed)
@@ -163,24 +182,27 @@ def _autism_style_cohort(n_per_class: int = 120, n_pathways: int = 10, seed: int
     noise = rng.normal(0, 0.7, size=base.shape)
     X = base + noise
     features = pd.DataFrame(
-        X, columns=[f"PATH_{i}" for i in range(n_pathways)],
+        X,
+        columns=[f"PATH_{i}" for i in range(n_pathways)],
     )
     labels = pd.Series(cluster_ids, name="cluster")
     return features, labels
 
 
 def _nn_accuracy(
-    train_X: np.ndarray, train_y: np.ndarray,
-    test_X: np.ndarray, test_y: np.ndarray,
+    train_X: np.ndarray,
+    train_y: np.ndarray,
+    test_X: np.ndarray,
+    test_y: np.ndarray,
 ) -> float:
     """1-NN accuracy from train set onto test set (cosine similarity)."""
     if len(train_X) == 0:
         # Majority-class fallback
-        return float(
-            (np.full_like(test_y, np.bincount(test_y).argmax()) == test_y).mean()
-        )
-    tn = np.linalg.norm(train_X, axis=1, keepdims=True); tn[tn == 0] = 1.0
-    en = np.linalg.norm(test_X, axis=1, keepdims=True); en[en == 0] = 1.0
+        return float((np.full_like(test_y, np.bincount(test_y).argmax()) == test_y).mean())
+    tn = np.linalg.norm(train_X, axis=1, keepdims=True)
+    tn[tn == 0] = 1.0
+    en = np.linalg.norm(test_X, axis=1, keepdims=True)
+    en[en == 0] = 1.0
     sim = (test_X / en) @ (train_X / tn).T
     predictions = train_y[sim.argmax(axis=1)]
     return float((predictions == test_y).mean())
@@ -218,7 +240,9 @@ class TestActiveLearningAcceptance:
 
         # Hybrid strategy — best of both worlds
         result = ActiveSampleSelector(strategy="hybrid", alpha=0.5).select(
-            features=X_pool, budget=budget, probs=probs,
+            features=X_pool,
+            budget=budget,
+            probs=probs,
         )
         X_train_al = X_pool[result.selected_indices]
         y_train_al = y_pool[result.selected_indices]
@@ -233,7 +257,9 @@ class TestActiveLearningAcceptance:
         probs = np.array([[0.7, 0.3], [0.4, 0.6], [0.9, 0.1]])
         sel = ActiveSampleSelector(strategy="uncertainty")
         result = sel.select(
-            features=np.zeros((3, 2)), budget=2, probs=probs,
+            features=np.zeros((3, 2)),
+            budget=2,
+            probs=probs,
         )
         d = result.to_dict()
         assert d["strategy"] == "uncertainty"

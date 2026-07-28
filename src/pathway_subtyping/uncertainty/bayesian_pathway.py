@@ -46,7 +46,9 @@ class PosteriorSample:
         return {
             "weights": np.asarray(self.weights).tolist(),
             "means": np.asarray(self.means).tolist(),
-            "assignments": None if self.assignments is None else np.asarray(self.assignments).tolist(),
+            "assignments": (
+                None if self.assignments is None else np.asarray(self.assignments).tolist()
+            ),
         }
 
 
@@ -139,9 +141,7 @@ class BayesianPathwayGMM:
         """
         self._require_fitted()
         probs = self.predict_proba(np.asarray(X))
-        rng = np.random.default_rng(
-            random_state if random_state is not None else self.random_state
-        )
+        rng = np.random.default_rng(random_state if random_state is not None else self.random_state)
         n_cells, n_comp = probs.shape
         cdf = np.cumsum(probs, axis=1)
         draws = np.empty((n_samples, n_cells), dtype=int)
@@ -162,31 +162,27 @@ class BayesianPathwayGMM:
         mean for component means. Returns a list of PosteriorSample.
         """
         self._require_fitted()
-        rng = np.random.default_rng(
-            random_state if random_state is not None else self.random_state
-        )
+        rng = np.random.default_rng(random_state if random_state is not None else self.random_state)
 
         # --- weights: Dirichlet over the variational concentrations -----
         conc = self._weights_concentration()
         weight_draws = rng.dirichlet(conc, size=n_samples)
 
         # --- means: Normal approx using variational posterior -----------
-        means_mu = self._model.means_                          # (K, d)
-        mean_precision = self._model.mean_precision_           # (K,)
+        means_mu = self._model.means_  # (K, d)
+        mean_precision = self._model.mean_precision_  # (K,)
         # Approx per-component covariance of the mean estimate:
         # inverse of (mean_precision * Wishart-mean-precision)
         # sklearn doesn't expose a clean posterior cov; we use a
         # numerically-safe proxy: sigma_post ≈ 1 / sqrt(mean_precision) * cov_chol.
-        cov = self._component_covariances()                    # (K, d, d)
+        cov = self._component_covariances()  # (K, d, d)
         d = means_mu.shape[1]
 
         samples: list = []
         for s in range(n_samples):
             mean_draws = np.empty_like(means_mu)
             for k in range(means_mu.shape[0]):
-                chol = np.linalg.cholesky(
-                    cov[k] / max(mean_precision[k], 1e-6) + 1e-8 * np.eye(d)
-                )
+                chol = np.linalg.cholesky(cov[k] / max(mean_precision[k], 1e-6) + 1e-8 * np.eye(d))
                 mean_draws[k] = means_mu[k] + chol @ rng.standard_normal(d)
             samples.append(PosteriorSample(weights=weight_draws[s], means=mean_draws))
         return samples

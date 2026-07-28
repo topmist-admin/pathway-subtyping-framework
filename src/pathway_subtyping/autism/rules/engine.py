@@ -127,14 +127,9 @@ class BiologicalContext:
 
     def get_drug_targets_for_gene(self, gene_id: str) -> Set[str]:
         """Get drugs that target a gene."""
-        return {
-            drug for drug, genes in self.drug_targets.items()
-            if gene_id in genes
-        }
+        return {drug for drug, genes in self.drug_targets.items() if gene_id in genes}
 
-    def check_mechanism_pathway_alignment(
-        self, drug_id: str, pathway_id: str
-    ) -> bool:
+    def check_mechanism_pathway_alignment(self, drug_id: str, pathway_id: str) -> bool:
         mechanism = self.drug_mechanisms.get(drug_id, "")
         function = self.pathway_functions.get(pathway_id, "")
         if not mechanism or not function:
@@ -228,7 +223,13 @@ class AutismRuleEngine:
 
             # Also try gene-independent rules (pathway convergence, etc.)
             if not any(
-                c.predicate in ("has_variant", "has_lof_variant", "has_damaging_variant", "has_missense_variant")
+                c.predicate
+                in (
+                    "has_variant",
+                    "has_lof_variant",
+                    "has_damaging_variant",
+                    "has_missense_variant",
+                )
                 for c in rule.conditions
             ):
                 result = self._evaluate_rule_for_gene(rule, individual_data, None)
@@ -257,10 +258,7 @@ class AutismRuleEngine:
         Returns:
             Dict mapping sample_id to list of FiredRule.
         """
-        return {
-            ind.sample_id: self.evaluate(ind, rule_ids)
-            for ind in cohort
-        }
+        return {ind.sample_id: self.evaluate(ind, rule_ids) for ind in cohort}
 
     def _evaluate_rule_for_gene(
         self,
@@ -277,9 +275,7 @@ class AutismRuleEngine:
         all_satisfied = True
 
         for condition in rule.conditions:
-            result = self._evaluator.evaluate(
-                condition, individual, gene=gene, bindings=bindings
-            )
+            result = self._evaluator.evaluate(condition, individual, gene=gene, bindings=bindings)
             if rule.logic == "AND" and not result.satisfied:
                 all_satisfied = False
                 break
@@ -320,8 +316,7 @@ class AutismRuleEngine:
             "n_fired": len(fired_rules),
             "by_conclusion_type": by_type,
             "mean_confidence": (
-                sum(fr.confidence for fr in fired_rules) / len(fired_rules)
-                if fired_rules else 0.0
+                sum(fr.confidence for fr in fired_rules) / len(fired_rules) if fired_rules else 0.0
             ),
             "genes_affected": list({fr.gene for fr in fired_rules if fr.gene}),
         }

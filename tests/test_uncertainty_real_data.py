@@ -59,9 +59,9 @@ class TestRealDataConformal:
         """
         report = _load_or_skip(path)
         stats = report["summary"][target]
-        assert stats["mean_oracle_deviation"] is not None, (
-            f"{dataset} target={target}: no runs recorded"
-        )
+        assert (
+            stats["mean_oracle_deviation"] is not None
+        ), f"{dataset} target={target}: no runs recorded"
         assert abs(stats["mean_oracle_deviation"]) < 0.02, (
             f"{dataset} target={target}: oracle deviation "
             f"{stats['mean_oracle_deviation']:+.4f} exceeds +/- 2%"

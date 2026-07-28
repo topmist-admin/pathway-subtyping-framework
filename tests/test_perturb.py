@@ -28,10 +28,10 @@ from pathway_subtyping.perturb import (
     ScreenResult,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Shared fixtures
 # --------------------------------------------------------------------------- #
+
 
 @pytest.fixture
 def synthetic_cohort():
@@ -59,26 +59,29 @@ def synthetic_cohort():
         cluster_ids.extend([c] * n_per)
 
     X = np.vstack(cells)
-    gene_names = [f"MARKER_A"] + [f"MARKER_B"] + [f"MARKER_C"] + [
-        f"GENE_{i}" for i in range(3, n_genes)
-    ]
+    gene_names = (
+        [f"MARKER_A"] + [f"MARKER_B"] + [f"MARKER_C"] + [f"GENE_{i}" for i in range(3, n_genes)]
+    )
     expression = pd.DataFrame(X, columns=gene_names)
 
     # Reference pathway scores: pathway_k is mean of cluster-k markers
     # plus small noise. This gives a clean signal that
     # MARKER_A controls pathway_0.
-    pathway_scores = pd.DataFrame({
-        "pathway_0": X[:, 0],  # driven by MARKER_A
-        "pathway_1": X[:, 1],  # driven by MARKER_B
-        "pathway_2": X[:, 2],  # driven by MARKER_C
-        "pathway_generic": X[:, 3:10].mean(axis=1),
-    })
+    pathway_scores = pd.DataFrame(
+        {
+            "pathway_0": X[:, 0],  # driven by MARKER_A
+            "pathway_1": X[:, 1],  # driven by MARKER_B
+            "pathway_2": X[:, 2],  # driven by MARKER_C
+            "pathway_generic": X[:, 3:10].mean(axis=1),
+        }
+    )
     return expression, pathway_scores, cluster_ids
 
 
 # --------------------------------------------------------------------------- #
 # FallbackPerturber
 # --------------------------------------------------------------------------- #
+
 
 class TestFallbackPerturber:
 
@@ -163,11 +166,15 @@ class TestOfficialBackend:
     def test_cache_lookup_miss_returns_none(self, tmp_path):
         """Cache lookup on an empty cache directory returns None (no error)."""
         import pandas as pd
+
         backend = OfficialBackend(
-            model_directory="/tmp/ckpt", cache_dir=str(tmp_path),
+            model_directory="/tmp/ckpt",
+            cache_dir=str(tmp_path),
         )
         expr = pd.DataFrame(
-            [[1.0, 2.0, 3.0]], columns=["A", "B", "C"], index=["cell_0"],
+            [[1.0, 2.0, 3.0]],
+            columns=["A", "B", "C"],
+            index=["cell_0"],
         )
         assert backend._cache_lookup(expr) is None
 
@@ -175,12 +182,15 @@ class TestOfficialBackend:
         """Storing an embedding then looking it up returns the same array."""
         import numpy as np
         import pandas as pd
+
         backend = OfficialBackend(
-            model_directory="/tmp/ckpt", cache_dir=str(tmp_path),
+            model_directory="/tmp/ckpt",
+            cache_dir=str(tmp_path),
         )
         expr = pd.DataFrame(
             [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
-            columns=["A", "B", "C"], index=["c0", "c1"],
+            columns=["A", "B", "C"],
+            index=["c0", "c1"],
         )
         emb = np.arange(2 * 8, dtype=float).reshape(2, 8)
         backend._cache_store(expr, emb)
@@ -192,14 +202,20 @@ class TestOfficialBackend:
         """Changing one expression value must produce a different cache key."""
         import numpy as np
         import pandas as pd
+
         backend = OfficialBackend(
-            model_directory="/tmp/ckpt", cache_dir=str(tmp_path),
+            model_directory="/tmp/ckpt",
+            cache_dir=str(tmp_path),
         )
         expr_a = pd.DataFrame(
-            [[1.0, 2.0]], columns=["A", "B"], index=["c0"],
+            [[1.0, 2.0]],
+            columns=["A", "B"],
+            index=["c0"],
         )
         expr_b = pd.DataFrame(
-            [[1.0, 2.01]], columns=["A", "B"], index=["c0"],
+            [[1.0, 2.01]],
+            columns=["A", "B"],
+            index=["c0"],
         )
         backend._cache_store(expr_a, np.zeros((1, 4)))
         assert backend._cache_lookup(expr_a) is not None
@@ -209,6 +225,7 @@ class TestOfficialBackend:
         """No cache_dir → store is a no-op; lookup returns None."""
         import numpy as np
         import pandas as pd
+
         backend = OfficialBackend(model_directory="/tmp/ckpt", cache_dir=None)
         expr = pd.DataFrame([[1.0]], columns=["A"], index=["c0"])
         backend._cache_store(expr, np.zeros((1, 4)))
@@ -220,6 +237,7 @@ class TestOfficialBackend:
 # --------------------------------------------------------------------------- #
 # GeneformerPerturber (high-level wrapper)
 # --------------------------------------------------------------------------- #
+
 
 class TestGeneformerPerturber:
 
@@ -253,6 +271,7 @@ class TestGeneformerPerturber:
 # --------------------------------------------------------------------------- #
 # MSVFromEmbedding
 # --------------------------------------------------------------------------- #
+
 
 class TestMSVFromEmbedding:
 
@@ -296,6 +315,7 @@ class TestMSVFromEmbedding:
 # PerturbationScreen
 # --------------------------------------------------------------------------- #
 
+
 class TestPerturbationScreen:
 
     def _make_screen(self, synthetic_cohort):
@@ -329,9 +349,7 @@ class TestPerturbationScreen:
 
     def test_rank_largest_first(self, synthetic_cohort):
         expr, _, screen = self._make_screen(synthetic_cohort)
-        result = screen.run(
-            expr, ["MARKER_A", "MARKER_B", "MARKER_C", "GENE_20"]
-        )
+        result = screen.run(expr, ["MARKER_A", "MARKER_B", "MARKER_C", "GENE_20"])
         ranking = result.rank()
         assert ranking.iloc[0, 0] >= ranking.iloc[-1, 0]
 
@@ -339,6 +357,7 @@ class TestPerturbationScreen:
 # --------------------------------------------------------------------------- #
 # PerturbationReport — directional signature (roadmap acceptance)
 # --------------------------------------------------------------------------- #
+
 
 class TestDirectionalSignature:
 
@@ -348,7 +367,8 @@ class TestDirectionalSignature:
         emb = perturber.embed(expr)
         head = MSVFromEmbedding().fit(emb, scores)
         return PerturbationScreen(perturber, head).run(
-            expr, ["MARKER_A", "MARKER_B", "MARKER_C", "GENE_20"],
+            expr,
+            ["MARKER_A", "MARKER_B", "MARKER_C", "GENE_20"],
         )
 
     def test_master_regulator_directional_expectation(self, synthetic_cohort):
@@ -372,9 +392,11 @@ class TestDirectionalSignature:
     def test_missing_gene_is_flagged(self, synthetic_cohort):
         result = self._screen_result(synthetic_cohort)
         report = PerturbationReport.from_screen(result)
-        check = report.check_directional_signature({
-            "NOT_IN_PANEL": {"pathway_0": -1},
-        })
+        check = report.check_directional_signature(
+            {
+                "NOT_IN_PANEL": {"pathway_0": -1},
+            }
+        )
         assert not check["passed"].all()
         assert check["reason"].iloc[0] == "missing gene or pathway"
 
@@ -409,6 +431,7 @@ class TestDirectionalSignature:
 # F1 integration: conformal intervals on perturbed MSV
 # --------------------------------------------------------------------------- #
 
+
 class TestConformalIntegration:
 
     def test_conformal_wraps_msv_head(self, synthetic_cohort):
@@ -429,12 +452,10 @@ class TestConformalIntegration:
         rng = np.random.default_rng(0)
         perm = rng.permutation(len(emb))
         cal_idx = perm[: len(emb) // 2]
-        te_idx = perm[len(emb) // 2:]
+        te_idx = perm[len(emb) // 2 :]
 
         predictor = ConformalPathwayPredictor(score_fn=score_fn, coverage=0.9)
         predictor.calibrate(emb[cal_idx], scores["pathway_0"].to_numpy()[cal_idx])
-        empirical = predictor.coverage_on(
-            emb[te_idx], scores["pathway_0"].to_numpy()[te_idx]
-        )
+        empirical = predictor.coverage_on(emb[te_idx], scores["pathway_0"].to_numpy()[te_idx])
         # Should be at or above nominal (finite-sample oracle effect)
         assert empirical >= 0.85

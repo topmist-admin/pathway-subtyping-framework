@@ -24,8 +24,8 @@ from pathway_subtyping.qc.atlas import (
 )
 from pathway_subtyping.qc.testing.simulator import ManufacturingSimulator, ManufacturingSpec
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def simulator():
@@ -78,6 +78,7 @@ def batch_scores_off_target():
 
 # ── Atlas Construction ────────────────────────────────────────────────
 
+
 class TestAtlasConstruction:
 
     def test_add_reference(self, simple_atlas):
@@ -108,11 +109,13 @@ class TestAtlasConstruction:
         assert atlas.n_references == 2
 
     def test_load_from_csv(self):
-        df = pd.DataFrame({
-            "cell_type": ["type_1", "type_2"],
-            "PW_A": [0.5, 0.1],
-            "PW_B": [0.3, 0.8],
-        })
+        df = pd.DataFrame(
+            {
+                "cell_type": ["type_1", "type_2"],
+                "PW_A": [0.5, 0.1],
+                "PW_B": [0.3, 0.8],
+            }
+        )
         with tempfile.NamedTemporaryFile(suffix=".csv", mode="w", delete=False) as f:
             df.to_csv(f, index=False)
             path = f.name
@@ -134,6 +137,7 @@ class TestAtlasConstruction:
 
 # ── Comparison ────────────────────────────────────────────────────────
 
+
 class TestAtlasComparison:
 
     def test_on_target_batch(self, simple_atlas, batch_scores_on_target):
@@ -152,15 +156,11 @@ class TestAtlasComparison:
 
     def test_expected_type_filtering(self, simple_atlas, batch_scores_on_target):
         # When expected_type is healthy_T_cell, cells near it are on-target
-        result = simple_atlas.compare(
-            batch_scores_on_target, expected_type="healthy_T_cell"
-        )
+        result = simple_atlas.compare(batch_scores_on_target, expected_type="healthy_T_cell")
         assert result.n_on_target > 50
 
         # When expected_type is exhausted_T_cell, most cells should be off-target
-        result2 = simple_atlas.compare(
-            batch_scores_on_target, expected_type="exhausted_T_cell"
-        )
+        result2 = simple_atlas.compare(batch_scores_on_target, expected_type="exhausted_T_cell")
         assert result2.n_on_target < result.n_on_target
 
     def test_type_distribution(self, simple_atlas, batch_scores_on_target):
@@ -221,6 +221,7 @@ class TestAtlasComparison:
 
 
 # ── Integration with Simulator ────────────────────────────────────────
+
 
 class TestAtlasSimulatorIntegration:
 

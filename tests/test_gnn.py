@@ -22,6 +22,7 @@ from pathway_subtyping.gnn.kg_embeddings import (
 # Check torch availability
 try:
     import torch
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
@@ -30,6 +31,7 @@ except ImportError:
 # ══════════════════════════════════════════════════════════════════════
 # KG EMBEDDINGS (pure numpy — always run)
 # ══════════════════════════════════════════════════════════════════════
+
 
 class TestNodeEmbeddings:
 
@@ -62,9 +64,7 @@ class TestNodeEmbeddings:
         assert batch.shape == (2, 2)
 
     def test_to_dict(self):
-        emb = NodeEmbeddings(
-            node_ids=["A"], embeddings=np.array([[1.0, 2.0]]), source="test"
-        )
+        emb = NodeEmbeddings(node_ids=["A"], embeddings=np.array([[1.0, 2.0]]), source="test")
         d = emb.to_dict()
         assert d["n_nodes"] == 1
         assert d["dim"] == 2
@@ -172,6 +172,7 @@ class TestEmbeddingTrainer:
 # EMBEDDING FUSION (numpy — always run)
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestEmbeddingFusion:
 
     def test_concat_fusion(self):
@@ -180,6 +181,7 @@ class TestEmbeddingFusion:
             FusionConfig,
             FusionMethod,
         )
+
         emb_a = NodeEmbeddings(
             node_ids=["G1", "G2"], embeddings=np.array([[1, 0], [0, 1]], dtype=float)
         )
@@ -196,6 +198,7 @@ class TestEmbeddingFusion:
             FusionConfig,
             FusionMethod,
         )
+
         rng = np.random.default_rng(42)
         emb_a = NodeEmbeddings(
             node_ids=[f"G{i}" for i in range(20)],
@@ -213,15 +216,15 @@ class TestEmbeddingFusion:
 
     def test_single_source(self):
         from pathway_subtyping.gnn.embeddings.fusion import EmbeddingFusion
-        emb = NodeEmbeddings(
-            node_ids=["G1"], embeddings=np.array([[1.0, 2.0]])
-        )
+
+        emb = NodeEmbeddings(node_ids=["G1"], embeddings=np.array([[1.0, 2.0]]))
         fusion = EmbeddingFusion()
         result = fusion.fuse({"only": emb})
         assert result is emb  # Returns same object
 
     def test_no_common_nodes(self):
         from pathway_subtyping.gnn.embeddings.fusion import EmbeddingFusion
+
         emb_a = NodeEmbeddings(node_ids=["A"], embeddings=np.array([[1.0]]))
         emb_b = NodeEmbeddings(node_ids=["B"], embeddings=np.array([[2.0]]))
         fusion = EmbeddingFusion()
@@ -234,17 +237,16 @@ class TestEmbeddingFusion:
             FusionConfig,
             FusionMethod,
         )
-        emb_a = NodeEmbeddings(
-            node_ids=["G1"], embeddings=np.array([[2.0, 0.0]])
+
+        emb_a = NodeEmbeddings(node_ids=["G1"], embeddings=np.array([[2.0, 0.0]]))
+        emb_b = NodeEmbeddings(node_ids=["G1"], embeddings=np.array([[0.0, 2.0]]))
+        fusion = EmbeddingFusion(
+            FusionConfig(
+                method=FusionMethod.WEIGHTED_SUM,
+                weights={"a": 0.7, "b": 0.3},
+                normalize=False,
+            )
         )
-        emb_b = NodeEmbeddings(
-            node_ids=["G1"], embeddings=np.array([[0.0, 2.0]])
-        )
-        fusion = EmbeddingFusion(FusionConfig(
-            method=FusionMethod.WEIGHTED_SUM,
-            weights={"a": 0.7, "b": 0.3},
-            normalize=False,
-        ))
         result = fusion.fuse({"a": emb_a, "b": emb_b})
         assert result.dim == 2
 
@@ -253,10 +255,12 @@ class TestEmbeddingFusion:
 # GNN CONFIG (always available)
 # ══════════════════════════════════════════════════════════════════════
 
+
 class TestGNNConfig:
 
     def test_default_config(self):
         from pathway_subtyping.gnn.config import GNNConfig
+
         config = GNNConfig()
         assert config.input_dim == 256
         assert config.num_layers == 3
@@ -264,12 +268,14 @@ class TestGNNConfig:
 
     def test_custom_config(self):
         from pathway_subtyping.gnn.config import GNNConfig
+
         config = GNNConfig(input_dim=64, hidden_dim=64, num_layers=2)
         assert config.input_dim == 64
         assert config.num_layers == 2
 
     def test_to_dict(self):
         from pathway_subtyping.gnn.config import GNNConfig
+
         d = GNNConfig().to_dict()
         assert "input_dim" in d
         assert "edge_types" in d
@@ -279,6 +285,7 @@ class TestGNNConfig:
 # GNN MODEL + LAYERS + ATTENTION (requires torch)
 # ══════════════════════════════════════════════════════════════════════
 
+
 @pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not installed")
 class TestGNNModel:
 
@@ -287,8 +294,11 @@ class TestGNNModel:
         from pathway_subtyping.gnn.model import OntologyAwareGNN
 
         config = GNNConfig(
-            input_dim=16, hidden_dim=16, output_dim=8,
-            num_layers=2, num_heads=2,
+            input_dim=16,
+            hidden_dim=16,
+            output_dim=8,
+            num_layers=2,
+            num_heads=2,
             edge_types=["gene_interacts_gene", "gene_regulates_gene"],
             prior_types=[],
         )
@@ -309,8 +319,11 @@ class TestGNNModel:
         from pathway_subtyping.gnn.model import OntologyAwareGNN
 
         config = GNNConfig(
-            input_dim=16, hidden_dim=16, output_dim=8,
-            num_layers=1, num_heads=2,
+            input_dim=16,
+            hidden_dim=16,
+            output_dim=8,
+            num_layers=1,
+            num_heads=2,
             edge_types=["gene_interacts_gene"],
             prior_types=[],
             task_heads=["gene_classification"],
@@ -330,6 +343,7 @@ class TestGNNModel:
 
     def test_gnn_output_to_dict(self):
         from pathway_subtyping.gnn.model import GNNOutput
+
         out = GNNOutput(loss=0.5)
         d = out.to_dict()
         assert d["loss"] == 0.5
@@ -340,6 +354,7 @@ class TestGNNLayers:
 
     def test_message_passing(self):
         from pathway_subtyping.gnn.layers import MessagePassingLayer
+
         layer = MessagePassingLayer(16, 16, ["r1", "r2"])
         x = torch.randn(10, 16)
         ei = torch.randint(0, 10, (2, 20))
@@ -349,6 +364,7 @@ class TestGNNLayers:
 
     def test_hierarchical_aggregator(self):
         from pathway_subtyping.gnn.layers import HierarchicalAggregator
+
         agg = HierarchicalAggregator(16, num_heads=2)
         x = torch.randn(10, 16)
         out = agg(x)
@@ -356,6 +372,7 @@ class TestGNNLayers:
 
     def test_bio_prior_weighting(self):
         from pathway_subtyping.gnn.layers import BioPriorWeighting
+
         bpw = BioPriorWeighting(16, ["pli", "expression"])
         x = torch.randn(10, 16)
         priors = {"pli": torch.rand(10), "expression": torch.rand(10)}
@@ -368,6 +385,7 @@ class TestAttention:
 
     def test_biological_attention(self):
         from pathway_subtyping.gnn.attention import BiologicalAttention
+
         attn = BiologicalAttention(16, num_heads=2, prior_types=["pli"])
         q = torch.randn(10, 16)
         k = torch.randn(10, 16)
@@ -379,6 +397,7 @@ class TestAttention:
 
     def test_attention_without_priors(self):
         from pathway_subtyping.gnn.attention import BiologicalAttention
+
         attn = BiologicalAttention(16, num_heads=2)
         q = torch.randn(5, 16)
         out, weights = attn(q, q, q)
@@ -386,6 +405,7 @@ class TestAttention:
 
     def test_pathway_co_attention(self):
         from pathway_subtyping.gnn.attention import PathwayCoAttention
+
         coattn = PathwayCoAttention(16, 16, num_heads=2)
         genes = torch.randn(20, 16)
         pathways = torch.randn(5, 16)
@@ -402,8 +422,11 @@ class TestGNNTrainer:
         from pathway_subtyping.gnn.model import GNNTrainer, OntologyAwareGNN
 
         config = GNNConfig(
-            input_dim=8, hidden_dim=8, output_dim=4,
-            num_layers=1, num_heads=2,
+            input_dim=8,
+            hidden_dim=8,
+            output_dim=4,
+            num_layers=1,
+            num_heads=2,
             edge_types=["r1"],
             prior_types=[],
             task_heads=["gene_classification"],
@@ -426,8 +449,11 @@ class TestGNNTrainer:
         from pathway_subtyping.gnn.model import GNNTrainer, OntologyAwareGNN
 
         config = GNNConfig(
-            input_dim=8, hidden_dim=8, output_dim=4,
-            num_layers=1, num_heads=2,
+            input_dim=8,
+            hidden_dim=8,
+            output_dim=4,
+            num_layers=1,
+            num_heads=2,
             edge_types=["r1"],
             prior_types=[],
             task_heads=["gene_classification"],

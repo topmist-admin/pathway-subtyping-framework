@@ -25,10 +25,10 @@ from pathway_subtyping.qc.offtarget_sequence import (
     compare_backends,
 )
 
-
 # --------------------------------------------------------------------------- #
 # AUROC primitive
 # --------------------------------------------------------------------------- #
+
 
 class TestAuroc:
 
@@ -57,6 +57,7 @@ class TestAuroc:
 # --------------------------------------------------------------------------- #
 # Similarity backend
 # --------------------------------------------------------------------------- #
+
 
 class TestSimilarityBackend:
 
@@ -96,8 +97,8 @@ class TestSimulatedEvo2:
         # Guide and two candidates at same overall Hamming similarity,
         # one with seed match and one with seed mismatch.
         guide = "AAAAAAAACCCCCCCC"  # 16 nt, seed = 'AAAAAAAA'
-        seed_match = "AAAAAAAATTTTTTTT"       # seed matches, tail mismatches
-        seed_mismatch = "TTTTTTTTCCCCCCCC"    # seed mismatches, tail matches
+        seed_match = "AAAAAAAATTTTTTTT"  # seed matches, tail mismatches
+        seed_mismatch = "TTTTTTTTCCCCCCCC"  # seed mismatches, tail matches
         rows = be.score(guide, {"A": seed_match, "B": seed_mismatch})
         row_a = next(r for r in rows if r.site_id == "A")
         row_b = next(r for r in rows if r.site_id == "B")
@@ -111,6 +112,7 @@ class TestSimulatedEvo2:
 # Official Evo 2 stub
 # --------------------------------------------------------------------------- #
 
+
 class TestEvo2Stub:
 
     def test_informative_error(self):
@@ -119,9 +121,7 @@ class TestEvo2Stub:
             scorer._lazy_load()
         except (ImportError, NotImplementedError) as exc:
             msg = str(exc).lower()
-            assert (
-                "qc-sequence" in msg or "evo2" in msg or "checkpoint" in msg
-            )
+            assert "qc-sequence" in msg or "evo2" in msg or "checkpoint" in msg
         else:
             pytest.skip("Evo 2 installed — skipping stub error test")
 
@@ -129,6 +129,7 @@ class TestEvo2Stub:
 # --------------------------------------------------------------------------- #
 # Roadmap acceptance: AUROC improvement >= 0.03
 # --------------------------------------------------------------------------- #
+
 
 def _synthetic_offtarget_panel(seed_len: int = 8, n_per_class: int = 25, rng_seed: int = 0):
     """Synthetic CRISPR panel where seed-region conservation is the
@@ -196,7 +197,9 @@ class TestRoadmapAcceptance:
         res = compare_backends(
             baseline=SimilarityBackend(),
             contender=SimulatedEvo2Backend(seed_length=8),
-            guide=guide, candidates=candidates, true_labels=labels,
+            guide=guide,
+            candidates=candidates,
+            true_labels=labels,
         )
         assert 0.0 <= res["baseline_auroc"] <= 1.0
         assert 0.0 <= res["contender_auroc"] <= 1.0
@@ -210,6 +213,10 @@ class TestScoreToDict:
         rows = be.score("AAAAAAAA", {"s": "AAAAAAAA"})
         d = rows[0].to_dict()
         assert {
-            "guide", "site_id", "candidate_sequence",
-            "similarity_score", "functional_score", "combined_score",
+            "guide",
+            "site_id",
+            "candidate_sequence",
+            "similarity_score",
+            "functional_score",
+            "combined_score",
         }.issubset(d.keys())

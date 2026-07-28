@@ -39,31 +39,41 @@ FEATURE_IDS = [
 # YES = primary (must fire), yes = secondary (may fire), - = must NOT fire
 EXPECTED_DETECTIONS: Dict[str, Dict[str, str]] = {
     DefectType.STALLED_CASCADE.value: {
-        "F1_cascade": "YES", "F3_tension": "yes", "F4_resolution_gate": "yes",
+        "F1_cascade": "YES",
+        "F3_tension": "yes",
+        "F4_resolution_gate": "yes",
     },
     DefectType.TEMPORAL_DRIFT.value: {
-        "F2_temporal": "YES", "F5_drift": "YES", "F3_tension": "yes", "F12_atlas": "yes",
+        "F2_temporal": "YES",
+        "F5_drift": "YES",
+        "F3_tension": "yes",
+        "F12_atlas": "yes",
     },
     DefectType.OFFTARGET.value: {
         "F6_offtarget": "YES",
     },
     DefectType.OVERDOSE.value: {
-        "F8_dosage": "YES", "F3_tension": "yes",
+        "F8_dosage": "YES",
+        "F3_tension": "yes",
     },
     DefectType.SUBPOPULATION.value: {
-        "F7_heterogeneity": "YES", "F12_atlas": "yes",
+        "F7_heterogeneity": "YES",
+        "F12_atlas": "yes",
     },
     DefectType.CROSSTALK.value: {
-        "F9_crosstalk": "YES", "F1_cascade": "yes",
+        "F9_crosstalk": "YES",
+        "F1_cascade": "yes",
     },
     DefectType.BROKEN_FEEDBACK.value: {
         "F10_feedback": "YES",
     },
     DefectType.STRESS.value: {
-        "F11_stress": "YES", "F3_tension": "yes",
+        "F11_stress": "YES",
+        "F3_tension": "yes",
     },
     DefectType.ATLAS_DRIFT.value: {
-        "F12_atlas": "YES", "F7_heterogeneity": "yes",
+        "F12_atlas": "YES",
+        "F7_heterogeneity": "yes",
     },
 }
 
@@ -235,32 +245,42 @@ class OrthogonalityMatrix:
             return passages[-1]
         elif defect_type == DefectType.OFFTARGET:
             return self.simulator.inject_offtarget(
-                batch, pathways=self.simulator.pathways[5:7],
-                cell_fraction=0.3, activation_level=severity,
+                batch,
+                pathways=self.simulator.pathways[5:7],
+                cell_fraction=0.3,
+                activation_level=severity,
             )
         elif defect_type == DefectType.OVERDOSE:
             return self.simulator.inject_overdose(
-                batch, pathways=self.simulator.pathways[:2],
+                batch,
+                pathways=self.simulator.pathways[:2],
                 multiplier=1.0 + severity * 4.0,
             )
         elif defect_type == DefectType.SUBPOPULATION:
             return self.simulator.inject_subpopulation(batch, fraction=0.15)
         elif defect_type == DefectType.CROSSTALK:
             return self.simulator.inject_crosstalk(
-                batch, self.simulator.pathways[0], self.simulator.pathways[1],
+                batch,
+                self.simulator.pathways[0],
+                self.simulator.pathways[1],
             )
         elif defect_type == DefectType.BROKEN_FEEDBACK:
             return self.simulator.inject_broken_feedback(
-                batch, loops=[(self.simulator.pathways[0], self.simulator.pathways[6])],
+                batch,
+                loops=[(self.simulator.pathways[0], self.simulator.pathways[6])],
             )
         elif defect_type == DefectType.STRESS:
             from .simulator import StressorType
+
             return self.simulator.inject_stress(
-                batch, stressor=StressorType.HYPOXIA, severity=severity,
+                batch,
+                stressor=StressorType.HYPOXIA,
+                severity=severity,
             )
         elif defect_type == DefectType.ATLAS_DRIFT:
             return self.simulator.inject_atlas_drift(
-                batch, drift_distance=severity,
+                batch,
+                drift_distance=severity,
             )
         else:
             return batch
@@ -268,6 +288,8 @@ class OrthogonalityMatrix:
     @staticmethod
     def _make_stub(feature_id: str) -> FeatureDetector:
         """Create a stub detector that always returns False (not detected)."""
+
         def stub(batch: InjectedBatch) -> FeatureDetection:
             return FeatureDetection(feature_id=feature_id, detected=False, score=0.0)
+
         return stub

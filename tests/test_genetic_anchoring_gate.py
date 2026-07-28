@@ -47,9 +47,7 @@ class TestHypergeometricEnrichment:
     def test_only_universe_members_count(self):
         # Genes outside the universe are ignored on both the test and risk side.
         universe = {"A", "B", "C", "D"}
-        r = hypergeometric_enrichment(
-            {"A", "B", "OUTSIDE"}, {"A", "OUTSIDE2"}, universe
-        )
+        r = hypergeometric_enrichment({"A", "B", "OUTSIDE"}, {"A", "OUTSIDE2"}, universe)
         assert r.testset_n == 2  # OUTSIDE dropped
         assert r.risk_in_universe == 1  # OUTSIDE2 dropped
         assert r.risk_hits == 1
@@ -79,9 +77,7 @@ class TestGeneticAnchoringVoineaguLike:
 
     def test_discrimination_neuronal_enriched_glial_not(self):
         universe, risk, neuronal, glial, _ = self._make_scenario()
-        res = feature_level_anchoring(
-            {"NEURONAL": neuronal, "GLIAL": glial}, risk, universe
-        )
+        res = feature_level_anchoring({"NEURONAL": neuronal, "GLIAL": glial}, risk, universe)
         neur = res["NEURONAL|background-matched"]
         gli = res["GLIAL|background-matched"]
 
@@ -149,12 +145,8 @@ class TestGeneticAnchoringInRunAll:
 
         rng = np.random.default_rng(20260716)
         n = 60
-        pathway_scores = pd.DataFrame(
-            rng.normal(size=(n, 8)), columns=[f"PW{i}" for i in range(8)]
-        )
-        gene_burdens = pd.DataFrame(
-            rng.normal(size=(n, 12)), columns=[f"G{i}" for i in range(12)]
-        )
+        pathway_scores = pd.DataFrame(rng.normal(size=(n, 8)), columns=[f"PW{i}" for i in range(8)])
+        gene_burdens = pd.DataFrame(rng.normal(size=(n, 12)), columns=[f"G{i}" for i in range(12)])
         pathways = {f"PW{i}": [f"G{i}", f"G{(i + 1) % 12}"] for i in range(8)}
         clusters = rng.integers(0, 2, n)
 

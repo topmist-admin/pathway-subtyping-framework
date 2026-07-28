@@ -131,57 +131,67 @@ class ResolutionGate:
         # F1: Cascade completion
         if cascade_result is not None:
             ccr = cascade_result.mean_completion_ratio
-            checks.append(GateCheck(
-                name="cascade_ccr",
-                passed=ccr >= self.min_cascade_ccr,
-                value=ccr,
-                threshold=self.min_cascade_ccr,
-                details=f"{cascade_result.n_incomplete} incomplete pathway(s)",
-            ))
+            checks.append(
+                GateCheck(
+                    name="cascade_ccr",
+                    passed=ccr >= self.min_cascade_ccr,
+                    value=ccr,
+                    threshold=self.min_cascade_ccr,
+                    details=f"{cascade_result.n_incomplete} incomplete pathway(s)",
+                )
+            )
 
         # F3: Tension
         if tension_result is not None:
             t = tension_result.mean_tension
-            checks.append(GateCheck(
-                name="tension",
-                passed=t <= self.max_tension,
-                value=t,
-                threshold=self.max_tension,
-                details=f"Max cell tension: {tension_result.max_tension:.3f}",
-            ))
+            checks.append(
+                GateCheck(
+                    name="tension",
+                    passed=t <= self.max_tension,
+                    value=t,
+                    threshold=self.max_tension,
+                    details=f"Max cell tension: {tension_result.max_tension:.3f}",
+                )
+            )
 
         # F6: Off-target
         if offtarget_result is not None:
             n_viol = offtarget_result.n_excluded_violations + offtarget_result.n_off_target
-            checks.append(GateCheck(
-                name="offtarget",
-                passed=n_viol <= self.max_offtarget,
-                value=float(n_viol),
-                threshold=float(self.max_offtarget),
-                details=f"Safety flag: {offtarget_result.safety_flag}",
-            ))
+            checks.append(
+                GateCheck(
+                    name="offtarget",
+                    passed=n_viol <= self.max_offtarget,
+                    value=float(n_viol),
+                    threshold=float(self.max_offtarget),
+                    details=f"Safety flag: {offtarget_result.safety_flag}",
+                )
+            )
 
         # F7: Heterogeneity
         if heterogeneity_result is not None:
             h = heterogeneity_result.heterogeneity_index
-            checks.append(GateCheck(
-                name="heterogeneity",
-                passed=h <= self.max_heterogeneity,
-                value=h,
-                threshold=self.max_heterogeneity,
-                details=f"{heterogeneity_result.n_nonconforming} non-conforming cells",
-            ))
+            checks.append(
+                GateCheck(
+                    name="heterogeneity",
+                    passed=h <= self.max_heterogeneity,
+                    value=h,
+                    threshold=self.max_heterogeneity,
+                    details=f"{heterogeneity_result.n_nonconforming} non-conforming cells",
+                )
+            )
 
         # F8: Dosage
         if dosage_result is not None:
             n_over = dosage_result.n_over
-            checks.append(GateCheck(
-                name="dosage",
-                passed=n_over <= self.max_dosage_violations,
-                value=float(n_over),
-                threshold=float(self.max_dosage_violations),
-                details=f"Toxicity risk: {dosage_result.toxicity_risk_score:.3f}",
-            ))
+            checks.append(
+                GateCheck(
+                    name="dosage",
+                    passed=n_over <= self.max_dosage_violations,
+                    value=float(n_over),
+                    threshold=float(self.max_dosage_violations),
+                    details=f"Toxicity risk: {dosage_result.toxicity_risk_score:.3f}",
+                )
+            )
 
         n_passed = sum(1 for c in checks if c.passed)
         n_failed = len(checks) - n_passed

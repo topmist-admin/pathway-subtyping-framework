@@ -139,7 +139,9 @@ class PerturbationScreen:
             rows.append(gene_delta)
 
         delta_msv_by_gene = pd.DataFrame(
-            np.vstack(rows), index=valid_genes, columns=pathway_names,
+            np.vstack(rows),
+            index=valid_genes,
+            columns=pathway_names,
         )
         l2_by_gene = pd.Series(
             np.linalg.norm(delta_msv_by_gene.to_numpy(), axis=1),
@@ -149,7 +151,8 @@ class PerturbationScreen:
 
         logger.info(
             "[PerturbationScreen] screened %d genes (%s); top = %s",
-            len(valid_genes), mode.value,
+            len(valid_genes),
+            mode.value,
             l2_by_gene.idxmax() if len(l2_by_gene) else None,
         )
         return ScreenResult(

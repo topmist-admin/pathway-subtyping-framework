@@ -115,9 +115,7 @@ class ManufacturingSpec:
     intended_pathways: List[str] = field(default_factory=list)
     excluded_pathways: List[str] = field(default_factory=list)
     therapeutic_windows: Dict[str, Tuple[float, float]] = field(default_factory=dict)
-    pathway_ratios: Dict[Tuple[str, str], Tuple[float, float]] = field(
-        default_factory=dict
-    )
+    pathway_ratios: Dict[Tuple[str, str], Tuple[float, float]] = field(default_factory=dict)
     feedback_loops: List[Tuple[str, str]] = field(default_factory=list)
     target_profile: Optional[Dict[str, float]] = None
 
@@ -125,9 +123,7 @@ class ManufacturingSpec:
         return {
             "intended_pathways": self.intended_pathways,
             "excluded_pathways": self.excluded_pathways,
-            "therapeutic_windows": {
-                k: list(v) for k, v in self.therapeutic_windows.items()
-            },
+            "therapeutic_windows": {k: list(v) for k, v in self.therapeutic_windows.items()},
             "feedback_loops": [list(pair) for pair in self.feedback_loops],
         }
 
@@ -268,9 +264,7 @@ class ManufacturingSimulator:
             genes = [f"GENE_{gene_idx + i}" for i in range(genes_per_pathway)]
             self._pathway_genes[pw] = genes
             gene_idx += genes_per_pathway
-        self._all_genes = [
-            g for genes in self._pathway_genes.values() for g in genes
-        ]
+        self._all_genes = [g for genes in self._pathway_genes.values() for g in genes]
 
     @property
     def pathway_genes(self) -> Dict[str, List[str]]:
@@ -316,25 +310,19 @@ class ManufacturingSimulator:
         )
 
         # Generate expression: base + noise, with intended pathways slightly elevated
-        expression = np.full(
-            (n_cells, len(self._all_genes)), base_expression, dtype=np.float64
-        )
+        expression = np.full((n_cells, len(self._all_genes)), base_expression, dtype=np.float64)
         expression += self._rng.normal(0, noise_std, size=expression.shape)
 
         # Elevate intended pathways
         for pw in spec.intended_pathways:
             if pw in self._pathway_genes:
-                col_indices = [
-                    self._all_genes.index(g) for g in self._pathway_genes[pw]
-                ]
+                col_indices = [self._all_genes.index(g) for g in self._pathway_genes[pw]]
                 expression[:, col_indices] += 2.0
 
         # Suppress excluded pathways
         for pw in spec.excluded_pathways:
             if pw in self._pathway_genes:
-                col_indices = [
-                    self._all_genes.index(g) for g in self._pathway_genes[pw]
-                ]
+                col_indices = [self._all_genes.index(g) for g in self._pathway_genes[pw]]
                 expression[:, col_indices] -= 2.0
 
         expr_df = pd.DataFrame(
@@ -464,9 +452,7 @@ class ManufacturingSimulator:
             for pw in affected_pathways:
                 if pw not in self._pathway_genes:
                     continue
-                col_indices = [
-                    self._all_genes.index(g) for g in self._pathway_genes[pw]
-                ]
+                col_indices = [self._all_genes.index(g) for g in self._pathway_genes[pw]]
                 expr[:, col_indices] -= drift_amount * 5.0
                 expr[:, col_indices] += self._rng.normal(
                     0, 0.1 * p, size=(len(expr), len(col_indices))
@@ -547,14 +533,10 @@ class ManufacturingSimulator:
         for pw in pathways:
             if pw not in self._pathway_genes:
                 continue
-            col_indices = [
-                self._all_genes.index(g) for g in self._pathway_genes[pw]
-            ]
+            col_indices = [self._all_genes.index(g) for g in self._pathway_genes[pw]]
             expr[affected_indices[:, None], col_indices] += 4.0 * activation_level
 
-        expr_df = pd.DataFrame(
-            expr, index=batch.expression.index, columns=batch.expression.columns
-        )
+        expr_df = pd.DataFrame(expr, index=batch.expression.index, columns=batch.expression.columns)
         pathway_scores = self._compute_pathway_scores(expr_df)
 
         cell_labels = [
@@ -615,16 +597,12 @@ class ManufacturingSimulator:
         for pw in pathways:
             if pw not in self._pathway_genes:
                 continue
-            col_indices = [
-                self._all_genes.index(g) for g in self._pathway_genes[pw]
-            ]
+            col_indices = [self._all_genes.index(g) for g in self._pathway_genes[pw]]
             # Scale up expression for these pathways
             current = expr[:, col_indices]
             expr[:, col_indices] = current * multiplier
 
-        expr_df = pd.DataFrame(
-            expr, index=batch.expression.index, columns=batch.expression.columns
-        )
+        expr_df = pd.DataFrame(expr, index=batch.expression.index, columns=batch.expression.columns)
         pathway_scores = self._compute_pathway_scores(expr_df)
 
         severity = min(1.0, (multiplier - 1.0) / 4.0)
@@ -696,14 +674,10 @@ class ManufacturingSimulator:
         for pw, shift in deviant_profile.items():
             if pw not in self._pathway_genes:
                 continue
-            col_indices = [
-                self._all_genes.index(g) for g in self._pathway_genes[pw]
-            ]
+            col_indices = [self._all_genes.index(g) for g in self._pathway_genes[pw]]
             expr[deviant_indices[:, None], col_indices] += shift
 
-        expr_df = pd.DataFrame(
-            expr, index=batch.expression.index, columns=batch.expression.columns
-        )
+        expr_df = pd.DataFrame(expr, index=batch.expression.index, columns=batch.expression.columns)
         pathway_scores = self._compute_pathway_scores(expr_df)
 
         cell_labels = [
@@ -799,9 +773,7 @@ class ManufacturingSimulator:
             expr[:, down_a] -= 0.5
             expr[:, down_b] -= 0.5
 
-        expr_df = pd.DataFrame(
-            expr, index=batch.expression.index, columns=batch.expression.columns
-        )
+        expr_df = pd.DataFrame(expr, index=batch.expression.index, columns=batch.expression.columns)
         pathway_scores = self._compute_pathway_scores(expr_df)
 
         cell_labels = [
@@ -872,12 +844,8 @@ class ManufacturingSimulator:
                 continue
             affected_pathways.extend([activator_pw, inhibitor_pw])
 
-            act_cols = [
-                self._all_genes.index(g) for g in self._pathway_genes[activator_pw]
-            ]
-            inh_cols = [
-                self._all_genes.index(g) for g in self._pathway_genes[inhibitor_pw]
-            ]
+            act_cols = [self._all_genes.index(g) for g in self._pathway_genes[activator_pw]]
+            inh_cols = [self._all_genes.index(g) for g in self._pathway_genes[inhibitor_pw]]
 
             # Make activator high
             expr[:, act_cols] += 2.0
@@ -889,9 +857,7 @@ class ManufacturingSimulator:
                 # Inverted: inhibitor goes DOWN when activator goes UP
                 expr[:, inh_cols] -= 2.5
 
-        expr_df = pd.DataFrame(
-            expr, index=batch.expression.index, columns=batch.expression.columns
-        )
+        expr_df = pd.DataFrame(expr, index=batch.expression.index, columns=batch.expression.columns)
         pathway_scores = self._compute_pathway_scores(expr_df)
 
         cell_labels = [
@@ -962,22 +928,16 @@ class ManufacturingSimulator:
         for pw in sig["activated"]:
             if pw not in self._pathway_genes:
                 continue
-            col_indices = [
-                self._all_genes.index(g) for g in self._pathway_genes[pw]
-            ]
+            col_indices = [self._all_genes.index(g) for g in self._pathway_genes[pw]]
             expr[:, col_indices] += 3.0 * severity
 
         for pw in sig["suppressed"]:
             if pw not in self._pathway_genes:
                 continue
-            col_indices = [
-                self._all_genes.index(g) for g in self._pathway_genes[pw]
-            ]
+            col_indices = [self._all_genes.index(g) for g in self._pathway_genes[pw]]
             expr[:, col_indices] -= 3.0 * severity
 
-        expr_df = pd.DataFrame(
-            expr, index=batch.expression.index, columns=batch.expression.columns
-        )
+        expr_df = pd.DataFrame(expr, index=batch.expression.index, columns=batch.expression.columns)
         pathway_scores = self._compute_pathway_scores(expr_df)
 
         cell_labels = [
@@ -1037,22 +997,16 @@ class ManufacturingSimulator:
 
         # Drift: shift random pathways away from their current mean
         n_drift_pathways = max(1, int(len(self.pathways) * drift_distance))
-        drift_pathways = list(
-            self._rng.choice(self.pathways, size=n_drift_pathways, replace=False)
-        )
+        drift_pathways = list(self._rng.choice(self.pathways, size=n_drift_pathways, replace=False))
 
         for pw in drift_pathways:
             if pw not in self._pathway_genes:
                 continue
-            col_indices = [
-                self._all_genes.index(g) for g in self._pathway_genes[pw]
-            ]
+            col_indices = [self._all_genes.index(g) for g in self._pathway_genes[pw]]
             direction = self._rng.choice([-1, 1])
             expr[:, col_indices] += direction * 3.0 * drift_distance
 
-        expr_df = pd.DataFrame(
-            expr, index=batch.expression.index, columns=batch.expression.columns
-        )
+        expr_df = pd.DataFrame(expr, index=batch.expression.index, columns=batch.expression.columns)
         pathway_scores = self._compute_pathway_scores(expr_df)
 
         cell_labels = [

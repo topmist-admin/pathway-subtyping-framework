@@ -87,23 +87,24 @@ if HAS_TORCH:
 
             # Input projections: one per node type
             in_dims = input_dims or {nt: config.input_dim for nt in config.node_types}
-            self.input_projections = nn.ModuleDict({
-                nt: nn.Linear(dim, config.hidden_dim)
-                for nt, dim in in_dims.items()
-            })
+            self.input_projections = nn.ModuleDict(
+                {nt: nn.Linear(dim, config.hidden_dim) for nt, dim in in_dims.items()}
+            )
 
             # Message passing layers
-            self.mp_layers = nn.ModuleList([
-                MessagePassingLayer(
-                    config.hidden_dim,
-                    config.hidden_dim,
-                    config.edge_types,
-                    aggregation=config.aggregation,
-                    dropout=config.dropout,
-                    residual=config.use_residual,
-                )
-                for _ in range(config.num_layers)
-            ])
+            self.mp_layers = nn.ModuleList(
+                [
+                    MessagePassingLayer(
+                        config.hidden_dim,
+                        config.hidden_dim,
+                        config.edge_types,
+                        aggregation=config.aggregation,
+                        dropout=config.dropout,
+                        residual=config.use_residual,
+                    )
+                    for _ in range(config.num_layers)
+                ]
+            )
 
             # Hierarchical aggregator
             self.hierarchy_agg = HierarchicalAggregator(
@@ -176,9 +177,7 @@ if HAS_TORCH:
 
             # Project if needed (assumes pre-projected if no node_type_ids)
             if node_type_ids and h.dim() == 2:
-                projected = torch.zeros(
-                    h.size(0), self.config.hidden_dim, device=h.device
-                )
+                projected = torch.zeros(h.size(0), self.config.hidden_dim, device=h.device)
                 for nt, indices in node_type_ids.items():
                     if nt in self.input_projections:
                         projected[indices] = self.input_projections[nt](h[indices])
@@ -264,9 +263,7 @@ if HAS_TORCH:
             )
 
             if output.loss is not None:
-                loss_tensor = F.cross_entropy(
-                    output.gene_logits, labels.to(self.device)
-                )
+                loss_tensor = F.cross_entropy(output.gene_logits, labels.to(self.device))
                 loss_tensor.backward()
                 self.optimizer.step()
                 return {"loss": float(loss_tensor.item())}
@@ -316,6 +313,5 @@ else:
 
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             raise ImportError(
-                "GNNTrainer requires PyTorch. "
-                "Install with: pip install pathway-subtyping[gnn]"
+                "GNNTrainer requires PyTorch. " "Install with: pip install pathway-subtyping[gnn]"
             )

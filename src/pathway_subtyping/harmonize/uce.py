@@ -122,24 +122,21 @@ class FallbackEmbedder(_BaseEmbedder):
         if k < self.embedding_dim:
             # pad with random orthogonal vectors (deterministic via seed)
             rng = np.random.default_rng(self.seed)
-            extra = rng.standard_normal(
-                (self.embedding_dim - k, centered.shape[1])
-            )
+            extra = rng.standard_normal((self.embedding_dim - k, centered.shape[1]))
             extra = np.linalg.qr(extra.T)[0].T
             self._components = np.vstack([self._components, extra])[: self.embedding_dim]
         self._fitted = True
         logger.info(
             "[FallbackEmbedder] fitted: embedding_dim=%d (from rank=%d)",
-            self.embedding_dim, k,
+            self.embedding_dim,
+            k,
         )
         return self
 
     # ----------------------------------------------------------- embed ---
     def embed(self, expression: pd.DataFrame) -> np.ndarray:
         """Project an expression matrix into the fitted embedding space."""
-        X = np.asarray(
-            expression.values if isinstance(expression, pd.DataFrame) else expression
-        )
+        X = np.asarray(expression.values if isinstance(expression, pd.DataFrame) else expression)
         if not self._fitted:
             self.fit(expression)
         assert self._mean is not None and self._components is not None

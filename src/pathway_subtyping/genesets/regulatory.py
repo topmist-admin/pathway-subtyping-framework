@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 # Result types
 # --------------------------------------------------------------------------- #
 
+
 @dataclass
 class ExpansionCandidate:
     """A single suggested gene with its supporting score.
@@ -102,6 +103,7 @@ class ExpansionResult:
 # Backend interface
 # --------------------------------------------------------------------------- #
 
+
 class RegulatoryBackend:
     """Abstract interface for regulatory-similarity backends.
 
@@ -127,8 +129,8 @@ class BorzoiBackend(RegulatoryBackend):
 
     def _lazy_load(self) -> None:
         try:
-            import torch  # noqa: F401
             import borzoi  # type: ignore  # noqa: F401
+            import torch  # noqa: F401
         except ImportError as exc:  # pragma: no cover - optional dep
             raise ImportError(
                 "BorzoiBackend requires torch + borzoi + the human genome "
@@ -170,7 +172,8 @@ class CoexpressionBackend(RegulatoryBackend):
             logger.warning(
                 "[CoexpressionBackend] %d gene(s) missing from expression "
                 "matrix; they will receive zero similarity: %s",
-                len(missing), missing[:5],
+                len(missing),
+                missing[:5],
             )
         sub = self.expression[present]
         corr = sub.corr(method="pearson")
@@ -191,6 +194,7 @@ class CoexpressionBackend(RegulatoryBackend):
 # --------------------------------------------------------------------------- #
 # High-level expander
 # --------------------------------------------------------------------------- #
+
 
 class RegulatoryGeneSetExpander:
     """Suggest candidate additions to a seed gene set.
@@ -251,9 +255,7 @@ class RegulatoryGeneSetExpander:
         # Rows: candidates; Cols: seed similarity
         seed_cols = [g for g in seed_genes if g in sim.columns]
         if not seed_cols:
-            raise ValueError(
-                "none of the seed genes are present in the similarity matrix"
-            )
+            raise ValueError("none of the seed genes are present in the similarity matrix")
 
         cand_rows = [g for g in candidate_genes if g in sim.index and g not in set(seed_genes)]
         if not cand_rows:
@@ -290,7 +292,9 @@ class RegulatoryGeneSetExpander:
 
         logger.info(
             "[RegulatoryGeneSetExpander] backend=%s seed=%d candidates=%d",
-            self.backend.backend_id, len(seed_genes), len(candidates),
+            self.backend.backend_id,
+            len(seed_genes),
+            len(candidates),
         )
         return ExpansionResult(
             seed_genes=seed_genes,

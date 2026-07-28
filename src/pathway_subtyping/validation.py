@@ -750,10 +750,7 @@ class ValidationGates:
                 "worst_confound": worst_name,
                 "failing_confounds": failing,
                 "per_confound": {
-                    k: {
-                        kk: (round(vv, 6) if isinstance(vv, float) else vv)
-                        for kk, vv in v.items()
-                    }
+                    k: {kk: (round(vv, 6) if isinstance(vv, float) else vv) for kk, vv in v.items()}
                     for k, v in per_confound.items()
                 },
                 "cramers_v_max": cramers_v_max,
@@ -858,8 +855,11 @@ class ValidationGates:
             entry["anchored"] = is_anchored
             if reference is not None:
                 entry["reference_null"] = hypergeometric_enrichment(
-                    subtype_gene_sets[label], risk, reference,
-                    label=str(label), null="genome-wide",
+                    subtype_gene_sets[label],
+                    risk,
+                    reference,
+                    label=str(label),
+                    null="genome-wide",
                 ).to_dict()
             per_subtype[str(label)] = entry
             if fold > best_fold:
@@ -984,9 +984,7 @@ class ValidationGates:
         )
 
 
-def cramers_v(
-    contingency: np.ndarray, bias_correction: bool = True
-) -> float:
+def cramers_v(contingency: np.ndarray, bias_correction: bool = True) -> float:
     """
     Cramér's V effect size for a contingency table (association strength between
     two categorical variables, 0 = independent, 1 = perfect association).

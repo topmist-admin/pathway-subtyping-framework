@@ -120,9 +120,7 @@ def ari_with_validity(
         min_true_clusters=min_true_clusters,
     )
     if reason is not None and reason.startswith("length_mismatch"):
-        raise ValueError(
-            f"adjusted_rand_score requires equal-length inputs: {reason}"
-        )
+        raise ValueError(f"adjusted_rand_score requires equal-length inputs: {reason}")
     if reason is not None:
         logger.warning(
             "adjusted_rand_score skipped: %s (returning NaN, not a spurious score)",

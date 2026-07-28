@@ -30,9 +30,10 @@ results/f1_validation/*_conformal_coverage.json output.
 
 Research use only. Not for clinical decision-making.
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List
 
 import numpy as np
@@ -67,9 +68,15 @@ class GateCResult:
 class ConformalMembershipGate:
     """Gate C — per-patient conformal subtype-membership confidence."""
 
-    def __init__(self, seed: int = 42, n_splits: int = 50,
-                 target_coverages=(0.80, 0.90, 0.95), cal_fraction: float = 0.5,
-                 primary_coverage: float = 0.90, calib_tol: float = 0.05):
+    def __init__(
+        self,
+        seed: int = 42,
+        n_splits: int = 50,
+        target_coverages=(0.80, 0.90, 0.95),
+        cal_fraction: float = 0.5,
+        primary_coverage: float = 0.90,
+        calib_tol: float = 0.05,
+    ):
         self.seed = seed
         self.n_splits = n_splits
         self.target_coverages = list(target_coverages)
@@ -78,13 +85,15 @@ class ConformalMembershipGate:
         self.calib_tol = calib_tol
 
     def _fit_gmm(self, X, k, seed):
-        gmm = GaussianMixture(n_components=k, covariance_type="full", n_init=10,
-                              random_state=seed, reg_covar=1e-6)
+        gmm = GaussianMixture(
+            n_components=k, covariance_type="full", n_init=10, random_state=seed, reg_covar=1e-6
+        )
         gmm.fit(X)
         return gmm
 
-    def membership_gate(self, tumor: str, pathway_scores: pd.DataFrame,
-                        cluster_labels: np.ndarray, k: int) -> GateCResult:
+    def membership_gate(
+        self, tumor: str, pathway_scores: pd.DataFrame, cluster_labels: np.ndarray, k: int
+    ) -> GateCResult:
         X = pathway_scores.values
         y = np.asarray(cluster_labels)
         n = X.shape[0]
@@ -124,12 +133,16 @@ class ConformalMembershipGate:
                     continue
             try:
                 tr_idx, rest = train_test_split(
-                    idx, train_size=n_train, random_state=split_seed, stratify=y)
+                    idx, train_size=n_train, random_state=split_seed, stratify=y
+                )
                 cal_idx, test_idx = train_test_split(
-                    rest, train_size=n_cal, random_state=split_seed, stratify=y[rest])
+                    rest, train_size=n_cal, random_state=split_seed, stratify=y[rest]
+                )
             except ValueError:
                 tr_idx, rest = train_test_split(idx, train_size=n_train, random_state=split_seed)
-                cal_idx, test_idx = train_test_split(rest, train_size=n_cal, random_state=split_seed)
+                cal_idx, test_idx = train_test_split(
+                    rest, train_size=n_cal, random_state=split_seed
+                )
             if len(cal_idx) < 10 or len(test_idx) < 3 or len(np.unique(y[tr_idx])) < k:
                 continue
 
@@ -147,8 +160,9 @@ class ConformalMembershipGate:
                 return full
 
             for cov in self.target_coverages:
-                pred = ConformalPathwayPredictor(score_fn=score_fn, coverage=cov,
-                                                 mode="classification")
+                pred = ConformalPathwayPredictor(
+                    score_fn=score_fn, coverage=cov, mode="classification"
+                )
                 pred.calibrate(X[cal_idx], y[cal_idx], labels=list(gmm_labels))
                 intervals = pred.predict(X[test_idx])
                 # empirical coverage: true label in prediction set
@@ -179,8 +193,9 @@ class ConformalMembershipGate:
         self._last_cov_per_split = {k_: list(v) for k_, v in cov_acc.items()}
         self._last_conf_per_split = {k_: list(v) for k_, v in conf_acc.items()}
         # calibration: empirical coverage within tol of every target
-        calibrated = all(abs(emp_cov[f"{c:.2f}"] - c) <= self.calib_tol
-                         for c in self.target_coverages)
+        calibrated = all(
+            abs(emp_cov[f"{c:.2f}"] - c) <= self.calib_tol for c in self.target_coverages
+        )
 
         # per-patient confident probability at primary coverage
         with np.errstate(invalid="ignore"):
@@ -193,10 +208,14 @@ class ConformalMembershipGate:
         }
 
         return GateCResult(
-            tumor=tumor, n=int(n), k=int(k),
+            tumor=tumor,
+            n=int(n),
+            k=int(k),
             target_coverages=self.target_coverages,
-            empirical_coverage=emp_cov, mean_set_size=mean_size,
-            confident_fraction=conf_frac, coverage_calibrated=bool(calibrated),
+            empirical_coverage=emp_cov,
+            mean_set_size=mean_size,
+            confident_fraction=conf_frac,
+            coverage_calibrated=bool(calibrated),
             n_splits=self.n_splits,
             primary_coverage=self.primary_coverage,
             primary_confident_fraction=conf_frac[pp_key],
