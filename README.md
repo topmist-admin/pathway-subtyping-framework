@@ -55,7 +55,7 @@ Originally developed for [autism research](https://codeberg.org/pathways/autism-
 | **Sensitivity Analysis** | Parameter robustness testing across algorithms, features, normalization |
 | **Threshold Calibration** | Data-driven validation thresholds that adjust for sample size and cluster count |
 | **Variant QC** | QUAL, call rate, HWE, MAF filters before burden computation |
-| **Validation Gates** | 5 gates: negative controls, bootstrap stability, ancestry independence, cross-modal concordance |
+| **Validation Gates** | Discreteness (Gate A, SigClust), negative controls, bootstrap stability (demoted v0.8), ancestry independence, cross-modal concordance, confound association (Gate 6), genetic/somatic anchoring (Gate 7) |
 | **Statistical Rigor** | FDR correction, effect sizes, confidence intervals |
 | **Power Analysis** | Sample size recommendations, Type I error estimation |
 | **Simulation** | Synthetic data generation with ground truth for validation |
@@ -74,6 +74,9 @@ Originally developed for [autism research](https://codeberg.org/pathways/autism-
 | **Multi-Omics Fusion** *(v0.6)* | RNA + ATAC + proteomics weighted fusion with RNA/protein discordance flagger |
 | **Causal Inference** *(v0.6)* | Invariant causal prediction identifies pathway parents across environments |
 | **Active Learning** *(v0.6)* | Uncertainty / diversity / hybrid sample selection under a fixed label budget |
+| **Discreteness Gate** *(v0.8)* | `DiscretenessGateA` — asks whether structure is *discrete* or a reproducibly-sliced continuum, using a single-Gaussian (SigClust) reference in place of the independence null. Reports gap statistic + Hartigan dip as diagnostics. Three outcomes: certify / reject / not-testable |
+| **Deep-Learning Baselines** *(v0.8)* | `clustering_dl` — DEC (Xie 2016) and VAE-GMM (VaDE, Jiang 2017) baselines for benchmarking pathway-GMM against deep clustering |
+| **Genetic / Somatic Anchoring** *(v0.8)* | Gate 7 tests whether a partition tracks real genetic strata (validated against TCGA-CRC BRAF-V600E / KRAS / MSI) |
 | **GNN Embeddings** | TransE/RotatE KG embeddings, OntologyAwareGNN with biological attention, gene risk classification *(experimental)* |
 | **Autism Interpretation** | Neuro-symbolic rules (R1-R7), therapeutic hypothesis ranking with safety flags *(autism-only)* |
 | **Performance** | tqdm progress bars, chunked VCF processing, 10K+ sample support |
@@ -103,8 +106,12 @@ pip install pathway-subtyping[genesets]      # v0.6 F7 — Borzoi regulatory gen
 pip install pathway-subtyping[qc-sequence]   # v0.6 F9 — Evo 2 CRISPR off-target sequence scoring
 pip install pathway-subtyping[gnn]           # Graph neural networks (PyTorch) — experimental
 pip install pathway-subtyping[autism]        # Autism-specific interpretation (pure Python)
+pip install pathway-subtyping[discreteness]  # v0.8 — Hartigan dip test for Gate A (diptest, GPLv2+)
 pip install pathway-subtyping[all]           # Everything
 ```
+
+Also available: `[docs]` and `[notebooks]` (documentation and notebook tooling), and
+`[dev]` (test/lint stack — see Development below).
 
 The v0.6 foundation-model extras (`harmonize`, `perturb`, `embed`,
 `genesets`, `qc-sequence`) each install the PyTorch substrate that the
@@ -224,12 +231,12 @@ psf --config configs/my_analysis.yaml
 ```bash
 # Pull from Docker Hub
 docker pull rohitdataops/pathway-subtyping:latest         # CLI runtime
-docker pull rohitdataops/pathway-subtyping:0.6.0-jupyter  # Jupyter + notebooks
+docker pull rohitdataops/pathway-subtyping:0.6.3-jupyter  # Jupyter + notebooks
 
 # Run pipeline
 docker compose run pipeline
 
-# Run tests (1612 tests on the public edition)
+# Run tests (1,675 tests on the public edition)
 docker compose run test
 
 # Start Jupyter notebook
@@ -281,9 +288,25 @@ Multiple clustering algorithms identify patient subgroups:
 Built-in tests prevent overfitting:
 - **Label shuffle**: Randomized labels should NOT cluster (ARI < 0.15)
 - **Random genes**: Fake pathways should NOT work (ARI < 0.15)
-- **Bootstrap**: Clusters should be stable under resampling (ARI > 0.8)
+- **Discreteness (Gate A, v0.8)**: is the structure *discrete*, or a reproducibly-sliced
+  continuum? Compares the observed bootstrap ARI against a **single-Gaussian (SigClust)
+  reference** — `DiscretenessGateA` in `pathway_subtyping.discreteness`. This is the gate
+  that decides discreteness.
+- **Bootstrap stability** (ARI > 0.8): retained and reported, but **demoted in v0.8** to a
+  marginal/confound control. It tested *pathway independence*, not discreteness, and could
+  certify a continuous gradient as a subtype — the finding behind the 2026-07 correction.
+  It no longer decides discreteness on its own.
 - **Ancestry independence**: Clusters should not correlate with ancestry PCs (when provided)
 - **Cross-modal concordance**: Subtypes should replicate across data modalities (when multi-omic)
+- **Confound association (Gate 6)** and **genetic / somatic anchoring (Gate 7)**: does the
+  partition track a known confound, or a real genetic stratum?
+
+⚠️ **Two properties of Gate A to know before quoting it.** It has three outcomes —
+certify, reject, and `not-testable` (an abstention) — and on synthetic negative controls
+it abstained on 28/30, so any false-positive rate must be quoted with its *testable*
+denominator. It is also conservative: on a separation sweep it certifies nothing below
+δ=2.5 SD. It is built to refuse over-called subtypes, not to detect subtle real ones.
+See [`docs/discreteness_gate.md`](docs/discreteness_gate.md).
 
 ### 4. Statistical Rigor
 Publication-quality statistics:
@@ -365,7 +388,7 @@ pathway-subtyping-framework/
 │   ├── validate_with_public_data.py   # ClinVar/Reactome validation
 │   └── benchmark_performance.py       # Performance benchmarks
 ├── examples/notebooks/          # Jupyter tutorials
-├── tests/                       # Test suite (1363 tests)
+├── tests/                       # Test suite (1,675 tests)
 ├── Dockerfile                   # Container support
 └── docker-compose.yml           # Easy orchestration
 ```
