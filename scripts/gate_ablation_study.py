@@ -19,7 +19,18 @@ subsets, on synthetic data with KNOWN ground truth:
 The headline result reproduces the erratum finding: the *old* bootstrap-stability
 gate alone certifies continua as reproducible subtypes (high FPR at small n),
 because its null tested independence, not discreteness. Adding the v0.8.0
-discreteness gate (Gate A) collapses that FPR while retaining true positives.
+discreteness gate (Gate A) removes those false certifications.
+
+Two honesty constraints on how that result may be stated:
+  1. Gate A reaches the low FPR mostly by ABSTAINING, not by rejecting. On the
+     negative controls it returns "not-testable (no reproducible k)" on 28/30
+     (93%); the testable-negative denominator is 2. Never report FPR=0.000 or
+     "rejects the continuum on 100% of runs" without that denominator.
+  2. It is not free: TPR moves 1.000 -> 0.967 (one discrete_k3 replicate lost).
+     Exact McNemar on positives is p=1.0, so the cost is not distinguishable
+     from zero, but the study has no power to exclude one. Report both the point
+     change and the p-value; do not write "TPR held" and do not assert a firm
+     "3% cost" as though it were resolved.
 
 Gate subsets compared (the ablation):
     stability_only          : {bootstrap stability}                 (pre-v0.8.0)
@@ -161,6 +172,21 @@ def evaluate_dataset(scores: pd.DataFrame, k: int, seed: int, n_ref: int,
     }
 
 
+def gate_a_label(certifies: bool, verdict: str) -> str:
+    """Three-way outcome label for Gate A.
+
+    Gate A has three outcomes, not two. Collapsing "not-testable" into REJECT
+    is what produced the retracted "rejects the continuum on 100% of runs"
+    claim: an abstention is not a rejection, and counting it as one inflates
+    the apparent false-positive performance.
+    """
+    if certifies:
+        return "CERTIFY"
+    if verdict.startswith("not-testable"):
+        return "ABSTAIN"
+    return "REJECT"
+
+
 # certification policies: which gates must PASS to certify a "real subtype"
 POLICIES = {
     "stability_only": lambda r: r["stability_pass"],
@@ -235,7 +261,7 @@ def clusterer_sweep(args) -> None:
                 print(f"  {cond:14s} rep{rep} {cname:8s}: "
                       f"self-stability ARI={self_ari:.2f} "
                       f"({'looks-reproducible' if self_pass else 'unstable'})  "
-                      f"GateA={'CERTIFY' if gateA_certifies else 'REJECT'} ({a.verdict})")
+                      f"GateA={gate_a_label(gateA_certifies, a.verdict)} ({a.verdict})")
 
     df = pd.DataFrame(rows)
     args.out.mkdir(parents=True, exist_ok=True)
@@ -258,21 +284,33 @@ def clusterer_sweep(args) -> None:
         lines.append(
             f"| {r.condition} | `{r.clusterer}` | {r.self_stability_ari:.2f} | "
             f"{'yes' if r.self_stability_pass else 'no'} | "
-            f"{'PASS' if r.gateA_pass else 'REJECT'} ({r.gateA_verdict}) |")
+            f"{gate_a_label(bool(r.gateA_pass), str(r.gateA_verdict))} "
+            f"({r.gateA_verdict}) |")
     cont = df[df.condition == "continuum_1d"]
-    rejected = float((~cont.gateA_pass).mean())
+    # Three-way split. Do NOT collapse abstentions into rejections: the gate
+    # declines to certify mostly by returning "not-testable", and reporting that
+    # as a rejection is the retracted "100% of runs" claim.
+    n_cont = max(1, len(cont))
+    not_certified = float((~cont.gateA_pass).mean())
+    abstained = float(
+        cont.gateA_verdict.astype(str).str.startswith("not-testable").sum() / n_cont)
+    explicit_reject = max(0.0, not_certified - abstained)
     gmm_ari = float(cont[cont.clusterer == "gmm"].self_stability_ari.mean())
     dec_ari = float(cont[cont.clusterer == "dec"].self_stability_ari.mean())
     vae_ari = float(cont[cont.clusterer == "vae_gmm"].self_stability_ari.mean())
     lines += [
         "",
-        f"**Primary result (clusterer-agnostic rejection):** Gate A rejects the 1-D "
-        f"continuum for **{rejected:.0%}** of runs, and does so identically whether the "
-        f"partition was drawn by GMM, DEC, or VAE-GMM. This is the substantive answer "
-        f"to R2.2: PSF is not another clustering method to be benchmarked against "
-        f"DEC/VAE — it is a validation layer that wraps any of them, because Gate A "
-        f"tests the discreteness of the *data* at a given k, not the confidence of the "
-        f"algorithm.",
+        f"**Primary result (clusterer-agnostic non-certification):** Gate A declines to "
+        f"certify the 1-D continuum on **{not_certified:.0%}** of runs, and does so "
+        f"identically whether the partition was drawn by GMM, DEC, or VAE-GMM. That "
+        f"total splits into **{explicit_reject:.0%} explicit rejection** and "
+        f"**{abstained:.0%} abstention** (\"not-testable — no reproducible k\"). The "
+        f"abstentions are the larger share and must not be reported as rejections: the "
+        f"gate mostly declines to rule, rather than ruling against. This is the "
+        f"substantive answer to R2.2: PSF is not another clustering method to be "
+        f"benchmarked against DEC/VAE — it is a validation layer that wraps any of "
+        f"them, because Gate A tests the discreteness of the *data* at a given k, not "
+        f"the confidence of the algorithm.",
         "",
         f"**Secondary observation (reported honestly):** on the continuum the clusterers "
         f"differ in how reproducible their (spurious) bipartition looks — mean "
@@ -375,10 +413,21 @@ def main() -> None:
     lines += [
         "",
         "**Reading:** `stability_only` (the pre-v0.8.0 gate set) false-certifies the "
-        "1-D continuum — the erratum finding. `stability+discreteness` (v0.8.0) drives "
-        "the continuum false-positive rate down while retaining true positives, which is "
-        "the quantitative answer to R3.10: removing the discreteness gate reintroduces "
-        "continuum false positives.",
+        "1-D continuum — the erratum finding. `stability+discreteness` (v0.8.0) removes "
+        "those false certifications, which is the quantitative answer to R3.10: "
+        "removing the discreteness gate reintroduces continuum false positives.",
+        "",
+        "**Two caveats that must travel with the FPR number.** (1) The gate reaches its "
+        "low FPR mostly by ABSTAINING rather than rejecting — on the negative controls "
+        "it returns \"not-testable (no reproducible k)\" on 28/30 (93%), leaving a "
+        "testable-negative denominator of 2. An FPR quoted against n=30 is the "
+        "over-generous convention; against the testable n=2 the interval is "
+        "[0, 0.658] and is nearly uninformative. Do not quote FPR=0.000 unqualified. "
+        "(2) The gate is not free: TPR moves 1.000 -> 0.967 (one `discrete_k3` "
+        "replicate lost). Exact McNemar on positives is p=1.0, so that cost is not "
+        "distinguishable from zero — but the study has no power to exclude one. Report "
+        "the point change and the p-value together; write neither \"TPR held\" nor a "
+        "settled \"3% cost\".",
     ]
     (args.out / "gate_ablation_results.md").write_text("\n".join(lines))
 

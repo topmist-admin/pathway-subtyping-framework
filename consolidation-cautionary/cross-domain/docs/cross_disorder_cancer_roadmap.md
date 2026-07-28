@@ -171,7 +171,7 @@ evidence/
 logs/                                      <- run logs
 ```
 
-Requires `pathway-subtyping==0.7.0` + numpy for the demo (same env as the autism bundle; see that bundle's
+Requires `pathway-subtyping==0.8.0` + numpy for the demo (deposited run used 0.7.0) (same env as the autism bundle; see that bundle's
 HANDOFF_README §1 for pins). Evidence JSONs are static snapshots — re-fetch via the ChEMBL / ClinicalTrials
 connectors.
 

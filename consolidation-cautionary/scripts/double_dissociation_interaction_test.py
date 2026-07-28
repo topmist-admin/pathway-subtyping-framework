@@ -15,7 +15,7 @@ Result (2026-07-10):
   => opposite signs, both primary cohorts significant => double dissociation supported.
 
 Inputs: same public GEO files as reproduce_consolidation_paper.py (framework:
-`pip install pathway-subtyping==0.7.0`). Reuses that sibling module's
+`pip install pathway-subtyping==0.8.0`; deposited run used 0.7.0). Reuses that sibling module's
 series-matrix / annotation parsers. Deterministic (no clustering; OLS).
 
 Usage: python double_dissociation_interaction_test.py --data-dir <root>

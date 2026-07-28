@@ -38,6 +38,12 @@ fixes it. See `docs/discreteness_gate.md` for the full rationale.
     `doi:10.1111/1467-9868.00293`);
   - **Hartigan's dip test** — optional corroborating unimodality flag (Ann. Statist.
     1985, `doi:10.1214/aos/1176346577`), via the new `diptest` extra.
+
+  **Only the single-Gaussian reference decides the verdict** (`passed = obs > sg_p95
+  and sg_p < alpha`). Gap and dip are computed and reported but never enter the
+  decision rule — thresholding the SigClust *p* alone reproduces the ablation's TPR
+  and FPR exactly. The gate has three outcomes (certify / reject / `not-testable`);
+  `not-testable` is an abstention and must not be counted as a rejection.
 - **Small-n hardening** (identical for observed data and every reference draw): PCA to
   d = min(10, ⌊n/10⌋) ≪ n (a 50-dim full-covariance mixture is singular at n in the
   tens); k fixed across observed and reference; silhouette-based k-stability routing to

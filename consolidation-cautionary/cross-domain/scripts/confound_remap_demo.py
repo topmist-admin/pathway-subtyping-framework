@@ -25,7 +25,7 @@ type or the known molecular subtype (e.g. CMS) in oncology. NOTE the exempt
 key must be present under one of those names for the gate to spare it — see
 `--help` and the remap table in docs/01_cross_disorder_cancer_roadmap.md.
 
-Deterministic (seeded). Requires pathway-subtyping==0.7.0, numpy.
+Deterministic (seeded). Requires pathway-subtyping==0.8.0 (deposited run used 0.7.0), numpy.
 """
 import argparse
 import json

@@ -22,6 +22,12 @@ at the fixed selected k) and replaces the reference with a **discreteness** null
   * corroborating — Hartigan's dip test of unimodality (Ann. Statist. 1985,
     doi:10.1214/aos/1176346577); optional, requires the ``diptest`` extra.
 
+**Only the primary criterion decides.** ``passed = obs > sg_p95 and sg_p < alpha``
+— the gap statistic and dip test are reported diagnostics that never enter the
+decision rule. The gate also has three outcomes, not two: certify, reject, and
+``not-testable`` (an abstention), so quote any false-positive rate with its
+testable denominator.
+
 The old independence null is **retained but demoted** to a confound / marginal
 control (reported, no longer the gate). Small-n hardening (PCA to d ≪ n, fixed k
 across observed and reference, silhouette-based k-stability routing) is applied

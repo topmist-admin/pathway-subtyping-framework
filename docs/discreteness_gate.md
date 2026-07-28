@@ -32,6 +32,18 @@ blob, which is the typical shape of small-*n* expression scores.
 `DiscretenessGateA` keeps the identical observed statistic and changes what it is
 compared against, adding two corroborating diagnostics.
 
+> **What actually decides the verdict.** Only item 1 below. The decision rule is
+> literally
+> ```python
+> passed = bool(obs > sg_p95 and sg_p < self.alpha)
+> ```
+> (`src/pathway_subtyping/discreteness/gate_a_discreteness_null.py:388`) — the
+> single-Gaussian reference and nothing else. **The gap statistic (2) and the dip
+> test (3) are computed and reported, but never enter the decision.** On the
+> deposited ablation, thresholding the SigClust *p* alone reproduces the full
+> gate's TPR and FPR exactly. Treat 2 and 3 as diagnostics you read alongside the
+> verdict, not as criteria the data must also clear.
+
 1. **Single-Gaussian reference (SigClust) — primary.** Fit **one** multivariate
    Gaussian to the (dimension-reduced) score matrix and ask whether the observed
    partition is more stable than partitions of data drawn from that single
@@ -110,5 +122,14 @@ print(c.achieved_coverage, c.coverage_ci95, c.sharpness_confident_fraction)
 
 Any subtype previously certified only by the bootstrap-stability gate may be a
 reproducibly-sliced continuum rather than a discrete subtype. A "reproducible
-subtype" claim should now clear the discreteness gate (single-Gaussian reference
-+ gap), not the independence null alone.
+subtype" claim should now clear the discreteness gate — the **single-Gaussian
+(SigClust) reference**, which is the whole decision rule — rather than the
+independence null alone. Gap and dip are reported alongside as diagnostics; they
+do not gate the verdict.
+
+**Two limits to state whenever the gate is cited.** It frequently returns
+`not-testable` rather than a ruling — on the synthetic negative controls it
+abstained on 28/30 — so a low false-positive rate is largely abstention, not
+rejection, and must be quoted with its testable denominator. And it is
+conservative: on a separation sweep it certifies nothing below δ=2.5 SD, so it is
+good for refusing over-called subtypes and poor at detecting subtle real ones.

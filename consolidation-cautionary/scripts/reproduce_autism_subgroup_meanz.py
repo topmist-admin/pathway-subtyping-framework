@@ -22,7 +22,7 @@ ssGSEA run gave lower stability / higher random-set ARI) -- reported honestly in
 the manuscript as method-fragile; the load-bearing failure is on stability.
 
 Public inputs only: GSE28521 series matrix + GPL6883.annot (GEO); Hallmark gmt
-(gene symbols). Framework: pip install pathway-subtyping==0.7.0.
+(gene symbols). Framework: pip install pathway-subtyping==0.8.0 (deposited run used 0.7.0).
 """
 import argparse, gzip, io, json, logging, collections
 import numpy as np, pandas as pd

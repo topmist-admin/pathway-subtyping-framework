@@ -22,9 +22,14 @@ those, not the "FPR 0.000 / rejected 100%" framing in the older sections:
    recalibrated gate certified **0/30**. Exact McNemar on the negatives: b=11, c=0,
    **p=0.001** — the reduction in false certification is significant. The mechanism is
    partly abstention, and we say so, but the improvement over stability-only is real.
-3. **No detectable TPR cost.** TPR 1.000 → 0.967 is a single discordant pair; exact
-   McNemar **p=1.0**. Do not claim a "3% cost" — it is not distinguishable from zero
-   (though the study has no power to exclude one).
+3. **The TPR cost is real but not resolved — state it as both numbers.** TPR moves
+   **1.000 → 0.967**: one of the 30 genuine-structure datasets (a `discrete_k3`
+   replicate) is lost. That is a single discordant pair, so exact McNemar gives
+   **p=1.0** — the cost is *not distinguishable from zero*, and the study has no
+   power to exclude one either. **The correct write-up reports the point change and
+   the p-value together.** Do not write "TPR held" (it did not), and do not assert a
+   settled "3% cost" (n=1 discordant pair cannot establish one). This supersedes the
+   two contradictory instructions that previously appeared in this file.
 
 **And the increment is a null recalibration, not a new instrument.** Head-to-head in
 `ablation_honest.json`: the SigClust-style single-Gaussian p-value **alone**
@@ -65,8 +70,9 @@ python scripts/plot_gate_ablation.py  --out consolidation-cautionary/cross-domai
 smoke run — `--quick` numbers will NOT match the deposited values.
 
 Requires the **v0.8 line** of the framework (`pathway_subtyping.discreteness`,
-`pathway_subtyping.clustering_dl`) — see the v0.8.0 availability caveat in
-[`../../RUNME.md`](../../RUNME.md).
+`pathway_subtyping.clustering_dl`). v0.8.0 is released on PyPI:
+`pip install pathway-subtyping==0.8.0`. Neither module exists in v0.7.0, so an
+older pin cannot run this package. See [`../../RUNME.md`](../../RUNME.md).
 
 ## Result 1a — the ablation (R3.10)
 
@@ -76,23 +82,32 @@ are removed?"* Four synthetic conditions with known ground truth — two positiv
 negative (`single_gaussian`: one correlated blob; `continuum_1d`: a 1-D gradient,
 the tumor-purity / immune-infiltration analog).
 
-| Gate subset | TPR | FPR | `continuum_1d` cert rate |
+| Gate subset | TPR | FPR † | `continuum_1d` cert rate |
 |---|---|---|---|
 | `stability_only` (pre-v0.8.0) | 1.000 | **0.367** | **0.733** |
-| `discreteness_only` | 0.967 | 0.000 | 0.000 |
-| `stability+discreteness` (v0.8.0) | 0.967 | **0.000** | 0.000 |
+| `discreteness_only` | 0.967 | 0.000 † | 0.000 |
+| `stability+discreteness` (v0.8.0) | 0.967 | **0.000** † | 0.000 |
+
+† **The 0.000 cells are computed against n=30 and are the over-generous
+convention.** The gate abstains (`not-testable`) on 28 of those 30 negatives, so
+the testable-negative denominator is **2** and the honest Wilson interval is
+[0.00, 0.66] — nearly uninformative. Never quote "FPR 0.000" from this table
+without that denominator. See the READ FIRST section above.
 
 **Reading.** The pre-v0.8.0 stability-only gate false-certifies the 1-D continuum
 in 73% of runs — this is the erratum finding reproduced under controlled
 conditions: the old bootstrap null tested *pathway independence*, not
-*discreteness*, so a reproducibly-bisected gradient passed. Adding Gate A
-collapses the false-positive rate to zero.
+*discreteness*, so a reproducibly-bisected gradient passed. Adding Gate A removes
+those false certifications — predominantly by declining to rule (abstaining) on
+the negatives rather than by rejecting them.
 
 **Honest note on TPR:** the ablation does not leave true positives *untouched* —
 TPR goes 1.000 → 0.967, i.e. one of the 30 genuine-structure datasets (a
-`discrete_k3` replicate) is lost. The correct claim is that the discreteness gate
-eliminates the continuum false positives **at a cost of ~3% of true positives**,
-not that TPR is unchanged. Do not state "TPR held".
+`discrete_k3` replicate) is lost. Exact McNemar on the positives is **p=1.0**, so
+that loss is not distinguishable from zero, and the study cannot exclude one
+either. Report both figures together; write neither "TPR held" nor a settled
+"3% cost". (See item 3 in the READ FIRST section — this file previously carried
+two contradictory instructions here.)
 
 Source: `results/gate_ablation_results.json` (+ `_raw.csv` for per-replicate rows).
 Figure: `results/gate_ablation_figure.{png,svg}`.
@@ -102,12 +117,20 @@ Figure: `results/gate_ablation_figure.{png,svg}`.
 The same synthetic data clustered three ways — GMM, DEC (Xie 2016), VAE-GMM
 (VaDE, Jiang 2017) — then passed to Gate A.
 
-**Primary result:** Gate A rejects the 1-D continuum on **100%** of runs, and does
-so identically regardless of which algorithm drew the partition. This is the
-substantive R2.2 answer: the framework is **not another clustering method to be
-benchmarked against DEC/VAE** — it is a validation layer that wraps any of them,
-because Gate A tests the discreteness of the *data* at a given k, not the
-confidence of the algorithm.
+**Primary result:** Gate A **declines to certify** the 1-D continuum on **100%** of
+runs, and does so identically regardless of which algorithm drew the partition.
+
+⚠️ **"Declines to certify" is not "rejects."** The bulk of those non-certifications
+are `not-testable` abstentions — the gate found no reproducible k and so declined to
+rule, rather than ruling the data continuous. The earlier wording here ("rejects the
+1-D continuum on 100% of runs") is the framing the READ FIRST section retracts; the
+per-run breakdown is in `results/clusterer_sweep_results.md`, which labels each run
+CERTIFY / REJECT / ABSTAIN.
+
+The clusterer-agnostic part of the claim is unaffected and is the substantive R2.2
+answer: the framework is **not another clustering method to be benchmarked against
+DEC/VAE** — it is a validation layer that wraps any of them, because Gate A tests the
+discreteness of the *data* at a given k, not the confidence of the algorithm.
 
 **Secondary observation (reported honestly):** on the continuum, mean self-stability
 ARI is GMM 0.88 vs DEC 0.34 vs VAE-GMM 0.22. GMM's near-0.8 self-stability is

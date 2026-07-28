@@ -9,8 +9,20 @@ at **seed 42**.
 **Scope note.** This file indexes the *new* cautionary-framework evidence
 (Results 1–4 below). The sibling [`README.md`](README.md) is the older, separate
 reproduction package for the **"Stable but confounded"** paper (GSE28521 /
-GSE64018 / GSE80655) and is pinned to the public **v0.7.0** release. The two are
-not interchangeable — see the version blocker immediately below.
+GSE64018 / GSE80655). The two are not interchangeable.
+
+**One version, one install: `pathway-subtyping==0.8.0`.** Everything in this
+bundle — both this file's packages and the sibling README's — installs and runs
+against v0.8.0, which is a superset of v0.7.0. Where the older scripts and their
+READMEs mention v0.7.0, that is **provenance** (the release under which their
+deposited reference outputs were generated), *not* an instruction to install it.
+Do not downgrade: v0.7.0 lacks `pathway_subtyping.discreteness` and
+`pathway_subtyping.clustering_dl`, so Results 1–3 cannot run on it at all.
+
+As the sibling README already notes for its Layer B, exact partition
+reproduction is version-sensitive — those deposited numbers were produced under
+earlier releases, and the invariant to check is the *conclusion*, not a
+bit-identical partition.
 
 ---
 
@@ -38,6 +50,10 @@ public cBioPortal/GEO/recount3 data with no authentication.
 - **PyPI:** https://pypi.org/project/pathway-subtyping/0.8.0/
 - **Source (tag v0.8.0):** GitHub `topmist-admin/pathway-subtyping-framework` ·
   Codeberg `pathways/pathway-subtyping-framework` · RRID:SCR_028051
+- **This reproduction bundle, citable:** **`10.5281/zenodo.21566406`**
+  (concept DOI `10.5281/zenodo.18638048` resolves to the latest release)
+- **Corrected 47-dataset benchmark:** `10.5281/zenodo.21262112` (v2.0) — see open
+  item 6 below for the outstanding v2.1 question
 
 ---
 
@@ -50,10 +66,11 @@ public cBioPortal/GEO/recount3 data with no authentication.
 | **Result 2** benchmark audit | [`cross-domain/benchmark_audit/`](cross-domain/benchmark_audit/) | `benchmark_audit.json` (incl. column-validity diagnostic) | none (reads deposited CSV) |
 | **Result 4** flagship donor-level stats | [`cross-domain/flagship_stats/`](cross-domain/flagship_stats/) | `flagship_donor_level.json` | none (reads deposited labels) |
 | **Result 3** cancer worked example | [`cross-domain/cancer_r38/`](cross-domain/cancer_r38/) | `brca_pam50_validation.json`, `cptac_brca_multiomic.json` | cBioPortal |
-| **Result 4** psychiatry flagship | [`README.md`](README.md) (v0.7.0 package) + [`genetic-anchoring/`](genetic-anchoring/) | see that README | GEO |
+| **Result 4** psychiatry flagship | [`README.md`](README.md) (deposited outputs produced under v0.7.0; runs on v0.8.0) + [`genetic-anchoring/`](genetic-anchoring/) | see that README | GEO |
 | Large-N calibration point | [`cross-domain/gtex_brain/`](cross-domain/gtex_brain/) | `gtex_brain_region_confound.json` | recount3 (R) |
 | Scoping (negative result) | [`cross-domain/psychiatric_meta/`](cross-domain/psychiatric_meta/) | `track_a_recount3.tsv` | NCBI E-utilities |
 | Gate-6 domain remap | [`cross-domain/`](cross-domain/) | `results/confound_remap_results.json` | none (seeded) |
+| Gate-7 somatic anchoring (real TCGA-CRC positive control: BRAF-V600E / KRAS / MSI) | [`cross-domain/tcga_crc/`](cross-domain/tcga_crc/) | `tcga_crc_somatic_result.json` | cBioPortal |
 
 ---
 
@@ -68,7 +85,10 @@ None is restated from prose.
   b=11 c=0 **p=0.001** — real reduction.
 - ⚠️ The gate reaches that by **abstaining on 28/30 (93%)** negatives; FPR excluding
   abstentions is 0/2, CI [0.00, 0.66] — nearly uninformative. Do NOT quote "FPR 0.000".
-- No detectable TPR cost: 0.967 vs 1.000, McNemar **p=1.0**.
+- TPR moves **1.000 → 0.967** (one `discrete_k3` replicate lost); exact McNemar on
+  positives **p=1.0**, so the cost is not distinguishable from zero and the study
+  cannot exclude one. Report both figures; write neither "TPR held" nor a settled
+  "3% cost".
 - Head-to-head: the SigClust p-value **alone** reproduces the composite gate exactly
   → the contribution is a null recalibration, not a new instrument.
 - Separation sweep (`separation_sweep.json`, 20 reps/step): gate resolves (certify 0.00
@@ -146,9 +166,10 @@ None is restated from prose.
    a clean PyPI install (see Install section above).
 2. ~~**Environment pin**~~ **DONE** — `requirements.txt` now pins
    `pathway-subtyping==0.8.0` and the analysis deps; it covers the whole bundle.
-3. **Zenodo deposit** of this bundle at a citable DOI, cited from the paper's Data &
-   Code Availability. (The framework release itself should also get a v0.8.0 Zenodo DOI
-   under the existing concept DOI.)
+3. ~~**Zenodo deposit**~~ **DONE 2026-07-25** — this bundle is deposited at
+   **`10.5281/zenodo.21566406`** (under concept DOI `10.5281/zenodo.18638048`,
+   which always resolves to the latest release). Cite the versioned DOI from the
+   paper's Data & Code Availability.
 4. ~~**Result 2 writeup**~~ **DONE 2026-07-23** — `cross-domain/benchmark_audit/`
    plus the Result 2 section of the rebuild draft.
 5. ~~**Rewrite the abstract**~~ **DRAFTED 2026-07-23** in the manuscript working copy

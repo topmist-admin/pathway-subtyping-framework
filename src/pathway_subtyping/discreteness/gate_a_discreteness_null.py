@@ -16,7 +16,19 @@ is falsely certified as a "reproducible subtype".
 
 The observed statistic is fine; the reference distribution was wrong. This module
 keeps the identical observed statistic (mean bootstrap-ARI at the fixed selected
-k) and changes what it is compared against, adding three discreteness diagnostics:
+k) and changes what it is compared against, adding three discreteness diagnostics.
+
+DECISION RULE -- READ BEFORE DOCUMENTING THIS GATE.
+Only (A) decides. The rule is `passed = obs > sg_p95 and sg_p < alpha`; the gap
+statistic (B) and the dip test (C) are computed and reported but NEVER enter it.
+Thresholding the SigClust p alone reproduces the deposited ablation's TPR and FPR
+exactly. Do not describe this gate as requiring a data set to clear three
+criteria -- it requires one, and reports two more alongside.
+
+Also note the gate has THREE outcomes, not two: certify, reject, and
+"not-testable" (no reproducible k), which is an abstention. It abstained on 28 of
+30 synthetic negative controls, so any false-positive rate quoted from it must
+carry its testable denominator.
 
   (A) SINGLE-GAUSSIAN reference (SigClust-style) -- PRIMARY.
       Fit ONE multivariate Gaussian to the (dimension-reduced) score matrix and

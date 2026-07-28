@@ -85,8 +85,8 @@ The §3.1 autism analysis scores **GSE28521 (Illumina microarray)** against the 
 
 ## 5. Two layers of reproduction (label this in your memo)
 
-- **Layer A — deterministic.** `region_crosstab_from_labels.py` recomputes the Fig-1 headline from the **deposited partition labels** (`data/partition/sample_metadata_with_subtypes.csv`, framework v0.3.0 / seed 42). Must reproduce **exactly**: χ²=125.12, p=4.30×10⁻²⁶, V=0.666 (0.660 Bergsma); diagnosis p=0.408; composition 2/0/37 · 45/47/0 · 1/1/8. *(Verified 2026-07-10 against public v0.7.0 install.)*
-- **Layer B — from-scratch pipeline.** The framework scripts re-cluster from raw public data with the public v0.7.0 release. Because the deposited primary analysis used framework v0.3.0 (seed 42) and v0.7.0 differs, you will **not** reproduce the exact seed-42 partition — expected, and itself a documented result. What must hold is the *conclusion*: region V ≈ 0.67–0.72, diagnosis n.s., across seeds and k.
+- **Layer A — deterministic.** `region_crosstab_from_labels.py` recomputes the Fig-1 headline from the **deposited partition labels** (`data/partition/sample_metadata_with_subtypes.csv`, framework v0.3.0 / seed 42). Must reproduce **exactly**: χ²=125.12, p=4.30×10⁻²⁶, V=0.666 (0.660 Bergsma); diagnosis p=0.408; composition 2/0/37 · 45/47/0 · 1/1/8. *(Verified 2026-07-10 against a public v0.7.0 install; v0.8.0 is a superset and is the version to install today.)*
+- **Layer B — from-scratch pipeline.** The framework scripts re-cluster from raw public data with the public **v0.8.0** release (the deposited run used v0.7.0). Because the deposited primary analysis used framework v0.3.0 (seed 42) and v0.7.0 differs, you will **not** reproduce the exact seed-42 partition — expected, and itself a documented result. What must hold is the *conclusion*: region V ≈ 0.67–0.72, diagnosis n.s., across seeds and k.
 
 ## ⚠️ Known reproducibility gaps (report these, don't paper over them)
 

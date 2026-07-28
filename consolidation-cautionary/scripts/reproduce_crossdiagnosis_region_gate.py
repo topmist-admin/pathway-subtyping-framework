@@ -10,7 +10,7 @@ stability is not.
 
 Framework machinery (ssGSEA, GMM/BIC, confound gate) comes from the installed
 `pathway_subtyping` package -- install the PUBLIC release: `pip install
-pathway-subtyping==0.7.0`. Shared GEO/GMT parsers are imported from the sibling
+pathway-subtyping==0.8.0`; the deposited outputs were generated under 0.7.0`. Shared GEO/GMT parsers are imported from the sibling
 `reproduce_consolidation_paper.py` in this same folder.
 
 Seed 20260708. Deterministic given inputs + package versions.

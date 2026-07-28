@@ -1,5 +1,21 @@
 # Gate-Agnostic Demonstration — clusterer sweep (R2.2)
 
+> ⚠️ **SUPERSEDED LABELLING — the "Gate A verdict" column collapses three outcomes
+> into two.**
+>
+> Rows reading `REJECT (not-testable (no reproducible k))` are **abstentions, not
+> rejections**: the gate found no reproducible k and declined to rule, rather than
+> ruling the data continuous. Reading them as rejections is what produced the
+> retracted claim that "Gate A rejects the 1-D continuum on 100% of runs."
+>
+> Likewise the `PASS` label means *certified*; the corrected script emits
+> **CERTIFY / REJECT / ABSTAIN** so the three outcomes are distinguishable.
+>
+> The **script has been corrected**; re-running regenerates this file with the
+> three-way labels and a split of non-certifications into explicit rejections vs
+> abstentions. That re-run has not been performed. The per-run ARI values and
+> verdict strings below are accurate — only the PASS/REJECT column is misleading.
+
 Same synthetic data clustered by GMM, DEC (Xie 2016), and VAE-GMM (VaDE, Jiang 2017). **self-stability** = the method's own bootstrap reproducibility (the naive check each would pass). **Gate A** = the discreteness gate's verdict (clusterer-agnostic; tests the data).
 
 | Condition | Clusterer | self-stability ARI | looks-reproducible? | Gate A verdict |
