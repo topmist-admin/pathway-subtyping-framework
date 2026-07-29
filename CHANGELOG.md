@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **`statistical_rigor.sensitivity_analysis_weights` now raises `NotImplementedError`
+  instead of returning fabricated results.** It ignored all four of its inputs
+  (`gene_burdens`, `pathways`, `cluster_labels`, `seed`) and appended a literal `0.0`
+  / `0` per weight scheme, so two entirely different cohorts returned byte-identical
+  output. Because `SensitivityResult.is_robust()` takes the `mean_val == 0` branch
+  and returns `np.std(values) < threshold`, that all-zero vector reported
+  **`is_robust(...) → True`** — i.e. "your results are robust to weight scheme",
+  confidently, for any input. The signature and docstring are retained because the
+  intent is worth preserving; the docstring now records what a real implementation
+  requires, including that the already-weighted `gene_burdens` frame is insufficient
+  input (the raw variant table is needed, which is the likely reason it was stubbed).
+  - **No published result affected:** the function had zero call sites and was not
+    exported from the package root.
+  - `SensitivityResult.is_robust()` now documents its degenerate-vector trap:
+    `[0.85, 0.85, 0.85]` and `[0.0, 0.0, 0.0]` both return `True`, but only the
+    first is good news. Same shape as the degenerate-ground-truth ARI artifact
+    behind the 2026-07 correction. Behaviour unchanged (zero callers); documented
+    so whoever implements the function does not walk into it.
+  - Pinned by `TestSensitivityAnalysisWeightsNotImplemented`.
+
 ### Deprecated
 - **F9 (molecular QC layer) `CrosstalkDetector` soft-deprecated — its `competition_score` does not measure
   what it claims.** `_compute_competition` subtracts the shared gene set from both

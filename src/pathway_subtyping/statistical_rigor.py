@@ -834,7 +834,24 @@ class SensitivityResult:
     results: Dict[str, List[float]]  # metric -> list of values
 
     def is_robust(self, metric: str, threshold: float = 0.1) -> bool:
-        """Check if results are robust (coefficient of variation < threshold)."""
+        """Check if results are robust (coefficient of variation < threshold).
+
+        ⚠️ **This measures INVARIANCE of the metric, not quality of the result,
+        and it cannot tell the two apart on a degenerate vector.** When
+        ``mean_val == 0`` it falls through to ``np.std(values) < threshold``, so a
+        metric that is uniformly *zero* across every value tested returns ``True``
+        — reported as "robust" when it actually means the metric never moved off
+        the floor. ``[0.85, 0.85, 0.85]`` and ``[0.0, 0.0, 0.0]`` both return
+        ``True`` here; only the first is good news.
+
+        This is the same shape as the degenerate-ground-truth ARI artifact behind
+        the 2026-07 correction (see ``utils.metrics.safe_adjusted_rand_score``):
+        a structureless input producing a confident, favourable-looking number.
+        Anyone implementing :func:`sensitivity_analysis_weights` will hit this
+        immediately — check that the metric has meaningful spread *and* a
+        meaningful level before reporting robustness, or return an explicit
+        not-testable rather than a bare bool.
+        """
         values = self.results.get(metric, [])
         if len(values) < 2:
             return True
@@ -857,6 +874,31 @@ def sensitivity_analysis_weights(
     """
     Analyze sensitivity of results to different burden weight schemes.
 
+    ⚠️ **NOT IMPLEMENTED — raises `NotImplementedError`.**
+
+    The signature is retained because the intent is worth preserving: burden
+    weighting is a real analyst degree of freedom (see ``BurdenWeightScheme``),
+    and "would my subtypes survive a different weighting?" is exactly the kind of
+    question this framework exists to answer.
+
+    **What it used to do, and why that was worse than raising.** The body was a
+    placeholder that ignored ``gene_burdens``, ``pathways``, ``cluster_labels``
+    and ``seed`` entirely, and appended a literal ``0.0`` / ``0`` per scheme. Two
+    completely different cohorts returned byte-identical output. Because
+    :meth:`SensitivityResult.is_robust` takes the ``mean_val == 0`` branch and
+    then returns ``np.std(values) < threshold``, an all-zero vector reported
+    ``is_robust(...) -> True``. So the function answered "your results are robust
+    to weight scheme" — confidently, and for any input whatsoever. Raising is
+    strictly safer than returning a fabricated result that a caller would act on.
+
+    A real implementation must, for each scheme: recompute gene burdens under
+    that weighting from the underlying variant data, re-aggregate to pathway
+    scores, re-cluster at the original k, and report ARI against
+    ``cluster_labels`` plus the count of significant pathways. Note that
+    ``gene_burdens`` is already-weighted output, so the current signature is
+    insufficient — the raw variant table is required, which is the likely reason
+    this was left as a placeholder.
+
     Args:
         gene_burdens: DataFrame of gene burdens
         pathways: Dictionary of pathway definitions
@@ -865,25 +907,18 @@ def sensitivity_analysis_weights(
         seed: Random seed
 
     Returns:
-        SensitivityResult showing impact of weight choices
+        SensitivityResult showing impact of weight choices.
+
+    Raises:
+        NotImplementedError: Always. See above.
     """
-    if schemes is None:
-        schemes = list(BurdenWeightScheme)
-
-    results = {
-        "mean_ari": [],
-        "n_significant": [],
-    }
-
-    for scheme in schemes:
-        # Compute pathway scores with this scheme
-        # (Would need to recompute from variants - simplified here)
-        # For now, just track the scheme
-        results["mean_ari"].append(0.0)  # Placeholder
-        results["n_significant"].append(0)  # Placeholder
-
-    return SensitivityResult(
-        parameter="burden_weight_scheme",
-        values_tested=[s.value for s in schemes],
-        results=results,
+    raise NotImplementedError(
+        "sensitivity_analysis_weights is not implemented. It previously returned "
+        "hard-coded zeros for every weight scheme regardless of input, which made "
+        "SensitivityResult.is_robust() report True unconditionally — a confident "
+        "but meaningless 'your results are robust to weight scheme'. It now raises "
+        "rather than fabricate that answer. Implementing it requires re-deriving "
+        "burdens from the raw variant table under each BurdenWeightScheme; the "
+        "already-weighted gene_burdens frame in this signature is not sufficient "
+        "input. See the docstring for the full requirement."
     )

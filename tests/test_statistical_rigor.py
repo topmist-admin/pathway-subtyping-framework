@@ -22,6 +22,7 @@ from pathway_subtyping.statistical_rigor import (
     compute_pathway_pvalues,
     compute_variant_weight,
     run_statistical_analysis,
+    sensitivity_analysis_weights,
 )
 
 
@@ -393,3 +394,47 @@ class TestStatisticalAnalysis:
         # PATHWAY_1 should be significant (large effect)
         # Can't guarantee exact results due to randomness
         assert isinstance(significant, list)
+
+
+class TestSensitivityAnalysisWeightsNotImplemented:
+    """`sensitivity_analysis_weights` must raise, not fabricate.
+
+    It previously ignored all four inputs and returned hard-coded zeros for every
+    weight scheme, which made `SensitivityResult.is_robust()` report True
+    unconditionally — a confident "your results are robust to weight scheme" for
+    any input. These tests stop a future edit from restoring that shape.
+    """
+
+    def _inputs(self):
+        return (
+            pd.DataFrame(np.ones((10, 3)), columns=["g1", "g2", "g3"]),
+            {"P1": ["g1", "g2"]},
+            np.zeros(10, dtype=int),
+        )
+
+    def test_raises_not_implemented(self):
+        burdens, pathways, labels = self._inputs()
+        with pytest.raises(NotImplementedError):
+            sensitivity_analysis_weights(burdens, pathways, labels)
+
+    def test_error_explains_why_rather_than_being_bare(self):
+        burdens, pathways, labels = self._inputs()
+        with pytest.raises(NotImplementedError) as exc:
+            sensitivity_analysis_weights(burdens, pathways, labels)
+        msg = str(exc.value)
+        assert "zeros" in msg, "the message must say what it used to do"
+        assert "is_robust" in msg, "and why that was dangerous"
+
+    def test_does_not_silently_return_a_result(self):
+        """The specific regression: returning a SensitivityResult of zeros."""
+        burdens, pathways, labels = self._inputs()
+        try:
+            result = sensitivity_analysis_weights(burdens, pathways, labels)
+        except NotImplementedError:
+            return  # correct behaviour
+        pytest.fail(
+            "sensitivity_analysis_weights returned instead of raising "
+            f"(results={getattr(result, 'results', None)}). If it has been "
+            "genuinely implemented, delete this test class; if it is fabricating "
+            "placeholder values again, revert that."
+        )
