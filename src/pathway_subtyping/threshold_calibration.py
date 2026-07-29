@@ -25,9 +25,37 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Pre-computed lookup tables
 # ---------------------------------------------------------------------------
-# Generated with generate_calibration_table(n_simulations=500, seed=42)
 # Each entry: (n_samples, n_clusters) -> 95th percentile of null ARI
 # Property: decreases with n (tighter null dist), increases with k (chance ARI)
+#
+# ⚠️ PROVENANCE IS UNVERIFIED — these values do NOT reproduce from the recipe
+# this comment used to claim ("Generated with generate_calibration_table(
+# n_simulations=500, seed=42)"). Re-running that exact recipe -- same
+# n_pathways=15, same n_simulations=500, same point_seed = 42 + n*100 + k --
+# gives systematically SMALLER 95th percentiles (measured 2026-07-29):
+#
+#     (n, k)     embedded   reproduced   ratio
+#     (50, 2)      0.0920       0.0544    0.59x
+#     (100, 3)     0.0580       0.0257    0.44x
+#     (100, 5)     0.0830       0.0244    0.29x
+#     (30, 4)      0.2150       0.0944    0.44x
+#
+# The embedded values are therefore 1.7x-3.4x MORE PERMISSIVE than the
+# simulation they were said to come from. `null_ari_threshold` is a ceiling a
+# negative control must stay under, so a higher value makes the gate EASIER to
+# pass -- the anti-conservative direction. The embedded values also fit a
+# near-exact power law per k (R^2 > 0.998), which is the smoothness signature of
+# hand-authored analytic values rather than Monte-Carlo percentiles.
+#
+# NOT regenerated here on purpose: replacing these would tighten every gate
+# threshold by 2-3x and change pass/fail for existing users, which is a decision
+# rather than a bug fix. Until it is made, prefer
+# `calibrate_thresholds(..., force_simulation=True)` where the method matters,
+# and do not describe these numbers as simulation-derived.
+#
+# Scope: this table is NOT used anywhere in the cautionary-manuscript
+# reproduction bundle (verified by grep over consolidation-cautionary/), so no
+# published result depends on it. It does feed `pipeline.py`'s null-control gate.
 
 _NULL_ARI_TABLE: Dict[Tuple[int, int], float] = {
     # k=2
@@ -554,12 +582,24 @@ def calibrate_thresholds(
     stability_threshold = _interpolate_threshold(_STABILITY_TABLE, n_samples, n_clusters)
 
     if null_threshold is not None and stability_threshold is not None:
-        # Adjust for non-default alpha
+        # Adjust for non-default alpha.
+        #
+        # ⚠️ This is a heuristic linear rescale, NOT a recalibration. The tables
+        # are 95th percentiles of a null distribution; a threshold for a
+        # different alpha is a different percentile of that distribution and is
+        # not obtainable by scaling. Treat non-0.05 results as approximate and
+        # prefer `calibration_method="simulation"` when alpha matters.
+        #
+        # It is clamped because unclamped it produced impossible values: at
+        # alpha=0.5 the stability floor came out at -0.5000, i.e. a bar every
+        # partition clears, and the null ceiling at 0.58, i.e. a bar almost
+        # nothing exceeds. Both silently disable the gate they configure.
         if alpha != 0.05:
-            # Scale thresholds: more permissive alpha -> higher null, lower stability
             alpha_ratio = alpha / 0.05
-            null_threshold *= alpha_ratio
-            stability_threshold = 1.0 - (1.0 - stability_threshold) * alpha_ratio
+            null_threshold = float(np.clip(null_threshold * alpha_ratio, 0.0, 1.0))
+            stability_threshold = float(
+                np.clip(1.0 - (1.0 - stability_threshold) * alpha_ratio, 0.0, 1.0)
+            )
 
         # Check if exact match or interpolated
         exact_match = (n_samples, n_clusters) in _NULL_ARI_TABLE

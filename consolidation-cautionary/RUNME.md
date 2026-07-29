@@ -6,6 +6,24 @@ self-contained (script + deposited reference output + README explaining what the
 numbers do and do not support), uses **public data only**, and is deterministic
 at **seed 42**.
 
+> ⚠️ **Preserve gene column order.** Determinism at seed 42 holds *for a given
+> gene ordering*. ssGSEA ranks genes within each sample, and where expression
+> values are exactly **tied** the ranking falls back to column position — so
+> permuting the gene columns can change scores even with the seed fixed. This
+> bites here because the pipeline computes `log2(CPM + 1)` and `log2(0 + 1) = 0`,
+> turning every zero-count gene into an exact tie. On a realistic bulk matrix
+> processed that way, **29% of entries are exact zeros**, and permuting gene order
+> moved scores by up to 1.68 with sample-ordering Spearman **0.70** (measured
+> 2026-07-29). On dense continuous data with no ties, ssGSEA is exactly invariant
+> (max |Δ| = 0.0000); mean-Z is invariant either way.
+>
+> **What this means for you.** Reading the deposited matrices as shipped
+> reproduces the deposited numbers exactly — that is why the independent
+> clean-room run was byte-identical. But re-parsing from GEO, sorting genes
+> alphabetically, or joining a different annotation can reorder columns and shift
+> the scores. If your numbers differ, check gene order before suspecting anything
+> else. This is a property of ssGSEA tie-handling, not of the data or the seed.
+
 **Scope note.** This file indexes the *new* cautionary-framework evidence
 (Results 1–4 below). The sibling [`README.md`](README.md) is the older, separate
 reproduction package for the **"Stable but confounded"** paper (GSE28521 /

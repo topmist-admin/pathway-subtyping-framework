@@ -777,6 +777,13 @@ def run_statistical_analysis(
     pathway_scores: pd.DataFrame,
     cluster_labels: np.ndarray,
     weight_scheme: BurdenWeightScheme = BurdenWeightScheme.GNOMAD_CONSTRAINT,
+    # ⚠️ RECORDED, NOT APPLIED. This value is copied to
+    # `result.normalization_method` and nothing else -- no aggregation happens in
+    # this function, and `aggregate_pathway_scores` has no production call site.
+    # So a result reporting `normalization_method: size_normalized` is a LABEL,
+    # not a fact about how its scores were built. Do not cite that field as
+    # evidence of a normalisation step. Kept because callers pass it; apply it or
+    # drop it, but do not let it keep implying work that did not happen.
     normalization: PathwayNormalization = PathwayNormalization.SIZE_NORMALIZED,
     fdr_alpha: float = 0.05,
     n_permutations: int = 1000,

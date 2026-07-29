@@ -223,6 +223,15 @@ class EvidenceScorer:
         return 0.1
 
     def _score_mechanistic_alignment(self, mechanism: str, pathway: str) -> float:
+        """Heuristic prior on drug mechanism. ⚠️ Does NOT use ``pathway``.
+
+        Despite "alignment", this scores the mechanism STRING alone against a
+        fixed lookup (inhibitor 0.7 / agonist 0.6 / modulator 0.5 / other 0.3 /
+        missing 0.2); no property of ``pathway`` enters. The constants are an
+        unsourced prior, not a fitted or cited quantity. Treat the output as a
+        mechanism-type prior and not as evidence that a drug mechanism matches a
+        particular pathway -- ranking built on it inherits that limit.
+        """
         if not mechanism:
             return 0.2
         mechanism_lower = mechanism.lower()

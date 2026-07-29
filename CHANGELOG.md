@@ -8,6 +8,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **`calibrate_thresholds` produced impossible thresholds for non-default alpha.**
+  The linear rescale was unclamped, so `alpha=0.5` gave a stability floor of
+  **−0.5000** (a bar every partition clears) and a null ceiling of 0.58 (a bar
+  almost nothing exceeds) — both silently disabling the gate they configure. Now
+  clamped to [0, 1], and documented as a heuristic rescale rather than a
+  recalibration: a threshold for a different alpha is a different percentile of
+  the null, not a scalar multiple.
+
+### Documented (behaviour unchanged, but the claim was wrong)
+- **The calibration lookup tables do not reproduce from their stated recipe.** The
+  comment claimed `generate_calibration_table(n_simulations=500, seed=42)`.
+  Re-running that exact recipe gives systematically smaller 95th percentiles —
+  (50,2) 0.0920→0.0544, (100,3) 0.0580→0.0257, (100,5) 0.0830→0.0244, (30,4)
+  0.2150→0.0944 — so the embedded values are **1.7×–3.4× more permissive** than
+  the simulation they were said to come from, in the anti-conservative direction
+  for a gate ceiling. **Deliberately not regenerated:** doing so would tighten
+  every threshold 2–3× and change pass/fail for existing users, which is a
+  decision, not a bug fix. Scope: **not used anywhere in the manuscript
+  reproduction bundle**, so no published result depends on it; it does feed
+  `pipeline.py`'s null-control gate.
+- **ssGSEA is sensitive to gene column order when values are tied**, and the
+  reproduction pipeline creates ties: `log2(CPM + 1)` maps every zero count to
+  exactly 0. Measured on a realistic bulk matrix: **29% exact-zero entries**, and
+  permuting gene order shifted scores by up to 1.68 with sample-ordering Spearman
+  **0.70**. On dense continuous data ssGSEA is exactly invariant (max |Δ| = 0);
+  mean-Z is invariant either way. `consolidation-cautionary/RUNME.md` now states
+  that gene column order must be preserved. **Not changed in code** — altering
+  tie handling would move deposited numbers mid-submission.
+- **`run_statistical_analysis(normalization=...)` is recorded, never applied.** It
+  is copied to `result.normalization_method` and nothing else; no aggregation
+  happens in that function and `aggregate_pathway_scores` has no production call
+  site. A result reporting `normalization_method: size_normalized` is a label, not
+  a fact — annotated at the parameter so it stops implying work that did not happen.
+- **`_score_mechanistic_alignment` ignores its `pathway` argument.** It scores the
+  mechanism string alone against a fixed unsourced lookup, so "alignment" between
+  a mechanism and a pathway is never computed. Annotated as a mechanism-type prior.
+
+### Fixed
 - **Random-walk-with-restart applied a row-stochastic matrix without transposing.**
   `W = D⁻¹A` is row-stochastic, so the walk on a column probability vector must
   apply `Wᵀ`. Using `W·p` made each node divide its **incoming** mass by its own
