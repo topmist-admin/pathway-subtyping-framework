@@ -8,6 +8,7 @@ numbers existed only as prose; they are now reproducible offline.
 | `autism_subgroup_result.json` | the headline numbers + full provenance |
 | `autism_subgroup_labels.csv` | per-sample cluster and diagnosis |
 | `autism_subgroup_genes.csv.gz` | the derived 32 × 9,147 gene matrix (with `dx`) |
+| `GEO_SOURCE_PROVENANCE.json` | SHA-256 of the two GEO files this deposit was derived from |
 
 ## Reproduce offline — no GEO, no network
 
@@ -17,6 +18,10 @@ python ../../scripts/reproduce_autism_subgroup_meanz.py \
   --gmt ../../panels/hallmark_200genes.gmt \
   --out /tmp/autism_check
 ```
+
+This is **byte-identical** to the deposited `autism_subgroup_result.json` and
+`autism_subgroup_labels.csv` — diff them directly, no key-order normalisation
+needed.
 
 Expected, and verified identical to the GEO-fetched run: 32 frontal samples
 (16 ASD / 16 control), 50/50 Hallmark pathways scored by mean-z, BIC **k=2**,
@@ -43,7 +48,19 @@ paper, not to Result 4.
 ## Provenance
 
 `autism_subgroup_result.json` records the seed, the framework version, the number
-of random draws, and the SHA-256 of every input — including the two GEO files, so
-anyone who re-fetches can detect upstream drift rather than silently obtaining
-different numbers. GEO revises series matrices and `.annot` files in place without
-a version bump, which is exactly why the derived matrix is deposited here.
+of random draws, and the SHA-256 of the inputs **that run actually read**.
+
+The deposited copy is produced by the offline `--genes` path, deliberately: that
+is the path a reviewer runs, so the check is a plain byte comparison. The GEO
+hashes therefore live in `GEO_SOURCE_PROVENANCE.json` rather than in the result
+JSON — folding them in would leave the GEO run and the offline run differing on
+that one key and defeat the comparison. Nothing is lost: if you re-fetch from GEO,
+compare against those hashes to detect upstream drift rather than silently
+obtaining different numbers. GEO revises series matrices and `.annot` files in
+place without a version bump, which is exactly why the derived matrix is deposited
+here.
+
+The `.csv.gz` is written with `mtime=0`. gzip otherwise stamps the current time
+into its header, so the same matrix would hash differently on every run and a
+reviewer checking against `MANIFEST.txt` would see a mismatch that means nothing.
+The CSV payload was always deterministic; only the container was not.

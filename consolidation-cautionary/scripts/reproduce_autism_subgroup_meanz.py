@@ -22,9 +22,10 @@ ssGSEA run gave lower stability / higher random-set ARI) -- reported honestly in
 the manuscript as method-fragile; the load-bearing failure is on stability.
 
 Public inputs only: GSE28521 series matrix + GPL6883.annot (GEO); Hallmark gmt
-(gene symbols). Framework: pip install pathway-subtyping==0.8.0 (deposited run used 0.7.0).
+(gene symbols). Framework: the deposited artifacts were produced under 0.9.0, which the
+result JSON records in `framework_version`; check that field rather than this comment.
 """
-import argparse, gzip, io, json, logging, collections
+import argparse, gzip, io, json, logging
 import numpy as np, pandas as pd
 logging.getLogger("pathway_subtyping").setLevel(logging.ERROR)
 from pathway_subtyping.expression import score_pathways_from_expression, ExpressionScoringMethod
@@ -123,7 +124,27 @@ def main():
         inputs_sha["gpl6883_annot"] = _sha256(a.gse28521_annot)
         # Deposit the derived matrix so the analysis reproduces without GEO.
         out_genes = sym.copy(); out_genes["dx"] = dx
-        out_genes.to_csv(f"{a.out}/autism_subgroup_genes.csv.gz")
+        # mtime=0: gzip stamps the current time into its 10-byte header by
+        # default, so the same matrix would hash differently on every run and a
+        # reviewer checking the deposit against MANIFEST.txt would see a spurious
+        # mismatch. The CSV payload was already deterministic; only the container
+        # was not.
+        out_genes.to_csv(f"{a.out}/autism_subgroup_genes.csv.gz",
+                         compression={"method": "gzip", "mtime": 0})
+        # The GEO hashes go in their own file, NOT in the result JSON. The two
+        # paths read different inputs, so folding them into `input_sha256` would
+        # make the GEO run and the offline run differ on that one key and defeat
+        # the byte-identical check. Upstream drift is still detectable: GEO
+        # revises series matrices in place without a version bump, and comparing
+        # against the hashes below is how you catch it.
+        json.dump({"note": "SHA-256 of the GEO files this deposit was derived from. "
+                           "The deposited autism_subgroup_result.json is produced by the "
+                           "OFFLINE (--genes) path; these hashes are provenance for the "
+                           "derivation, not inputs to the reproduction.",
+                   "gse28521_series_matrix": inputs_sha["gse28521_series_matrix"],
+                   "gpl6883_annot": inputs_sha["gpl6883_annot"],
+                   "derived_genes_matrix": _sha256(f"{a.out}/autism_subgroup_genes.csv.gz")},
+                  open(f"{a.out}/GEO_SOURCE_PROVENANCE.json", "w"), indent=2)
     inputs_sha["hallmark_gmt"] = _sha256(a.gmt)
     pw = parse_gmt(a.gmt)
 

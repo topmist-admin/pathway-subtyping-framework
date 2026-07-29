@@ -36,8 +36,13 @@ REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 # --manuscript-dir or the PSF_MANUSCRIPT_DIR env var. No private path is hard-coded.
 DEFAULT_MS = os.environ.get("PSF_MANUSCRIPT_DIR", "")
 
+# *.egg-info is build metadata, and `pip install -e .` -- step 1 of the reviewer
+# guide -- REWRITES it in place. Shipping it meant every reviewer who followed the
+# instructions then saw two MANIFEST.txt hash mismatches and had to work out that
+# the bundle was fine and the instructions had corrupted it. Excluded.
 SKIP_DIR = {"__pycache__", ".ipynb_checkpoints", ".git", ".pytest_cache",
             ".mypy_cache", "node_modules", ".venv", "pathwayenv"}
+SKIP_DIR_SUFFIX = (".egg-info",)
 SKIP_EXT = {".pyc", ".pyo", ".so", ".o"}
 SKIP_NAME = {".DS_Store"}
 
@@ -117,8 +122,10 @@ def manuscript_items(ms_dir):
 
 
 def _keep(path):
-    parts = set(path.split(os.sep))
-    if parts & SKIP_DIR:
+    parts = path.split(os.sep)
+    if set(parts) & SKIP_DIR:
+        return False
+    if any(p.endswith(SKIP_DIR_SUFFIX) for p in parts):
         return False
     if os.path.basename(path) in SKIP_NAME:
         return False
@@ -137,7 +144,8 @@ def collect(items, root=REPO):
                 out.append((src, dest_rel))
             continue
         for r, dirs, files in os.walk(src):
-            dirs[:] = [d for d in dirs if d not in SKIP_DIR]
+            dirs[:] = [d for d in dirs
+                       if d not in SKIP_DIR and not d.endswith(SKIP_DIR_SUFFIX)]
             for f in files:
                 full = os.path.join(r, f)
                 if _keep(full):
@@ -306,6 +314,19 @@ def main():
     pairs += collect(BUNDLE_ITEMS)
     pairs += collect(DATA_ITEMS)
     pairs += manuscript_items(args.manuscript_dir)
+
+    # The two reviewer-facing guides are hand-maintained next to the tarball. Ship
+    # them INSIDE it as well: CLEAN-ROOM-VALIDATION.md tells the reviewer the
+    # bundle is self-contained, which was not true of the entry-point documents
+    # themselves -- anyone handed only the .tar.gz got the archive without the
+    # instructions for it.
+    for guide in ("CLEAN-ROOM-VALIDATION.md", "VERIFICATION-MATRIX.md"):
+        g = os.path.join(args.out, guide)
+        if os.path.isfile(g):
+            pairs.append((g, guide))
+        else:
+            print(f"  ! guide not found, not bundled: {guide}", file=sys.stderr)
+
     pairs = sorted(set(pairs), key=lambda p: p[1])
 
     root = f"psf-cautionary-REVIEWER-BUNDLE-{args.stamp}"

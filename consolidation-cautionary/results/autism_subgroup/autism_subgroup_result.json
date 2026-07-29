@@ -22,8 +22,7 @@
   "framework_version": "0.9.0",
   "n_random_draws": 40,
   "input_sha256": {
-    "gse28521_series_matrix": "538a96042c9cf93f585f1a89ed187a135bb2438d870d32bf0b587dd821f802a8",
-    "gpl6883_annot": "4fb5f0d72015dec8f2d19f9bc4260c8afd08e80206e88e0ff952938041d91576",
+    "genes": "e896ea0ef5c22f3ec5b378f5951f0a0d3751169e9f8d9061e30f5e27cc4516a1",
     "hallmark_gmt": "8ff1f036f0988c99d42cf9e5ea24d355f10b8ece5e0d4f6edf26a0458f480780"
   },
   "provenance": "Seed 20260708 is this analysis's documented seed (see module docstring), NOT the seed 42 used elsewhere. Re-running at 42 gives different numbers. Not to be confused with research-results/GSE28521/frontal-cortex/, which is a DIFFERENT analysis: 15 curated autism pathways under framework 0.3.0 at seed 42, silhouette 0.299."

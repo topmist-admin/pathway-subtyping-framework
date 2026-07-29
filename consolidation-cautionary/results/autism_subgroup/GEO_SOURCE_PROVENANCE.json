@@ -1,0 +1,6 @@
+{
+  "note": "SHA-256 of the GEO files this deposit was derived from. The deposited autism_subgroup_result.json is produced by the OFFLINE (--genes) path; these hashes are provenance for the derivation, not inputs to the reproduction.",
+  "gse28521_series_matrix": "538a96042c9cf93f585f1a89ed187a135bb2438d870d32bf0b587dd821f802a8",
+  "gpl6883_annot": "4fb5f0d72015dec8f2d19f9bc4260c8afd08e80206e88e0ff952938041d91576",
+  "derived_genes_matrix": "e896ea0ef5c22f3ec5b378f5951f0a0d3751169e9f8d9061e30f5e27cc4516a1"
+}
