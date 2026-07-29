@@ -67,10 +67,34 @@ def meanz(mat, pw, seed):
     return S if S.shape[0] == mat.shape[0] else S.T
 
 
+def _sha256(path):
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _framework_version():
+    try:
+        import pathway_subtyping
+        return pathway_subtyping.__version__
+    except Exception:
+        return "unknown"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--gse28521-matrix", required=True, help="GSE28521_series_matrix.txt.gz")
-    ap.add_argument("--gse28521-annot", required=True, help="GPL6883.annot.gz")
+    # GEO inputs are optional: supply --genes to reproduce OFFLINE from the
+    # deposited gene matrix instead. GEO series matrices and .annot files are
+    # revised in place without a version bump, so re-fetching is inherently less
+    # reproducible than reading the deposited intermediate -- which is why the
+    # other packages in this bundle ship theirs.
+    ap.add_argument("--gse28521-matrix", help="GSE28521_series_matrix.txt.gz (omit if --genes)")
+    ap.add_argument("--gse28521-annot", help="GPL6883.annot.gz (omit if --genes)")
+    ap.add_argument("--genes", help="deposited samples x genes matrix (.csv.gz) with a dx column; "
+                                    "reproduces offline, no GEO access")
     ap.add_argument("--gmt", required=True, help="Hallmark gmt (gene symbols)")
     ap.add_argument("--out", default="out_autism_subgroup", help="output dir")
     ap.add_argument("--seed", type=int, default=20260708)
@@ -78,14 +102,30 @@ def main():
     a = ap.parse_args()
     import os; os.makedirs(a.out, exist_ok=True)
 
-    expr, meta = parse_series_expr(a.gse28521_matrix)
-    frontal = [g for g in meta.index[meta["region"] == "Frontal"] if g in expr.columns]
-    p2s = probe_to_symbol(a.gse28521_annot)
-    e = expr.loc[[p for p in expr.index if p in p2s], frontal].astype(float)
-    e.index = [p2s[p] for p in e.index]
-    sym = e.groupby(level=0).mean().T                       # samples x genes
+    inputs_sha = {}
+    if a.genes:
+        g = pd.read_csv(a.genes, index_col=0)
+        dx = g.pop("dx").values
+        sym = g                                             # samples x genes
+        frontal = list(sym.index)
+        inputs_sha["genes"] = _sha256(a.genes)
+    else:
+        if not (a.gse28521_matrix and a.gse28521_annot):
+            ap.error("supply either --genes, or both --gse28521-matrix and --gse28521-annot")
+        expr, meta = parse_series_expr(a.gse28521_matrix)
+        frontal = [g for g in meta.index[meta["region"] == "Frontal"] if g in expr.columns]
+        p2s = probe_to_symbol(a.gse28521_annot)
+        e = expr.loc[[p for p in expr.index if p in p2s], frontal].astype(float)
+        e.index = [p2s[p] for p in e.index]
+        sym = e.groupby(level=0).mean().T                   # samples x genes
+        dx = meta.loc[frontal, "dx"].values
+        inputs_sha["gse28521_series_matrix"] = _sha256(a.gse28521_matrix)
+        inputs_sha["gpl6883_annot"] = _sha256(a.gse28521_annot)
+        # Deposit the derived matrix so the analysis reproduces without GEO.
+        out_genes = sym.copy(); out_genes["dx"] = dx
+        out_genes.to_csv(f"{a.out}/autism_subgroup_genes.csv.gz")
+    inputs_sha["hallmark_gmt"] = _sha256(a.gmt)
     pw = parse_gmt(a.gmt)
-    dx = meta.loc[frontal, "dx"].values
 
     ps = meanz(sym, pw, a.seed)
     ms = select_n_clusters(ps.values, list(range(2, 7)), method="bic", seed=a.seed)
@@ -108,7 +148,14 @@ def main():
                composition=comp, disease_enriched_cluster=dis,
                silhouette=round(float(silhouette_score(ps.values, lab)), 3),
                bootstrap_ari=round(float(stab.metric_value), 3), bootstrap_pass=bool(stab.passed),
-               random_gene_set_ari=round(float(np.mean(rl)), 3), seed=a.seed, method="mean_z")
+               random_gene_set_ari=round(float(np.mean(rl)), 3), seed=a.seed, method="mean_z",
+               framework_version=_framework_version(), n_random_draws=int(a.n_random),
+               input_sha256=inputs_sha,
+               provenance=("Seed 20260708 is this analysis's documented seed (see module docstring), "
+                           "NOT the seed 42 used elsewhere. Re-running at 42 gives different numbers. "
+                           "Not to be confused with research-results/GSE28521/frontal-cortex/, which is "
+                           "a DIFFERENT analysis: 15 curated autism pathways under framework 0.3.0 at "
+                           "seed 42, silhouette 0.299."))
     pd.DataFrame([{"sample": s, "cluster": int(l), "dx": d} for s, l, d in zip(frontal, lab, dx)]
                  ).to_csv(f"{a.out}/autism_subgroup_labels.csv", index=False)
     json.dump(res, open(f"{a.out}/autism_subgroup_result.json", "w"), indent=2)
