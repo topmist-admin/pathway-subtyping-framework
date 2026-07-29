@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Deprecated
-- **F9 `CrosstalkDetector` soft-deprecated — its `competition_score` does not measure
+- **F9 (molecular QC layer) `CrosstalkDetector` soft-deprecated — its `competition_score` does not measure
   what it claims.** `_compute_competition` subtracts the shared gene set from both
   pathways and returns `mean(A-exclusive) - mean(B-exclusive)`, so the shared genes
   never enter the arithmetic and serve only as a presence gate. Demonstrated: varying
@@ -31,8 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     tests could not have caught this: all three use i.i.d. `normal(5.0, 0.5)`
     expression, under which the score is ~0 for any formula, and none asserts on the
     score at all.
-  - Unrelated and unaffected: `KnowledgeGraph.get_pathway_crosstalk()` and
-    `get_shared_genes()`.
+  - Unrelated and unaffected: `KnowledgeGraph.get_pathway_crosstalk()`,
+    `get_shared_genes()`, and the separately-numbered **v0.6 F9**
+    (`qc.offtarget_sequence`, Evo 2 off-target scoring) — "F9" is overloaded.
   - Fixing requires deciding what the score should mean; candidate formulas are in
     the module docstring. `TestCrosstalkSoftDeprecation` pins the current defect, so
     a genuine fix will make it fail — that is the signal to re-export F9.

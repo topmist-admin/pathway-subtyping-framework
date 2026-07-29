@@ -77,6 +77,7 @@ All v0.6 modules ship a deterministic fallback alongside the production backend,
 | Spec | Status |
 |---|---|
 | [roadmap-trajectory-gate](../roadmap-trajectory-gate.md) | **Gate T** — trajectory validation. Design spec only; there is no `trajectory` module, class or test. Do not cite as a capability |
+| [roadmap-f9-competition-model](../roadmap-f9-competition-model.md) | **F9 replacement** — true competition / starvation interaction model, target v0.9.0. Design spec only; the shipped F9 score is soft-deprecated and its results are not interpretable |
 
 ### Real-Data Validation Scripts (v0.6.3)
 

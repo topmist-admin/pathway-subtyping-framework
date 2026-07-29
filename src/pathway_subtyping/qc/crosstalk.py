@@ -32,19 +32,20 @@ This is not a regression. The module shipped this way in the v0.5 QC layer; a
 ``shared_mean`` local was computed and never used from the first commit, and was
 removed in the 2026-07-28 lint cleanup as dead code.
 
-Fixing it requires deciding what the score should MEAN, which is a scientific
-question rather than a patch. Candidates, in increasing fidelity to the intent
-above: compare ``shared_mean`` against each pathway's exclusive mean; correlate
-shared-node expression with each pathway's activity; or — closest to "one
-pathway can starve another" — test for anticorrelation between the two pathways
-conditioned on shared-node level, which is an interaction test and a structurally
-different computation.
+The replacement is specified in ``docs/roadmap-f9-competition-model.md``
+(**True Competition / Starvation Interaction Model**, targeted at v0.9.0): a
+partial correlation ``rho_AB.S`` as a screen, confirmed by a moderation model
+``E_B ~ E_A + S + E_A:S`` in which starvation predicts a negative A->B slope that
+attenuates as the shared transducer becomes abundant. That is an interaction
+test and a structurally different computation, not a patch to the line below.
 
 Until that is settled this class emits a ``FutureWarning`` on construction and is
 withheld from ``pathway_subtyping.qc.__all__``. It remains importable so existing
 code does not break. The unrelated
 ``KnowledgeGraph.get_pathway_crosstalk`` / ``get_shared_genes`` topology helpers
-are **not** affected by this notice.
+are **not** affected by this notice. Note also that "F9" is overloaded in this
+project: this is F9 of the *molecular QC layer*, not F9 of the *v0.6 release*
+(``qc.offtarget_sequence``, Evo 2 off-target scoring), which is unaffected.
 
 Research use only. Not for clinical decision-making.
 """
@@ -123,7 +124,7 @@ class CrosstalkDetector:
         # detector. The category is also honest -- the score's definition WILL
         # change once the intended formula is settled.
         warnings.warn(
-            "CrosstalkDetector (F9) is EXPERIMENTAL and its competition_score does "
+            "CrosstalkDetector (molecular-QC F9) is EXPERIMENTAL and its competition_score does "
             "not currently measure competition at shared nodes: the score is "
             "computed from each pathway's EXCLUSIVE genes and is provably "
             "insensitive to shared-node expression. Do not interpret "

@@ -245,12 +245,15 @@ result.drift_drivers  # Top pathways driving drift
 >
 > F9 is therefore **soft-deprecated**: constructing the detector emits a
 > `FutureWarning`, and the names are withheld from `pathway_subtyping.qc.__all__`.
-> They remain importable, so existing code does not break. Fixing this requires
-> settling what the score should mean — see the module docstring in
-> `src/pathway_subtyping/qc/crosstalk.py` for the candidate formulas.
+> They remain importable, so existing code does not break. The replacement is
+> specified in [`../roadmap-f9-competition-model.md`](../roadmap-f9-competition-model.md)
+> — a partial-correlation screen confirmed by a starvation *interaction* model,
+> targeted at **v0.9.0**.
 >
 > This does **not** affect `KnowledgeGraph.get_pathway_crosstalk()` or
-> `get_shared_genes()`, which are unrelated topology helpers.
+> `get_shared_genes()`, which are unrelated topology helpers — nor **F9 of the v0.6
+> release** (`qc.offtarget_sequence`, Evo 2 off-target scoring), a different feature
+> that happens to share the label.
 
 ```python
 # F9: Crosstalk — EXPERIMENTAL, emits FutureWarning; results are not interpretable
