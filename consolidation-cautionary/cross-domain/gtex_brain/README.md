@@ -1,9 +1,19 @@
 # GTEx brain at scale (n=2,931) — large-N region structure + gate behavior
 
 Public (recount3, no controlled access needed) large-N analysis: 2,931 GTEx brain
-samples across 13 subregions, Hallmark pathway scores. Fetch:
-`scripts/fetch_gtex_brain_recount3.R`;
-analysis: `scripts/analyze_gtex_brain.py`.
+samples across 13 subregions, Hallmark pathway scores.
+
+**This result reproduces OFFLINE.** `scripts/analyze_gtex_brain.py` contains no
+network call — it reads the deposited `results/gtex_brain_pathway_scores.tsv`
+(2.9 MB, included) and writes `gtex_brain_region_confound.json`. The R script
+`scripts/fetch_gtex_brain_recount3.R` is only needed to *regenerate that input
+from recount3*; a reviewer verifying the reported numbers does not need R,
+recount3, or any network access.
+
+⚠️ **Runtime: long.** The analysis runs two `DiscretenessGateA` passes at
+`n_ref=120` over n=2,931 samples and takes well over 25 minutes. It is not a
+spot-check. Nothing has hung — reduce `--n-ref` for a faster (non-matching)
+smoke run.
 
 **Motivation:** proposed as the large-N rebuttal of the reviewers' small-N
 criticism (region-confound at scale). **The result is more nuanced than that

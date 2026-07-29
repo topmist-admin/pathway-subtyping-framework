@@ -94,7 +94,7 @@ public cBioPortal/GEO/recount3 data with no authentication.
 | **Result 4** flagship donor-level stats | [`cross-domain/flagship_stats/`](cross-domain/flagship_stats/) | `flagship_donor_level.json` | none (reads deposited labels) |
 | **Result 3** cancer worked example | [`cross-domain/cancer_r38/`](cross-domain/cancer_r38/) | `brca_pam50_validation.json`, `cptac_brca_multiomic.json` | cBioPortal |
 | **Result 4** psychiatry flagship | [`README.md`](README.md) (deposited outputs produced under v0.7.0; runs on v0.9.0) + [`genetic-anchoring/`](genetic-anchoring/) | see that README | GEO |
-| Large-N calibration point | [`cross-domain/gtex_brain/`](cross-domain/gtex_brain/) | `gtex_brain_region_confound.json` | recount3 (R) |
+| Large-N calibration point | [`cross-domain/gtex_brain/`](cross-domain/gtex_brain/) | `gtex_brain_region_confound.json` | **none** — the analysis reads the deposited `gtex_brain_pathway_scores.tsv`; recount3 (R) is only needed to *regenerate* that input |
 | Scoping (negative result) | [`cross-domain/psychiatric_meta/`](cross-domain/psychiatric_meta/) | `track_a_recount3.tsv` | NCBI E-utilities |
 | Gate-6 domain remap | [`cross-domain/`](cross-domain/) | `results/confound_remap_results.json` | none (seeded) |
 | Gate-7 somatic anchoring (real TCGA-CRC positive control: BRAF-V600E / KRAS / MSI) | [`cross-domain/tcga_crc/`](cross-domain/tcga_crc/) | `tcga_crc_somatic_result.json` | cBioPortal |
