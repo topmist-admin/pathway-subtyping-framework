@@ -160,14 +160,21 @@ def _degree_sequence(kg):
 
 
 def test_degree_mode_preserves_the_degree_sequence_exactly():
-    """The whole point of the refinement: hubs must stay hubs."""
+    """The whole point of the refinement: hubs must stay hubs.
+
+    The budget must be EVEN to be fully swap-able. Each double-edge swap changes
+    two edges per side, so an odd budget leaves a remainder that falls through to
+    the degree-*weighted* residual path, which preserves the shape of the degree
+    distribution but not its exact values. That is documented behaviour, not a
+    defect — see `rewire_kg`. This test pins the exactly-preserving case.
+    """
     kg = _hub_kg()
     before = _degree_sequence(kg)
 
     p = rewire_kg(
         kg,
-        {"gene_interacts_gene": 5},
-        {"gene_interacts_gene": 5},  # balanced -> fully swap-able
+        {"gene_interacts_gene": 6},
+        {"gene_interacts_gene": 6},  # EVEN and balanced -> 3 swaps, no residual
         np.random.default_rng(3),
         rewiring=REWIRING_DEGREE,
     )
@@ -471,3 +478,98 @@ def test_gate_k_is_importable_when_networkx_is_present():
     assert hasattr(pathway_subtyping, "kg_timeslice_sensitivity")
     assert hasattr(pathway_subtyping, "KGSensitivityResult")
     assert hasattr(pathway_subtyping, "rewire_kg")
+
+
+# --------------------------------------------------------------------------- #
+# Null-fidelity regressions (both bugs found by adversarial review, 2026-07-29)
+# --------------------------------------------------------------------------- #
+
+
+def _dense_kg(n=200, deg=6, seed=0):
+    """A graph dense enough that swaps are rarely rejected."""
+    rng = np.random.default_rng(seed)
+    kg = KnowledgeGraph()
+    for i in range(n):
+        kg.add_node(f"G{i}", NodeType.GENE)
+    seen = set()
+    while len(seen) < n * deg // 2:
+        a, b = rng.integers(0, n, 2)
+        if a != b and (a, b) not in seen and (b, a) not in seen:
+            seen.add((a, b))
+            kg.add_edge(f"G{a}", f"G{b}", EdgeType.GENE_INTERACTS)
+    return kg
+
+
+def test_degree_mode_respects_the_requested_budget():
+    """A double-edge swap changes TWO edges per side, not one.
+
+    Counting one swap as one removal + one addition perturbed the graph at 2x
+    the requested size, destroying the size-matching the module's whole argument
+    rests on. An over-perturbed null pushes null agreement down, raising
+    P(null <= observed), which suppresses the `kg-sensitive` verdict.
+    """
+    kg = _dense_kg()
+    before = {(s, t) for (s, t, _) in kg._edge_types}
+
+    for requested in (5, 25, 50):
+        p = rewire_kg(
+            kg,
+            {"gene_interacts_gene": requested},
+            {"gene_interacts_gene": requested},
+            np.random.default_rng(3),
+            rewiring=REWIRING_DEGREE,
+        )
+        after = {(s, t) for (s, t, _) in p._edge_types}
+        removed = len(before - after)
+        added = len(after - before)
+        # Never OVER-perturb. Under-perturbing is acceptable (swap rejections,
+        # odd remainders) and is reported via null_perturbation_median.
+        assert removed <= requested, f"over-perturbed: removed {removed} > {requested}"
+        assert added <= requested, f"over-perturbed: added {added} > {requested}"
+        assert removed >= requested * 0.8, f"under-perturbed badly: {removed}/{requested}"
+
+
+def test_abstains_when_rewiring_cannot_perturb_the_graph():
+    """A null of unperturbed graphs must abstain, not rule.
+
+    When v2 introduces an edge type absent from v1, rewire_kg has no
+    schema-valid exemplar to place additions from, skips them at DEBUG level and
+    returns v1 unchanged. Every null ARI is then 1.0, which makes the observed
+    value look extreme and produced a confident, entirely spurious
+    `kg-sensitive` with testable=True.
+    """
+
+    def base():
+        kg = KnowledgeGraph()
+        for i in range(30):
+            kg.add_node(f"G{i}", NodeType.GENE)
+        kg.add_node("P0", NodeType.PATHWAY)
+        for i in range(29):
+            kg.add_edge(f"G{i}", f"G{i + 1}", EdgeType.GENE_INTERACTS)
+        return kg
+
+    v1, v2 = base(), base()
+    for i in range(12):  # an edge type v1 does not have at all
+        v2.add_edge(f"G{i}", "P0", EdgeType.GENE_IN_PATHWAY)
+
+    def partition_fn(kg, cohort):
+        has_pw = any(et is EdgeType.GENE_IN_PATHWAY for et in kg._edge_types.values())
+        return LABELS_A if has_pw else LABELS_B
+
+    res = kg_timeslice_sensitivity(v1, v2, partition_fn, None, n_null=50, seed=42)
+
+    assert not res.testable
+    assert "could not perturb" in res.verdict
+    assert res.verdict != VERDICT_KG_SENSITIVE
+    assert res.null_perturbation_median == 0.0
+    assert res.null_perturbation_requested > 0
+
+
+def test_result_reports_achieved_perturbation():
+    """Achieved-vs-requested must be visible, not assumed."""
+    v1 = _chain_kg()
+    v2 = _drop_edge(v1, *CRITICAL)
+    res = kg_timeslice_sensitivity(v1, v2, lambda kg, c: LABELS_A, None, n_null=10, seed=42)
+    d = res.to_dict()
+    assert d["null_perturbation_requested"] == 1
+    assert d["null_perturbation_median"] >= 1

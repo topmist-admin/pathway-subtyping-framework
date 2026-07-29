@@ -106,6 +106,8 @@ class KGSensitivityResult:
     ari_min: float = 0.0
     alpha: float = 0.05
     rewiring: str = REWIRING_DEGREE
+    null_perturbation_requested: int = 0
+    null_perturbation_median: float = 0.0
     diff: Optional[KGDiff] = None
     regression: Optional[KGRegressionReport] = None
 
@@ -136,6 +138,8 @@ class KGSensitivityResult:
             "ari_min": self.ari_min,
             "alpha": self.alpha,
             "rewiring": self.rewiring,
+            "null_perturbation_requested": self.null_perturbation_requested,
+            "null_perturbation_median": self.null_perturbation_median,
             "diff_summary": dict(self.diff.summary) if self.diff else None,
             "regression": self.regression.to_dict() if self.regression else None,
         }
@@ -151,6 +155,12 @@ def _edges_by_type(kg: KnowledgeGraph) -> Dict[str, List[Tuple[str, str]]]:
     for (src, tgt, _key), edge_type in kg._edge_types.items():
         out.setdefault(edge_type.value, []).append((src, tgt))
     return out
+
+
+def _edge_key_set(kg: KnowledgeGraph) -> set:
+    """{(src, tgt, edge_type_value)} — used to measure how much a rewiring
+    actually changed, rather than trusting that it changed what was asked."""
+    return {(s, t, et.value) for (s, t, _k), et in kg._edge_types.items()}
 
 
 def _edge_key_index(kg: KnowledgeGraph) -> Dict[Tuple[str, str, str], List[int]]:
@@ -372,9 +382,19 @@ def rewire_kg(
             continue
 
         if rewiring in (REWIRING_DEGREE, REWIRING_MODULE):
-            # Each swap consumes one removal AND one addition, so the balanced
-            # part of the budget is what can be done degree-preservingly.
-            n_paired = min(n_remove, n_add)
+            # A double-edge swap rewrites a->b, c->d as a->d, c->b: it REMOVES
+            # TWO edges and ADDS TWO. So the number of swaps affordable from a
+            # budget of (n_remove, n_add) is min(n_remove, n_add) // 2, and each
+            # completed swap consumes two units from each side.
+            #
+            # Getting this wrong is not cosmetic: counting one swap as one
+            # removal + one addition perturbs the graph at 2x the requested size,
+            # which destroys the size-matching this module's entire argument
+            # rests on. An over-perturbed null pushes null agreement down, which
+            # raises P(null <= observed) and therefore suppresses the
+            # `kg-sensitive` verdict. Pinned by
+            # test_degree_mode_respects_the_requested_budget.
+            n_paired = min(n_remove, n_add) // 2
             if n_paired > 0:
                 if rewiring == REWIRING_MODULE:
                     frac = float((within_module_frac or {}).get(et_value, 0.0))
@@ -397,8 +417,9 @@ def rewire_kg(
                         n_paired,
                         et_value,
                     )
-                n_remove -= done
-                n_add -= done
+                # Two removals and two additions per completed swap.
+                n_remove -= 2 * done
+                n_add -= 2 * done
 
         # --- residual removals -------------------------------------------- #
         if n_remove > 0:
@@ -618,8 +639,12 @@ def kg_timeslice_sensitivity(
             )
         frac = within_module_fractions(diff, module_map)
 
+    requested_total = int(sum(n_remove_by_type.values()) + sum(n_add_by_type.values()))
+    v1_edges = _edge_key_set(v1)
+
     rng = np.random.default_rng(seed)
     null_aris: List[float] = []
+    achieved: List[int] = []
     for _ in range(int(n_null)):
         perturbed = rewire_kg(
             v1,
@@ -630,12 +655,44 @@ def kg_timeslice_sensitivity(
             module_map=module_map,
             within_module_frac=frac,
         )
+        # How much did this draw ACTUALLY perturb? rewire_kg skips work it cannot
+        # do (no schema-valid exemplar for an edge type, graph too dense) and
+        # logs at DEBUG, so a draw can silently come back identical to v1. A null
+        # built from unperturbed graphs has every ARI at 1.0, which makes the
+        # observed value look extreme and yields a confident, entirely spurious
+        # `kg-sensitive`. Measure it rather than assume it.
+        achieved.append(len(v1_edges.symmetric_difference(_edge_key_set(perturbed))))
+
         labels_p = np.asarray(partition_fn(perturbed, cohort))
         if labels_p.shape[0] != labels_v1.shape[0]:
             continue
         value = float(safe_adjusted_rand_score(labels_v1, labels_p))
         if np.isfinite(value):
             null_aris.append(value)
+
+    median_achieved = float(np.median(achieved)) if achieved else 0.0
+    if median_achieved <= 0:
+        return KGSensitivityResult(
+            verdict=("not-testable (rewiring could not perturb the graph; " "the null is empty)"),
+            testable=False,
+            observed_ari=observed_ari,
+            n_clusters_v1=k1,
+            n_clusters_v2=k2,
+            diff=diff,
+            ari_min=ari_min,
+            alpha=alpha,
+            rewiring=rewiring,
+            null_perturbation_median=median_achieved,
+            null_perturbation_requested=requested_total,
+        )
+    if median_achieved < 0.5 * max(1, requested_total):
+        logger.warning(
+            "[GateK] null under-perturbed: median %d of %d requested edge changes "
+            "achieved. The null is weaker than the real diff, which biases toward "
+            "'kg-sensitive'. Interpret with care.",
+            int(median_achieved),
+            requested_total,
+        )
 
     if len(null_aris) < 2:
         return KGSensitivityResult(
@@ -681,6 +738,8 @@ def kg_timeslice_sensitivity(
         ari_min=ari_min,
         alpha=alpha,
         rewiring=rewiring,
+        null_perturbation_requested=requested_total,
+        null_perturbation_median=median_achieved,
         diff=diff,
         regression=regression,
     )

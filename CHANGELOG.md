@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Gate K: the `degree`/`module` null perturbed at 2× the requested size.** A
+  Maslov–Sneppen double-edge swap removes **two** edges and adds **two**, but each
+  swap was counted as consuming one removal and one addition. Measured on a
+  200-node graph, requesting 5/5 changes actually changed 10/10 — exactly 2.00×
+  (`uniform` was unaffected at 1.00×). This defeats the size-matching the module's
+  entire argument rests on: an over-perturbed null pushes null agreement down,
+  which raises `P(null ≤ observed)` and therefore **systematically suppresses the
+  `kg-sensitive` verdict**. Now `min(n_remove, n_add) // 2` swaps, each consuming
+  two units per side. Only an **even** balanced budget is fully swap-able; an odd
+  remainder falls to the degree-weighted residual, which is documented.
+- **Gate K: a null that could not perturb the graph returned a confident
+  `kg-sensitive`.** `rewire_kg` skips work it cannot do — no schema-valid exemplar
+  for an edge type, graph too dense — and logs at DEBUG, so a draw can come back
+  identical to the baseline. When a release *introduces* an edge type the baseline
+  lacks, every null agreement was 1.0, making the observed value look extreme:
+  reproduced as `kg-sensitive`, `p=0.0196`, `testable=True` on a null that never
+  perturbed anything. Gate K now measures achieved perturbation per draw and
+  **abstains** when the median is zero, warns below half the requested change, and
+  reports `null_perturbation_requested` / `null_perturbation_median` on the result
+  and in `to_dict()`.
+  - Both found by adversarial review of code written the same week; both pinned by
+    regression tests (`test_degree_mode_respects_the_requested_budget`,
+    `test_abstains_when_rewiring_cannot_perturb_the_graph`). No published result is
+    affected — Gate K has never been run outside its own tests.
 - **`statistical_rigor.sensitivity_analysis_weights` now raises `NotImplementedError`
   instead of returning fabricated results.** It ignored all four of its inputs
   (`gene_burdens`, `pathways`, `cluster_labels`, `seed`) and appended a literal `0.0`

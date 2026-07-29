@@ -59,12 +59,23 @@ consequential parameter in the gate — it can change the verdict on identical d
 
 **`degree`** performs Maslov–Sneppen double-edge swaps: two edges `a→b` and `c→d`
 become `a→d` and `c→b`, so every node keeps its exact in- and out-degree. Hubs
-stay hubs. Each swap consumes one removal and one addition, so it covers the
-*balanced* part of the budget; any residual (a release that mostly grows) is
-degree-*weighted*, which preserves the shape of the degree distribution but not
-its exact values. Strict preservation is impossible for the residual, because
-adding an edge necessarily raises somebody's degree — the docstring says so
-rather than implying otherwise.
+stay hubs.
+
+**Each swap changes TWO edges per side**, so a budget of *(remove, add)* affords
+`min(remove, add) // 2` swaps and each completed swap consumes two units from
+each side. A consequence worth knowing: only an **even** balanced budget is fully
+swap-able. An odd remainder — and any imbalance, as when a release mostly grows —
+falls through to a degree-*weighted* residual, which preserves the shape of the
+degree distribution but not its exact values. Strict preservation is impossible
+there, because adding an edge necessarily raises somebody's degree.
+
+> This was wrong in the first two releases of this module: each swap was counted
+> as one removal plus one addition, so `degree` and `module` perturbed at **2× the
+> requested size**. That silently defeats the size-matching the whole argument
+> rests on — an over-perturbed null pushes null agreement down, which raises
+> `P(null ≤ observed)` and therefore **suppresses the `kg-sensitive` verdict**.
+> Found by adversarial review, fixed 2026-07-29, pinned by
+> `test_degree_mode_respects_the_requested_budget`.
 
 **`module`** additionally constrains swaps to reproduce the observed diff's
 within-module / cross-module ratio, computed by `within_module_fractions()`.
@@ -143,7 +154,18 @@ KG change did.
 | `robust` | yes | agreement at or above `ari_min` |
 | `kg-sensitive` | yes | disrupted more than size-matched chance |
 | `generically-fragile` | yes | disrupted no more than chance |
-| `not-testable (...)` | **no** | graphs identical, partition degenerate, sample counts mismatched, or the null could not be built |
+| `not-testable (...)` | **no** | graphs identical, partition degenerate, sample counts mismatched, the null could not be built, or **the rewiring could not actually perturb the graph** |
+
+> **The null is measured, not assumed.** `rewire_kg` skips work it cannot do — no
+> schema-valid exemplar for an edge type, or a graph too dense for free slots —
+> and logs that at DEBUG. A draw can therefore come back *identical* to v1. If it
+> does, every null agreement is 1.0, the observed value looks extreme by
+> comparison, and the gate emits a confident and entirely spurious
+> `kg-sensitive`. Gate K now measures the achieved perturbation per draw and
+> **abstains** when the median is zero; `null_perturbation_requested` and
+> `null_perturbation_median` are on the result and in `to_dict()`, and a null that
+> achieves under half the requested change logs a warning. The commonest trigger
+> is a release that *introduces* an edge type the baseline lacks.
 
 `KGSensitivityResult.testable` is the flag that keeps abstentions out of failure
 rates. Gate A abstained on 28 of 30 synthetic negatives and the resulting
