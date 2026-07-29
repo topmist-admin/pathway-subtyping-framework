@@ -8,6 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Random-walk-with-restart applied a row-stochastic matrix without transposing.**
+  `W = D⁻¹A` is row-stochastic, so the walk on a column probability vector must
+  apply `Wᵀ`. Using `W·p` made each node divide its **incoming** mass by its own
+  degree instead of the sender's: probability was not conserved (a 5-node test
+  summed to **0.719** instead of 1.0) and **hubs were suppressed rather than
+  boosted** — the opposite of what propagation is for. Node B (degree 3) received
+  exactly `0.30288/3`. Now matches both the closed form `α·(I−(1−α)Wᵀ)⁻¹p₀` and
+  `networkx.pagerank` exactly. Affects `random_walk` and `pagerank`; heat
+  diffusion and insulated diffusion were already correct. An un-converged run now
+  logs a warning instead of returning silently.
+- **`bootstrap_effect_size_ci` was one-sided by construction.** It bootstrapped
+  `max(|Cohen's d|)` over all cluster pairs — a maximum of absolute values,
+  bounded below by zero and positively biased — so the percentile interval
+  **excluded zero on 40 of 40 pure-null datasets**, e.g. `(0.039, 0.606)` where no
+  effect exists. It could never signal "no effect". Now pre-specifies one cluster
+  pair on the full data and bootstraps the **signed** effect for that fixed pair.
+  Null false-positive rate **40/40 → 3/40** (near the nominal 5%), with power
+  retained (20/20 large effects still detected). The residual pair-selection
+  optimism is documented in the docstring.
+- **`somatic_alignment` ran chi-square on sparse tables, where it is invalid and
+  anticonservative.** With min expected count 3.0 it returned p=0.0079 against
+  Fisher exact p=0.0202 — a 2.6× overstatement, on the *positive-evidence* gate
+  for cancer, where a rare driver in a small cohort could fabricate an anchor. Now
+  reports `min_expected_count` and `sparse_table` always, falls back to **Fisher's
+  exact** for 2×2 (valid there), and refuses to anchor on an r×c table whose
+  p came from an invalid chi-square.
+- **`select_n_clusters` silently returned a k it had just rejected.** When every k
+  failed `min_cluster_fraction`, it fell back to `k_range[0]` with only a log line,
+  and no caller checked. The fallback is now loud and machine-detectable via
+  `optimal_k in result.rejected_k`. Also: `np.bincount(labels)` could not see an
+  **empty trailing cluster**, so a degenerate k=3 fit producing only labels {0,1}
+  passed the guard — now `minlength=k`. An unrecognised `method` string used to
+  fall through to silhouette silently and now raises.
 - **Gate K: the `degree`/`module` null perturbed at 2× the requested size.** A
   Maslov–Sneppen double-edge swap removes **two** edges and adds **two**, but each
   swap was counted as consuming one removal and one addition. Measured on a

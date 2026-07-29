@@ -380,8 +380,18 @@ class NetworkPropagator:
         converged = False
         iteration = 0
 
+        # W = D^-1 A is ROW-stochastic, so the walk on a column probability
+        # vector must apply its TRANSPOSE: mass leaves node j split by j's own
+        # out-degree. Using W.dot(p) instead makes each node divide its INCOMING
+        # mass by its own degree, which does not conserve probability (a 5-node
+        # test summed to 0.719 instead of 1.0) and systematically SUPPRESSES hubs
+        # rather than boosting them -- the opposite of what propagation is for.
+        # Verified against the closed form alpha*inv(I-(1-alpha)W^T)p0 and
+        # networkx.pagerank; pinned by test_rwr_matches_closed_form_and_networkx.
+        W_t = W.T.tocsr() if sparse.issparse(W) else W.T
+
         for iteration in range(self.config.n_iterations):
-            p_new = (1 - alpha) * W.dot(p) + alpha * p0
+            p_new = (1 - alpha) * W_t.dot(p) + alpha * p0
 
             diff = np.max(np.abs(p_new - p))
             if diff < self.config.convergence_threshold:
@@ -390,6 +400,17 @@ class NetworkPropagator:
                 break
 
             p = p_new
+
+        if not converged:
+            logger.warning(
+                "[NetworkPropagation] random-walk did NOT converge after %d "
+                "iterations (last delta %.3g > tol %.3g). The returned scores are "
+                "un-converged; raise n_iterations or relax convergence_threshold. "
+                "Check `result.converged` before using these values.",
+                self.config.n_iterations,
+                float(diff),
+                self.config.convergence_threshold,
+            )
 
         propagated = self._vector_to_scores(p, gene_scores)
 

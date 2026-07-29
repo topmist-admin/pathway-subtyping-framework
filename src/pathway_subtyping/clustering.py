@@ -340,7 +340,11 @@ def select_n_clusters(
 
         # Check min_cluster_fraction guard
         if min_cluster_fraction is not None:
-            cluster_sizes = np.bincount(result.labels)
+            # minlength=k so an EMPTY trailing cluster is counted as size 0.
+            # Without it, a k=3 fit that produced only labels {0,1} yields
+            # bincount([...]) of length 2, min_frac is computed over the two
+            # populated clusters, and the degenerate fit passes the guard.
+            cluster_sizes = np.bincount(result.labels, minlength=k)
             min_size = cluster_sizes.min()
             min_frac = min_size / n_samples
             if min_frac < min_cluster_fraction:
@@ -356,20 +360,35 @@ def select_n_clusters(
             bic_values[k] = result.bic
         silhouette_values[k] = result.silhouette
 
+    if method not in ("bic", "silhouette"):
+        raise ValueError(
+            f"method must be 'bic' or 'silhouette', got {method!r}. "
+            "An unrecognised value previously fell through to silhouette silently."
+        )
+
     # Select optimal k from non-rejected candidates
     if method == "bic" and bic_values:
         optimal_k = min(bic_values, key=bic_values.get)
     elif silhouette_values:
         optimal_k = max(silhouette_values, key=silhouette_values.get)
     else:
-        # All k values rejected or no valid scores — fall back to smallest k
+        # Every k was rejected. Returning one anyway is a real hazard: callers
+        # read `optimal_k` and cluster with it, so a k that FAILED the
+        # min_cluster_fraction guard silently becomes the answer. We still return
+        # a usable k (raising would break callers mid-pipeline), but the fallback
+        # is now loud and, critically, machine-detectable via
+        # `optimal_k in result.rejected_k` -- a caller can and should check.
         optimal_k = k_range[0]
         if rejected_k:
             logger.warning(
-                "[Clustering] All k values rejected by min_cluster_fraction="
-                "%s. Falling back to k=%d without guard.",
+                "[Clustering] EVERY k in %s was rejected by "
+                "min_cluster_fraction=%s. Falling back to k=%d, which is itself "
+                "rejected (%s). The returned partition violates the guard -- "
+                "check `optimal_k in result.rejected_k` before using it.",
+                list(k_range),
                 min_cluster_fraction,
                 optimal_k,
+                rejected_k.get(optimal_k, "no score computed"),
             )
 
     return ModelSelectionResult(

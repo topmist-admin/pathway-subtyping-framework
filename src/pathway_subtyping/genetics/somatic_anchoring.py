@@ -89,7 +89,7 @@ def somatic_alignment(
     """
     import numpy as np
     import pandas as pd
-    from scipy.stats import chi2_contingency
+    from scipy.stats import chi2_contingency, fisher_exact
 
     from ..statistical_rigor import benjamini_hochberg
     from ..validation import cramers_v as _cramers_v
@@ -120,7 +120,23 @@ def somatic_alignment(
             ).to_dict()
             per_stratum[name]["note"] = "degenerate table (single cluster or single stratum level)"
             continue
-        chi2, p, dof, _ = chi2_contingency(table, correction=False)
+        chi2, p, dof, expected = chi2_contingency(table, correction=False)
+
+        # Chi-square is invalid when expected cell counts are small, and it is
+        # ANTICONSERVATIVE there -- it manufactures significance. On a 2x2 with
+        # min expected 3.0 it gives p=0.0079 against Fisher exact p=0.0202, a 2.6x
+        # overstatement. Since this is the POSITIVE-evidence gate for cancer, a
+        # rare driver in a small cohort could otherwise fabricate a "somatic
+        # anchor" with no warning. Use Fisher where it is exact (2x2); elsewhere
+        # keep the chi-square but refuse to anchor on it.
+        min_expected = float(np.min(expected))
+        sparse_table = min_expected < 5.0
+        test_used = "chi2"
+        if sparse_table and table.shape == (2, 2):
+            _, p = fisher_exact(table)
+            p = float(p)
+            test_used = "fisher_exact"
+
         entry = StratumAlignment(
             stratum=name,
             chi2=float(chi2),
@@ -129,6 +145,14 @@ def somatic_alignment(
             dof=int(dof),
             n=int(mask.sum()),
         ).to_dict()
+        entry["min_expected_count"] = min_expected
+        entry["sparse_table"] = bool(sparse_table)
+        entry["test"] = test_used
+        if sparse_table and test_used == "chi2":
+            entry["note"] = (
+                f"sparse table (min expected {min_expected:.2f} < 5): chi-square is "
+                "invalid and anticonservative here; not eligible to anchor"
+            )
         per_stratum[name] = entry
         names.append(name)
         pvals.append(float(p))
@@ -147,7 +171,10 @@ def somatic_alignment(
         if v > best_v:
             best_v = v
             best_name = name
-        if info.get("significant", False) and v >= cramers_v_min:
+        # A sparse table whose p came from the invalid chi-square cannot anchor.
+        # (A 2x2 that fell back to Fisher IS valid and remains eligible.)
+        invalid = info.get("sparse_table", False) and info.get("test") == "chi2"
+        if info.get("significant", False) and v >= cramers_v_min and not invalid:
             per_stratum[name]["anchored"] = True
             anchored.append(name)
         else:

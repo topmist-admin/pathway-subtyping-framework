@@ -515,7 +515,23 @@ def bootstrap_effect_size_ci(
     seed: Optional[int] = None,
 ) -> Tuple[float, float]:
     """
-    Compute bootstrap confidence interval for effect size.
+    Compute a bootstrap confidence interval for the effect size of ``pathway``.
+
+    The cluster pair with the largest |Cohen's d| on the **full** data is chosen
+    once, then the **signed** d for that fixed pair is bootstrapped and reported
+    as a percentile interval. The returned interval is therefore two-sided and
+    **can include zero**, which is what makes it readable as evidence.
+
+    ⚠️ **Interpretation caveat.** The pair is selected using the same data the
+    interval is computed from, so a mild selection effect remains and the
+    interval is somewhat optimistic. It is *not* a hypothesis test; use the
+    permutation p-values in :func:`compute_pathway_pvalues` for that.
+
+    This replaces an earlier version that bootstrapped ``max(|d|)`` over all
+    cluster pairs. A maximum of absolute values is bounded below by zero and
+    positively biased, so the percentile interval was one-sided by construction:
+    on pure-null data the 95% lower bound excluded zero in 40 of 40 datasets.
+    That interval could never signal "no effect".
 
     Args:
         pathway_scores: DataFrame of pathway scores
@@ -526,7 +542,8 @@ def bootstrap_effect_size_ci(
         seed: Random seed
 
     Returns:
-        Tuple of (lower_bound, upper_bound)
+        Tuple of (lower_bound, upper_bound) on the signed effect size, or
+        ``(nan, nan)`` if too few bootstrap replicates were usable.
     """
     rng = np.random.RandomState(seed)
     scores = pathway_scores[pathway].values
@@ -536,26 +553,46 @@ def bootstrap_effect_size_ci(
     if len(unique_clusters) < 2:
         return (0.0, 0.0)
 
-    bootstrap_effects = []
+    # Pre-specify ONE cluster pair on the full data, then bootstrap the SIGNED
+    # effect for that fixed pair.
+    #
+    # The previous version recomputed max(|d|) over all pairs inside every
+    # bootstrap replicate. A maximum of absolute values is bounded below by zero
+    # and positively biased, so its percentile interval is one-sided BY
+    # CONSTRUCTION: on pure-null data (no cluster structure, random labels) the
+    # 95% lower bound excluded zero in 40 of 40 datasets, e.g. (0.039, 0.606).
+    # Such an interval can never signal "no effect", and its lower bound reads as
+    # a floor on effect size that is pure selection artifact. Same family as the
+    # degenerate-ARI issue behind the 2026-07 correction.
+    #
+    # Fixing the pair and keeping the sign makes the statistic a plain difference
+    # whose CI can straddle zero. Residual caveat, stated in the docstring: the
+    # pair is still chosen from the observed data, so a mild selection effect
+    # remains — it is no longer a maximum re-taken per replicate, which is what
+    # made the old interval strictly positive.
+    ref_c1, ref_c2, best = unique_clusters[0], unique_clusters[1], -np.inf
+    for i, c1 in enumerate(unique_clusters):
+        for c2 in unique_clusters[i + 1 :]:
+            m1, m2 = cluster_labels == c1, cluster_labels == c2
+            if np.sum(m1) >= 2 and np.sum(m2) >= 2:
+                d = abs(compute_cohens_d(scores[m1], scores[m2]))
+                if d > best:
+                    best, ref_c1, ref_c2 = d, c1, c2
 
+    bootstrap_effects = []
     for _ in range(n_bootstrap):
-        # Bootstrap sample
         idx = rng.choice(n_samples, size=n_samples, replace=True)
         boot_scores = scores[idx]
         boot_labels = cluster_labels[idx]
 
-        # Compute effect size
-        max_d = 0.0
-        for i, c1 in enumerate(unique_clusters):
-            for c2 in unique_clusters[i + 1 :]:
-                g1_mask = boot_labels == c1
-                g2_mask = boot_labels == c2
+        g1_mask = boot_labels == ref_c1
+        g2_mask = boot_labels == ref_c2
+        if np.sum(g1_mask) >= 2 and np.sum(g2_mask) >= 2:
+            # signed, not abs(): an absolute value cannot straddle zero
+            bootstrap_effects.append(compute_cohens_d(boot_scores[g1_mask], boot_scores[g2_mask]))
 
-                if np.sum(g1_mask) >= 2 and np.sum(g2_mask) >= 2:
-                    d = abs(compute_cohens_d(boot_scores[g1_mask], boot_scores[g2_mask]))
-                    max_d = max(max_d, d)
-
-        bootstrap_effects.append(max_d)
+    if len(bootstrap_effects) < 2:
+        return (float("nan"), float("nan"))
 
     # Compute percentile CI
     alpha = 1 - ci_level

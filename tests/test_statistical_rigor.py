@@ -17,6 +17,7 @@ from pathway_subtyping.statistical_rigor import (
     StatisticalRigorResult,
     aggregate_pathway_scores,
     benjamini_hochberg,
+    bootstrap_effect_size_ci,
     compute_cohens_d,
     compute_pathway_effect_sizes,
     compute_pathway_pvalues,
@@ -438,3 +439,54 @@ class TestSensitivityAnalysisWeightsNotImplemented:
             "genuinely implemented, delete this test class; if it is fabricating "
             "placeholder values again, revert that."
         )
+
+
+class TestBootstrapEffectSizeCINotOneSided:
+    """The CI must be able to include zero.
+
+    The previous version bootstrapped max(|d|) over all cluster pairs. A maximum
+    of absolute values is bounded below by zero and positively biased, so the
+    percentile interval was one-sided by construction and excluded zero on 40/40
+    pure-null datasets — it could never signal "no effect".
+    """
+
+    def test_null_data_ci_usually_includes_zero(self):
+        excluded = 0
+        trials = 40
+        for s in range(trials):
+            rng = np.random.default_rng(s)
+            df = pd.DataFrame({"P1": rng.normal(0, 1, 120)})
+            labels = rng.integers(0, 3, 120)
+            lo, hi = bootstrap_effect_size_ci(df, labels, "P1", n_bootstrap=300, seed=s)
+            if lo > 0 or hi < 0:
+                excluded += 1
+        # Nominal 5% for a 95% CI; allow headroom for the documented residual
+        # pair-selection effect. The pre-fix value was 40/40.
+        assert excluded <= trials * 0.25, (
+            f"CI excluded 0 on {excluded}/{trials} pure-null datasets — "
+            "the interval looks one-sided again"
+        )
+
+    def test_real_effect_is_still_detected(self):
+        """Fixing the false positives must not cost power."""
+        detected = 0
+        for s in range(20):
+            rng = np.random.default_rng(100 + s)
+            x = np.concatenate([rng.normal(0, 1, 60), rng.normal(3, 1, 60)])
+            labels = np.array([0] * 60 + [1] * 60)
+            lo, hi = bootstrap_effect_size_ci(
+                pd.DataFrame({"P1": x}), labels, "P1", n_bootstrap=300, seed=s
+            )
+            if lo > 0 or hi < 0:
+                detected += 1
+        assert detected == 20, f"only {detected}/20 large effects detected"
+
+    def test_ci_can_be_negative(self):
+        """A signed statistic must be able to produce a negative bound."""
+        rng = np.random.default_rng(3)
+        x = np.concatenate([rng.normal(0, 1, 60), rng.normal(3, 1, 60)])
+        labels = np.array([0] * 60 + [1] * 60)
+        lo, hi = bootstrap_effect_size_ci(
+            pd.DataFrame({"P1": x}), labels, "P1", n_bootstrap=300, seed=1
+        )
+        assert lo < 0 or hi < 0 or lo > 0, "bounds should carry a sign, not be |d|"

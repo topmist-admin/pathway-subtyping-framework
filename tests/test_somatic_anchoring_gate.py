@@ -133,3 +133,54 @@ class TestSomaticAnchoringGate:
         gate = next(r for r in res.results if r.name == "Gate 7 (somatic): Genetic Anchoring")
         assert gate.passed is True
         assert gate.details["anchored_strata"] == ["BRAF_V600E"]
+
+
+class TestSparseTableGuard:
+    """Chi-square is invalid AND anticonservative on sparse tables.
+
+    This is the positive-evidence gate for cancer, so a rare driver in a small
+    cohort could otherwise fabricate a "somatic anchor". Concrete case: min
+    expected 3.0, chi-square p=0.0079 vs Fisher exact p=0.0202 — a 2.6x
+    overstatement of significance.
+    """
+
+    def test_sparse_2x2_falls_back_to_fisher_exact(self):
+        labels = np.array([0] * 20 + [1] * 20)
+        stratum = np.array(["MUT"] * 6 + ["WT"] * 14 + ["WT"] * 20)
+        e = somatic_alignment(labels, {"DRIVER": stratum}, cramers_v_min=0.30)["per_stratum"][
+            "DRIVER"
+        ]
+        assert e["sparse_table"] is True
+        assert e["min_expected_count"] == pytest.approx(3.0, abs=1e-6)
+        assert e["test"] == "fisher_exact"
+        # the exact p, not the anticonservative chi-square value of 0.0079
+        assert e["p_value"] == pytest.approx(0.0202, abs=1e-3)
+
+    def test_well_powered_table_still_uses_chi2(self):
+        labels = np.array([0] * 40 + [1] * 40)
+        stratum = np.array(["MUT"] * 30 + ["WT"] * 10 + ["MUT"] * 10 + ["WT"] * 30)
+        e = somatic_alignment(labels, {"DRIVER": stratum})["per_stratum"]["DRIVER"]
+        assert e["sparse_table"] is False
+        assert e["test"] == "chi2"
+        assert e["min_expected_count"] >= 5.0
+
+    def test_sparse_non_2x2_cannot_anchor(self):
+        """No exact fallback exists for r x c, so it must not anchor."""
+        labels = np.array([0] * 15 + [1] * 15 + [2] * 15)
+        stratum = np.array(
+            ["A"] * 13
+            + ["B"] * 1
+            + ["C"] * 1
+            + ["A"] * 1
+            + ["B"] * 13
+            + ["C"] * 1
+            + ["A"] * 1
+            + ["B"] * 1
+            + ["C"] * 13
+        )
+        e = somatic_alignment(labels, {"DRIVER": stratum}, cramers_v_min=0.30)["per_stratum"][
+            "DRIVER"
+        ]
+        if e["sparse_table"] and e["test"] == "chi2":
+            assert e["anchored"] is False, "invalid chi-square must not anchor"
+            assert "not eligible to anchor" in e.get("note", "")

@@ -488,3 +488,35 @@ class TestEdgeCases:
 
         result = run_clustering(data, n_clusters=3, seed=42)
         assert len(result.labels) == 50
+
+
+class TestSelectNClustersGuardHonesty:
+    """The min_cluster_fraction guard must not be silently bypassed."""
+
+    def _degenerate_data(self):
+        rng = np.random.default_rng(0)
+        return np.vstack([rng.normal(0, 1, (100, 4)), rng.normal(9, 0.2, (3, 4))])
+
+    def test_all_rejected_fallback_is_detectable(self):
+        """When every k fails the guard, the returned k must be flagged.
+
+        The function still returns a usable k (raising would break callers
+        mid-pipeline), but `optimal_k in rejected_k` lets a caller detect that
+        the returned partition violates the guard it asked for.
+        """
+        res = select_n_clusters(
+            self._degenerate_data(),
+            k_range=range(2, 5),
+            min_cluster_fraction=0.45,
+            seed=42,
+        )
+        assert set(res.rejected_k) == {2, 3, 4}
+        assert res.optimal_k in res.rejected_k
+
+    def test_unknown_method_raises_instead_of_defaulting(self):
+        """An unrecognised method used to fall through to silhouette silently."""
+        rng = np.random.default_rng(1)
+        with pytest.raises(ValueError, match="must be 'bic' or 'silhouette'"):
+            select_n_clusters(
+                rng.normal(0, 1, (60, 4)), k_range=range(2, 4), method="nonsense", seed=42
+            )

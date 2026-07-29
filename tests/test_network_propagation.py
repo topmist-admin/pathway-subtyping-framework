@@ -263,3 +263,74 @@ class TestConvenienceFunction:
         )
         assert result.method == "heat_diffusion"
         assert len(result.gene_scores) > 0
+
+
+class TestRandomWalkCorrectness:
+    """RWR must match the closed form and networkx.
+
+    The solver applied a ROW-stochastic W without transposing, so each node
+    divided its INCOMING mass by its own degree instead of the sender's. That
+    did not conserve probability (0.719 instead of 1.0 on the graph below) and
+    suppressed hubs rather than boosting them.
+    """
+
+    GRAPH = [("A", "B"), ("B", "C"), ("C", "D"), ("B", "D"), ("D", "E")]
+    NODES = ["A", "B", "C", "D", "E"]
+
+    def _reference(self, alpha=0.5):
+        import networkx as nx
+
+        g = nx.Graph(self.GRAPH)
+        adj = nx.to_numpy_array(g, nodelist=self.NODES)
+        w = adj / adj.sum(axis=1, keepdims=True)
+        p0 = np.zeros(len(self.NODES))
+        p0[0] = 1.0
+        return alpha * np.linalg.inv(np.eye(len(self.NODES)) - (1 - alpha) * w.T) @ p0
+
+    def _run(self, method, alpha=0.5):
+        cfg = PropagationConfig(
+            method=method,
+            restart_prob=alpha,
+            n_iterations=50000,
+            convergence_threshold=1e-15,
+            normalize_output=False,
+        )
+        prop = NetworkPropagator(config=cfg)
+        prop.build_network_from_edges([(u, v, 1.0) for u, v in self.GRAPH])
+        res = prop.propagate({"A": 1.0})
+        return np.array([res.gene_scores.get(n, 0.0) for n in self.NODES]), res
+
+    @pytest.mark.parametrize("method", [PropagationMethod.RANDOM_WALK, PropagationMethod.PAGERANK])
+    def test_rwr_matches_closed_form_and_networkx(self, method):
+        import networkx as nx
+
+        got, res = self._run(method)
+        assert res.converged
+        np.testing.assert_allclose(got, self._reference(), atol=1e-8)
+
+        pr = nx.pagerank(nx.Graph(self.GRAPH), alpha=0.5, personalization={"A": 1.0})
+        np.testing.assert_allclose(got, np.array([pr[n] for n in self.NODES]), atol=1e-6)
+
+    def test_rwr_conserves_probability_mass(self):
+        """The direct signature of the transpose bug: mass leaked to 0.719."""
+        got, _ = self._run(PropagationMethod.RANDOM_WALK)
+        assert got.sum() == pytest.approx(1.0, abs=1e-8)
+
+    def test_rwr_does_not_suppress_hubs(self):
+        """B is the highest-degree node; the bug divided its mass by its own degree."""
+        got, _ = self._run(PropagationMethod.RANDOM_WALK)
+        b = got[self.NODES.index("B")]
+        assert b == pytest.approx(
+            0.30288, abs=1e-4
+        ), f"B={b:.5f}; the pre-fix value was 0.10096 = 0.30288/3 (B's degree)"
+
+    def test_unconverged_run_is_flagged(self):
+        cfg = PropagationConfig(
+            method=PropagationMethod.RANDOM_WALK,
+            restart_prob=0.5,
+            n_iterations=2,
+            convergence_threshold=1e-15,
+        )
+        prop = NetworkPropagator(config=cfg)
+        prop.build_network_from_edges([(u, v, 1.0) for u, v in self.GRAPH])
+        assert prop.propagate({"A": 1.0}).converged is False
