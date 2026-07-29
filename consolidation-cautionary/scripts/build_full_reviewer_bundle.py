@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Build ONE self-contained archive for third-party stress testing of the
-cautionary-framework manuscript, BEFORE v0.8.0 is publicly released.
+cautionary-framework manuscript, BEFORE v0.9.0 is publicly released.
 
 Unlike the split CODE / RESULTS archives (build_review_archives.py), this bundles
 everything a reviewer needs to run and audit the claims from scratch, with no PyPI
 dependency on the unreleased gate:
 
-  1. The full v0.8 framework SOURCE (src/ + pyproject + tests) — so the gate is
+  1. The full v0.9 framework SOURCE (src/ + pyproject + tests) — so the gate is
      importable via `pip install -e .` without the PyPI release.
   2. All reproduction packages (scripts + deposited results + READMEs).
   3. Redistributable CACHED public data (GSE28521 / GSE80655 pathway scores,
@@ -45,7 +45,7 @@ SKIP_NAME = {".DS_Store"}
 # repo-relative paths (e.g. ../../../../CORRECTION_2026-07/...) resolve unchanged.
 # `pip install -e .` runs at the bundle root (pyproject.toml is there).
 
-# --- framework source (the unreleased v0.8 line) — at bundle root ---
+# --- framework source (the unreleased v0.9 line) — at bundle root ---
 SOURCE_ITEMS = [
     ("src", "src"),
     ("tests", "tests"),
@@ -164,7 +164,7 @@ submitted to any journal. It supersedes the withdrawn prior version
 
 Status: draft v2.2, after two internal hostile-review passes and one independent
 third-party stress-test (MAJOR REVISION; its analytical findings applied). Known
-pre-submission gaps (v0.8 release + code DOI, Zenodo supersession, funding/author
+pre-submission gaps (v0.9 release + code DOI, Zenodo supersession, funding/author
 statements) are listed in the manuscript's Data/Code section and in Part C of
 `../REVIEWER-CONCERN-HANDLING-MATRIX.md`. Every number in this draft is
 reproducible from this bundle — see `../../STRESS-TEST.md`.
@@ -203,11 +203,11 @@ the erratum after an external reproducibility review.
 STRESS_GUIDE = """# STRESS-TEST THIS BUNDLE — third-party reviewer guide
 
 Self-contained bundle to independently reproduce and stress-test every claim in the
-cautionary-framework manuscript, BEFORE the framework's v0.8 line is published to
+cautionary-framework manuscript, BEFORE the framework's v0.9 line is published to
 PyPI. Nothing here needs controlled-access data or the unreleased release.
 
 ## Layout (mirrors the source repo so every script's relative paths resolve)
-- `src/`, `tests/`, `pyproject.toml`  the v0.8 framework source (the gate lives here; not yet on PyPI)
+- `src/`, `tests/`, `pyproject.toml`  the v0.9 framework source (the gate lives here; not yet on PyPI)
 - `consolidation-cautionary/`         reproduction packages: scripts + deposited results + per-package READMEs (`RUNME.md` indexes them)
 - `research-results/`, `CORRECTION_2026-07/`  redistributable cached public data (pathway scores, partition labels, corrected benchmark)
 - `scripts/`                          repo-root framework tooling (gate ablation study + plotter)
@@ -217,14 +217,14 @@ PyPI. Nothing here needs controlled-access data or the unreleased release.
 - `MANIFEST.txt`                      every file with its SHA-256
 
 ## Setup (5 minutes) — run at the bundle root
-v0.8 is NOT on PyPI and NOT in any public git repo. You do not pull it — this bundle
-CONTAINS the v0.8 source under `src/`, and `pip install -e .` builds it from the files
+v0.9 is NOT on PyPI yet. You do not pull it — this bundle
+CONTAINS the v0.9 source under `src/`, and `pip install -e .` builds it from the files
 in this folder (the `.` = "the project in this directory"; pip reads the bundled
 `pyproject.toml`). Only third-party deps come from PyPI.
 ```
 python -m venv .venv && . .venv/bin/activate
-pip install -e .                    # builds v0.8 from the local src/ HERE — not PyPI, not git
-python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.8.0  (if it says 0.7.0 you installed the PyPI release by mistake)
+pip install -e .                    # builds v0.9 from the local src/ HERE — not PyPI, not git
+python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.9.0  (if it says 0.8.0 you installed the PyPI release by mistake)
 pip install numpy pandas scikit-learn scipy statsmodels requests torch   # analysis deps (torch only for DL baselines)
 ```
 
@@ -275,7 +275,7 @@ NOT survive into the proposed version:
 3. `consolidation-cautionary/RUNME.md` — headline numbers traced to deposited files.
 
 ## Known limits (disclosed)
-v0.8 is unreleased (that is why this bundle ships the source); the Zenodo benchmark
+v0.9 is unreleased (that is why this bundle ships the source); the Zenodo benchmark
 record needs superseding; large-N psychiatric validation is access-gated; the
 real-data control is two anchors; funding/contributions statements are pending. See
 `manuscript/REVIEWER-CONCERN-HANDLING-MATRIX.md` Part C.

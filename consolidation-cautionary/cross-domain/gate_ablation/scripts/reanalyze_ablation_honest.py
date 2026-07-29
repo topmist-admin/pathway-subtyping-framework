@@ -194,6 +194,9 @@ def main() -> None:
         "head_to_head": head,
         "p_value_floor": floor_note,
     }
+    # Create the output directory rather than assuming it exists: a reviewer
+    # following the guide with a fresh --out path hit FileNotFoundError here.
+    os.makedirs(args.out, exist_ok=True)
     path = os.path.join(args.out, "ablation_honest.json")
     with open(path, "w") as fh:
         json.dump(out, fh, indent=2)
