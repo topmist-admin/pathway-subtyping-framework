@@ -78,7 +78,13 @@ def main() -> None:
     with open(css_path, "w") as fh:
         fh.write(CSS)
 
+    # --resource-path anchors relative image paths to the MARKDOWN's directory.
+    # Without it pandoc resolves them against the working directory, which is why
+    # the manuscript previously carried absolute /Users/... paths: they "worked"
+    # for the author and rendered as broken images for everyone else (and leaked
+    # a local filesystem layout into a submitted PDF).
     cmd = ["pandoc", args.md, "-f", "gfm", "-t", "html5", "-s",
+           "--resource-path", os.path.dirname(os.path.abspath(args.md)),
            "--css", css_path, "--embed-resources", "-o", html_path]
     if args.title:
         cmd += ["--metadata", f"title={args.title}"]

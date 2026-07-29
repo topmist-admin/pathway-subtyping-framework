@@ -1,9 +1,18 @@
 # Result 2 — empirical audit of the corrected 47-dataset benchmark
 
-**Claim this package supports:** across independent public transcriptomic cohorts,
-discrete-subtype partitions almost never clear a reproducibility bar — and the
-silhouette-calibrated "adaptive threshold" that the withdrawn manuscript proposed
-to set that bar does not hold at all.
+**Claim this package supports:** the silhouette-calibrated "adaptive threshold" that
+the withdrawn manuscript proposed does **not** refit on the corrected benchmark
+(published R²=0.889 → 0.111 all rows / 0.015 valid / 0.001 under a stricter screen,
+with the slope reversing sign).
+
+⚠️ **This package does NOT support a reproducibility-rate claim, and the manuscript
+explicitly withdraws one.** An earlier version of this README headlined "discrete-subtype
+partitions almost never clear a reproducibility bar." That claim is **retracted**: the
+benchmark's `bootstrap_ari_5th_percentile` column is a 5th *percentile*, so a 0.5 bar on
+it is near-zero by construction, and §2b below shows the column is unsound as a
+cross-cohort measure anyway (five cohorts with silhouette > 0.7 all report stability ≤ 0;
+Spearman −0.088). What survives is a worked instance of measurement error propagating
+undetected — not a rate.
 
 Input is the **corrected** benchmark only: `corrected_benchmark_47datasets_v2.csv`,
 released with the [2026-07-08 erratum](../../../CORRECTION_2026-07/ERRATUM_2026-07-08.md),
@@ -34,7 +43,7 @@ Silhouette does not predict reproducibility in these data. The slope even revers
 sign depending on the screen, which is what a null relationship looks like. This
 reproduces the erratum's refit exactly (R² 0.0149, slope −0.0369 on valid rows).
 
-## 2b. Reproducibility across cohorts is uniformly low — the Result 2 headline
+## 2b. Why this statistic cannot carry a rate claim
 
 Distribution of the benchmark's reproducibility statistic across valid cohorts:
 
