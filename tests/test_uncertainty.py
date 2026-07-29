@@ -409,3 +409,32 @@ class TestBayesianPathwayGMM:
         samples = model.sample_parameters(n_samples=2)
         d = samples[0].to_dict()
         assert "weights" in d and "means" in d
+
+
+class TestConformalSmallCalibrationCoverage:
+    """Coverage is the one guarantee conformal offers; it must not be missed quietly.
+
+    When ceil((n+1)(1-alpha)) > n there is no such order statistic and the correct
+    quantile is +infinity (the all-labels set). Clamping to the max observed score
+    instead under-covered: 0.9035 at n=10 against a 0.95 target, 0.9373 at n=15.
+    """
+
+    def test_infeasible_coverage_yields_infinite_quantile(self):
+        rng = np.random.default_rng(0)
+        # n=10 with alpha=0.05 needs the 11th of 10 order statistics
+        pred = ConformalPathwayPredictor(score_fn=lambda X: X[:, 0], coverage=0.95)
+        X = rng.normal(size=(10, 2))
+        y = X[:, 0] + rng.normal(scale=0.1, size=10)
+        pred.calibrate(X, y)
+        assert np.isinf(pred._quantile), (
+            "too-small calibration set must give the all-labels/infinite interval, "
+            "not the max observed score"
+        )
+
+    def test_feasible_coverage_is_finite(self):
+        rng = np.random.default_rng(1)
+        pred = ConformalPathwayPredictor(score_fn=lambda X: X[:, 0], coverage=0.95)
+        X = rng.normal(size=(200, 2))
+        y = X[:, 0] + rng.normal(scale=0.1, size=200)
+        pred.calibrate(X, y)
+        assert np.isfinite(pred._quantile)

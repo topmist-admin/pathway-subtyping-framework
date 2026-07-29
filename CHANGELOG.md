@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Split-conformal under-covered when the calibration set was too small.** The
+  valid quantile is the `ceil((n+1)(1-alpha))`-th order statistic of the
+  calibration scores; when that rank exceeds `n` no such statistic exists and the
+  correct quantile is **+∞** (the all-labels set). Clamping to the max observed
+  score instead silently missed the coverage guarantee — measured **0.9035 at
+  n=10** against a 0.95 target, 0.9167 at n=12, 0.9373 at n=15. Coverage is the
+  one guarantee conformal prediction offers, so quietly missing it is worse than
+  returning a wide set. Now returns the infinite interval with a warning.
+  `ReframedMembershipGate` sets `n_cal = max(10, round(0.30n))` against a 0.95
+  target, so cohorts of roughly n ≲ 63 were in the affected regime.
 - **`calibrate_thresholds` produced impossible thresholds for non-default alpha.**
   The linear rescale was unclamped, so `alpha=0.5` gave a stability floor of
   **−0.5000** (a bar every partition clears) and a null ceiling of 0.58 (a bar

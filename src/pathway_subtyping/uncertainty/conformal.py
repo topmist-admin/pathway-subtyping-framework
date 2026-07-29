@@ -139,11 +139,36 @@ class ConformalPathwayPredictor:
             true_probs = predictions[np.arange(len(y_cal)), idx]
             nonconformity = 1.0 - true_probs
 
-        # Finite-sample correction: ceil((n+1)(1-alpha)) / n
+        # Finite-sample correction: the split-conformal quantile is the
+        # ceil((n+1)(1-alpha))-th order statistic of the calibration scores.
         n = len(nonconformity)
-        q_level = np.ceil((n + 1) * (1.0 - self.alpha)) / n
-        q_level = min(q_level, 1.0)
-        self._quantile = float(np.quantile(nonconformity, q_level))
+        rank = int(np.ceil((n + 1) * (1.0 - self.alpha)))
+
+        if rank > n:
+            # There is no such order statistic. The correct conformal quantile is
+            # +infinity, i.e. the prediction set is EVERY label -- valid, but
+            # uninformative, which is the honest answer when the calibration set
+            # is too small to support the requested coverage.
+            #
+            # Clamping to the max observed score instead (the previous
+            # `min(q_level, 1.0)`) silently UNDER-COVERS: measured 0.9035 against
+            # a 0.95 target at n=10, 0.9167 at n=12, 0.9373 at n=15. Coverage is
+            # the one guarantee conformal prediction offers, so quietly missing it
+            # is worse than returning a wide set.
+            self._quantile = float("inf")
+            logger.warning(
+                "[Conformal] n_calibration=%d is too small for coverage %.2f "
+                "(needs the %d-th of %d order statistics). Returning the "
+                "all-labels set, which is valid but uninformative. Increase the "
+                "calibration split or relax alpha; do NOT read the resulting "
+                "coverage as evidence of calibration.",
+                n,
+                1.0 - self.alpha,
+                rank,
+                n,
+            )
+        else:
+            self._quantile = float(np.quantile(nonconformity, rank / n))
         self._nonconformity = nonconformity
         self._n_calibration = n
 
