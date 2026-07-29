@@ -4,13 +4,17 @@
 #   python -m venv .venv && . .venv/bin/activate
 #   pip install -r requirements.txt
 #
-# The manuscript numbers were generated with the pins below (framework v0.8.0,
+# The manuscript numbers were GENERATED under framework v0.8.0 and re-verified
+# BYTE-IDENTICAL under v0.9.0 on 2026-07-29 (all four offline packages). The pin
+# below is v0.9.0, which carries statistical bug fixes that do not touch any
+# code path this bundle reaches. (framework v0.9.0,
 # scikit-learn 1.9.0). scikit-learn is the reproduction-sensitive pin (GMM/BIC
 # determinism); statsmodels drives the OLS marker/interaction tests. The Layer-A
 # recompute (region_crosstab_from_labels.py) reproduced exactly on newer pandas/
 # numpy too, but record your actual versions in provenance.json regardless.
 
-pathway-subtyping==0.8.0
+# 🚧 v0.9.0 is NOT on PyPI until the release is cut — see RUNME.md
+pathway-subtyping==0.9.0
 scikit-learn==1.9.0
 statsmodels==0.14.6
 numpy==2.4.6

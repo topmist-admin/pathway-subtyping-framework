@@ -29,9 +29,18 @@ at **seed 42**.
 reproduction package for the **"Stable but confounded"** paper (GSE28521 /
 GSE64018 / GSE80655). The two are not interchangeable.
 
-**One version, one install: `pathway-subtyping==0.8.0`.** Everything in this
+> 🚧 **RELEASE PENDING — v0.9.0 is not on PyPI yet.** These pins were updated as
+> release prep on 2026-07-29. Until the `v0.9.0` tag is pushed and the GitHub
+> release published (which triggers the PyPI upload), `pip install -r
+> requirements.txt` **will fail**. This is deliberate and temporary: the pins are
+> staged so the bundle can be verified against the release the moment it lands.
+> If you are reading this and 0.9.0 resolves on PyPI, delete this banner. If it
+> does not, the release step was missed — that exact gap (a bundle requiring a
+> version that was never published) blocked submission once before.
+
+**One version, one install: `pathway-subtyping==0.9.0`.** Everything in this
 bundle — both this file's packages and the sibling README's — installs and runs
-against v0.8.0, which is a superset of v0.7.0. Where the older scripts and their
+against v0.9.0, which is a superset of v0.7.0. Where the older scripts and their
 READMEs mention v0.7.0, that is **provenance** (the release under which their
 deposited reference outputs were generated), *not* an instruction to install it.
 Do not downgrade: v0.7.0 lacks `pathway_subtyping.discreteness` and
@@ -46,15 +55,15 @@ bit-identical partition.
 
 ## Install (public — everything runs from PyPI)
 
-The framework is on PyPI as **`pathway-subtyping==0.8.0`** (the version these packages
+The framework is on PyPI as **`pathway-subtyping==0.9.0`** (the version these packages
 need — it contains `pathway_subtyping.discreteness` (Gate A) and
 `pathway_subtyping.clustering_dl` (the DL baselines), which the v0.7.0 line did not).
 
 ```bash
 python -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt      # pins pathway-subtyping==0.8.0 + numpy/pandas/sklearn/scipy/statsmodels/requests
+pip install -r requirements.txt      # pins pathway-subtyping==0.9.0 + numpy/pandas/sklearn/scipy/statsmodels/requests
 pip install torch                    # only needed for the DL baselines in cancer_r38
-python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.8.0
+python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.9.0
 ```
 
 **Verified reviewer reproduction (2026-07-25):** from a clean virtual environment with
@@ -65,8 +74,8 @@ flagship (region V 0.660, diagnosis permutation p 0.234), and the framework-gate
 flagship stability (0.921). The network packages (calibration, cancer, sweep) fetch
 public cBioPortal/GEO/recount3 data with no authentication.
 
-- **PyPI:** https://pypi.org/project/pathway-subtyping/0.8.0/
-- **Source (tag v0.8.0):** GitHub `topmist-admin/pathway-subtyping-framework` ·
+- **PyPI:** https://pypi.org/project/pathway-subtyping/0.9.0/
+- **Source (tag v0.9.0):** GitHub `topmist-admin/pathway-subtyping-framework` ·
   Codeberg `pathways/pathway-subtyping-framework` · RRID:SCR_028051
 - **This reproduction bundle, citable:** **`10.5281/zenodo.21566406`**
   (concept DOI `10.5281/zenodo.18638048` resolves to the latest release)
@@ -84,7 +93,7 @@ public cBioPortal/GEO/recount3 data with no authentication.
 | **Result 2** benchmark audit | [`cross-domain/benchmark_audit/`](cross-domain/benchmark_audit/) | `benchmark_audit.json` (incl. column-validity diagnostic) | none (reads deposited CSV) |
 | **Result 4** flagship donor-level stats | [`cross-domain/flagship_stats/`](cross-domain/flagship_stats/) | `flagship_donor_level.json` | none (reads deposited labels) |
 | **Result 3** cancer worked example | [`cross-domain/cancer_r38/`](cross-domain/cancer_r38/) | `brca_pam50_validation.json`, `cptac_brca_multiomic.json` | cBioPortal |
-| **Result 4** psychiatry flagship | [`README.md`](README.md) (deposited outputs produced under v0.7.0; runs on v0.8.0) + [`genetic-anchoring/`](genetic-anchoring/) | see that README | GEO |
+| **Result 4** psychiatry flagship | [`README.md`](README.md) (deposited outputs produced under v0.7.0; runs on v0.9.0) + [`genetic-anchoring/`](genetic-anchoring/) | see that README | GEO |
 | Large-N calibration point | [`cross-domain/gtex_brain/`](cross-domain/gtex_brain/) | `gtex_brain_region_confound.json` | recount3 (R) |
 | Scoping (negative result) | [`cross-domain/psychiatric_meta/`](cross-domain/psychiatric_meta/) | `track_a_recount3.tsv` | NCBI E-utilities |
 | Gate-6 domain remap | [`cross-domain/`](cross-domain/) | `results/confound_remap_results.json` | none (seeded) |
@@ -183,7 +192,7 @@ None is restated from prose.
    and tagged `v0.8.0` on GitHub + Codeberg. The full reproduction was re-verified from
    a clean PyPI install (see Install section above).
 2. ~~**Environment pin**~~ **DONE** — `requirements.txt` now pins
-   `pathway-subtyping==0.8.0` and the analysis deps; it covers the whole bundle.
+   `pathway-subtyping==0.9.0` and the analysis deps; it covers the whole bundle.
 3. ~~**Zenodo deposit**~~ **DONE 2026-07-25** — this bundle is deposited at
    **`10.5281/zenodo.21566406`** (under concept DOI `10.5281/zenodo.18638048`,
    which always resolves to the latest release). Cite the versioned DOI from the

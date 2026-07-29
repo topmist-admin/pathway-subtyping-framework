@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_Nothing yet._
+
+---
+
+## [0.9.0] - 2026-07-29
+
+**Minor, not patch:** this release adds a new public module (`kg_sensitivity`,
+Gate K) alongside the fixes, so it is a feature release under semver.
+
+Artefacts (fill in at release time):
+- **PyPI:** https://pypi.org/project/pathway-subtyping/0.9.0/ — `pip install pathway-subtyping==0.9.0`
+- **Source:** tag `v0.9.0` on GitHub (`topmist-admin/pathway-subtyping-framework`) and Codeberg (`pathways/pathway-subtyping-framework`) · RRID:SCR_028051
+- **Zenodo:** _versioned DOI pending_ — deposit under concept DOI `10.5281/zenodo.18638048`
+
+> **No manuscript number changes in this release.** All four offline
+> reproduction packages (`benchmark_audit`, `ablation_honest`,
+> `flagship_donor_level`, `flagship_stability`) were re-run against the fixed
+> code on 2026-07-29 and are **byte-identical** to the deposited artifacts. The
+> corrected code paths are not reachable from the reproduction bundle: it calls
+> `select_n_clusters` without `min_cluster_fraction`, its somatic tables are
+> well-powered (n=430, χ²≈187, far from the sparse regime), and it does not
+> import network propagation, the bootstrap CI, conformal prediction, threshold
+> calibration, or Gate K at all.
+
+### ⚠️ Breaking changes — do not take this release blindly
+
+This is a **correctness** release. The headline is the six statistical fixes
+below, not the new module. It is a MINOR bump rather than a patch because code
+written against 0.8.0 can break, in three ways — one of which is silent.
+
+**1. Calls that used to succeed now raise.**
+- `statistical_rigor.sensitivity_analysis_weights(...)` raises `NotImplementedError`.
+  It previously returned hard-coded zeros for every input, and
+  `SensitivityResult.is_robust()` reported `True` on them — "your results are
+  robust to weight scheme", confidently, for any input. Raising is the fix.
+- `clustering.select_n_clusters(..., method=<unrecognised>)` raises `ValueError`
+  instead of silently falling through to silhouette.
+
+**2. A return type changed sign.**
+- `statistical_rigor.bootstrap_effect_size_ci(...)` now returns a **signed**
+  interval and can be negative (e.g. `(-3.308, -2.290)`). It previously returned
+  `max(|d|)` bounds, always ≥ 0. Any caller that assumed non-negativity, or that
+  compared the lower bound to 0 as a significance test, must be revisited — that
+  comparison was meaningless before (the bound excluded 0 on 40/40 null datasets)
+  and is meaningful now.
+
+**3. Numbers change, silently — the one to actually worry about.**
+- `network_propagation` random-walk-with-restart and pagerank return **different
+  values**. The previous implementation did not conserve probability mass and
+  suppressed hubs. Nothing errors; results simply differ, and the old ones were
+  wrong. **Re-run any analysis that used network propagation.**
+
+**Also:** `CrosstalkDetector`, `CrosstalkResult` and `InterferenceEdge` are no
+longer in `pathway_subtyping.qc.__all__`, so `from pathway_subtyping.qc import *`
+no longer provides them. Direct imports still work — see the F9 deprecation entry.
+
+**Not affected:** pathway scoring (ssGSEA / GSVA / mean-Z), the discreteness gate,
+clustering results under the default configuration, and every number in the
+cautionary-manuscript reproduction bundle (re-verified byte-identical above).
+
 ### Fixed
 - **Split-conformal under-covered when the calibration set was too small.** The
   valid quantile is the `ceil((n+1)(1-alpha))`-th order statistic of the
