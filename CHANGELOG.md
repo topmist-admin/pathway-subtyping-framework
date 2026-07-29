@@ -16,15 +16,23 @@ _Nothing yet._
 **Minor, not patch:** this release adds a new public module (`kg_sensitivity`,
 Gate K) alongside the fixes, so it is a feature release under semver.
 
-Artefacts (fill in at release time):
+Artefacts:
 - **PyPI:** https://pypi.org/project/pathway-subtyping/0.9.0/ — `pip install pathway-subtyping==0.9.0`
-- **Source:** tag `v0.9.0` on GitHub (`topmist-admin/pathway-subtyping-framework`) and Codeberg (`pathways/pathway-subtyping-framework`) · RRID:SCR_028051
+- **Source:** tag `v0.9.0` on GitHub (`topmist-admin/pathway-subtyping-framework`), Codeberg (`pathways/pathway-subtyping-framework`) and Bitbucket · RRID:SCR_028051
 - **Zenodo:** _versioned DOI pending_ — deposit under concept DOI `10.5281/zenodo.18638048`
 
-> **No manuscript number changes in this release.** All four offline
+Release pre-flight, run before tagging: `python -m build` + `twine check` both
+pass; the wheel installs and imports on a **bare** venv with no extras (Gate K
+correctly stays unexported when `networkx` is absent — the guarded-import
+regression that CI's base-install job caught during development); both console
+scripts (`pathway-subtyping --version`, `psf --help`) work from the wheel.
+
+> **No manuscript number changes in this release.** All six offline
 > reproduction packages (`benchmark_audit`, `ablation_honest`,
-> `flagship_donor_level`, `flagship_stability`) were re-run against the fixed
-> code on 2026-07-29 and are **byte-identical** to the deposited artifacts. The
+> `flagship_donor_level`, `flagship_stability`, `autism_subgroup`, `gtex_brain`)
+> were re-run against the fixed code on 2026-07-29 and are **byte-identical** to
+> the deposited artifacts — raw bytes, not merely equal after key-order
+> normalisation. The
 > corrected code paths are not reachable from the reproduction bundle: it calls
 > `select_n_clusters` without `min_cluster_fraction`, its somatic tables are
 > well-powered (n=430, χ²≈187, far from the sparse regime), and it does not
