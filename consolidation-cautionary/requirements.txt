@@ -21,3 +21,11 @@ numpy==2.4.6
 pandas==2.3.3
 scipy==1.17.1
 requests==2.34.2
+
+# Result 3's deep-learning baselines (DEC, VAE-GMM) only. Everything else runs without
+# torch. PINNED because these baselines are NOT deterministic across torch releases:
+# the manuscript quotes torch 2.11.0, and an unpinned `pip install torch` will silently
+# give you a different one and therefore different DL numbers. The version actually used
+# is now recorded in each result JSON under provenance.environment.torch — compare that
+# field before reporting a mismatch.
+torch==2.11.0

@@ -41,6 +41,13 @@ except ModuleNotFoundError:
     from pathway_subtyping.discreteness import DiscretenessGateA
 
 API = "https://www.cbioportal.org/api"
+
+# --- shared provenance recording (see consolidation-cautionary/scripts/_provenance.py) -
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                                  "..", "..", "..", "scripts"))
+from _provenance import env_provenance, fetch_provenance  # noqa: E402
+
 STUDY = "brca_cptac_2020"
 PROFILE = {"mrna": f"{STUDY}_mrna_median_Zscores",
            "protein": f"{STUDY}_protein_quantification"}
@@ -173,6 +180,8 @@ def main():
     out["expression_protein_concordance_ari"] = conc
     out["n_shared_samples"] = int(len(shared))
 
+    out["provenance"] = {"environment": env_provenance(),
+                         "fetch": fetch_provenance(API, STUDY, n_samples=out.get("n_samples"))}
     with open(os.path.join(args.out, "cptac_brca_multiomic.json"), "w") as fh:
         json.dump(out, fh, indent=2)
 

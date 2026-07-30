@@ -63,6 +63,9 @@
             "cramers_v": 0.656,
             "dof": 3,
             "n": 430,
+            "min_expected_count": 5.567441860465117,
+            "sparse_table": false,
+            "test": "chi2",
             "p_adjusted": 5.986854393320069e-40,
             "significant": true,
             "anchored": true
@@ -74,6 +77,9 @@
             "cramers_v": 0.2795,
             "dof": 3,
             "n": 430,
+            "min_expected_count": 21.606976744186046,
+            "sparse_table": false,
+            "test": "chi2",
             "p_adjusted": 5.8216132822505407e-08,
             "significant": true,
             "anchored": false
@@ -85,6 +91,9 @@
             "cramers_v": 0.6556,
             "dof": 3,
             "n": 425,
+            "min_expected_count": 10.014117647058823,
+            "sparse_table": false,
+            "test": "chi2",
             "p_adjusted": 9.721383619651337e-40,
             "significant": true,
             "anchored": true
@@ -208,6 +217,9 @@
             "cramers_v": 0.0681,
             "dof": 1,
             "n": 532,
+            "min_expected_count": 16.872180451127818,
+            "sparse_table": false,
+            "test": "chi2",
             "p_adjusted": 0.06271584935008172,
             "significant": false,
             "anchored": false
@@ -219,6 +231,9 @@
             "cramers_v": 0.1323,
             "dof": 1,
             "n": 532,
+            "min_expected_count": 76.62781954887218,
+            "sparse_table": false,
+            "test": "chi2",
             "p_adjusted": 0.00401355409064021,
             "significant": true,
             "anchored": false
@@ -230,6 +245,9 @@
             "cramers_v": 0.1088,
             "dof": 1,
             "n": 527,
+            "min_expected_count": 29.838709677419356,
+            "sparse_table": false,
+            "test": "chi2",
             "p_adjusted": 0.01073338551712743,
             "significant": true,
             "anchored": false
@@ -240,6 +258,26 @@
         "gate_polarity": "positive_evidence",
         "interpretation": "No somatic stratum was significantly associated with the partition. Specific, low-power test \u2014 a null is weak evidence of absence, not proof the partition lacks somatic grounding."
       }
+    }
+  },
+  "provenance": {
+    "environment": {
+      "python": "3.13.7",
+      "pathway_subtyping": "0.9.0",
+      "numpy": "2.3.5",
+      "pandas": "2.3.3",
+      "scipy": "1.16.3",
+      "sklearn": "1.8.0",
+      "statsmodels": "0.14.6",
+      "torch": "2.11.0",
+      "note": "scikit-learn is the reproduction-sensitive pin (GMM/BIC determinism). torch is null unless the DL baselines ran; those are NOT deterministic across torch releases, so compare this field before reporting a mismatch."
+    },
+    "fetch": {
+      "endpoint": "https://www.cbioportal.org/api",
+      "study": "coadread_tcga_pan_can_atlas_2018",
+      "fetch_date_utc": "2026-07-30",
+      "service_is_versioned": false,
+      "drift_note": "This endpoint is NOT versioned. If your re-run disagrees, compare matrix_sha256 first: a different hash means the upstream data changed, not that the analysis did."
     }
   }
 }

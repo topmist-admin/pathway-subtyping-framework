@@ -50,6 +50,13 @@ except ModuleNotFoundError:
     from pathway_subtyping.discreteness.gate_a_discreteness_null import dip_of
 
 API = "https://www.cbioportal.org/api"
+
+# --- shared provenance recording (see consolidation-cautionary/scripts/_provenance.py) -
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                                  "..", "..", "..", "scripts"))
+from _provenance import env_provenance, fetch_provenance  # noqa: E402
+
 PANEL = os.path.join(_HERE, "../../../panels/hallmark_200genes.gmt")
 # canonical cytolytic / T-cell infiltration signature (continuous axis)
 IMMUNE_SIG = ["CD8A", "GZMA", "GZMB", "GZMK", "PRF1", "IFNG", "NKG7", "CCL5",
@@ -193,6 +200,8 @@ def main():
         "discrete_certified_correctly": disc_ok,
         "continuum_rejected_correctly": cont_ok,
         "both_correct": bool(disc_ok and cont_ok)}
+    out["provenance"] = {"environment": env_provenance(),
+                         "fetch": fetch_provenance(API, "pooled-3-study (see design_note)")}
     with open(os.path.join(args.out, "gate_calibration.json"), "w") as fh:
         json.dump(out, fh, indent=2)
     print(f"\n=== CALIBRATION VERDICT ===")

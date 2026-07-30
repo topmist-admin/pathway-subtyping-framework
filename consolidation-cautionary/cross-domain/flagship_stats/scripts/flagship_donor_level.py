@@ -96,6 +96,22 @@ def main() -> None:
     # 95% reference interval of V under the null (what V could look like by chance)
     null_hi = float(np.quantile(perm_v, 0.95))
 
+    # The paper's argument for why p=0.234 coexists with the observed V sitting near the
+    # null's 95th percentile rests on the SHAPE of this null -- it is discrete and
+    # heavily tied at only 48 donors, so "95th percentile" and "significant" come apart.
+    # Storing n_perm, obs, p and one quantile made that argument uninspectable. Deposit
+    # the distribution itself: a full histogram (exact, since the support is discrete and
+    # small) plus the standard quantiles. The raw 10,000-vector is recoverable from the
+    # histogram without carrying 10,000 floats in the artifact.
+    uniq, counts = np.unique(np.round(perm_v, 6), return_counts=True)
+    null_hist = [[float(u), int(c)] for u, c in zip(uniq, counts)]
+    null_quantiles = {
+        str(q): round(float(np.quantile(perm_v, q)), 4)
+        for q in (0.05, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99)
+    }
+    n_at_or_above = int(np.sum(perm_v >= obs_v))
+    n_tied_with_obs = int(np.sum(np.isclose(perm_v, obs_v)))
+
     out = {
         "n_samples": int(n_samples), "n_donors": int(n_donors),
         "region_sample_level_valid": {
@@ -122,6 +138,21 @@ def main() -> None:
                 "interpretation": ("even by chance the diagnosis effect can reach "
                                    f"V~{null_hi:.2f} at this donor count; the observed "
                                    "effect is not distinguishable from that null"),
+                # --- the null distribution itself, so the argument is inspectable ---
+                "null_distribution": {
+                    "note": ("Deposited so the p-vs-percentile argument can be checked "
+                             "rather than taken on trust. At 48 donors the null is "
+                             "DISCRETE and heavily tied, which is why the observed V can "
+                             "sit near the 95th percentile while p is far from "
+                             "significant: a large mass of permutations lands on exactly "
+                             "the observed value and counts against it."),
+                    "support_size": len(null_hist),
+                    "histogram_value_count": null_hist,
+                    "quantiles": null_quantiles,
+                    "n_permutations_at_or_above_observed": n_at_or_above,
+                    "n_permutations_exactly_tied_with_observed": n_tied_with_obs,
+                    "p_formula": "(n_at_or_above + 1) / (n_perm + 1)",
+                },
             },
         },
         "conclusion": ("Region dominates (Bergsma V %.3f) and diagnosis is not "

@@ -52,6 +52,13 @@ except ModuleNotFoundError:
     from pathway_subtyping.validation import ValidationGates
 
 API = "https://www.cbioportal.org/api"
+
+# --- shared provenance recording (see consolidation-cautionary/scripts/_provenance.py) -
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                                  "..", "..", "..", "scripts"))
+from _provenance import env_provenance, fetch_provenance  # noqa: E402
+
 STUDY = "coadread_tcga_pan_can_atlas_2018"
 _HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_PANEL = os.path.join(_HERE, "../../../panels/hallmark_200genes.gmt")
@@ -202,6 +209,8 @@ def main():
         },
     }
     dest = os.path.join(args.out, "tcga_crc_somatic_result.json")
+    out["provenance"] = {"environment": env_provenance(),
+                         "fetch": fetch_provenance(API, STUDY)}
     json.dump(out, open(dest, "w"), indent=2, default=str)
     print(f"\nsaved -> {dest}")
 

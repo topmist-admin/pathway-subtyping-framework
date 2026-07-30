@@ -56,10 +56,24 @@ def refit(sub: pd.DataFrame) -> dict:
     if len(s) < 3:
         return {"n": int(len(s)), "note": "too few rows to fit"}
     r = stats.linregress(s["silhouette"], s["bootstrap_ari_5th_percentile"])
+    # Deposit the slope's 95% CI rather than leaving it to be re-derived. The manuscript
+    # quotes the valid-rows interval as the statistic that excludes the published +0.914,
+    # so it is load-bearing; re-deriving it requires knowing to use the t critical value
+    # at df = n - 2 (NOT 1.96), which is exactly the kind of silent mismatch that makes a
+    # reviewer's number disagree with ours for no real reason.
+    df = int(len(s)) - 2
+    t_crit = float(stats.t.ppf(0.975, df)) if df > 0 else float("nan")
+    lo = float(r.slope) - t_crit * float(r.stderr)
+    hi = float(r.slope) + t_crit * float(r.stderr)
     return {
         "n": int(len(s)),
         "r_squared": round(float(r.rvalue ** 2), 4),
         "slope": round(float(r.slope), 4),
+        "slope_stderr": round(float(r.stderr), 4),
+        "slope_95ci": [round(lo, 4), round(hi, 4)],
+        "slope_95ci_df": df,
+        "slope_95ci_t_critical": round(t_crit, 4),
+        "slope_95ci_excludes_published_0914": not (lo <= 0.914 <= hi),
         "p": round(float(r.pvalue), 4),
     }
 

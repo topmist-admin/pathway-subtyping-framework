@@ -24,7 +24,8 @@
       "recall_of_idhwt": 0.87,
       "note": "does the CERTIFIED GMM partition track IDH? high precision/recall => the certified structure IS the IDH axis, and the modest ARI reflects the 415-mut arm's internal codel/non-codel substructure collapsed to binary, not a wrong axis"
     },
-    "pc1_dip_p": 0.8602,
+    "pc1_dip_p_standardized_pathways": 0.8602,
+    "pc1_dip_p_note": "dip on PC1 after z-scoring pathway columns; gateA.dip_pc1_p is the same test on the gate's centred-only reduction, so the two differ by design",
     "gateA": {
       "certified": true,
       "verdict": "discrete structure",
@@ -56,5 +57,32 @@
     "continuum_rejected_correctly": true,
     "both_correct": true,
     "caveat": "Two anchors at opposite ends of the difficulty range; this shows the gate is not degenerate, not that it resolves borderline within-disease structure. See the separation sweep for the operating characteristic."
+  },
+  "provenance": {
+    "environment": {
+      "python": "3.13.7",
+      "pathway_subtyping": "0.9.0",
+      "numpy": "2.3.5",
+      "pandas": "2.3.3",
+      "scipy": "1.16.3",
+      "sklearn": "1.8.0",
+      "statsmodels": "0.14.6",
+      "torch": "2.11.0",
+      "note": "scikit-learn is the reproduction-sensitive pin (GMM/BIC determinism). torch is null unless the DL baselines ran; those are NOT deterministic across torch releases, so compare this field before reporting a mismatch."
+    },
+    "fetch_discrete_control": {
+      "endpoint": "https://www.cbioportal.org/api",
+      "study": "lgg_tcga_pan_can_atlas_2018",
+      "fetch_date_utc": "2026-07-30",
+      "service_is_versioned": false,
+      "drift_note": "This endpoint is NOT versioned. If your re-run disagrees, compare matrix_sha256 first: a different hash means the upstream data changed, not that the analysis did."
+    },
+    "fetch_continuum_control": {
+      "endpoint": "https://www.cbioportal.org/api",
+      "study": "luad_tcga_pan_can_atlas_2018",
+      "fetch_date_utc": "2026-07-30",
+      "service_is_versioned": false,
+      "drift_note": "This endpoint is NOT versioned. If your re-run disagrees, compare matrix_sha256 first: a different hash means the upstream data changed, not that the analysis did."
+    }
   }
 }

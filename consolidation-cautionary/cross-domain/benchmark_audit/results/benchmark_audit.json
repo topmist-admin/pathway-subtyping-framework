@@ -21,18 +21,42 @@
       "n": 37,
       "r_squared": 0.1105,
       "slope": -0.5993,
+      "slope_stderr": 0.2874,
+      "slope_95ci": [
+        -1.1828,
+        -0.0159
+      ],
+      "slope_95ci_df": 35,
+      "slope_95ci_t_critical": 2.0301,
+      "slope_95ci_excludes_published_0914": true,
       "p": 0.0444
     },
     "refit_valid_rows": {
       "n": 22,
       "r_squared": 0.0149,
       "slope": -0.0369,
+      "slope_stderr": 0.0672,
+      "slope_95ci": [
+        -0.1771,
+        0.1033
+      ],
+      "slope_95ci_df": 20,
+      "slope_95ci_t_critical": 2.086,
+      "slope_95ci_excludes_published_0914": true,
       "p": 0.5887
     },
     "refit_strict_rows": {
       "n": 15,
       "r_squared": 0.0008,
       "slope": 0.0112,
+      "slope_stderr": 0.1072,
+      "slope_95ci": [
+        -0.2203,
+        0.2428
+      ],
+      "slope_95ci_df": 13,
+      "slope_95ci_t_critical": 2.1604,
+      "slope_95ci_excludes_published_0914": true,
       "p": 0.9181
     },
     "verdict": "Silhouette does not predict bootstrap ARI. The published R^2=0.889 does not reproduce under any row screen."

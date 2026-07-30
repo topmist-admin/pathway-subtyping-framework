@@ -47,6 +47,14 @@ except ModuleNotFoundError:
     from pathway_subtyping.discreteness.gate_a_discreteness_null import dip_of
 
 API = "https://www.cbioportal.org/api"
+
+# --- shared provenance recording (see consolidation-cautionary/scripts/_provenance.py) -
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                                  "..", "..", "..", "scripts"))
+from _provenance import (env_provenance, fetch_provenance,  # noqa: E402
+                         cache_read, cache_write)
+
 PANEL = os.path.join(_HERE, "../../../panels/hallmark_200genes.gmt")
 IMMUNE_SIG = ["CD8A", "GZMA", "GZMB", "GZMK", "PRF1", "IFNG", "NKG7", "CCL5",
               "CXCL9", "CXCL10", "CXCL11", "IDO1", "STAT1", "GBP1", "HLA-DRA"]
@@ -131,6 +139,14 @@ def main():
     ap.add_argument("--out", default=os.path.join(_HERE, "../results"))
     ap.add_argument("--discrete-study", default="lgg_tcga_pan_can_atlas_2018")
     ap.add_argument("--continuum-study", default="luad_tcga_pan_can_atlas_2018")
+    # Offline path. cBioPortal is an unversioned live service, so the fetched inputs are
+    # deposited alongside the results and can be replayed with --cache-in. That turns this
+    # package from "trust our fetch" into a checkable offline reproduction, the same
+    # treatment already applied to the GSE28521 autism arm.
+    ap.add_argument("--cache-dir", default=os.path.join(_HERE, "../results/cached_inputs"),
+                    help="where deposited inputs live (written on a live run)")
+    ap.add_argument("--cache-in", action="store_true",
+                    help="replay from deposited inputs; no network access at all")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     pw = read_gmt(PANEL)
@@ -142,8 +158,13 @@ def main():
     # ---- DISCRETE positive control: IDH-mut vs IDH-wt WITHIN TCGA-LGG ----
     st = args.discrete_study
     print(f"DISCRETE control (within-study): IDH status in {st}")
-    e = fetch_expr(st, hallmark_genes, zscored=True)   # within-study z-scores: valid, one study
-    sub = fetch_subtype(st)
+    if args.cache_in:
+        P_cached = cache_read(os.path.join(args.cache_dir, "discrete_pathways.csv.gz"))
+        label = P_cached.pop("__label__")
+        e = None
+    else:
+        e = fetch_expr(st, hallmark_genes, zscored=True)   # within-study z-scores: valid, one study
+        sub = fetch_subtype(st)
     # collapse LGG SUBTYPE -> binary IDH status
     def idh(v):
         if not isinstance(v, str):
@@ -153,10 +174,20 @@ def main():
         if "IDHwt" in v:
             return "IDHwt"
         return None
-    label = pd.Series({s: idh(sub.get(s)) for s in e.index}).dropna()
-    P = pathway_matrix(e, pw)
-    common = P.index.intersection(label.index)
-    P = P.loc[common]; label = label.loc[common]
+
+    if args.cache_in:
+        P = P_cached
+    else:
+        label = pd.Series({s: idh(sub.get(s)) for s in e.index}).dropna()
+        P = pathway_matrix(e, pw)
+        common = P.index.intersection(label.index)
+        P = P.loc[common]; label = label.loc[common]
+        # Deposit the assembled inputs. Pathway scores + label are sufficient here:
+        # nothing in this package resamples from the gene universe (unlike the autism
+        # arm's random-gene-set control), so the 50-column matrix regenerates every
+        # reported number and costs kilobytes rather than tens of megabytes.
+        _c = P.copy(); _c["__label__"] = label
+        cache_write(_c, os.path.join(args.cache_dir, "discrete_pathways.csv.gz"))
     X = StandardScaler().fit_transform(P.values)
     lab = GaussianMixture(2, covariance_type="full", n_init=10, random_state=42,
                           reg_covar=1e-6).fit(X).predict(X)
@@ -195,7 +226,18 @@ def main():
                      "=> the certified structure IS the IDH axis, and the modest ARI "
                      "reflects the 415-mut arm's internal codel/non-codel substructure "
                      "collapsed to binary, not a wrong axis")},
-        "pc1_dip_p": round(float(dip_pos["p"]), 4),
+        # NOTE ON THE TWO DIP P-VALUES. This record carries two, and they legitimately
+        # differ because they are computed on differently preprocessed matrices:
+        #   * this key -- dip on PC1 of the pathway matrix after StandardScaler,
+        #     i.e. pathway columns z-scored before PCA.
+        #   * gateA.dip_pc1_p -- dip on PC1 of the gate's own internal reduction, which
+        #     is CENTRED ONLY (reduce_scores() calls PCA directly on the raw scores).
+        # Neither decides the gate; both are reported diagnostics. The key names now say
+        # which is which so the pair cannot be read as an inconsistency.
+        "pc1_dip_p_standardized_pathways": round(float(dip_pos["p"]), 4),
+        "pc1_dip_p_note": ("dip on PC1 after z-scoring pathway columns; "
+                           "gateA.dip_pc1_p is the same test on the gate's "
+                           "centred-only reduction, so the two differ by design"),
         "gateA": gateA_call(P, 2),
         "EXPECTED": "certified=True (IDH status is genuinely discrete)"}
     print(f"  n={len(P)} ({(label=='IDHmut').sum()} mut / {(label=='IDHwt').sum()} wt); "
@@ -204,16 +246,24 @@ def main():
     # ---- CONTINUUM negative control: immune gradient (within-study, unchanged) ----
     st = args.continuum_study
     print(f"\nCONTINUUM control (within-study): immune gradient in {st}")
-    e = fetch_expr(st, hallmark_genes + IMMUNE_SIG)
-    imm_present = [g for g in IMMUNE_SIG if g in e.columns]
-    immune_score = e[imm_present].mean(axis=1)
-    dip = dip_of(immune_score.values)
     immune_pw = {n: gs for n, gs in pw.items()
                  if any(t in n.upper() for t in ["IMMUN", "INFLAMMAT", "INTERFERON",
                                                  "TNFA", "IL6", "IL2", "COMPLEMENT",
                                                  "ALLOGRAFT"])}
-    Pc = pathway_matrix(e, immune_pw)
-    Pc = Pc.loc[immune_score.index.intersection(Pc.index)]
+    if args.cache_in:
+        Pc = cache_read(os.path.join(args.cache_dir, "continuum_pathways.csv.gz"))
+        immune_score = Pc.pop("__immune_score__")
+    else:
+        e = fetch_expr(st, hallmark_genes + IMMUNE_SIG)
+        imm_present = [g for g in IMMUNE_SIG if g in e.columns]
+        immune_score = e[imm_present].mean(axis=1)
+        Pc = pathway_matrix(e, immune_pw)
+        Pc = Pc.loc[immune_score.index.intersection(Pc.index)]
+        # The immune score rides along with the pathway matrix: it is the continuum this
+        # control is built on, and re-deriving it needs the raw cytolytic genes.
+        _c = Pc.copy(); _c["__immune_score__"] = immune_score.loc[Pc.index]
+        cache_write(_c, os.path.join(args.cache_dir, "continuum_pathways.csv.gz"))
+    dip = dip_of(immune_score.loc[Pc.index].values)
     Xc = StandardScaler().fit_transform(Pc.values)
     labc = GaussianMixture(2, covariance_type="full", n_init=10, random_state=42,
                            reg_covar=1e-6).fit(Xc).predict(Xc)
@@ -238,6 +288,9 @@ def main():
                    "shows the gate is not degenerate, not that it resolves "
                    "borderline within-disease structure. See the separation sweep "
                    "for the operating characteristic.")}
+    out["provenance"] = {"environment": env_provenance(),
+                         "fetch_discrete_control": fetch_provenance(API, args.discrete_study),
+                         "fetch_continuum_control": fetch_provenance(API, args.continuum_study)}
     with open(os.path.join(args.out, "gate_calibration_within_study.json"), "w") as fh:
         json.dump(out, fh, indent=2)
     print(f"\n=== VERDICT === discrete_ok={disc_ok} continuum_ok={cont_ok} "

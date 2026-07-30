@@ -25,7 +25,37 @@
       "observed_v": 0.2582,
       "p": 0.2339,
       "null_v_95th_percentile": 0.2582,
-      "interpretation": "even by chance the diagnosis effect can reach V~0.26 at this donor count; the observed effect is not distinguishable from that null"
+      "interpretation": "even by chance the diagnosis effect can reach V~0.26 at this donor count; the observed effect is not distinguishable from that null",
+      "null_distribution": {
+        "note": "Deposited so the p-vs-percentile argument can be checked rather than taken on trust. At 48 donors the null is DISCRETE and heavily tied, which is why the observed V can sit near the 95th percentile while p is far from significant: a large mass of permutations lands on exactly the observed value and counts against it.",
+        "support_size": 3,
+        "histogram_value_count": [
+          [
+            0.145933,
+            5119
+          ],
+          [
+            0.250924,
+            2543
+          ],
+          [
+            0.258199,
+            2338
+          ]
+        ],
+        "quantiles": {
+          "0.05": 0.1459,
+          "0.25": 0.1459,
+          "0.5": 0.1459,
+          "0.75": 0.2509,
+          "0.9": 0.2582,
+          "0.95": 0.2582,
+          "0.99": 0.2582
+        },
+        "n_permutations_at_or_above_observed": 2338,
+        "n_permutations_exactly_tied_with_observed": 2338,
+        "p_formula": "(n_at_or_above + 1) / (n_perm + 1)"
+      }
     }
   },
   "conclusion": "Region dominates (Bergsma V 0.660) and diagnosis is not distinguishable from chance at the donor level (permutation p 0.234). The region-not-diagnosis finding holds under correct donor-level inference; the effect-size gap is not an artifact of unequal replication because both are now compared on a corrected footing."

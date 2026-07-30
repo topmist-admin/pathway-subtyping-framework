@@ -46,6 +46,13 @@ except ModuleNotFoundError:
     from pathway_subtyping.discreteness import DiscretenessGateA
 
 API = "https://www.cbioportal.org/api"
+
+# --- shared provenance recording (see consolidation-cautionary/scripts/_provenance.py) -
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                                  "..", "..", "..", "scripts"))
+from _provenance import env_provenance, fetch_provenance  # noqa: E402
+
 STUDY = "brca_tcga_pan_can_atlas_2018"          # VERIFY on cBioPortal
 SUBTYPE_ATTR = "SUBTYPE"                          # VERIFY: PAM50 calls (e.g. "BRCA_LumA")
 DEFAULT_PANEL = os.path.join(_HERE, "../../../panels/hallmark_200genes.gmt")
@@ -232,6 +239,8 @@ def main():
            "k_bic": int(k_bic), "pam50_classes": int(n_pam),
            "recovery_vs_pam50_ARI": rec,
            "recovery_vs_pam50_single_subtype_enrichment": enrich, "gates": gates}
+    out["provenance"] = {"environment": env_provenance(),
+                         "fetch": fetch_provenance(API, STUDY, n_samples=out.get("n_samples"))}
     with open(os.path.join(args.out, "brca_pam50_validation.json"), "w") as fh:
         json.dump(out, fh, indent=2)
 

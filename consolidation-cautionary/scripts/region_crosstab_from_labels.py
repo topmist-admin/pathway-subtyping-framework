@@ -46,6 +46,17 @@ def main():
     print(f"n = {len(df)} | subtypes {df['subtype'].value_counts().sort_index().to_dict()}")
     print(f"region levels: {df[reg].value_counts().to_dict()}")
 
+    # Warn BEFORE printing any numbers. This check used to sit at the end of main(),
+    # which meant a reader saw the (wrong) 2-level chi-square and V first and the
+    # caveat last -- exactly the wrong order for a trap this easy to fall into.
+    if df[reg].nunique() < 3:
+        print(
+            "\n*** WARNING: region column has only "
+            f"{df[reg].nunique()} levels -- this is the buggy 2-level coding. ***\n"
+            "*** The numbers below will NOT match the manuscript. Use the 3-level  ***\n"
+            "*** `brain region` re-derived from raw GEO.                           ***\n"
+        )
+
     print("\n=== SUBTYPE x REGION (use the 3-level coding) ===")
     ctr = pd.crosstab(df["subtype"], df[reg]); print(ctr)
     chi2, p, v = cv(ctr); _, _, vc = cv(ctr, True)
