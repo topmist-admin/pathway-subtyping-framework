@@ -110,7 +110,18 @@ logs/
 outreach/
 
 # Claude session files (local context)
+# --- Claude session + persistent-memory artefacts: never publish (PI directive 2026-07-30) ---
+# The memory store itself lives OUTSIDE this repo (~/.claude/projects/.../memory/), so it
+# cannot be committed by accident. These patterns cover the in-repo session notes and any
+# stray copy. A MEMORY.md was committed once, in March 2026, on the stale branch
+# feat/benchmark-calibration-47 -- see the session file for the disposition.
 claude-session.md
+MEMORY.md
+**/MEMORY.md
+.claude/
+**/.claude/
+CLAUDE-SESSION*.md
+claude-memory*.md
 claude-results.md
 VULNERABILITY-MITIGATION-PLAN.md
 NOTEBOOK-*-IMPLEMENTATION-PLAN.md
