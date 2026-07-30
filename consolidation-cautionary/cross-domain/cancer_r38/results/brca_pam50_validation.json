@@ -14,6 +14,16 @@
       "ari": 0.1597917007754306,
       "ami": 0.1903008707552459,
       "n": 981
+    },
+    "DEC": {
+      "ari": 0.08775851965152613,
+      "ami": 0.11790129918707566,
+      "n": 981
+    },
+    "VAE-GMM": {
+      "ari": 0.12469006074005333,
+      "ami": 0.16836568353245712,
+      "n": 981
     }
   },
   "recovery_vs_pam50_single_subtype_enrichment": {
@@ -98,21 +108,103 @@
         "odds_ratio": 4.41,
         "p": 1.0787398105324169e-20
       }
+    },
+    "DEC": {
+      "per_subtype": {
+        "BRCA_Basal": {
+          "cluster": 2,
+          "enrichment_frac": 0.594,
+          "odds_ratio": 9.88,
+          "p": 5.334630509650757e-23
+        },
+        "BRCA_Her2": {
+          "cluster": 2,
+          "enrichment_frac": 0.167,
+          "odds_ratio": 2.65,
+          "p": 0.00215642085628727
+        },
+        "BRCA_LumA": {
+          "cluster": 0,
+          "enrichment_frac": 0.757,
+          "odds_ratio": 4.16,
+          "p": 1.9851052272374448e-19
+        },
+        "BRCA_LumB": {
+          "cluster": 1,
+          "enrichment_frac": 0.404,
+          "odds_ratio": 3.91,
+          "p": 2.0904111582115882e-14
+        },
+        "BRCA_Normal": {
+          "cluster": 4,
+          "enrichment_frac": 0.094,
+          "odds_ratio": 7.95,
+          "p": 8.667229261918047e-09
+        }
+      },
+      "best_subtype": "BRCA_LumA",
+      "best": {
+        "cluster": 0,
+        "enrichment_frac": 0.757,
+        "odds_ratio": 4.16,
+        "p": 1.9851052272374448e-19
+      }
+    },
+    "VAE-GMM": {
+      "per_subtype": {
+        "BRCA_Basal": {
+          "cluster": 1,
+          "enrichment_frac": 0.412,
+          "odds_ratio": 4.92,
+          "p": 1.9222908391795106e-16
+        },
+        "BRCA_Her2": {
+          "cluster": 2,
+          "enrichment_frac": 0.145,
+          "odds_ratio": 2.72,
+          "p": 4.829172551246384e-05
+        },
+        "BRCA_LumA": {
+          "cluster": 0,
+          "enrichment_frac": 0.891,
+          "odds_ratio": 12.64,
+          "p": 6.431633488917308e-44
+        },
+        "BRCA_LumB": {
+          "cluster": 3,
+          "enrichment_frac": 0.375,
+          "odds_ratio": 3.09,
+          "p": 1.63861918141615e-09
+        },
+        "BRCA_Normal": {
+          "cluster": 4,
+          "enrichment_frac": 0.081,
+          "odds_ratio": 3.17,
+          "p": 0.0016471858058046665
+        }
+      },
+      "best_subtype": "BRCA_LumA",
+      "best": {
+        "cluster": 0,
+        "enrichment_frac": 0.891,
+        "odds_ratio": 12.64,
+        "p": 6.431633488917308e-44
+      }
     }
   },
   "gates": {
     "label_shuffle": {
       "passed": true,
-      "ari": -8.48789211229232e-05
+      "ari": -0.00013166473320131485
     },
     "bootstrap_stability_at_k5": {
       "passed": false,
-      "ari": 0.3991555206137764
+      "ari": 0.40755484653648966
     },
     "bootstrap_stability_at_bic_k": {
       "k": 2,
       "passed": false,
-      "ari": 0.4358339492337777
+      "ari": 0.43501704855214046
     },
     "discreteness_gateA_at_k5": {
       "certified": true,
@@ -122,6 +214,27 @@
       "k": 2,
       "certified": true,
       "verdict": "discrete structure"
+    }
+  },
+  "provenance": {
+    "environment": {
+      "python": "3.13.7",
+      "pathway_subtyping": "0.9.0",
+      "numpy": "2.3.5",
+      "pandas": "2.3.3",
+      "scipy": "1.16.3",
+      "sklearn": "1.8.0",
+      "statsmodels": "0.14.6",
+      "torch": "2.11.0",
+      "note": "scikit-learn is the reproduction-sensitive pin (GMM/BIC determinism). torch is null unless the DL baselines ran; those are NOT deterministic across torch releases, so compare this field before reporting a mismatch."
+    },
+    "fetch": {
+      "endpoint": "https://www.cbioportal.org/api",
+      "study": "brca_tcga_pan_can_atlas_2018",
+      "fetch_date_utc": "2026-07-30",
+      "service_is_versioned": false,
+      "drift_note": "This endpoint is NOT versioned. If your re-run disagrees, compare matrix_sha256 first: a different hash means the upstream data changed, not that the analysis did.",
+      "n_samples": 1082
     }
   }
 }

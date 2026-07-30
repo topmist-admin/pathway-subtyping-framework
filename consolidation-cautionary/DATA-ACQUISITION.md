@@ -69,7 +69,7 @@ Measured on a 2023-class laptop. Nothing below hangs; three jobs are simply long
 | separation sweep (20 reps/step) | **~1 h 47 min** | none |
 | `gate_calibration` | **~16 min** | **yes** |
 | `tcga_crc` | ~10 min | **yes** |
-| `cancer_r38` (BRCA) | **> 50 min** | **yes** |
+| `cancer_r38` (BRCA) | **~59 min** | **yes** |
 
 **Offline total ≈ 3.5 hours**, of which ~3.2 is the three long offline jobs. Add roughly
 another 1.5 hours for the network packages. Run everything long detached and check the
@@ -79,8 +79,8 @@ fast packages meanwhile.
 > POSTs in parallel throttle each other badly — measured here, two jobs that each finish
 > alone made no progress at all for 45 minutes when run together. Run them one at a time.
 
-> `cancer_r38` is by far the slowest and produces no output until it finishes. A silent
-> 50 minutes is expected, not a hang.
+> `cancer_r38` is by far the slowest and produces no output between the fetch line and
+> the final result. A silent hour is expected, not a hang — measured at ~59 minutes.
 
 ---
 
@@ -97,7 +97,7 @@ disagreements. Use this table.
 | Result 4 autism arm | `results/autism_subgroup` | **byte-identical** | reads the deposited gene matrix |
 | large-N calibration | `gtex_brain` | **byte-identical** | reads deposited pathway scores |
 | Result 1 calibration | `gate_calibration` | **conclusion** | live cBioPortal; data may drift |
-| Result 3 cancer | `cancer_r38` | **conclusion** | live cBioPortal + non-deterministic DL baselines |
+| Result 3 cancer | `cancer_r38` | **conclusion** (in practice exact, except the two bootstrap ARIs) | live cBioPortal; DL baselines vary across torch releases, but not at the pinned version |
 | Gate 7 somatic | `tcga_crc` | **conclusion** | live cBioPortal |
 | scoping count | `psychiatric_meta` | **byte-identical** offline | count recomputable from the deposited TSV |
 
@@ -112,7 +112,11 @@ genuine finding — report it.
   is the claim, not the p-value.
 - `cancer_r38` — PSF is **competitive with, not better than**, the DL baselines (VAE-GMM
   edges PSF on enrichment, 89.1% vs 87.6%); k=5 bootstrap stability **fails** the 0.80
-  bar; recovery is **metric-dependent**.
+  bar; recovery is **metric-dependent**. Certified 2026-07-30: all four k-way ARIs and
+  all PAM50 enrichments re-derived **exactly**, DEC and VAE-GMM included, so with the
+  pinned torch this package is in practice much tighter than its "conclusion" bar. The
+  two bootstrap-stability ARIs are the exception — they move by up to 0.008 between runs
+  (0.399/0.436 vs 0.408/0.435). Quote them to two decimals.
 - `tcga_crc` — the somatic association is **detected** (BRAF-V600E/KRAS/MSI strata), with
   the expected-count guard not tripped.
 
