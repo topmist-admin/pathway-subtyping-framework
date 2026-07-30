@@ -96,7 +96,12 @@ def manuscript_items(ms_dir):
         # --- PROPOSED new version (not yet submitted) ---
         ("REBUILD-DRAFT-v2-2026-07-24-FULL.md",
          "manuscript/proposed-new-version/PROPOSED-manuscript-v2.2-2026-07-24.md"),
-        ("rebuild-deliverables-2026-07-24/manuscript-v2.2-2026-07-24.pdf",
+        # Point at the CURRENT typeset PDF. The old path
+        # (rebuild-deliverables-2026-07-24/manuscript-v2.2-2026-07-24.pdf) no longer
+        # exists, so the builder silently skipped it and every bundle shipped the
+        # markdown with no PDF beside it. This file is built by
+        # build_submission_pdf.py, which strips the internal draft banner.
+        ("SUBMISSION-PACKAGE-2026-07-25/01_manuscript/Manuscript-Chauhan-Paulus-SciReports-2026-07-25.pdf",
          "manuscript/proposed-new-version/PROPOSED-manuscript-v2.2-2026-07-24.pdf"),
         # --- WITHDRAWN prior version (do not cite) ---
         ("Chauhan-Mandatory-Validation-Gates-Manuscript-RevisionR1-2026-05-25.docx",
@@ -211,11 +216,10 @@ the erratum after an external reproducibility review.
 STRESS_GUIDE = """# STRESS-TEST THIS BUNDLE — third-party reviewer guide
 
 Self-contained bundle to independently reproduce and stress-test every claim in the
-cautionary-framework manuscript, BEFORE the framework's v0.9 line is published to
-PyPI. Nothing here needs controlled-access data or the unreleased release.
+cautionary-framework manuscript. Nothing here needs controlled-access data.
 
 ## Layout (mirrors the source repo so every script's relative paths resolve)
-- `src/`, `tests/`, `pyproject.toml`  the v0.9 framework source (the gate lives here; not yet on PyPI)
+- `src/`, `tests/`, `pyproject.toml`  the v0.9.0 framework source (also on PyPI; bundled for permanence)
 - `consolidation-cautionary/`         reproduction packages: scripts + deposited results + per-package READMEs (`RUNME.md` indexes them)
 - `research-results/`, `CORRECTION_2026-07/`  redistributable cached public data (pathway scores, partition labels, corrected benchmark)
 - `scripts/`                          repo-root framework tooling (gate ablation study + plotter)
@@ -225,10 +229,11 @@ PyPI. Nothing here needs controlled-access data or the unreleased release.
 - `MANIFEST.txt`                      every file with its SHA-256
 
 ## Setup (5 minutes) — run at the bundle root
-v0.9 is NOT on PyPI yet. You do not pull it — this bundle
-CONTAINS the v0.9 source under `src/`, and `pip install -e .` builds it from the files
+v0.9.0 IS on PyPI (`pip install pathway-subtyping==0.9.0`), but this bundle also
+CONTAINS the v0.9.0 source under `src/`, and `pip install -e .` builds it from the files
 in this folder (the `.` = "the project in this directory"; pip reads the bundled
-`pyproject.toml`). Only third-party deps come from PyPI.
+`pyproject.toml`). Installing from the bundle is preferred for a clean-room check: it
+proves the archive is self-sufficient rather than trusting the index.
 ```
 python -m venv .venv && . .venv/bin/activate
 pip install -e .                    # builds v0.9 from the local src/ HERE — not PyPI, not git
@@ -283,10 +288,11 @@ NOT survive into the proposed version:
 3. `consolidation-cautionary/RUNME.md` — headline numbers traced to deposited files.
 
 ## Known limits (disclosed)
-v0.9 is unreleased (that is why this bundle ships the source); the Zenodo benchmark
-record needs superseding; large-N psychiatric validation is access-gated; the
-real-data control is two anchors; funding/contributions statements are pending. See
-`manuscript/REVIEWER-CONCERN-HANDLING-MATRIX.md` Part C.
+Large-N psychiatric validation is access-gated and remains future work; the real-data
+control is two anchors, not a per-domain calibration. (Resolved since an earlier draft of
+this guide: v0.9.0 is released on PyPI with a Zenodo concept DOI, the Zenodo benchmark
+record has been superseded by v2.1, and the funding and author-contribution statements
+are supplied.) See `manuscript/REVIEWER-CONCERN-HANDLING-MATRIX.md` Part C.
 
 ## Determinism
 Everything is seed 42. No-network scripts reproduce exactly. Network scripts draw from
