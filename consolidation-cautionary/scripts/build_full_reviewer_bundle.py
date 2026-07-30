@@ -46,6 +46,13 @@ SKIP_DIR_SUFFIX = (".egg-info",)
 SKIP_EXT = {".pyc", ".pyo", ".so", ".o"}
 SKIP_NAME = {".DS_Store"}
 
+# Self-audit documents, withheld from the reviewer bundle on purpose. These state what WE
+# concluded was weak and how we fixed it. Handing them over before an independent review
+# anchors the reviewer to our findings and turns agreement into an echo rather than
+# corroboration. Instructions (RUNME.md, DATA-ACQUISITION.md, CLEAN-ROOM-VALIDATION.md)
+# still ship -- the line is "how to check" versus "what we already concluded".
+SKIP_SELF_AUDIT = {"FULL-RERUN-REVIEWER-PLAN.md", "VERIFICATION-MATRIX.md"}
+
 # The bundle MIRRORS THE REPO ROOT LAYOUT so every reproduction script's
 # repo-relative paths (e.g. ../../../../CORRECTION_2026-07/...) resolve unchanged.
 # `pip install -e .` runs at the bundle root (pyproject.toml is there).
@@ -133,6 +140,8 @@ def _keep(path):
     if any(p.endswith(SKIP_DIR_SUFFIX) for p in parts):
         return False
     if os.path.basename(path) in SKIP_NAME:
+        return False
+    if os.path.basename(path) in SKIP_SELF_AUDIT:
         return False
     return os.path.splitext(path)[1] not in SKIP_EXT
 
@@ -326,7 +335,15 @@ def main():
     # bundle is self-contained, which was not true of the entry-point documents
     # themselves -- anyone handed only the .tar.gz got the archive without the
     # instructions for it.
-    for guide in ("CLEAN-ROOM-VALIDATION.md", "VERIFICATION-MATRIX.md"):
+    # VERIFICATION-MATRIX.md is deliberately NOT bundled. It is our own self-audit: it
+    # names every gap we found and how we resolved it. Shipping it means the reviewer
+    # reads our answers before forming their own, which anchors them and weakens exactly
+    # the independence the exercise is for. Withhold it, let them audit cold, then
+    # compare -- agreement is then corroboration rather than an echo.
+    #
+    # CLEAN-ROOM-VALIDATION.md IS bundled: it is instructions (how to install, what to
+    # run, what the acceptance bar is per result), not conclusions about correctness.
+    for guide in ("CLEAN-ROOM-VALIDATION.md",):
         g = os.path.join(args.out, guide)
         if os.path.isfile(g):
             pairs.append((g, guide))
