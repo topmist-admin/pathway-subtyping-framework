@@ -7,7 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_Nothing yet._
+**No framework code changed.** Everything below is in the reproduction packages and the
+manuscript — a pre-review alignment pass for a third party who re-derives every result
+from source rather than spot-checking the deposited artifacts.
+
+### Reproduction packages
+
+- **Fetch provenance on every network-derived result** (new `consolidation-cautionary/scripts/_provenance.py`).
+  Each now records endpoint, study, UTC fetch date, post-filter shape and a **SHA-256 of
+  the assembled matrix**, plus the library versions that can move a number.
+  `gate_calibration` previously recorded *nothing*, so its verdict could not be tied to
+  any data snapshot. cBioPortal is not a versioned API; the hash is what makes drift
+  detectable.
+- **`gate_calibration` runs offline** with `--cache-in`, replaying deposited inputs
+  (507 × 50 pathway matrix + IDH label). Verified to reproduce the certified IDH recovery
+  ARI of 0.418 exactly.
+- **Certified both cBioPortal packages against live data (2026-07-30): no drift.**
+  `gate_calibration` is byte-identical on non-provenance content. `tcga_crc` is unchanged
+  in every statistic; its only new fields come from the v0.9.0 expected-count guard
+  (`min_expected_count` 5.57–76.6, all ≥ 5), which demonstrates on real data that the
+  guard does not alter that result.
+- **The permutation null is deposited** as a value-count histogram. It has a support of
+  exactly **three atoms** (V = 0.1459 / 0.2509 / 0.2582; counts 5,119 / 2,543 / 2,338),
+  which is why the observed V is simultaneously the null's 95th percentile and
+  non-significant — the 2,338 permutations tied with it count against it.
+- **The slope 95% CI is deposited** with its standard error, df and t-critical, because
+  re-deriving it with 1.96 instead of t(20) silently shifts the interval.
+- `torch` **pinned to 2.11.0** and the version used recorded per result; the DL baselines
+  are not deterministic across torch releases.
+- Dip p-value keys renamed to state their preprocessing — one z-scores pathway columns
+  before PCA, the gate's uses its centred-only internal reduction. They differ by design.
+- The `<3 levels` warning in `region_crosstab_from_labels.py` now fires **before** the
+  results print rather than after them.
+
+### Documentation
+
+- New `consolidation-cautionary/DATA-ACQUISITION.md`: what actually needs downloading
+  (almost nothing), measured runtimes, and **the acceptance criterion per result** —
+  byte-identity for the six deposited packages, *conclusion* for anything re-fetched.
+  Applying the wrong bar manufactures disagreements.
+- New `consolidation-cautionary/FULL-RERUN-REVIEWER-PLAN.md`.
+- Measured runtimes corrected: `gate_calibration` ~16 min, `tcga_crc` ~10 min,
+  `cancer_r38` **> 50 min with no intermediate output**. Running two cBioPortal packages
+  concurrently throttles both to a standstill.
+
+### Manuscript (maintained outside this repository)
+
+- **Methods misdescribed the flagship's scoring** and now documents both panels: ssGSEA
+  over a 14-set schizophrenia panel for GSE80655, mean-z over Hallmark-50 for the autism
+  arm and Result 3. Following the old text did not reproduce the headline result.
+- Re-pinned v0.8.0 → v0.9.0 throughout; both Zenodo citations moved to **concept DOIs**
+  so they survive future deposits without edits.
+- Availability completed: GSE64018's non-role stated, NCBI E-utilities added, GEO's
+  in-place revision documented.
 
 ---
 
