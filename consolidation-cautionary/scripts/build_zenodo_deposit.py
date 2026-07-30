@@ -8,8 +8,8 @@ Data & Code Availability section. Unlike the pre-release stress-test bundle
   - is self-contained and public-safe — it does NOT include the withdrawn prior
     manuscript or the raw journal reviewer comments;
   - mirrors the repo layout so every reproduction script runs unchanged;
-  - ships the v0.8.0 framework source (belt-and-braces permanence: the primary
-    install path is `pip install pathway-subtyping==0.8.0`, but the source is here
+  - ships the v0.9.0 framework source (belt-and-braces permanence: the primary
+    install path is `pip install pathway-subtyping==0.9.0`, but the source is here
     too so the deposit reproduces even if PyPI/GitHub change);
   - includes the concern-handling matrix (each Scientific Reports comment ->
     resolution -> artifact) and a deposit README + Zenodo metadata.
@@ -30,6 +30,7 @@ REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 SKIP_DIR = {"__pycache__", ".ipynb_checkpoints", ".git", ".pytest_cache",
             ".mypy_cache", "node_modules", ".venv", "pathwayenv"}
+SKIP_DIR_SUFFIX = (".egg-info",)   # `pip install -e .` rewrites it -> false MANIFEST misses
 SKIP_EXT = {".pyc", ".pyo", ".so", ".o"}
 SKIP_NAME = {".DS_Store"}
 
@@ -49,7 +50,7 @@ ITEMS = [
     ("scripts/plot_gate_ablation.py", "scripts/plot_gate_ablation.py"),
 ]
 
-VERSION = "0.8.0"
+VERSION = "0.9.0"
 
 DEPOSIT_README = """# Reproduction package — cautionary molecular-subtype validation framework
 
@@ -64,7 +65,9 @@ controlled-access data is included or used.
 python -m venv .venv && . .venv/bin/activate
 pip install pathway-subtyping==%(version)s        # the framework (also on PyPI)
 pip install -r consolidation-cautionary/requirements.txt
-pip install torch                                  # only for the DL baselines
+# torch is pinned in consolidation-cautionary/requirements.txt (==2.11.0) and needed
+# ONLY by the DL baselines. They are not deterministic across torch releases; the
+# version used is recorded in each result under provenance.environment.torch.
 python -c "import pathway_subtyping as p; print(p.__version__)"   # %(version)s
 ```
 
@@ -76,7 +79,7 @@ runnable script and its deposited reference output. The no-network results repro
 minutes; the rest fetch public cBioPortal / GEO / recount3 data with no authentication.
 
 ## What is here
-- `src/`, `tests/`, `pyproject.toml`  the v0.8.0 framework source (the discreteness gate + DL baselines)
+- `src/`, `tests/`, `pyproject.toml`  the v%(version)s framework source (the discreteness gate + DL baselines)
 - `consolidation-cautionary/`         reproduction packages (scripts + deposited results + READMEs); `RUNME.md` is the index
 - `research-results/`, `CORRECTION_2026-07/`  cached public data + the corrected benchmark
 - `REVIEWER-CONCERN-HANDLING-MATRIX.md`  each reviewer comment -> resolution -> the artifact that demonstrates it
@@ -119,6 +122,10 @@ def zenodo_metadata(stamp):
                 {"name": "Chauhan, Mohit",
                  "affiliation": "Mayo Clinic Jacksonville",
                  "orcid": "0000-0001-8848-4385"},
+                # Third author on the manuscript byline; no ORCID on record yet, so the
+                # field is omitted rather than guessed.
+                {"name": "Paulus, Aneel",
+                 "affiliation": "West Eastern Health, Ponte Vedra Beach, Florida"},
             ],
             "related_identifiers": [
                 {"identifier": "https://pypi.org/project/pathway-subtyping/%s/" % VERSION,
@@ -141,8 +148,10 @@ def zenodo_metadata(stamp):
 
 
 def keep(path):
-    parts = set(path.split(os.sep))
-    if parts & SKIP_DIR:
+    parts = path.split(os.sep)
+    if set(parts) & SKIP_DIR:
+        return False
+    if any(x.endswith(SKIP_DIR_SUFFIX) for x in parts):
         return False
     if os.path.basename(path) in SKIP_NAME:
         return False
@@ -161,7 +170,8 @@ def collect(items):
                 out.append((src, dest_rel))
             continue
         for r, dirs, files in os.walk(src):
-            dirs[:] = [d for d in dirs if d not in SKIP_DIR]
+            dirs[:] = [d for d in dirs
+                       if d not in SKIP_DIR and not d.endswith(SKIP_DIR_SUFFIX)]
             for f in files:
                 full = os.path.join(r, f)
                 if keep(full):

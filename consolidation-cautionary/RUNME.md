@@ -46,6 +46,14 @@ reproduction is version-sensitive — those deposited numbers were produced unde
 earlier releases, and the invariant to check is the *conclusion*, not a
 bit-identical partition.
 
+> 📄 **Re-running everything from source?** Read
+> [`DATA-ACQUISITION.md`](DATA-ACQUISITION.md) first. It lists what actually needs
+> downloading (almost nothing — six packages reproduce from deposited inputs), the
+> measured runtime of every job, and **the acceptance criterion per result**. That last
+> point matters: byte-identity is the right bar for the six deposited packages and the
+> *wrong* bar for anything re-fetched from a live API, where the invariant is the
+> conclusion. Applying the wrong bar manufactures disagreements.
+
 ---
 
 ## Install (public — everything runs from PyPI)
@@ -57,7 +65,9 @@ need — it contains `pathway_subtyping.discreteness` (Gate A) and
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt      # pins pathway-subtyping==0.9.0 + numpy/pandas/sklearn/scipy/statsmodels/requests
-pip install torch                    # only needed for the DL baselines in cancer_r38
+# torch is pinned in requirements.txt (==2.11.0) and needed ONLY by cancer_r38's DL
+# baselines. They are not deterministic across torch releases; the version actually
+# used is recorded in each result under provenance.environment.torch.
 python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.9.0
 ```
 
@@ -72,8 +82,8 @@ public cBioPortal/GEO/recount3 data with no authentication.
 - **PyPI:** https://pypi.org/project/pathway-subtyping/0.9.0/
 - **Source (tag v0.9.0):** GitHub `topmist-admin/pathway-subtyping-framework` ·
   Codeberg `pathways/pathway-subtyping-framework` · RRID:SCR_028051
-- **This reproduction bundle, citable:** **`10.5281/zenodo.21566406`**
-  (concept DOI `10.5281/zenodo.18638048` resolves to the latest release)
+- **This reproduction bundle, citable:** **`10.5281/zenodo.18638048`** — the **concept
+  DOI**, which always resolves to the current version. Cite this, not a version DOI
 - **Corrected 47-dataset benchmark:** `10.5281/zenodo.19323753` — the **concept DOI**,
   which always resolves to the newest version of the record. Cite this, not a version
   DOI. The analysis in this bundle read version 2.0 (`10.5281/zenodo.21262112`), and
@@ -87,7 +97,7 @@ public cBioPortal/GEO/recount3 data with no authentication.
 | Paper section | Package | Deposited output | Network |
 |---|---|---|---|
 | **Result 1** ablation (honest three-way + head-to-head) | [`cross-domain/gate_ablation/`](cross-domain/gate_ablation/) | **`ablation_honest.json`** (authoritative), `separation_sweep.json`, `gate_ablation_raw.csv`, figure | none (synthetic) |
-| **Result 1** real-data calibration (**within-study**) | [`cross-domain/gate_calibration/`](cross-domain/gate_calibration/) | **`gate_calibration_within_study.json`** (authoritative; the pooled `gate_calibration.json` is a withdrawn batch artifact) | cBioPortal (public, no auth) |
+| **Result 1** real-data calibration (**within-study**) | [`cross-domain/gate_calibration/`](cross-domain/gate_calibration/) | **`gate_calibration_within_study.json`** (authoritative; the pooled `gate_calibration.json` is a withdrawn batch artifact) | cBioPortal — or **none** with `--cache-in`, which replays the deposited inputs |
 | **Result 2** benchmark audit | [`cross-domain/benchmark_audit/`](cross-domain/benchmark_audit/) | `benchmark_audit.json` (incl. column-validity diagnostic) | none (reads deposited CSV) |
 | **Result 4** flagship donor-level stats | [`cross-domain/flagship_stats/`](cross-domain/flagship_stats/) | `flagship_donor_level.json` | none (reads deposited labels) |
 | **Result 3** cancer worked example | [`cross-domain/cancer_r38/`](cross-domain/cancer_r38/) | `brca_pam50_validation.json`, `cptac_brca_multiomic.json` | cBioPortal |
@@ -187,15 +197,16 @@ None is restated from prose.
 
 ## Open items before this bundle is submission-ready
 
-1. ~~**Publish v0.8.0**~~ **DONE 2026-07-25** — `pathway-subtyping==0.8.0` is on PyPI
-   and tagged `v0.8.0` on GitHub + Codeberg. The full reproduction was re-verified from
-   a clean PyPI install (see Install section above).
+1. ~~**Publish the framework**~~ **DONE 2026-07-29** — `pathway-subtyping==0.9.0` is on
+   PyPI and tagged `v0.9.0` on GitHub, Codeberg and Bitbucket. v0.9.0 is a correctness
+   release (six statistical fixes); **no manuscript number changes** — all offline
+   packages are byte-identical under it. Re-verified from a clean PyPI install.
 2. ~~**Environment pin**~~ **DONE** — `requirements.txt` now pins
    `pathway-subtyping==0.9.0` and the analysis deps; it covers the whole bundle.
-3. ~~**Zenodo deposit**~~ **DONE 2026-07-25** — this bundle is deposited at
-   **`10.5281/zenodo.21566406`** (under concept DOI `10.5281/zenodo.18638048`,
-   which always resolves to the latest release). Cite the versioned DOI from the
-   paper's Data & Code Availability.
+3. ~~**Zenodo deposit**~~ **DONE** — deposited under concept DOI
+   **`10.5281/zenodo.18638048`**, which always resolves to the current version. The
+   manuscript cites the **concept** DOI, not a version DOI, so the citation survives
+   future deposits without an edit.
 4. ~~**Result 2 writeup**~~ **DONE 2026-07-23** — `cross-domain/benchmark_audit/`
    plus the Result 2 section of the rebuild draft.
 5. ~~**Rewrite the abstract**~~ **DRAFTED 2026-07-23** in the manuscript working copy
