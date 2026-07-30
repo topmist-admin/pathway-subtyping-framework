@@ -1,7 +1,7 @@
 # Pathway Subtyping Framework
 
 > ## ⚠️ CORRECTION NOTICE (2026-07-08)
-> The **adaptive bootstrap-threshold model** previously reported at R²=0.889 does **not reproduce** and is **retracted**; the **47-dataset benchmark** contained an empty-input ARI artifact (14 invalid rows), an incorrect independence claim (TCGA-COAD was present despite being described as excluded), and count discrepancies. See **[`CORRECTION_2026-07/ERRATUM_2026-07-08.md`](CORRECTION_2026-07/ERRATUM_2026-07-08.md)** for the full notice and corrected artifacts. A **corrected Zenodo dataset v2.0 (`10.5281/zenodo.21262112`)** supersedes the prior versions. The associated preprint (Research Square rs-9284565) has been **withdrawn** from journal review; rs-8913089 is being revised. Do not use the retracted calibration model or the uncorrected benchmark.
+> The **adaptive bootstrap-threshold model** previously reported at R²=0.889 does **not reproduce** and is **retracted**; the **47-dataset benchmark** contained an empty-input ARI artifact (14 invalid rows), an incorrect independence claim (TCGA-COAD was present despite being described as excluded), and count discrepancies. See **[`CORRECTION_2026-07/ERRATUM_2026-07-08.md`](CORRECTION_2026-07/ERRATUM_2026-07-08.md)** for the full notice and corrected artifacts. A **corrected Zenodo dataset** supersedes the prior versions — cite the concept DOI **`10.5281/zenodo.19323753`**, which always resolves to the newest version (currently v2.0, `10.5281/zenodo.21262112`). The associated preprint (Research Square rs-9284565) has been **withdrawn** from journal review; rs-8913089 is being revised. Do not use the retracted calibration model or the uncorrected benchmark.
 
 **A Disease-Agnostic Tool for Pathway-Based Molecular Subtype Discovery**
 

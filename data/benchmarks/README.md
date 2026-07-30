@@ -6,8 +6,22 @@ This directory contains benchmark datasets for validating the pathway subtyping 
 
 ### 1. 47-Dataset Bootstrap Threshold Calibration Benchmark
 
-**Zenodo DOI:** 10.5281/zenodo.19324360
-**URL:** https://zenodo.org/records/19324360
+> **⚠️ CORRECTED (2026-07-08) — the figures in this section describe the uncorrected
+> release and are retracted.** The adaptive bootstrap-threshold model calibrated from
+> this benchmark (R²=0.889) **does not reproduce and is withdrawn**; the set has **41
+> unique datasets, not 47**; 14 rows carry an empty-input `adjusted_rand_score`
+> artifact on degenerate ground truth; and the independence claim below (that the
+> benchmark excludes the manuscript cohorts) is **false** — TCGA-COAD is present.
+> The "39/47 PASS (83.0%)" line is therefore not a supportable result.
+> Full notice: [`../../CORRECTION_2026-07/ERRATUM_2026-07-08.md`](../../CORRECTION_2026-07/ERRATUM_2026-07-08.md) ·
+> corrected data: [`../../CORRECTION_2026-07/corrected_benchmark_47datasets_v2.csv`](../../CORRECTION_2026-07/corrected_benchmark_47datasets_v2.csv).
+
+**Zenodo DOI (cite this):** 10.5281/zenodo.19323753 — the concept DOI, which always
+resolves to the newest version of the record.
+**URL:** https://doi.org/10.5281/zenodo.19323753
+
+The figures below were produced against version 1.1 (`10.5281/zenodo.19324360`), which
+is retained for the record but superseded. Do not cite the version DOI.
 
 **Description:** 47 publicly available datasets (12 TCGA + 35 GEO) spanning oncology, psychiatry, immunology, single-cell RNA-seq, and other domains. Used to calibrate the adaptive bootstrap stability threshold model (Methods §1.5 in manuscript).
 

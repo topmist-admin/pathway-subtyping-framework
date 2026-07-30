@@ -1,5 +1,14 @@
 # How to apply this correction (author actions — not auto-executed)
 
+> **Status (2026-07-29):** steps 1 and 2 are **done** — the repo carries the erratum and
+> the annotated retracted model, and Zenodo **v2.0 (`10.5281/zenodo.21262112`)** was
+> published on 2026-07-08 under the concept DOI `10.5281/zenodo.19323753`. Two things
+> remain: a **description-only v2.1** (the v2.0 description still ends with a
+> reproducibility claim that has since been withdrawn — text ready in
+> [`ZENODO_v2.1_description.md`](ZENODO_v2.1_description.md)), and step 3's downstream
+> updates. The DOI in the step-2 heading below is v1.1, the record as it stood when this
+> was written.
+
 This folder stages the correction. Nothing here has been committed, pushed, or re-deposited.
 All of the following mint permanent/public changes and are the author's deliberate actions.
 

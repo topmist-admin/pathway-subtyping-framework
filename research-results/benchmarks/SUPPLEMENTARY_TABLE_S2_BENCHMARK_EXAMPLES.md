@@ -1,7 +1,18 @@
 # Supplementary Table S2: Representative Benchmark Datasets for Adaptive Bootstrap Threshold Model
 
+> **⚠️ RETRACTED (2026-07-08).** This table supports the **adaptive bootstrap
+> threshold model**, which **does not reproduce and is withdrawn** (published
+> R²=0.889 → 0.111 refit on all rows, 0.015 on valid rows, with the slope reversing
+> sign). The underlying benchmark also contains 14 rows with an empty-input
+> `adjusted_rand_score` artifact on degenerate ground truth, has **41 unique
+> datasets rather than 47**, and does **not** exclude the manuscript cohorts as
+> claimed (TCGA-COAD is present). Retained for the record only — do not cite these
+> rows as evidence for a silhouette-calibrated threshold.
+> Full notice: [`../../CORRECTION_2026-07/ERRATUM_2026-07-08.md`](../../CORRECTION_2026-07/ERRATUM_2026-07-08.md).
+
 **Reference:** Methods §1.5 and Result 1c of manuscript
-**Full dataset:** Zenodo DOI: 10.5281/zenodo.19324360 (47 datasets total)
+**Full dataset:** Zenodo DOI: 10.5281/zenodo.19323753 (concept DOI — always resolves
+to the newest version; the rows below came from the superseded v1.1)
 **Source CSV:** `bootstrap_threshold_calibration_47datasets_zenodo.csv`
 
 ---
@@ -80,4 +91,5 @@ All benchmark results are reproducible using:
 - **Script:** `scripts/run_47benchmarks.py` (TCGA) + `scripts/run_47benchmarks_geo.py` (GEO)
 - **Data:** All source datasets publicly available via GDC Portal and NCBI GEO
 - **Framework:** `pip install pathway-subtyping==0.4.0`
-- **Archive:** Zenodo DOI: 10.5281/zenodo.19324360
+- **Archive:** Zenodo DOI: 10.5281/zenodo.19323753 (concept DOI; these rows are from
+  the superseded v1.1, `10.5281/zenodo.19324360`)

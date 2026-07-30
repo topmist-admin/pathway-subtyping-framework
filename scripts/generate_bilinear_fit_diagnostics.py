@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 """
+⚠️ RETRACTED (2026-07-08) — this script plots a model that does not reproduce.
+
+The bilinear bootstrap-threshold model diagnosed here (R²=0.889, slope 0.914) is
+**retracted**: refit on the released benchmark it gives R²≈0.111 across all rows,
+≈0.015 on valid rows, and ≈0.001 under a stricter ground-truth screen, with the slope
+reversing sign. Silhouette does not predict bootstrap-ARI reproducibility in these
+data. The Panel D "TCGA-COAD overlay" is drawn against an independence claim that is
+also withdrawn — TCGA-COAD is present in the benchmark, not excluded from it.
+
+Kept so the retracted figure remains regenerable for the record. Do not use its output
+as evidence for a silhouette-calibrated threshold. The DOI below names version 1.1, the
+uncorrected release this model was fitted on; it is provenance, not a citation. See
+CORRECTION_2026-07/ERRATUM_2026-07-08.md.
+
 Generate bilinear fit diagnostic plots for the 47-dataset
 bootstrap threshold calibration model.
 

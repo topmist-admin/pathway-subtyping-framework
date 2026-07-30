@@ -1,4 +1,9 @@
 {
+  "STATUS": "RETRACTED 2026-07-08 — DO NOT USE",
+  "retraction_notice": "This model does not reproduce and is retracted. Published R^2=0.889 (slope 0.914) refits to R^2~0.111 on all released rows, ~0.015 on valid rows, and ~0.001 under a stricter ground-truth screen, with the slope reversing sign. Silhouette does not predict bootstrap-ARI reproducibility in these data, and no adaptive-threshold model is supported by them. See CORRECTION_2026-07/ERRATUM_2026-07-08.md and the annotated replacement CORRECTION_2026-07/threshold_model_real47_CORRECTED.json.",
+  "circularity_statement_is_FALSE": "The `circularity_statement` field below is incorrect and withdrawn: TCGA-COAD, the manuscript primary cohort, IS present in the benchmark. The independence claim it makes does not hold. The field is retained verbatim only so the record shows what was originally asserted.",
+  "zenodo_doi_note": "The `zenodo_doi` below names version 1.1, the uncorrected release this model was fitted on. It is provenance, not a citation — cite the concept DOI 10.5281/zenodo.19323753, which resolves to the corrected record.",
+
   "model_name": "Bilinear Bootstrap ARI Threshold Model",
   "description": "Empirical bilinear interpolation model relating silhouette score to expected bootstrap ARI threshold, derived from 47 public clustering benchmarks.",
   "version": "1.0.0",

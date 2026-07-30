@@ -36,7 +36,8 @@ The Pathway Subtyping Framework is an open-source Python package for discovering
 > - The **adaptive bootstrap-threshold model** (R²=0.889) does not reproduce.
 > - The **47-dataset benchmark** contained an empty-input ARI artifact (14 invalid
 >   rows), an incorrect independence claim, and count discrepancies. A corrected
->   dataset **v2.0 (`10.5281/zenodo.21262112`)** supersedes it.
+>   dataset supersedes it — cite the concept DOI **`10.5281/zenodo.19323753`**,
+>   which always resolves to the newest version.
 > - The cross-disease convergence figures quoted below (**ARI=0.870**, **bootstrap
 >   ARI=0.923** as a general validation claim, **CMS4 recovery ~76%**) come from that
 >   uncorrected analysis and must not be quoted as current results.

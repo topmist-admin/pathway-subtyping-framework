@@ -28,7 +28,7 @@ Provenance: PyPI https://pypi.org/project/pathway-subtyping/0.9.0/ · Codeberg (
 | **GSE64018** (Gupta/Irimia 2014) | GEO | `GSE64018_countlevel_12asd_12ctl.txt.gz`, `GSE64018_adjfpkm_12asd_12ctl.txt.gz`, series matrix |
 | **GSE80655** (Ramaker 2017) | GEO | `GSE80655_GeneExpressionData_Updated_3-26-2018.txt.gz` + series matrix |
 | **Pathway panels** | shipped in `panels/` | `schizophrenia_pathways.gmt` (curated 14-set, SCZ analyses) + `hallmark_200genes.gmt` (50 Hallmark sets, §3.1 autism) — also in the public repo `data/pathways/` |
-| **Corrected benchmark** (§3.5) | Zenodo DOI 10.5281/zenodo.21262112 (v2.0) | `corrected_benchmark_47datasets_v2.csv` |
+| **Corrected benchmark** (§3.5) | Zenodo concept DOI 10.5281/zenodo.19323753 (resolves to the current version) | `corrected_benchmark_47datasets_v2.csv` |
 
 Put the GEO files under a data root with `GSE28521/ GSE64018/ GSE80655/` subfolders. Record every file's SHA-256.
 

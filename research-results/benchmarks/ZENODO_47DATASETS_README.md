@@ -253,21 +253,26 @@ GEO datasets show variable stability (range: -0.1394 to 1.0):
 
 ## Zenodo Archive
 
-**DOI:** 10.5281/zenodo.19324360
+**DOI of the version this document describes:** 10.5281/zenodo.19324360 (v1.1 —
+**uncorrected**, superseded, retained for the record)
 **URL:** https://zenodo.org/records/19324360
 
 ## Citation
 
+Cite the **concept DOI**, not the version above. It always resolves to the newest
+version of the record, so a citation made today stays correct after v2.1 and beyond.
+The v1.1 DOI names the retracted release and should not appear in new work.
+
 ```bibtex
 @dataset{chauhan2026pathway_benchmark_47,
   title={Pathway-Subtyping Bootstrap Threshold Calibration Benchmark:
-         47 Datasets for Reproducible Molecular Subtype Discovery},
+         Datasets for Reproducible Molecular Subtype Discovery},
   author={Chauhan, Rohit and Chauhan, Mohit},
   year={2026},
-  month={March},
-  doi={10.5281/zenodo.19324360},
-  url={https://zenodo.org/records/19324360},
-  publisher={Zenodo}
+  doi={10.5281/zenodo.19323753},
+  url={https://doi.org/10.5281/zenodo.19323753},
+  publisher={Zenodo},
+  note={Concept DOI; resolves to the current corrected version}
 }
 ```
 

@@ -79,8 +79,11 @@ public cBioPortal/GEO/recount3 data with no authentication.
   Codeberg `pathways/pathway-subtyping-framework` · RRID:SCR_028051
 - **This reproduction bundle, citable:** **`10.5281/zenodo.21566406`**
   (concept DOI `10.5281/zenodo.18638048` resolves to the latest release)
-- **Corrected 47-dataset benchmark:** `10.5281/zenodo.21262112` (v2.0) — see open
-  item 6 below for the outstanding v2.1 question
+- **Corrected 47-dataset benchmark:** `10.5281/zenodo.19323753` — the **concept DOI**,
+  which always resolves to the newest version of the record. Cite this, not a version
+  DOI. The analysis in this bundle read version 2.0 (`10.5281/zenodo.21262112`), and
+  the deposited `benchmark_audit.json` records that version DOI deliberately, as
+  provenance of the exact file it read
 
 ---
 
@@ -203,8 +206,26 @@ None is restated from prose.
 5. ~~**Rewrite the abstract**~~ **DRAFTED 2026-07-23** in the manuscript working copy
    (maintained outside this repository), carrying none of the retracted figures.
    Still needs the hostile-review rounds before submission.
-6. **Re-issue the benchmark correction.** The audit found the 2026-07-08 erratum's
-   ground-truth rule (`n_true_clusters > n_samples`) is too weak — 7 rows with
-   near-singleton labels remain marked valid. The conclusions are unaffected, but
-   the deposited Zenodo v2.0 artifact should be superseded by a v2.1 applying the
-   ratio screen, or the manuscript must disclose the gap. **PI decision.**
+6. **Re-issue the benchmark correction.** *(Decided 2026-07-29 — description-only
+   v2.1; data unchanged.)* Two separate problems were bundled under this item:
+
+   - **The record's description carried a retracted claim.** The v2.0 description
+     ended by asserting that reproducibility is "low on most independent cohorts" —
+     the same claim Result 2 withdraws. After the repo README was corrected, the
+     Zenodo record was the *only* public artifact still making it, and the one a
+     reader reaches by following the DOI. **This is what v2.1 fixes.** Text ready at
+     [`CORRECTION_2026-07/ZENODO_v2.1_description.md`](../CORRECTION_2026-07/ZENODO_v2.1_description.md).
+   - **The erratum's ground-truth rule is too weak** — 7 near-singleton rows remain
+     marked valid. **Disclosed, not fixed in the data.** Re-issuing the CSV would
+     change `benchmark_audit`'s input and break the byte-identical reproduction
+     certified for this bundle, for no gain: the audit already applies the ratio
+     screen in code and the retraction conclusion holds under it (R²≈0.001). The
+     manuscript discloses the gap in Availability.
+
+   Citations now use the **concept DOI** `10.5281/zenodo.19323753` throughout, so
+   they survive v2.1 and any later re-issue without edits. Version DOIs are retained
+   only where they record provenance — notably `benchmark_audit.json`, which names
+   the exact version its input file came from.
+
+   Zenodo DOIs cannot be deleted, only superseded; v1.0, v1.1 and v2.0 remain
+   permanently resolvable and nothing cites them.

@@ -21,6 +21,38 @@ Artefacts:
 - **Source:** tag `v0.9.0` on GitHub (`topmist-admin/pathway-subtyping-framework`), Codeberg (`pathways/pathway-subtyping-framework`) and Bitbucket · RRID:SCR_028051
 - **Zenodo:** _versioned DOI pending_ — deposit under concept DOI `10.5281/zenodo.18638048`
 
+**Benchmark DOI hygiene.** Citations of the 47-dataset benchmark now use the
+**concept DOI `10.5281/zenodo.19323753`**, which always resolves to the newest
+version of that record, instead of pinning a version DOI. Three versions exist
+(v1.0 `19323754`, v1.1 `19324360`, v2.0 `21262112`) and are versions of one record,
+not competing deposits; nothing now cites them except where a version DOI is the
+correct value. Zenodo DOIs cannot be deleted, only superseded, so the superseded
+releases remain permanently resolvable — which is what the 2026-07-08 erratum's
+correction trail depends on.
+
+Version DOIs are deliberately retained where they record **provenance** rather than
+a citation: `benchmark_audit.json` names the exact version its input file came from,
+and `threshold_model_real47.json` names the version the retracted model was fitted
+on. Changing either would be less accurate, and changing the first would break a
+certified byte-identical reproduction.
+
+Two files were pointing readers at the **retracted** v1.1 as though it were current,
+with no retraction marker: `data/benchmarks/README.md` and
+`research-results/benchmarks/SUPPLEMENTARY_TABLE_S2_BENCHMARK_EXAMPLES.md`. Both now
+carry one. `ZENODO_47DATASETS_README.md`'s BibTeX entry, which told readers to cite
+the retracted version, now cites the concept DOI. `threshold_model_real47.json` —
+the retracted calibration model — gained an in-file `STATUS: RETRACTED` marker and
+an explicit note that its `circularity_statement` field is false (TCGA-COAD *is*
+present in the benchmark). It carried none before, though a sibling
+`RETRACTED_threshold_model_real47.md` did; the file ships in neither the wheel nor
+the sdist.
+
+A description-only **v2.1** of the benchmark record is drafted at
+`CORRECTION_2026-07/ZENODO_v2.1_description.md`. The v2.0 description still ends with
+a reproducibility claim that Result 2 withdraws, which — once the repo README was
+corrected — left the Zenodo record as the only public artifact asserting it. The data
+files are left byte-unchanged so every analysis run against v2.0 stays valid.
+
 Release pre-flight, run before tagging: `python -m build` + `twine check` both
 pass; the wheel installs and imports on a **bare** venv with no extras (Gate K
 correctly stays unexported when `networkx` is absent — the guarded-import

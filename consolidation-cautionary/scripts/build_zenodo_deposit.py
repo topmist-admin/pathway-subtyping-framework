@@ -125,7 +125,10 @@ def zenodo_metadata(stamp):
                  "relation": "isSupplementedBy", "scheme": "url"},
                 {"identifier": "https://github.com/topmist-admin/pathway-subtyping-framework",
                  "relation": "isDerivedFrom", "scheme": "url"},
-                {"identifier": "10.5281/zenodo.21262112",
+                # Concept DOI, not the v2.0 version DOI: this relation means "the
+                # software references that dataset", and it should keep pointing at
+                # the current version after the benchmark record is re-issued.
+                {"identifier": "10.5281/zenodo.19323753",
                  "relation": "references", "scheme": "doi"},
                 {"identifier": "RRID:SCR_028051",
                  "relation": "isIdenticalTo", "scheme": "url"},

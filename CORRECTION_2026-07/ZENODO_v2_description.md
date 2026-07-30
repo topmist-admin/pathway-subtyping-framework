@@ -1,5 +1,14 @@
 # Zenodo new-version description (paste into the deposit)
 
+> **⚠️ SUPERSEDED by [`ZENODO_v2.1_description.md`](ZENODO_v2.1_description.md).**
+> The final paragraph below — "the corrected benchmark shows that discrete-subtype
+> reproducibility is dataset-dependent and low on most independent cohorts" — is
+> **withdrawn**. It rests on `bootstrap_ari_5th_percentile`, which is a 5th
+> percentile (so any fixed bar on it is near-zero by construction) and is internally
+> inconsistent with the silhouette column. No reproducibility-rate claim is supported
+> by this record, in either direction. The retraction of the R²=0.889 threshold model
+> is unaffected and still stands. This file is retained as the historical v2.0 text.
+
 **Version 2 — Corrected (2026-07-08).** This version corrects errors in the original release.
 The adaptive bootstrap-threshold model previously reported at R^2=0.889 does not reproduce and
 is retracted (refit R^2~0.11 on released data; ~0.015 on valid rows). Fourteen benchmark rows
