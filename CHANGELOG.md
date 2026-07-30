@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 manuscript — a pre-review alignment pass for a third party who re-derives every result
 from source rather than spot-checking the deposited artifacts.
 
+Deposited at Zenodo **2026-07-30** as `10.5281/zenodo.21704904`, under concept DOI
+`10.5281/zenodo.18638048` (which now resolves to it). **Seven** packages reproduce
+byte-identically with no network, up from four.
+
 ### Reproduction packages
 
 - **Fetch provenance on every network-derived result** (new `consolidation-cautionary/scripts/_provenance.py`).

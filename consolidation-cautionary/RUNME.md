@@ -97,7 +97,7 @@ public cBioPortal/GEO/recount3 data with no authentication.
 | Paper section | Package | Deposited output | Network |
 |---|---|---|---|
 | **Result 1** ablation (honest three-way + head-to-head) | [`cross-domain/gate_ablation/`](cross-domain/gate_ablation/) | **`ablation_honest.json`** (authoritative), `separation_sweep.json`, `gate_ablation_raw.csv`, figure | none (synthetic) |
-| **Result 1** real-data calibration (**within-study**) | [`cross-domain/gate_calibration/`](cross-domain/gate_calibration/) | **`gate_calibration_within_study.json`** (authoritative; the pooled `gate_calibration.json` is a withdrawn batch artifact) | cBioPortal — or **none** with `--cache-in`, which replays the deposited inputs |
+| **Result 1** real-data calibration (**within-study**) | [`cross-domain/gate_calibration/`](cross-domain/gate_calibration/) | **`gate_calibration_within_study.json`** (authoritative; the pooled `gate_calibration.json` is a withdrawn batch artifact) | **none** with `--cache-in` (verified identical to the live-certified deposit); cBioPortal only if you want to re-fetch |
 | **Result 2** benchmark audit | [`cross-domain/benchmark_audit/`](cross-domain/benchmark_audit/) | `benchmark_audit.json` (incl. column-validity diagnostic) | none (reads deposited CSV) |
 | **Result 4** flagship donor-level stats | [`cross-domain/flagship_stats/`](cross-domain/flagship_stats/) | `flagship_donor_level.json` | none (reads deposited labels) |
 | **Result 3** cancer worked example | [`cross-domain/cancer_r38/`](cross-domain/cancer_r38/) | `brca_pam50_validation.json`, `cptac_brca_multiomic.json` | cBioPortal |
