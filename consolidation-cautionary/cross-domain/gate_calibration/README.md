@@ -6,7 +6,20 @@ gate calibrated, or just pessimistic?* This experiment shows on REAL public data
 rejects a genuine continuous gradient — with **both controls drawn from within a
 single study each**, so study cannot stand in for the ground-truth label.
 
-**Run:** `scripts/calibrate_within_study.py` → `results/gate_calibration_within_study.json`
+**Run (live, ~16 min):** `scripts/calibrate_within_study.py` → `results/gate_calibration_within_study.json`
+
+**Run offline (no network):** `scripts/calibrate_within_study.py --cache-in`. The
+assembled inputs are deposited in `results/cached_inputs/`, so this package no longer
+requires cBioPortal to be checked. Verified: replaying the deposited discrete-control
+matrix (507 × 50 + IDH label) reproduces the certified IDH recovery ARI of **0.418**
+exactly.
+
+**Certified against live cBioPortal on 2026-07-30**, with no drift: discrete control
+certified, continuum control not certified, non-provenance content byte-identical to the
+deposited result. Each run records `provenance.fetch` — endpoint, study, UTC date,
+post-filter shape and a SHA-256 of the assembled matrix. If your numbers differ, compare
+that hash first: a different hash means the upstream data moved, not that the analysis
+did. cBioPortal is not a versioned API.
 
 ## ⚠️ Supersedes the pooled-3-study version — read this
 

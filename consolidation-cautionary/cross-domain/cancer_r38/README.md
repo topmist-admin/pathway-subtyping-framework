@@ -4,6 +4,19 @@ Public-data (cBioPortal, no auth) large-cohort validation for Scientific Reports
 reviewer point R3.8. Uses public data only; large-N psychiatric validation on
 controlled-access cohorts is future work. Run: `scripts/fetch_and_validate_brca.py`.
 
+> ⏱️ **This is the slowest package in the bundle: expect well over 50 minutes**, and it
+> prints nothing between the fetch line and the final result. A long silence is expected,
+> not a hang. Do **not** run it at the same time as another cBioPortal package — two
+> concurrent `molecular-data/fetch` POSTs throttle each other to a standstill (measured:
+> two jobs that each complete alone made no progress for 45 minutes when run together).
+>
+> The DL baselines additionally require `torch`, pinned to **2.11.0** in
+> `requirements.txt`. They are **not deterministic across torch releases**, so the
+> acceptance bar for this package is the *conclusion* — PSF competitive with (not better
+> than) the DL baselines, k=5 stability failing the 0.80 bar, recovery metric-dependent —
+> not the digits. The torch version used is recorded under
+> `provenance.environment.torch`.
+
 ## Result (n=1,082 TCGA-BRCA; 981 PAM50-labelled; k=5)
 
 **Recovery of PAM50 — TWO metrics (the metric choice is itself a finding):**
