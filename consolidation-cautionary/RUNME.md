@@ -29,14 +29,9 @@ at **seed 42**.
 reproduction package for the **"Stable but confounded"** paper (GSE28521 /
 GSE64018 / GSE80655). The two are not interchangeable.
 
-> 🚧 **RELEASE PENDING — v0.9.0 is not on PyPI yet.** These pins were updated as
-> release prep on 2026-07-29. Until the `v0.9.0` tag is pushed and the GitHub
-> release published (which triggers the PyPI upload), `pip install -r
-> requirements.txt` **will fail**. This is deliberate and temporary: the pins are
-> staged so the bundle can be verified against the release the moment it lands.
-> If you are reading this and 0.9.0 resolves on PyPI, delete this banner. If it
-> does not, the release step was missed — that exact gap (a bundle requiring a
-> version that was never published) blocked submission once before.
+> ✅ **v0.9.0 is published.** Released 2026-07-29 — `pip install
+> pathway-subtyping==0.9.0` resolves from PyPI, and the pins below are live rather
+> than staged. Verified from a clean venv against the published wheel.
 
 **One version, one install: `pathway-subtyping==0.9.0`.** Everything in this
 bundle — both this file's packages and the sibling README's — installs and runs
@@ -213,8 +208,9 @@ None is restated from prose.
      ended by asserting that reproducibility is "low on most independent cohorts" —
      the same claim Result 2 withdraws. After the repo README was corrected, the
      Zenodo record was the *only* public artifact still making it, and the one a
-     reader reaches by following the DOI. **This is what v2.1 fixes.** Text ready at
-     [`CORRECTION_2026-07/ZENODO_v2.1_description.md`](../CORRECTION_2026-07/ZENODO_v2.1_description.md).
+     reader reaches by following the DOI. **Fixed by v2.1, published 2026-07-29**
+     (version DOI `10.5281/zenodo.21694795`; the concept DOI resolves to it). Text
+     archived at [`CORRECTION_2026-07/ZENODO_v2.1_description.md`](../CORRECTION_2026-07/ZENODO_v2.1_description.md).
    - **The erratum's ground-truth rule is too weak** — 7 near-singleton rows remain
      marked valid. **Disclosed, not fixed in the data.** Re-issuing the CSV would
      change `benchmark_audit`'s input and break the byte-identical reproduction

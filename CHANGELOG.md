@@ -47,8 +47,8 @@ present in the benchmark). It carried none before, though a sibling
 `RETRACTED_threshold_model_real47.md` did; the file ships in neither the wheel nor
 the sdist.
 
-A description-only **v2.1** of the benchmark record is drafted at
-`CORRECTION_2026-07/ZENODO_v2.1_description.md`. The v2.0 description still ends with
+A description-only **v2.1** of the benchmark record was **published 2026-07-29**
+(version DOI `10.5281/zenodo.21694795`); the concept DOI now resolves to it. The v2.0 description still ends with
 a reproducibility claim that Result 2 withdraws, which — once the repo README was
 corrected — left the Zenodo record as the only public artifact asserting it. The data
 files are left byte-unchanged so every analysis run against v2.0 stays valid.

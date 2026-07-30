@@ -2,11 +2,11 @@
 
 > **Status (2026-07-29):** steps 1 and 2 are **done** — the repo carries the erratum and
 > the annotated retracted model, and Zenodo **v2.0 (`10.5281/zenodo.21262112`)** was
-> published on 2026-07-08 under the concept DOI `10.5281/zenodo.19323753`. Two things
-> remain: a **description-only v2.1** (the v2.0 description still ends with a
-> reproducibility claim that has since been withdrawn — text ready in
-> [`ZENODO_v2.1_description.md`](ZENODO_v2.1_description.md)), and step 3's downstream
-> updates. The DOI in the step-2 heading below is v1.1, the record as it stood when this
+> published on 2026-07-08 under the concept DOI `10.5281/zenodo.19323753`. The **description-only v2.1** is
+> also published (2026-07-29, `10.5281/zenodo.21694795`), withdrawing the
+> reproducibility claim the v2.0 description still carried — see
+> [`ZENODO_v2.1_description.md`](ZENODO_v2.1_description.md). Only step 3's downstream
+> updates remain. The DOI in the step-2 heading below is v1.1, the record as it stood when this
 > was written.
 
 This folder stages the correction. Nothing here has been committed, pushed, or re-deposited.

@@ -1,13 +1,18 @@
 # Zenodo v2.1 description (paste into the new version of the record)
 
-**Concept DOI:** `10.5281/zenodo.19323753` — cite this, not a version DOI.
+**PUBLISHED 2026-07-29** as version DOI `10.5281/zenodo.21694795`.
+**Concept DOI:** `10.5281/zenodo.19323753` — cite this, not a version DOI. It now
+resolves to v2.1 (verified).
 **Supersedes:** v2.0 (`10.5281/zenodo.21262112`), v1.1 (`10.5281/zenodo.19324360`),
 v1.0 (`10.5281/zenodo.19323754`). All remain accessible; Zenodo DOIs are permanent
 and published records cannot be deleted, only superseded.
 
-**Data files are byte-identical to v2.0.** This is a description-only re-issue. It
-changes no number, no row and no column. Anything computed against v2.0 remains
-valid against v2.1 without re-running.
+**The benchmark data are byte-identical to v2.0.** `corrected_benchmark_47datasets_v2.csv`
+(md5 `e4c0cbae…`) and `threshold_model_real47_CORRECTED.json` (md5 `4fa35748…`) are
+unchanged, so anything computed against v2.0 remains valid without re-running — including
+the certified byte-identical `benchmark_audit` reproduction. `ERRATUM_2026-07-08.md` was
+refreshed (md5 `0f0743c0…`) so the deposited copy names the concept DOI explicitly, as the
+repo copy does; it is documentation and feeds no analysis.
 
 ---
 
