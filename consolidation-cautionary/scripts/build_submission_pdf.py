@@ -60,11 +60,40 @@ h2, h3 { break-after: avoid-page; }
 """
 
 
+def strip_draft_banner(md_text: str) -> tuple[str, int]:
+    """Remove the leading internal draft/review-status blockquote.
+
+    The working manuscript opens with a blockquote recording draft version, hostile-review
+    verdicts, PI-gated blockers, "Not yet submitted", and internal section references. That
+    block is for the authors; it must never reach a journal or a third-party reviewer.
+
+    This used to be stripped by an ad-hoc `awk` invocation OUTSIDE this script, which meant
+    the protection was only as reliable as whoever remembered to pipe through it. It did not
+    survive: a PDF built by calling this script directly shipped the whole banner, including
+    the private Bitbucket remote and the review history. The strip now lives here, so the
+    only way to emit the banner is to ask for it explicitly with --keep-banner.
+
+    Only a blockquote that appears BEFORE the first heading is removed, so a legitimate
+    blockquote inside the body is never touched.
+    """
+    lines = md_text.splitlines(keepends=True)
+    i = 0
+    while i < len(lines) and not lines[i].lstrip().startswith("#"):
+        i += 1
+    head = lines[:i]
+    if not any(ln.lstrip().startswith(">") for ln in head):
+        return md_text, 0
+    return "".join(lines[i:]), len(head)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--md", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--title", default="")
+    ap.add_argument("--keep-banner", action="store_true",
+                    help="keep the internal draft banner (author preview only; never for "
+                         "a journal or third-party reviewer)")
     args = ap.parse_args()
 
     if not shutil.which("pandoc"):
@@ -78,12 +107,24 @@ def main() -> None:
     with open(css_path, "w") as fh:
         fh.write(CSS)
 
+    md_src = args.md
+    if not args.keep_banner:
+        text = open(args.md, encoding="utf-8").read()
+        stripped, n = strip_draft_banner(text)
+        if n:
+            md_src = os.path.join(tmp, os.path.basename(args.md))
+            with open(md_src, "w", encoding="utf-8") as fh:
+                fh.write(stripped)
+            print(f"Stripped internal draft banner ({n} lines) before the first heading.")
+        else:
+            print("No leading draft banner found; nothing stripped.")
+
     # --resource-path anchors relative image paths to the MARKDOWN's directory.
     # Without it pandoc resolves them against the working directory, which is why
     # the manuscript previously carried absolute /Users/... paths: they "worked"
     # for the author and rendered as broken images for everyone else (and leaked
     # a local filesystem layout into a submitted PDF).
-    cmd = ["pandoc", args.md, "-f", "gfm", "-t", "html5", "-s",
+    cmd = ["pandoc", md_src, "-f", "gfm", "-t", "html5", "-s",
            "--resource-path", os.path.dirname(os.path.abspath(args.md)),
            "--css", css_path, "--embed-resources", "-o", html_path]
     if args.title:
