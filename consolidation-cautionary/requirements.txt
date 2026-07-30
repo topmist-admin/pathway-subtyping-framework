@@ -13,7 +13,7 @@
 # recompute (region_crosstab_from_labels.py) reproduced exactly on newer pandas/
 # numpy too, but record your actual versions in provenance.json regardless.
 
-# 🚧 v0.9.0 is NOT on PyPI until the release is cut — see RUNME.md
+# ✅ v0.9.0 published to PyPI 2026-07-29; this pin resolves.
 pathway-subtyping==0.9.0
 scikit-learn==1.9.0
 statsmodels==0.14.6
