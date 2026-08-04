@@ -1,0 +1,134 @@
+{"record": "provenance", "script": "job5_heteroscedastic_fpr_confirmation.py", "argv": {"out": "results/job5_heteroscedastic_fpr.jsonl", "ns": "120,300,600", "reps": 20, "dip_reps": 20, "p": 50, "n_ref": 100, "n_bootstrap": 40, "seed": 42}, "design": "matched hetero/homoscedastic pair; identical latent, direction, seeds", "claim_under_test": "gate tests departure-from-single-Gaussian, not discreteness"}
+{"record": "negative_validation", "kind": "heteroscedastic_gradient", "n": 120, "dip_reject_frac": 0.0, "dip_median_p": 0.88275, "qualified": true}
+{"record": "negative_validation", "kind": "homoscedastic_gradient", "n": 120, "dip_reject_frac": 0.0, "dip_median_p": 0.9247000000000001, "qualified": true}
+{"record": "negative_validation", "kind": "heteroscedastic_gradient", "n": 300, "dip_reject_frac": 0.0, "dip_median_p": 0.9756, "qualified": true}
+{"record": "negative_validation", "kind": "homoscedastic_gradient", "n": 300, "dip_reject_frac": 0.0, "dip_median_p": 0.9814499999999999, "qualified": true}
+{"record": "negative_validation", "kind": "heteroscedastic_gradient", "n": 600, "dip_reject_frac": 0.0, "dip_median_p": 0.9844999999999999, "qualified": true}
+{"record": "negative_validation", "kind": "homoscedastic_gradient", "n": 600, "dip_reject_frac": 0.0, "dip_median_p": 0.94645, "qualified": true}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 0, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 1, "verdict": "certify"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 2, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 3, "verdict": "certify"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 4, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 5, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 6, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 7, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 8, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 9, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 10, "verdict": "certify"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 11, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 12, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 13, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 14, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 15, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 16, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 17, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 18, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 19, "verdict": "reject"}
+{"record": "cell_summary", "n": 120, "kind": "heteroscedastic_gradient", "reps": 20, "fpr": 0.15, "wilson95": [0.0524, 0.3604], "certify": 3, "reject": 17, "abstain": 0}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 0, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 1, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 2, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 3, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 4, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 5, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 6, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 7, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 8, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 9, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 10, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 11, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 12, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 13, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 14, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 15, "verdict": "reject"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 16, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 17, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 18, "verdict": "abstain"}
+{"record": "run", "n": 120, "kind": "homoscedastic_gradient", "rep": 19, "verdict": "abstain"}
+{"record": "cell_summary", "n": 120, "kind": "homoscedastic_gradient", "reps": 20, "fpr": 0.0, "wilson95": [0.0, 0.1611], "certify": 0, "reject": 3, "abstain": 17}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 0, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 1, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 2, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 3, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 4, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 5, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 6, "verdict": "abstain"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 7, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 8, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 9, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 10, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 11, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 12, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 13, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 14, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 15, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 16, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 17, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 18, "verdict": "certify"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 19, "verdict": "certify"}
+{"record": "cell_summary", "n": 300, "kind": "heteroscedastic_gradient", "reps": 20, "fpr": 0.8, "wilson95": [0.584, 0.9193], "certify": 16, "reject": 3, "abstain": 1}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 0, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 1, "verdict": "abstain"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 2, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 3, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 4, "verdict": "abstain"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 5, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 6, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 7, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 8, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 9, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 10, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 11, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 12, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 13, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 14, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 15, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 16, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 17, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 18, "verdict": "reject"}
+{"record": "run", "n": 300, "kind": "homoscedastic_gradient", "rep": 19, "verdict": "reject"}
+{"record": "cell_summary", "n": 300, "kind": "homoscedastic_gradient", "reps": 20, "fpr": 0.0, "wilson95": [0.0, 0.1611], "certify": 0, "reject": 18, "abstain": 2}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 0, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 1, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 2, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 3, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 4, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 5, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 6, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 7, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 8, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 9, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 10, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 11, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 12, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 13, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 14, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 15, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 16, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 17, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 18, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "heteroscedastic_gradient", "rep": 19, "verdict": "certify"}
+{"record": "cell_summary", "n": 600, "kind": "heteroscedastic_gradient", "reps": 20, "fpr": 1.0, "wilson95": [0.8389, 1.0], "certify": 20, "reject": 0, "abstain": 0}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 0, "verdict": "certify"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 1, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 2, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 3, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 4, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 5, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 6, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 7, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 8, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 9, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 10, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 11, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 12, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 13, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 14, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 15, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 16, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 17, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 18, "verdict": "reject"}
+{"record": "run", "n": 600, "kind": "homoscedastic_gradient", "rep": 19, "verdict": "reject"}
+{"record": "cell_summary", "n": 600, "kind": "homoscedastic_gradient", "reps": 20, "fpr": 0.05, "wilson95": [0.0089, 0.2361], "certify": 1, "reject": 19, "abstain": 0}
+{"record": "done", "elapsed_sec": 16316.2}

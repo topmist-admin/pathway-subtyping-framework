@@ -1,0 +1,34 @@
+{
+  "tie_breaking": {
+    "n_donors": 48,
+    "n_samples": 141,
+    "donors_split_across_clusters": 44,
+    "donors_with_no_majority": 1,
+    "tied_donor_ids": [
+      "X4296"
+    ],
+    "rule": "pandas value_counts().index[0] \u2014 ordering-dependent, undocumented"
+  },
+  "observed": {
+    "T1_auc_cluster1_fraction": 0.42187499999999994,
+    "T2_loocv_auc_full_composition": 0.18923611111111116,
+    "V_majority_deposited": 0.2581988897471611,
+    "T3_gee_beta": -0.2648180750881715,
+    "T3_gee_z": -1.8690331963003093,
+    "T3_gee_asymptotic_p": 0.06161819603906528
+  },
+  "p_values": {
+    "T1_auc": 0.1434856514348565,
+    "T2_loocv_auc": 0.6593406593406593,
+    "T3_gee_asymptotic": 0.06161819603906528,
+    "T3_gee_donor_permutation": 0.06696651674162919,
+    "V_majority_deposited": 0.2338766123387661
+  },
+  "degeneracy": {
+    "distinct_values_of_deposited_V_under_permutation": 3,
+    "distinct_values_of_T1_AUC": 23,
+    "n_perm": 10000,
+    "n_perm_T2": 1000,
+    "reads": "A permutation null supported on a handful of atoms cannot resolve a p-value; the continuous statistics can."
+  }
+}

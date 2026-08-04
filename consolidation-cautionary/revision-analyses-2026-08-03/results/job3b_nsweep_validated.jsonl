@@ -1,0 +1,152 @@
+{"record": "provenance", "script": "job3b_nsweep_validated_negatives.py", "argv": {"out": "results/job3b_nsweep_validated.jsonl", "ns": "60,120,300", "reps": 5, "dip_reps": 20, "p": 50, "n_ref": 100, "n_bootstrap": 40, "seed": 42, "kinds": "discrete_k2,corr_weak,corr_strong,nongaussian_gradient,heteroscedastic_gradient,curved_manifold,curved_manifold_INVALID,three_component_gradient"}, "supersedes": "job3_nsweep_generator_diversity.py", "dip_max_reject_frac": 0.3, "note": "negatives are dip-screened before scoring; screen is one-sided"}
+{"record": "negative_validation", "kind": "corr_weak", "n": 60, "dip_reject_frac": 0.0, "dip_median_p": 0.8519, "qualified": true}
+{"record": "negative_validation", "kind": "corr_strong", "n": 60, "dip_reject_frac": 0.0, "dip_median_p": 0.8376, "qualified": true}
+{"record": "negative_validation", "kind": "nongaussian_gradient", "n": 60, "dip_reject_frac": 0.0, "dip_median_p": 0.7993, "qualified": true}
+{"record": "negative_validation", "kind": "heteroscedastic_gradient", "n": 60, "dip_reject_frac": 0.0, "dip_median_p": 0.9761500000000001, "qualified": true}
+{"record": "negative_validation", "kind": "curved_manifold", "n": 60, "dip_reject_frac": 0.0, "dip_median_p": 0.8508, "qualified": true}
+{"record": "negative_validation", "kind": "curved_manifold_INVALID", "n": 60, "dip_reject_frac": 0.35, "dip_median_p": 0.1066, "qualified": false}
+{"record": "negative_validation", "kind": "three_component_gradient", "n": 60, "dip_reject_frac": 0.0, "dip_median_p": 0.7938000000000001, "qualified": true}
+{"record": "negative_validation", "kind": "corr_weak", "n": 120, "dip_reject_frac": 0.0, "dip_median_p": 0.8628, "qualified": true}
+{"record": "negative_validation", "kind": "corr_strong", "n": 120, "dip_reject_frac": 0.0, "dip_median_p": 0.83715, "qualified": true}
+{"record": "negative_validation", "kind": "nongaussian_gradient", "n": 120, "dip_reject_frac": 0.0, "dip_median_p": 0.90325, "qualified": true}
+{"record": "negative_validation", "kind": "heteroscedastic_gradient", "n": 120, "dip_reject_frac": 0.0, "dip_median_p": 0.88275, "qualified": true}
+{"record": "negative_validation", "kind": "curved_manifold", "n": 120, "dip_reject_frac": 0.0, "dip_median_p": 0.92405, "qualified": true}
+{"record": "negative_validation", "kind": "curved_manifold_INVALID", "n": 120, "dip_reject_frac": 0.4, "dip_median_p": 0.10694999999999999, "qualified": false}
+{"record": "negative_validation", "kind": "three_component_gradient", "n": 120, "dip_reject_frac": 0.0, "dip_median_p": 0.84145, "qualified": true}
+{"record": "negative_validation", "kind": "corr_weak", "n": 300, "dip_reject_frac": 0.0, "dip_median_p": 0.93015, "qualified": true}
+{"record": "negative_validation", "kind": "corr_strong", "n": 300, "dip_reject_frac": 0.0, "dip_median_p": 0.9555, "qualified": true}
+{"record": "negative_validation", "kind": "nongaussian_gradient", "n": 300, "dip_reject_frac": 0.0, "dip_median_p": 0.98245, "qualified": true}
+{"record": "negative_validation", "kind": "heteroscedastic_gradient", "n": 300, "dip_reject_frac": 0.0, "dip_median_p": 0.9756, "qualified": true}
+{"record": "negative_validation", "kind": "curved_manifold", "n": 300, "dip_reject_frac": 0.0, "dip_median_p": 0.8648, "qualified": true}
+{"record": "negative_validation", "kind": "curved_manifold_INVALID", "n": 300, "dip_reject_frac": 0.9, "dip_median_p": 0.0019, "qualified": false}
+{"record": "negative_validation", "kind": "three_component_gradient", "n": 300, "dip_reject_frac": 0.0, "dip_median_p": 0.9428, "qualified": true}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 2, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 3, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 60, "kind": "discrete_k2", "reps": 5, "certify": 0, "reject": 1, "abstain": 4}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 60, "kind": "corr_weak", "reps": 5, "certify": 0, "reject": 5, "abstain": 0}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 2, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 3, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 60, "kind": "corr_strong", "reps": 5, "certify": 0, "reject": 1, "abstain": 4}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 1, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 3, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 60, "kind": "nongaussian_gradient", "reps": 5, "certify": 0, "reject": 1, "abstain": 4}
+{"record": "run", "n": 60, "kind": "heteroscedastic_gradient", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "heteroscedastic_gradient", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "heteroscedastic_gradient", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "heteroscedastic_gradient", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "heteroscedastic_gradient", "rep": 4, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "cell_summary", "n": 60, "kind": "heteroscedastic_gradient", "reps": 5, "certify": 1, "reject": 4, "abstain": 0}
+{"record": "run", "n": 60, "kind": "curved_manifold", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "curved_manifold", "rep": 1, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "curved_manifold", "rep": 2, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "curved_manifold", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "curved_manifold", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 60, "kind": "curved_manifold", "reps": 5, "certify": 0, "reject": 1, "abstain": 4}
+{"record": "excluded", "n": 60, "kind": "curved_manifold_INVALID", "reason": "failed dip screen; not a valid negative"}
+{"record": "run", "n": 60, "kind": "three_component_gradient", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "three_component_gradient", "rep": 1, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "three_component_gradient", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "three_component_gradient", "rep": 3, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "three_component_gradient", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 60, "kind": "three_component_gradient", "reps": 5, "certify": 0, "reject": 1, "abstain": 4}
+{"record": "run", "n": 120, "kind": "discrete_k2", "rep": 0, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 120, "kind": "discrete_k2", "rep": 1, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 120, "kind": "discrete_k2", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "discrete_k2", "rep": 3, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 120, "kind": "discrete_k2", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 120, "kind": "discrete_k2", "reps": 5, "certify": 3, "reject": 2, "abstain": 0}
+{"record": "run", "n": 120, "kind": "corr_weak", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "corr_weak", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "corr_weak", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "corr_weak", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "corr_weak", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 120, "kind": "corr_weak", "reps": 5, "certify": 0, "reject": 5, "abstain": 0}
+{"record": "run", "n": 120, "kind": "corr_strong", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 120, "kind": "corr_strong", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "corr_strong", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "corr_strong", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "corr_strong", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 120, "kind": "corr_strong", "reps": 5, "certify": 0, "reject": 3, "abstain": 2}
+{"record": "run", "n": 120, "kind": "nongaussian_gradient", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 120, "kind": "nongaussian_gradient", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "nongaussian_gradient", "rep": 2, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 120, "kind": "nongaussian_gradient", "rep": 3, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 120, "kind": "nongaussian_gradient", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 120, "kind": "nongaussian_gradient", "reps": 5, "certify": 0, "reject": 1, "abstain": 4}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 1, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "heteroscedastic_gradient", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 120, "kind": "heteroscedastic_gradient", "reps": 5, "certify": 1, "reject": 4, "abstain": 0}
+{"record": "run", "n": 120, "kind": "curved_manifold", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "curved_manifold", "rep": 1, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 120, "kind": "curved_manifold", "rep": 2, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 120, "kind": "curved_manifold", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "curved_manifold", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 120, "kind": "curved_manifold", "reps": 5, "certify": 1, "reject": 3, "abstain": 1}
+{"record": "excluded", "n": 120, "kind": "curved_manifold_INVALID", "reason": "failed dip screen; not a valid negative"}
+{"record": "run", "n": 120, "kind": "three_component_gradient", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 120, "kind": "three_component_gradient", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 120, "kind": "three_component_gradient", "rep": 2, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 120, "kind": "three_component_gradient", "rep": 3, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 120, "kind": "three_component_gradient", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 120, "kind": "three_component_gradient", "reps": 5, "certify": 0, "reject": 2, "abstain": 3}
+{"record": "run", "n": 300, "kind": "discrete_k2", "rep": 0, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 300, "kind": "discrete_k2", "rep": 1, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 300, "kind": "discrete_k2", "rep": 2, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 300, "kind": "discrete_k2", "rep": 3, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 300, "kind": "discrete_k2", "rep": 4, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "cell_summary", "n": 300, "kind": "discrete_k2", "reps": 5, "certify": 5, "reject": 0, "abstain": 0}
+{"record": "run", "n": 300, "kind": "corr_weak", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 300, "kind": "corr_weak", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "corr_weak", "rep": 2, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 300, "kind": "corr_weak", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "corr_weak", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 300, "kind": "corr_weak", "reps": 5, "certify": 0, "reject": 3, "abstain": 2}
+{"record": "run", "n": 300, "kind": "corr_strong", "rep": 0, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 300, "kind": "corr_strong", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "corr_strong", "rep": 2, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 300, "kind": "corr_strong", "rep": 3, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 300, "kind": "corr_strong", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 300, "kind": "corr_strong", "reps": 5, "certify": 0, "reject": 1, "abstain": 4}
+{"record": "run", "n": 300, "kind": "nongaussian_gradient", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "nongaussian_gradient", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "nongaussian_gradient", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "nongaussian_gradient", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "nongaussian_gradient", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 300, "kind": "nongaussian_gradient", "reps": 5, "certify": 0, "reject": 4, "abstain": 1}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 0, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 1, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 2, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "heteroscedastic_gradient", "rep": 4, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "cell_summary", "n": 300, "kind": "heteroscedastic_gradient", "reps": 5, "certify": 4, "reject": 1, "abstain": 0}
+{"record": "run", "n": 300, "kind": "curved_manifold", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "curved_manifold", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "curved_manifold", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "curved_manifold", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "curved_manifold", "rep": 4, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "cell_summary", "n": 300, "kind": "curved_manifold", "reps": 5, "certify": 1, "reject": 4, "abstain": 0}
+{"record": "excluded", "n": 300, "kind": "curved_manifold_INVALID", "reason": "failed dip screen; not a valid negative"}
+{"record": "run", "n": 300, "kind": "three_component_gradient", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "three_component_gradient", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "three_component_gradient", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "three_component_gradient", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 300, "kind": "three_component_gradient", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 300, "kind": "three_component_gradient", "reps": 5, "certify": 0, "reject": 5, "abstain": 0}
+{"record": "done", "elapsed_sec": 9657.5}

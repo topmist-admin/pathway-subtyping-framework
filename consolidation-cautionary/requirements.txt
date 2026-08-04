@@ -29,3 +29,16 @@ requests==2.34.2
 # is now recorded in each result JSON under provenance.environment.torch — compare that
 # field before reporting a mismatch.
 torch==2.11.0
+
+# Result 5 + the Methods column-order test (revision-analyses-2026-08-03/) only.
+# diptest is the `discreteness` EXTRA rather than a core dependency because it is GPLv2+
+# while the framework is MIT. It is REQUIRED here: the negative-generator validation screen
+# in job3b/job5 is built on Hartigan's dip, and pathway_subtyping's dip_of() returns NaN
+# instead of raising when diptest is absent — so a missing install silently disables the
+# screen rather than failing loudly.
+diptest>=0.5.0
+
+# NOT installable with pip. job1c/job1d run the canonical SigClust comparator and need
+# R >= 4 with the CRAN `sigclust` package:  install.packages("sigclust")
+# This is the only non-Python dependency in the paper. Both jobs exit with a printed
+# error if Rscript is unavailable; every other result runs without R.

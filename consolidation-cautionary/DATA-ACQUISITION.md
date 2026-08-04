@@ -37,6 +37,22 @@ from, and for the three cBioPortal packages.
 | NCBI E-utilities | psychiatric study search | `psychiatric_meta` candidate list only | none |
 | NCBI GEO | GSE28521, GSE80655 | only to *rebuild* deposited inputs | none |
 | recount3 (R) | GTEx brain | only to *rebuild* the deposited score matrix | none |
+| **NCBI GEO (raw counts)** | **GSE80655 supplementary** `GSE80655_GeneExpressionData_Updated_3-26-2018.txt.gz` (14.3 MB) | **`revision-analyses-2026-08-03/job7`** (Methods column-order test) — pass via `--expr` | none |
+| cBioPortal | `brca_tcga_pan_can_atlas_2018` | **`revision-analyses-2026-08-03/job6`** (Result 3 certification statistics) — delegates to `cancer_r38`'s fetcher, so the matrix is identical by construction | none |
+
+**The GSE80655 raw-counts row is a different acquisition route from the row above it.**
+Elsewhere in this package GSE80655 is reached through *deposited pathway scores*; `job7` needs
+the *gene-level counts* because it re-scores from scratch to vary gene column order. The same
+warning applies with more force: **GEO revises supplementary files in place without a version
+bump**, so a future download may not be byte-identical to the one used here. `job7` prints the
+matrix shape, the number of matched samples and the per-set panel coverage before it reports
+anything — check those three lines before comparing verdicts.
+
+**No `mygene.info` call is required.** The symbol→Ensembl mapping for the 14-set panel is
+deposited at `revision-analyses-2026-08-03/inputs/symbol_to_ensembl_scz_panel.json`
+(228 of 231 symbols mapped). It was built from mygene.info and is included precisely so this
+job does not depend on a third-party API remaining available. ⚠️ If you rebuild it, coverage
+changes the answer: a 5-of-14-set mapping gives partition ARI 0.979 instead of 1.000.
 
 **GSE64018 is not in this table on purpose.** It appears in bundle material inherited
 from the withdrawn methodology paper and supports no result reported in the manuscript.

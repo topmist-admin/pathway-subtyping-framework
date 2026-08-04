@@ -1,0 +1,25 @@
+{"record": "provenance", "script": "job3_nsweep_generator_diversity.py", "argv": {"out": "results/job3_nsweep.jsonl", "ns": "60,120,300", "reps": 5, "p": 50, "n_ref": 100, "n_bootstrap": 40, "seed": 42, "kinds": "discrete_k2,corr_weak,corr_strong,nongaussian_gradient,heteroscedastic_gradient,curved_manifold,three_component_gradient"}, "note": "all non-discrete kinds are NEGATIVES; any certify is a false certification"}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 1, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 2, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "discrete_k2", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 60, "kind": "discrete_k2", "reps": 5, "certify": 0, "reject": 2, "abstain": 3}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_weak", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 60, "kind": "corr_weak", "reps": 5, "certify": 0, "reject": 5, "abstain": 0}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 3, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "corr_strong", "rep": 4, "verdict": "abstain", "raw_verdict": "not-testable (no reproducible k)"}
+{"record": "cell_summary", "n": 60, "kind": "corr_strong", "reps": 5, "certify": 0, "reject": 4, "abstain": 1}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 0, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 1, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 2, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 3, "verdict": "certify", "raw_verdict": "discrete structure"}
+{"record": "run", "n": 60, "kind": "nongaussian_gradient", "rep": 4, "verdict": "reject", "raw_verdict": "no discrete structure (continuum)"}
+{"record": "cell_summary", "n": 60, "kind": "nongaussian_gradient", "reps": 5, "certify": 1, "reject": 4, "abstain": 0}

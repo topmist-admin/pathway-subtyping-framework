@@ -63,7 +63,10 @@ controlled-access data is included or used.
 
 ```
 python -m venv .venv && . .venv/bin/activate
-pip install pathway-subtyping==%(version)s        # the framework (also on PyPI)
+pip install "pathway-subtyping[discreteness]==%(version)s"   # framework (also on PyPI)
+# The [discreteness] extra pulls diptest (GPLv2+, hence not a core dep of the MIT package).
+# It is REQUIRED for Result 5: pathway_subtyping's dip_of() returns NaN rather than raising
+# when diptest is absent, so omitting it silently disables a validation screen.
 pip install -r consolidation-cautionary/requirements.txt
 # torch is pinned in consolidation-cautionary/requirements.txt (==2.11.0) and needed
 # ONLY by the DL baselines. They are not deterministic across torch releases; the
@@ -81,6 +84,12 @@ minutes; the rest fetch public cBioPortal / GEO / recount3 data with no authenti
 ## What is here
 - `src/`, `tests/`, `pyproject.toml`  the v%(version)s framework source (the discreteness gate + DL baselines)
 - `consolidation-cautionary/`         reproduction packages (scripts + deposited results + READMEs); `RUNME.md` is the index
+- `consolidation-cautionary/revision-analyses-2026-08-03/`  Result 5, plus the new numbers in
+  Results 1/3/4 and the Methods column-order test. **Newer than the 2026-07-30 independent
+  reproduction round and NOT third-party reproduced** — same public-data, seed-42 discipline,
+  but do not read inclusion here as external verification. Two scripts are marked
+  SUPERSEDED and retained deliberately. `job1c`/`job1d` additionally need **R >= 4 with the
+  CRAN `sigclust` package** — the only non-Python dependency in the paper.
 - `research-results/`, `CORRECTION_2026-07/`  cached public data + the corrected benchmark
 - `REVIEWER-CONCERN-HANDLING-MATRIX.md`  each reviewer comment -> resolution -> the artifact that demonstrates it
 - `MANIFEST.txt`                      every file with its SHA-256

@@ -107,6 +107,18 @@ public cBioPortal/GEO/recount3 data with no authentication.
 | Scoping (negative result) | [`cross-domain/psychiatric_meta/`](cross-domain/psychiatric_meta/) | `track_a_recount3.tsv` | NCBI E-utilities |
 | Gate-6 domain remap | [`cross-domain/`](cross-domain/) | `results/confound_remap_results.json` | none (seeded) |
 | Gate-7 somatic anchoring (real TCGA-CRC positive control: BRAF-V600E / KRAS / MSI) | [`cross-domain/tcga_crc/`](cross-domain/tcga_crc/) | `tcga_crc_somatic_result.json` | cBioPortal |
+| **Result 5** where the screen fails (heteroscedastic continua) + SigClust regime comparison | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job3b_nsweep_validated.jsonl`, `job5_heteroscedastic_fpr.jsonl`, `job1c_canonical_sigclust.jsonl`, `job1d_canonical_sweep.jsonl` | none (synthetic) — but **needs R + CRAN `sigclust`** for 1c/1d and **`diptest`** for 3b/5 |
+| **Result 1** covariance/undersizing sweep | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job2b_shrinkage_parity.jsonl` (**check `parity_ok`**) | none (synthetic) |
+| **Result 3** TCGA-BRCA certification statistics | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job6_brca_certification.jsonl` | cBioPortal (delegates to `cancer_r38`'s fetcher) |
+| **Result 4** donor-level continuous statistics | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job4_donor_continuous.json` | none (reads deposited labels) |
+| **Methods** gene column-order invariance | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job7_column_order.jsonl` | GEO (**raw counts**, a different route from the cached scores — see that folder's README) |
+
+> ⚠️ **The `revision-analyses-2026-08-03/` rows are newer than the 2026-07-30 independent
+> reproduction round and have not been third-party reproduced.** They follow the same
+> public-data, seed-42 discipline as everything above, and each carries its own provenance
+> record, but do not read their presence here as third-party verification. Two scripts in that
+> folder are marked **SUPERSEDED — do not cite**; they are retained deliberately, because each
+> produced a plausible number that a control caught.
 
 ---
 
