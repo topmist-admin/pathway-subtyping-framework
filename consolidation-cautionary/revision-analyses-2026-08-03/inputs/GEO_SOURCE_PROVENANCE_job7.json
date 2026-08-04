@@ -1,0 +1,9 @@
+{
+  "note": "SHA-256 of the GEO source this Methods column-order test was derived from. GEO revises supplementary files in place without a version bump, so a later download may differ; job7 checks this value at runtime and warns on mismatch.",
+  "accession": "GSE80655",
+  "file": "GSE80655_GeneExpressionData_Updated_3-26-2018.txt.gz",
+  "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE80nnn/GSE80655/suppl/GSE80655_GeneExpressionData_Updated_3-26-2018.txt.gz",
+  "sha256": "56b6112048fe494a78b28d0fe123d2635ad12fb261896efa6c2885065c239d9b",
+  "size_bytes": 14958460,
+  "retrieved_utc": "2026-08-04"
+}

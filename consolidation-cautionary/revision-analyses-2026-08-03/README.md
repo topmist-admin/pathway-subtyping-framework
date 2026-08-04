@@ -64,7 +64,10 @@ them would remove the evidence that the checks did their job.
 - **`job7`** needs the GSE80655 **raw counts** supplementary file, which is a different
   acquisition route from the cached pathway scores used elsewhere in this package:
   `https://ftp.ncbi.nlm.nih.gov/geo/series/GSE80nnn/GSE80655/suppl/GSE80655_GeneExpressionData_Updated_3-26-2018.txt.gz`
-  (14.3 MB), passed via `--expr`. The symbol→Ensembl mapping it needs is **deposited** at
+  (14.3 MB), passed via `--expr`. **That file is pinned**: its SHA-256 is deposited at
+  `inputs/GEO_SOURCE_PROVENANCE_job7.json` and the script checks it at runtime, warning if GEO
+  has revised the file in place. The script also hashes the assembled scoring matrix.
+  The symbol→Ensembl mapping it needs is **deposited** at
   `inputs/symbol_to_ensembl_scz_panel.json`, so no `mygene.info` call is required; that file
   was built from mygene.info (228 of 231 panel symbols mapped) and is included precisely so
   this job does not depend on a third-party API staying up.

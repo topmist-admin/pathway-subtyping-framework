@@ -28,7 +28,7 @@ Samples: the 141 in the deposited Result 4 partition. Deterministic (seed 42).
 Writes nothing to the deposited tree.
 """
 from __future__ import annotations
-import argparse, gzip, json, os, sys, time
+import argparse, gzip, hashlib, json, os, sys, time
 import numpy as np
 import pandas as pd
 
@@ -45,6 +45,8 @@ from pathway_subtyping.expression import (                                     #
 from pathway_subtyping.validation import ValidationGates                       # noqa: E402
 
 SEED = 42
+# SHA-256 of the GSE80655 counts file this result was derived from (GEO revises in place).
+EXPECTED_EXPR_SHA = "56b6112048fe494a78b28d0fe123d2635ad12fb261896efa6c2885065c239d9b"
 PANEL = os.path.join(REPO, "consolidation-cautionary/panels/schizophrenia_pathways.gmt")
 META = os.path.join(REPO, "consolidation-cautionary/data/partition/sample_metadata_with_subtypes.csv")
 SYM2ENS = os.environ.get("SYM2ENS_JSON") or os.path.join(
@@ -74,6 +76,16 @@ def main():
     t0 = time.time()
 
     # ---------- expression: genes x samples -> samples x genes ---------- #
+    # GEO revises supplementary files in place without a version bump, so pin what we read.
+    h = hashlib.sha256()
+    with open(a.expr, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    expr_sha = h.hexdigest()
+    print(f"  input sha256 {expr_sha}", flush=True)
+    if EXPECTED_EXPR_SHA and expr_sha != EXPECTED_EXPR_SHA:
+        print("  ** WARNING: GEO source differs from the file this result was derived from **",
+              flush=True)
     with gzip.open(a.expr, "rt") as fh:
         expr = pd.read_csv(fh, sep="\t", index_col=0)
     expr = expr[~expr.index.duplicated(keep="first")]
@@ -139,7 +151,14 @@ def main():
         print(f"  [{tag:9s}] scores {P.shape}  stability={stabs[tag]:.4f}", flush=True)
 
     base = "shipped"
-    recs = [dict(record="provenance", script=os.path.basename(__file__), argv=vars(a),
+    # Record basenames only: absolute paths are machine-specific and would leak into the
+    # deposit. The SHA-256 below is the identifier that actually matters.
+    argv = {k: (os.path.basename(v) if isinstance(v, str) and os.sep in v else v)
+            for k, v in vars(a).items()}
+    recs = [dict(record="provenance", script=os.path.basename(__file__), argv=argv,
+                 expr_sha256=expr_sha, expected_expr_sha256=EXPECTED_EXPR_SHA,
+                 scoring_matrix_sha256=hashlib.sha256(
+                     np.ascontiguousarray(X.values).tobytes()).hexdigest(),
                  n_samples=int(X.shape[0]), n_genes=int(X.shape[1]),
                  n_pathways=len(pathways), pathway_coverage=cover,
                  design="everything fixed except gene column order")]
