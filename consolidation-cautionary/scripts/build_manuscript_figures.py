@@ -72,22 +72,49 @@ def figure1(cd, out):
 
     fig, (axA, axB) = plt.subplots(1, 2, figsize=(7.2, 3.1))
 
-    # Panel A: paired FPR (negatives) and TPR (positives), stability-only vs gate
-    fpr_stab, fpr_gate = 11 / 30, 0.0
-    tpr_stab, tpr_gate = 1.0, 29 / 30
-    groups = ["False-certify rate\n(negatives, n=30)", "True-certify rate\n(positives, n=30)"]
+    # Panel A: paired FPR (negatives) and TPR (positives), stability-only vs gate.
+    # Every count is read from the deposited ablation JSON so the panel cannot drift
+    # from the Results text.
+    #
+    # NO ERROR BAR IS DRAWN ON THE SCREEN'S FALSE-CERTIFY RATE, deliberately. Bar
+    # HEIGHTS use `FPR_abstention_as_reject` (k=0, n=30) because the paired McNemar
+    # comparison is over all 30 negatives. But the screen abstained on 28 of those 30,
+    # so only 2 were testable, and NO interval on that bar can be honest:
+    #   * Wilson(0,30) = [0, 0.114]  -> matches the plotted denominator but implies
+    #     ~6x more precision than 2 testable datasets support;
+    #   * Wilson(0, 2) = [0, 0.658]  -> the honest interval, but its denominator is
+    #     not the one the bar height is computed on.
+    # Rather than pick a misleading one, the bar carries an explicit annotation of the
+    # testable denominator. The other three bars have genuine n=30 denominators (the
+    # stability-only gate never abstains; the screen's TPR is 29/30) and keep their CIs.
+    sb, gt = ab["stability_only_baseline"], ab["gate"]
+    f_s, t_s = sb["FPR"], sb["TPR"]
+    f_g, t_g = gt["FPR_abstention_as_reject"], gt["TPR"]
+    fpr_stab, tpr_stab = f_s["k"] / f_s["n"], t_s["k"] / t_s["n"]
+    fpr_gate, tpr_gate = f_g["k"] / f_g["n"], t_g["k"] / t_g["n"]
+    groups = [f"False-certify rate\n(negatives, n={f_s['n']})",
+              f"True-certify rate\n(positives, n={t_s['n']})"]
     stab = [fpr_stab, tpr_stab]
     gate = [fpr_gate, tpr_gate]
-    stab_ci = [wilson(11, 30), wilson(30, 30)]
-    gate_ci = [wilson(0, 30), wilson(29, 30)]
+    stab_ci = [wilson(f_s["k"], f_s["n"]), wilson(t_s["k"], t_s["n"])]
+    # None => draw no interval (see the note above); the screen's FPR is the only such bar.
+    gate_ci = [None, wilson(t_g["k"], t_g["n"])]
+    testable = gt["FPR_excluding_abstentions"]
     x = np.arange(2)
     w = 0.36
     b1 = axA.bar(x - w / 2, stab, w, color=GREY, label="Stability only")
-    b2 = axA.bar(x + w / 2, gate, w, color=BLUE, label="Recalibrated gate")
+    b2 = axA.bar(x + w / 2, gate, w, color=BLUE, label="Discreteness screen")
     for xi, v, ci in zip(x - w / 2, stab, stab_ci):
         axA.errorbar(xi, v, yerr=[[v - ci[0]], [ci[1] - v]], color="k", capsize=2, lw=0.8)
     for xi, v, ci in zip(x + w / 2, gate, gate_ci):
+        if ci is None:
+            continue
         axA.errorbar(xi, v, yerr=[[v - ci[0]], [ci[1] - v]], color="k", capsize=2, lw=0.8)
+    # explicit denominator in place of an interval
+    axA.annotate(f"{testable['k']}/{testable['n']} testable\n(no CI: see caption)",
+                 (w / 2, 0.0), xytext=(w / 2, 0.20), fontsize=6.8, ha="center",
+                 color=BLUE,
+                 arrowprops=dict(arrowstyle="-", lw=0.6, color=BLUE, shrinkB=1))
     axA.set_xticks(x)
     axA.set_xticklabels(groups)
     axA.set_ylabel("Rate")
@@ -97,8 +124,10 @@ def figure1(cd, out):
     axA.annotate("McNemar\np = 0.001", (0, fpr_stab), xytext=(0.02, 0.66),
                  fontsize=7.5, ha="center")
     axA.annotate("p = 1.0", (1, 1.0), xytext=(1, 1.06), fontsize=7.5, ha="center")
-    axA.text(0.0, -0.30, "gate abstains on 28/30 (93%)", transform=axA.get_xaxis_transform(),
-             fontsize=6.8, ha="center", color=GREY)
+    axA.text(0.0, -0.30,
+             f"gate abstains on {gt['negatives_abstained']}/{gt['negatives_total']}"
+             f" ({gt['negatives_abstain_rate']*100:.0f}%)",
+             transform=axA.get_xaxis_transform(), fontsize=6.8, ha="center", color=GREY)
     panel_label(axA, "a")
 
     # Panel B: separation sweep — certify rate + median SigClust p vs separation
@@ -179,7 +208,7 @@ def figure3(cd, out):
     dl = load(f"{cd}/cancer_r38/results/brca_pam50_validation_with_DL.json")
     ari = dl["recovery_vs_pam50_ARI"]
     enr = dl["recovery_vs_pam50_single_subtype_enrichment"]
-    methods = ["PSF (pathway-GMM)", "k-means (pathway)", "VAE-GMM", "DEC"]
+    methods = ["pathway-GMM", "k-means (pathway)", "VAE-GMM", "DEC"]
     keys = ["PSF (pathway-GMM)", "k-means (pathway)", "VAE-GMM", "DEC"]
     ari_v = [ari[k]["ari"] for k in keys]
     enr_v = [enr[k]["best"]["enrichment_frac"] for k in keys]
@@ -192,25 +221,21 @@ def figure3(cd, out):
     axA.set_xticks(x)
     axA.set_xticklabels(methods, rotation=25, ha="right", fontsize=7)
     axA.set_ylabel("k-way recovery (ARI vs PAM50)")
-    axA.set_title("PSF leads on ARI")
+    axA.set_title("By k-way agreement with PAM50")
     for b, v in zip(barsA, ari_v):
         axA.text(b.get_x() + b.get_width() / 2, v + 0.004, f"{v:.3f}", ha="center", fontsize=7)
     axA.set_ylim(0, max(ari_v) * 1.25)
-    # highlight winner
-    barsA[int(np.argmax(ari_v))].set_edgecolor("k")
-    barsA[int(np.argmax(ari_v))].set_linewidth(1.3)
+    # No winner highlight: the panels reorder, and no ranking is claimed.
     panel_label(axA, "a")
 
     barsB = axB.bar(x, [v * 100 for v in enr_v], color=cols, edgecolor="white")
     axB.set_xticks(x)
     axB.set_xticklabels(methods, rotation=25, ha="right", fontsize=7)
     axB.set_ylabel("Single-subtype enrichment (LumA, %)")
-    axB.set_title("VAE-GMM edges on enrichment")
+    axB.set_title("By single-subtype enrichment (LumA)")
     for b, v in zip(barsB, enr_v):
         axB.text(b.get_x() + b.get_width() / 2, v * 100 + 0.6, f"{v*100:.1f}", ha="center", fontsize=7)
     axB.set_ylim(0, 100)
-    barsB[int(np.argmax(enr_v))].set_edgecolor("k")
-    barsB[int(np.argmax(enr_v))].set_linewidth(1.3)
     panel_label(axB, "b")
 
     fig.suptitle("The method ranking flips with the metric (TCGA-BRCA, n=981)",

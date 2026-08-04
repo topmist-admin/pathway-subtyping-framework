@@ -108,7 +108,7 @@ def manuscript_items(ms_dir):
         # exists, so the builder silently skipped it and every bundle shipped the
         # markdown with no PDF beside it. This file is built by
         # build_submission_pdf.py, which strips the internal draft banner.
-        ("SUBMISSION-PACKAGE-2026-07-25/01_manuscript/Manuscript-Chauhan-Paulus-SciReports-2026-07-25.pdf",
+        ("SUBMISSION-PACKAGE-2026-07-25/01_manuscript/Manuscript-Chauhan-Paulus-SciReports-2026-08-02-CURRENT.pdf",
          "manuscript/proposed-new-version/PROPOSED-manuscript-v2.2-2026-07-24.pdf"),
         # --- WITHDRAWN prior version (do not cite) ---
         ("Chauhan-Mandatory-Validation-Gates-Manuscript-RevisionR1-2026-05-25.docx",

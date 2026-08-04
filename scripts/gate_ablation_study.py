@@ -266,9 +266,19 @@ def clusterer_sweep(args) -> None:
     df = pd.DataFrame(rows)
     args.out.mkdir(parents=True, exist_ok=True)
     df.to_csv(args.out / "clusterer_sweep_raw.csv", index=False)
+    _write_clusterer_sweep_md(df, args.out)
 
-    # For the continuum: fraction of (clusterer, rep) that LOOK reproducible vs
-    # fraction Gate A rejects.
+
+def _render_clusterer_sweep_md(df) -> str:
+    """Render the sweep write-up from a raw-sweep dataframe.
+
+    Split out from clusterer_sweep() so the write-up can be regenerated from an
+    already-deposited clusterer_sweep_raw.csv WITHOUT re-clustering. That matters:
+    the DEC/VAE-GMM baselines are non-deterministic across torch versions, so a
+    re-run would perturb deposited per-run values that published text now cites.
+    Rendering from the CSV changes no number — only the labelling and the summary.
+    Use `--sweep --render-only --out <dir containing clusterer_sweep_raw.csv>`.
+    """
     lines = [
         "# Gate-Agnostic Demonstration — clusterer sweep (R2.2)",
         "",
@@ -305,8 +315,9 @@ def clusterer_sweep(args) -> None:
         f"identically whether the partition was drawn by GMM, DEC, or VAE-GMM. That "
         f"total splits into **{explicit_reject:.0%} explicit rejection** and "
         f"**{abstained:.0%} abstention** (\"not-testable — no reproducible k\"). The "
-        f"abstentions are the larger share and must not be reported as rejections: the "
-        f"gate mostly declines to rule, rather than ruling against. This is the "
+        f"abstentions must not be reported as rejections: in those runs the gate "
+        f"declined to rule rather than ruling against, and counting them as rejections "
+        f"is what produced the retracted \"rejects on 100% of runs\" claim. This is the "
         f"substantive answer to R2.2: PSF is not another clustering method to be "
         f"benchmarked against DEC/VAE — it is a validation layer that wraps any of "
         f"them, because Gate A tests the discreteness of the *data* at a given k, not "
@@ -322,9 +333,14 @@ def clusterer_sweep(args) -> None:
         f"R3.5/R3.6/R3.9). Competitive DL *recovery* of real subtypes is a separate "
         f"claim for the large cohorts (TCGA-COAD, CPTAC), not this small-n control.",
     ]
-    (args.out / "clusterer_sweep_results.md").write_text("\n".join(lines))
-    print("\n" + "\n".join(lines))
-    print(f"\nWrote: {args.out}/clusterer_sweep_results.md + clusterer_sweep_raw.csv")
+    return "\n".join(lines)
+
+
+def _write_clusterer_sweep_md(df, out: Path) -> None:
+    text = _render_clusterer_sweep_md(df)
+    (out / "clusterer_sweep_results.md").write_text(text)
+    print("\n" + text)
+    print(f"\nWrote: {out}/clusterer_sweep_results.md")
 
 
 def main() -> None:
@@ -340,6 +356,10 @@ def main() -> None:
     ap.add_argument("--quick", action="store_true", help="fast smoke settings")
     ap.add_argument("--sweep", action="store_true",
                     help="run the gate-agnostic clusterer sweep (GMM/DEC/VAE) instead")
+    ap.add_argument("--render-only", action="store_true",
+                    help="with --sweep: re-render clusterer_sweep_results.md from an existing "
+                         "clusterer_sweep_raw.csv in --out, without re-clustering "
+                         "(no number changes; fixes labelling/summary only)")
     ap.add_argument("--out", type=Path, default=Path("outputs/gate_ablation"))
     args = ap.parse_args()
 
@@ -347,6 +367,12 @@ def main() -> None:
         args.reps, args.n_ref, args.n_bootstrap = 3, 30, 20
 
     if args.sweep:
+        if args.render_only:
+            csv = args.out / "clusterer_sweep_raw.csv"
+            if not csv.exists():
+                raise SystemExit(f"--render-only needs {csv}")
+            _write_clusterer_sweep_md(pd.read_csv(csv), args.out)
+            return
         clusterer_sweep(args)
         return
 
