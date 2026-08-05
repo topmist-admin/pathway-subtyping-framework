@@ -28,6 +28,7 @@ Requires R with `sigclust`. Deterministic. Writes nothing to the deposited tree.
 """
 from __future__ import annotations
 import argparse, json, os, subprocess, tempfile
+from _provenance_safe import safe_argv  # noqa: E402
 import numpy as np
 import pandas as pd
 
@@ -71,7 +72,7 @@ def main():
         os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
         with open(a.out, "w") as fh:
             fh.write(json.dumps(dict(
-                record="provenance", script=os.path.basename(__file__), argv=vars(a),
+                record="provenance", script=os.path.basename(__file__), argv=safe_argv(a),
                 design="canonical CRAN sigclust, icovest=2, full feature space",
                 deposited_gate=DEPOSITED_GATE,
                 note="deposited loop params so the curve is directly comparable")) + "\n")

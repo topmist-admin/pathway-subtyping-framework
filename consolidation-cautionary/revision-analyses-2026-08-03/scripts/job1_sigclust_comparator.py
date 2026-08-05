@@ -23,6 +23,7 @@ Nothing here writes to the deposited tree.
 """
 from __future__ import annotations
 import argparse, json, os, sys, time
+from _provenance_safe import safe_argv  # noqa: E402
 import numpy as np
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -37,6 +38,17 @@ from pathway_subtyping.discreteness.gate_a_discreteness_null import (  # noqa: E
     reduce_scores, reduced_dim, _single_gaussian_once, _stability_of,
 )
 import gate_ablation_study as gas  # noqa: E402
+
+
+
+import zlib  # noqa: E402
+
+# NOTE: was `hash(<str>) % 997`. Python salts str hashes per process (PYTHONHASHSEED),
+# so that seeding produced DIFFERENT datasets on every invocation and nothing derived
+# from it could be regenerated. zlib.crc32 is stable across processes and platforms.
+def _stable_key(name: str) -> int:
+    """Process-stable substitute for hash(name) % 997."""
+    return zlib.crc32(name.encode()) % 997
 
 
 def cluster_index(X: np.ndarray, seed: int) -> float:
@@ -108,12 +120,12 @@ def main():
     t0 = time.time()
     with open(a.out, "w") as fh:
         fh.write(json.dumps(dict(record="provenance", script=os.path.basename(__file__),
-                                 argv=vars(a), seed=a.seed,
+                                 argv=safe_argv(a), seed=a.seed,
                                  design="same single-Gaussian null; statistic varied")) + "\n")
         fh.flush()
         for cond in gas.CONDITIONS:
             for rep in range(a.reps):
-                seed = a.seed + 1000 * rep + hash(cond) % 997
+                seed = a.seed + 1000 * rep + _stable_key(cond)
                 scores, k = gas.generate(cond, a.n, a.p, a.sep, seed)
                 res = run_dataset(scores, k, seed, a.n_ref, a.n_bootstrap,
                                   do_ari=not a.skip_ari)

@@ -36,6 +36,7 @@ Newline-delimited JSON; nothing is written to the deposited tree.
 """
 from __future__ import annotations
 import argparse, json, os, sys, time
+from _provenance_safe import safe_argv  # noqa: E402
 import numpy as np
 import pandas as pd
 
@@ -93,7 +94,7 @@ def main():
     parity_ok = True
     with open(a.out, "w") as fh:
         fh.write(json.dumps(dict(
-            record="provenance", script=os.path.basename(__file__), argv=vars(a),
+            record="provenance", script=os.path.basename(__file__), argv=safe_argv(a),
             design="monkeypatch reference variance only; all other lines are deposited code",
             control="lam=0.0 is the identity and must reproduce the deposited certify rates",
             deposited=DEPOSITED, supersedes="job2_covariance_shrinkage_sweep.py")) + "\n")

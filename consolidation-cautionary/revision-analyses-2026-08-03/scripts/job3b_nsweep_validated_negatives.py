@@ -47,10 +47,21 @@ REPO = os.environ.get("PSF_REPO") or os.path.abspath(os.path.join(_HERE, "..", "
 sys.path.insert(0, os.path.join(REPO, "src"))
 from pathway_subtyping.discreteness import DiscretenessGateA                  # noqa: E402
 from pathway_subtyping.discreteness.gate_a_discreteness_null import (         # noqa: E402
+
     reduce_scores, reduced_dim, dip_of,
 )
 
 DIP_MAX_REJECT_FRAC = 0.30   # >30% of replicates rejecting unimodality disqualifies
+
+
+import zlib  # noqa: E402
+
+# NOTE: was `hash(<str>) % 997`. Python salts str hashes per process (PYTHONHASHSEED),
+# so that seeding produced DIFFERENT datasets on every invocation and nothing derived
+# from it could be regenerated. zlib.crc32 is stable across processes and platforms.
+def _stable_key(name: str) -> int:
+    """Process-stable substitute for hash(name) % 997."""
+    return zlib.crc32(name.encode()) % 997
 
 
 def _df(X):
@@ -138,7 +149,11 @@ def main():
     t0 = time.time()
     with open(a.out, "w") as fh:
         w = lambda o: (fh.write(json.dumps(o) + "\n"), fh.flush())
-        w(dict(record="provenance", script=os.path.basename(__file__), argv=vars(a),
+        # Record basenames only: absolute paths are machine-specific and would leak into the
+        # deposit. Content identity is carried by the deposited values, not by paths.
+        _argv = {k: (os.path.basename(v) if isinstance(v, str) and os.sep in v else v)
+                 for k, v in vars(a).items()}
+        w(dict(record="provenance", script=os.path.basename(__file__), argv=_argv,
                supersedes="job3_nsweep_generator_diversity.py",
                dip_max_reject_frac=DIP_MAX_REJECT_FRAC,
                note="negatives are dip-screened before scoring; screen is one-sided"))
@@ -169,7 +184,7 @@ def main():
                     continue
                 tally = dict(certify=0, reject=0, abstain=0)
                 for rep in range(a.reps):
-                    seed = a.seed + 1000 * rep + abs(hash(kind)) % 997 + n
+                    seed = a.seed + 1000 * rep + _stable_key(kind) + n
                     scores, k = gen(kind, n, a.p, seed)
                     r = DiscretenessGateA(seed=seed, n_ref=a.n_ref,
                                           n_bootstrap=a.n_bootstrap).run(

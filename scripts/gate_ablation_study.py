@@ -58,7 +58,18 @@ import numpy as np
 import pandas as pd
 
 from pathway_subtyping.validation import ValidationGates
+
 from pathway_subtyping.discreteness import DiscretenessGateA
+
+
+import zlib  # noqa: E402
+
+# NOTE: was `hash(<str>) % 997`. Python salts str hashes per process (PYTHONHASHSEED),
+# so that seeding produced DIFFERENT datasets on every invocation and nothing derived
+# from it could be regenerated. zlib.crc32 is stable across processes and platforms.
+def _stable_key(name: str) -> int:
+    """Process-stable substitute for hash(name) % 997."""
+    return zlib.crc32(name.encode()) % 997
 
 
 def _cluster_gmm(X, k, seed):
@@ -240,7 +251,7 @@ def clusterer_sweep(args) -> None:
     rows = []
     for cond in conditions:
         for rep in range(max(2, args.reps // 2)):
-            seed = args.seed + 1000 * rep + hash(cond) % 997
+            seed = args.seed + 1000 * rep + _stable_key(cond)
             scores, k = generate(cond, args.n, args.p, args.sep, seed)
             # Gate A is clusterer-agnostic (re-clusters internally) -> run once
             gateA = DiscretenessGateA(seed=seed, n_ref=args.n_ref,
@@ -382,7 +393,7 @@ def main() -> None:
     rows: List[Dict] = []
     for cond in CONDITIONS:
         for rep in range(args.reps):
-            seed = args.seed + 1000 * rep + hash(cond) % 997
+            seed = args.seed + 1000 * rep + _stable_key(cond)
             scores, k = generate(cond, args.n, args.p, args.sep, seed)
             res = evaluate_dataset(scores, k, seed, args.n_ref, args.n_bootstrap)
             res.update(condition=cond, klass=CONDITIONS[cond]["klass"], rep=rep, k=k)

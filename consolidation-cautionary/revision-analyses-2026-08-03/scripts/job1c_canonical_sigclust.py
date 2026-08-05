@@ -24,6 +24,7 @@ Requires R with `sigclust`. Deterministic seeds. Writes nothing to the deposited
 """
 from __future__ import annotations
 import argparse, json, os, subprocess, sys, tempfile
+from _provenance_safe import safe_argv  # noqa: E402
 import numpy as np
 import pandas as pd
 
@@ -35,6 +36,7 @@ sys.path.insert(0, os.path.join(REPO, "src"))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
 import gate_ablation_study as gas  # noqa: E402
 
+
 R_SCRIPT = r"""
 suppressMessages(library(sigclust))
 args <- commandArgs(trailingOnly=TRUE)
@@ -45,6 +47,16 @@ set.seed(seed)
 r <- sigclust(x, nsim=nsim, labflag=0, icovest=2)
 cat(sprintf("%.6f %.6f\n", r@pval, r@xcindex), file=out)
 """
+
+
+import zlib  # noqa: E402
+
+# NOTE: was `hash(<str>) % 997`. Python salts str hashes per process (PYTHONHASHSEED),
+# so that seeding produced DIFFERENT datasets on every invocation and nothing derived
+# from it could be regenerated. zlib.crc32 is stable across processes and platforms.
+def _stable_key(name: str) -> int:
+    """Process-stable substitute for hash(name) % 997."""
+    return zlib.crc32(name.encode()) % 997
 
 
 def main():
@@ -64,7 +76,7 @@ def main():
         os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
         with open(a.out, "w") as fh:
             fh.write(json.dumps(dict(
-                record="provenance", script=os.path.basename(__file__), argv=vars(a),
+                record="provenance", script=os.path.basename(__file__), argv=safe_argv(a),
                 design="canonical CRAN sigclust, full p-dim feature space, icovest=2",
                 closes="job 1 caveats 1 (reimplementation) and 2 (PCA-reduced space)")) + "\n")
             fh.flush()
@@ -73,7 +85,7 @@ def main():
                 klass = gas.CONDITIONS[cond]["klass"]
                 ps = []
                 for rep in range(a.reps):
-                    seed = a.seed + 1000 * rep + hash(cond) % 997
+                    seed = a.seed + 1000 * rep + _stable_key(cond)
                     scores, k = gas.generate(cond, a.n, a.p, a.sep, seed)
                     csv = os.path.join(td, "x.csv")
                     pd.DataFrame(scores.values).to_csv(csv, header=False, index=False)

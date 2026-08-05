@@ -29,6 +29,7 @@ Newline-delimited JSON; nothing written to the deposited tree.
 """
 from __future__ import annotations
 import argparse, json, os, sys, time
+from _provenance_safe import safe_argv  # noqa: E402
 import numpy as np
 import pandas as pd
 
@@ -38,6 +39,17 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.environ.get("PSF_REPO") or os.path.abspath(os.path.join(_HERE, "..", "..", ".."))
 sys.path.insert(0, os.path.join(REPO, "src"))
 from pathway_subtyping.discreteness import DiscretenessGateA  # noqa: E402
+
+
+
+import zlib  # noqa: E402
+
+# NOTE: was `hash(<str>) % 997`. Python salts str hashes per process (PYTHONHASHSEED),
+# so that seeding produced DIFFERENT datasets on every invocation and nothing derived
+# from it could be regenerated. zlib.crc32 is stable across processes and platforms.
+def _stable_key(name: str) -> int:
+    """Process-stable substitute for hash(name) % 997."""
+    return zlib.crc32(name.encode()) % 997
 
 
 def _df(X):
@@ -108,7 +120,7 @@ def main():
     t0 = time.time()
     with open(a.out, "w") as fh:
         fh.write(json.dumps(dict(record="provenance", script=os.path.basename(__file__),
-                                 argv=vars(a),
+                                 argv=safe_argv(a),
                                  note="all non-discrete kinds are NEGATIVES; "
                                       "any certify is a false certification")) + "\n")
         fh.flush()
@@ -116,7 +128,7 @@ def main():
             for kind in kinds:
                 tally = dict(certify=0, reject=0, abstain=0)
                 for rep in range(a.reps):
-                    seed = a.seed + 1000 * rep + abs(hash(kind)) % 997 + n
+                    seed = a.seed + 1000 * rep + _stable_key(kind) + n
                     scores, k = gen(kind, n, a.p, seed)
                     g = DiscretenessGateA(seed=seed, n_ref=a.n_ref,
                                           n_bootstrap=a.n_bootstrap)

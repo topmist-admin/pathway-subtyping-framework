@@ -1,0 +1,5 @@
+{"record": "provenance", "script": "job6b_pc1_diagnostics.py", "argv": {"out": "job6b_pc1_diagnostics.jsonl", "seed": 42}, "note": "dip and standardised gap on PC1 of the gate's reduced space; n_features recorded per cohort because the cohorts are NOT on a common feature basis and only same-basis rows are comparable"}
+{"record": "cohort", "cohort": "TCGA-LGG", "role": "discrete control (IDH axis)", "k": 2, "n": 507, "n_features": 50, "reduced_d": 10, "dip_pc1_p": 0.9963, "std_gap_pc1": 1.3591792126634115, "source": "discrete_pathways.csv.gz"}
+{"record": "cohort", "cohort": "TCGA-LUAD", "role": "continuum control (immune gradient)", "k": 2, "n": 510, "n_features": 9, "reduced_d": 9, "dip_pc1_p": 0.9739, "std_gap_pc1": 1.8872664617297474, "source": "continuum_pathways.csv.gz"}
+{"record": "comparability_note", "text": "TCGA-LGG (50 features) and TCGA-BRCA (50 features, see job6) are on a common basis and may be compared. The deposited TCGA-LUAD control is a 9-pathway immune panel; its PC1 is a different object and its gap must not be placed in the same column."}
+{"record": "done"}

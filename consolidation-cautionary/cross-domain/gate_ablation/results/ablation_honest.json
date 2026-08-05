@@ -14,38 +14,38 @@
     },
     "discrete_k3": {
       "n": 15,
-      "certify": 14,
-      "explicit_reject": 1,
+      "certify": 15,
+      "explicit_reject": 0,
       "not_testable": 0
     },
     "single_gaussian": {
       "n": 15,
       "certify": 0,
-      "explicit_reject": 1,
-      "not_testable": 14
+      "explicit_reject": 3,
+      "not_testable": 12
     }
   },
   "gate": {
     "TPR": {
-      "k": 29,
+      "k": 30,
       "n": 30,
-      "rate": 0.9667,
+      "rate": 1.0,
       "wilson95": [
-        0.8333,
-        0.9941
+        0.8865,
+        1.0
       ]
     },
     "negatives_total": 30,
-    "negatives_abstained": 28,
-    "negatives_abstain_rate": 0.9333,
-    "negatives_testable": 2,
+    "negatives_abstained": 26,
+    "negatives_abstain_rate": 0.8667,
+    "negatives_testable": 4,
     "FPR_excluding_abstentions": {
       "k": 0,
-      "n": 2,
+      "n": 4,
       "rate": 0.0,
       "wilson95": [
         0.0,
-        0.6576
+        0.4899
       ],
       "note": "denominator is tiny because the gate abstains on almost all negatives; FPR here is nearly uninformative \u2014 that is the honest finding, not FPR=0"
     },
@@ -71,24 +71,24 @@
       ]
     },
     "FPR": {
-      "k": 11,
+      "k": 13,
       "n": 30,
-      "rate": 0.3667,
+      "rate": 0.4333,
       "wilson95": [
-        0.2187,
-        0.5449
+        0.2738,
+        0.608
       ]
     }
   },
   "paired_mcnemar": {
     "on_negatives_FPR": {
-      "discordant_stab_only": 11,
+      "discordant_stab_only": 13,
       "discordant_gate_only": 0,
-      "exact_p": 0.001,
+      "exact_p": 0.0002,
       "interpretation": "large b, ~0 c, small p => the gate removes false certifications the stability gate made"
     },
     "on_positives_TPR": {
-      "discordant_stab_only": 1,
+      "discordant_stab_only": 0,
       "discordant_gate_only": 0,
       "exact_p": 1.0,
       "interpretation": "p ~ 1 with 1 discordant pair => the ~3% TPR difference is not statistically distinguishable from zero; do not claim a 'cost'"
@@ -97,9 +97,9 @@
   "head_to_head": {
     "sigclust_p_alone": {
       "TPR": {
-        "k": 29,
+        "k": 30,
         "n": 30,
-        "rate": 0.9667
+        "rate": 1.0
       },
       "FPR": {
         "k": 0,
@@ -109,9 +109,9 @@
     },
     "full_composite_gate": {
       "TPR": {
-        "k": 29,
+        "k": 30,
         "n": 30,
-        "rate": 0.9667
+        "rate": 1.0
       },
       "FPR_abstention_as_reject": {
         "k": 0,
@@ -125,9 +125,9 @@
     "n_ref": 120,
     "p_floor": 0.0083,
     "unique_p_among_certified": [
-      0.0083
+      0.0099
     ],
-    "all_certified_at_floor": true,
+    "all_certified_at_floor": false,
     "note": "every certified positive sits at the p-floor; report as p <= 1/(n_ref+1), and see the separation sweep for whether the gate has resolution between borderline and obvious structure"
   }
 }

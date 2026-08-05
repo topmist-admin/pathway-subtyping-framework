@@ -108,7 +108,11 @@ def main():
     t0 = time.time()
     with open(a.out, "w") as fh:
         w = lambda o: (fh.write(json.dumps(o) + "\n"), fh.flush())
-        w(dict(record="provenance", script=os.path.basename(__file__), argv=vars(a),
+        # Record basenames only: absolute paths are machine-specific and would leak into the
+        # deposit. Content identity is carried by the deposited values, not by paths.
+        _argv = {k: (os.path.basename(v) if isinstance(v, str) and os.sep in v else v)
+                 for k, v in vars(a).items()}
+        w(dict(record="provenance", script=os.path.basename(__file__), argv=_argv,
                design="matched hetero/homoscedastic pair; identical latent, direction, seeds",
                claim_under_test="gate tests departure-from-single-Gaussian, not discreteness"))
 

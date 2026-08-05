@@ -37,7 +37,11 @@ a = ap.parse_args()
 SEPS=[0.0,0.5,1.0,1.5,2.0,2.5,3.0]
 t0=time.time()
 with open(a.out,"w") as fh:
-    fh.write(json.dumps(dict(record="provenance", script="job1b", argv=vars(a)))+"\n")
+    # Record basenames only: absolute paths are machine-specific and would leak into the
+    # deposit. Content identity is carried by the deposited values, not by paths.
+    _argv = {k: (os.path.basename(v) if isinstance(v, str) and os.sep in v else v)
+             for k, v in vars(a).items()}
+    fh.write(json.dumps(dict(record="provenance", script="job1b", argv=_argv))+"\n")
     for sep in SEPS:
         cert=0; ps=[]
         for rep in range(a.reps):

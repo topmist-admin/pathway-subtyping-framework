@@ -25,11 +25,13 @@ preferred-citation:
       given-names: Rohit
       orcid: 'https://orcid.org/0009-0003-9895-4629'
   title: >-
-    Pathway-Based Molecular Subtyping Reveals a GABA-Collapsed Autism Subgroup
-    and Cross-Disease Convergence with Schizophrenia in Human Cerebral Cortex
+    Stable but confounded: brain region, not diagnosis, drives a
+    validation-passing molecular subtype
   year: 2026
-  doi: 10.21203/rs.3.rs-8913089/v1
-  url: 'https://www.researchsquare.com/article/rs-8913089/v1'
+  # v1 reported a GABA-collapsed autism subgroup; that claim was REVERSED and the preprint
+  # rewritten. Point at v2 so the preferred citation is not the retracted version.
+  doi: 10.21203/rs.3.rs-8913089/v2
+  url: 'https://www.researchsquare.com/article/rs-8913089/v2'
 keywords:
   - bioinformatics
   - genomics

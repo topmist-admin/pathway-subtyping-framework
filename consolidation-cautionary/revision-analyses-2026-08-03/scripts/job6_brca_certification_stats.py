@@ -85,7 +85,11 @@ def main():
           flush=True)
 
     Z, _ = reduce_scores(P.values, reduced_dim(P.shape[0]), a.seed)
-    out = dict(record="provenance", script=os.path.basename(__file__), argv=vars(a),
+    # Record basenames only: absolute paths are machine-specific and would leak into the
+    # deposit. Content identity is carried by the deposited values, not by paths.
+    _argv = {k: (os.path.basename(v) if isinstance(v, str) and os.sep in v else v)
+             for k, v in vars(a).items()}
+    out = dict(record="provenance", script=os.path.basename(__file__), argv=_argv,
                study=B.STUDY, matrix_shape=list(P.shape),
                n_pam50_labelled=int(pam50.notna().sum()),
                k_pam50=int(k5), k_bic=int(k_bic),

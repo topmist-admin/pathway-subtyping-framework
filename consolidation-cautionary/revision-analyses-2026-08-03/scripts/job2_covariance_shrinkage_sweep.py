@@ -30,6 +30,7 @@ deposited tree.
 """
 from __future__ import annotations
 import argparse, json, os, sys, time
+from _provenance_safe import safe_argv  # noqa: E402
 import numpy as np
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -99,7 +100,7 @@ def main():
     t0 = time.time()
     with open(a.out, "w") as fh:
         fh.write(json.dumps(dict(record="provenance", script=os.path.basename(__file__),
-                                 argv=vars(a),
+                                 argv=safe_argv(a),
                                  control="lam=0.0 must reproduce the deposited sweep")) + "\n")
         fh.flush()
         for sep in seps:
