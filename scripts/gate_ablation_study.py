@@ -236,9 +236,7 @@ def _self_stability(cluster_fn, X, k, labels, n_boot, seed, threshold=0.8):
 def clusterer_sweep(args) -> None:
     """Gate-agnostic demonstration (R2.2): cluster the SAME data with GMM, DEC,
     and VAE-GMM. Each method's own bootstrap stability is high on a continuum it
-    bisects reproducibly (a naive stability check passes for all three), yet
-    Gate A — which tests the discreteness of the data at k, independent of the
-    clusterer — rejects the continuum partition for every method."""
+    bisects reproducibly (a naive stability check passes for all three), yet Gate A — which re-clusters internally and takes no partition argument — declines to certify the continuum. NOTE: the gate is called ONCE per condition and its verdict copied across the clusterer rows, so identical arms are a property of the harness, not evidence of agreement."""
     from functools import partial
     from pathway_subtyping.clustering_dl import run_dec, run_vae_gmm
 
@@ -301,7 +299,8 @@ def _render_clusterer_sweep_md(df) -> str:
         "Same synthetic data clustered by GMM, DEC (Xie 2016), and VAE-GMM "
         "(VaDE, Jiang 2017). **self-stability** = the method's own bootstrap "
         "reproducibility (the naive check each would pass). **Gate A** = the "
-        "discreteness gate's verdict (clusterer-agnostic; tests the data).",
+        "discreteness gate's verdict (re-clusters internally; takes no partition "
+        "argument, so the three rows are copies of one call).",
         "",
         "| Condition | Clusterer | self-stability ARI | looks-reproducible? | Gate A verdict |",
         "|---|---|---|---|---|",
@@ -326,9 +325,11 @@ def _render_clusterer_sweep_md(df) -> str:
     vae_ari = float(cont[cont.clusterer == "vae_gmm"].self_stability_ari.mean())
     lines += [
         "",
-        f"**Primary result (clusterer-agnostic non-certification):** Gate A declines to "
-        f"certify the 1-D continuum on **{not_certified:.0%}** of runs, and does so "
-        f"identically whether the partition was drawn by GMM, DEC, or VAE-GMM. That "
+        f"**⛔ SUPERSEDED FRAMING — do not cite.** Gate A declines to "
+        f"certify the 1-D continuum on **{not_certified:.0%}** of runs. The arms below are "
+        f"IDENTICAL BY CONSTRUCTION, not by agreement: the gate is called once per "
+        f"condition and its verdict copied into all three clusterer rows. This shows only "
+        f"that the gate's INTERFACE accepts any clusterer. That "
         f"total splits into **{explicit_reject:.0%} explicit rejection** and "
         f"**{abstained:.0%} abstention** (\"not-testable — no reproducible k\"). The "
         f"abstentions must not be reported as rejections: in those runs the gate "

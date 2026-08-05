@@ -26,8 +26,7 @@ exactly. Do not describe this gate as requiring a data set to clear three
 criteria -- it requires one, and reports two more alongside.
 
 Also note the gate has THREE outcomes, not two: certify, reject, and
-"not-testable" (no reproducible k), which is an abstention. It abstained on 26 of 30 synthetic negative controls, so any false-positive rate quoted from it must
-carry its testable denominator.
+"not-testable" (no reproducible k), which is an abstention. On synthetic negative controls it abstains on the large majority, so any false-positive rate quoted from it must carry its testable denominator (the run's own counts are in the deposited ablation results, never hardcoded here).
 
   (A) SINGLE-GAUSSIAN reference (SigClust-style) -- PRIMARY.
       Fit ONE multivariate Gaussian to the (dimension-reduced) score matrix and
@@ -61,7 +60,8 @@ SMALL-n HARDENING (fixed, not tuned; identical across observed and reference)
   * Fixed k: k = the inherited BIC-selected k, held identical for the observed
     statistic AND every reference/gap replicate. k is never re-selected per
     replicate (structureless data would collapse to k=1 and ARI degenerates).
-  * k-stability rule: BIC-select k on each observed bootstrap resample; if the
+  * k-stability rule: select k by SILHOUETTE on each observed bootstrap resample
+    (not BIC — see _k_stability, which explains why BIC is unreliable here); if the
     fraction whose modal k equals the fixed k is < 0.5, the tumor is routed to
     NOT-TESTABLE rather than pass/fail.
   * Reports the full reference distribution and a CI on the observed statistic.

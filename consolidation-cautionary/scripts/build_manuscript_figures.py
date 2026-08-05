@@ -111,7 +111,7 @@ def figure1(cd, out):
             continue
         axA.errorbar(xi, v, yerr=[[v - ci[0]], [ci[1] - v]], color="k", capsize=2, lw=0.8)
     # explicit denominator in place of an interval
-    axA.annotate(f"{testable['k']}/{testable['n']} testable\n(no CI: see caption)",
+    axA.annotate(f"{testable['k']} false-certifies\nof {testable['n']} testable\n(no CI: see caption)",
                  (w / 2, 0.0), xytext=(w / 2, 0.20), fontsize=6.8, ha="center",
                  color=BLUE,
                  arrowprops=dict(arrowstyle="-", lw=0.6, color=BLUE, shrinkB=1))
@@ -155,7 +155,10 @@ def figure1(cd, out):
     axB2.set_ylabel("Median SigClust p", color=ORANGE)
     axB2.tick_params(axis="y", labelcolor=ORANGE)
     axB2.set_ylim(-0.03, 1.03)
-    axB.set_title("Conservative: resolves only at δ ≥ 2.5")
+    # Title is derived, and deliberately does NOT say "resolves only at" — the Results
+    # text argues the zeros below the boundary are not missed structure.
+    _onset = next((r["sep"] for r in sw["sweep"] if r["certify_rate"] > 0), None)
+    axB.set_title(f"Certification begins just above the δ=2σ boundary (first at δ={_onset:g})")
     axB.legend([l1, l2], ["Certify rate", "Median SigClust p"], frameon=False,
                fontsize=7.5, loc="center left")
     panel_label(axB, "b")
@@ -178,14 +181,17 @@ def figure2(cd, out, csv):
     axA.hist(valid, bins=np.arange(-0.2, 0.6, 0.05), color=BLUE, alpha=0.85,
              edgecolor="white")
     axA.axvline(0.5, color=RED, lw=1.0, ls="--")
-    axA.text(0.5, axA.get_ylim()[1] * 0.92, "  0.5 bar\n  0/22 clear", color=RED,
+    _thr = au["reproducibility_distribution"]["valid_rows"]
+    _npass = _thr["pass_rate_at_threshold"]["0.5"]["n_passing"]
+    _nvalid = int(_thr["n"]) if "n" in _thr else len(valid)
+    axA.text(0.5, axA.get_ylim()[1] * 0.92, f"  0.5 bar\n  {_npass}/{_nvalid} clear", color=RED,
              fontsize=7.2, va="top")
     med = au["reproducibility_distribution"]["valid_rows"]["median"]
     mx = au["reproducibility_distribution"]["valid_rows"]["max"]
     axA.axvline(med, color="k", lw=0.8, ls=":")
     axA.text(med, axA.get_ylim()[1] * 0.5, f" median\n {med:.3f}", fontsize=7)
     axA.set_xlabel("Reproducibility (bootstrap ARI, 5th percentile)")
-    axA.set_ylabel("Cohorts (n=22 valid)")
+    axA.set_ylabel(f"Cohorts (n={_nvalid} valid)")
     axA.set_title("No cohort clears a 0.5 bar")
     axA.annotate(f"max {mx:.2f}", (mx, 0.5), xytext=(mx - 0.02, 2.2),
                  fontsize=7, ha="right", arrowprops=dict(arrowstyle="->", lw=0.6))
@@ -221,6 +227,12 @@ def figure3(cd, out):
     keys = ["PSF (pathway-GMM)", "k-means (pathway)", "VAE-GMM", "DEC"]
     ari_v = [ari[k]["ari"] for k in keys]
     enr_v = [enr[k]["best"]["enrichment_frac"] for k in keys]
+    # The bars plot each method's ARGMAX subtype. Labelling the axis with a fixed subtype
+    # name is only valid if that argmax is the same for all methods — assert it rather
+    # than assume it, or a re-run could silently plot four different quantities as one.
+    _bests = {enr[k]["best_subtype"] for k in keys}
+    assert len(_bests) == 1, f"best_subtype differs across methods: {_bests}"
+    _sub = _bests.pop().replace("BRCA_", "")
 
     fig, (axA, axB) = plt.subplots(1, 2, figsize=(7.2, 3.2))
     x = np.arange(len(methods))
@@ -240,8 +252,8 @@ def figure3(cd, out):
     barsB = axB.bar(x, [v * 100 for v in enr_v], color=cols, edgecolor="white")
     axB.set_xticks(x)
     axB.set_xticklabels(methods, rotation=25, ha="right", fontsize=7)
-    axB.set_ylabel("Single-subtype enrichment (LumA, %)")
-    axB.set_title("By single-subtype enrichment (LumA)")
+    axB.set_ylabel(f"Single-subtype enrichment ({_sub}, %)")
+    axB.set_title(f"By single-subtype enrichment ({_sub})")
     for b, v in zip(barsB, enr_v):
         axB.text(b.get_x() + b.get_width() / 2, v * 100 + 0.6, f"{v*100:.1f}", ha="center", fontsize=7)
     axB.set_ylim(0, 100)
@@ -275,8 +287,10 @@ def figure4(cd, out):
     ax.set_xticklabels(labels, fontsize=7.5)
     ax.set_ylabel("Cramér's V")
     ax.set_ylim(0, 0.8)
-    ax.text(0, region_v + 0.02, f"{region_v:.3f}", ha="center", fontsize=8, fontweight="bold")
-    ax.text(1, diag_obs + 0.02, f"V={diag_obs:.3f}\np={pval:.3f}\n(= chance)", ha="center", fontsize=7.2)
+    ax.text(0, region_v + 0.02, f"{region_v:.3f} (Bergsma)", ha="center", fontsize=8, fontweight="bold")
+    # NOT "(= chance)": Result 4 states p is a non-significant trend, not an absence of
+    # signal. The estimator differs between the two bars, so both are labelled.
+    ax.text(1, diag_obs + 0.02, f"V={diag_obs:.3f} (uncorrected)\np={pval:.3f}", ha="center", fontsize=7.2)
     ax.set_title("Region, not diagnosis\n(GSE80655: 141 samples, 48 donors)")
     fig.tight_layout()
     for ext in ("png", "pdf"):

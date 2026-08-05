@@ -1,7 +1,7 @@
 # Gate ablation + clusterer-generality sweep (reviewer R3.10, R2.2)
 
 Synthetic-ground-truth validation of the gate battery: what does each gate
-actually *buy*, and is the discreteness gate clusterer-agnostic? This is the
+actually *buy*, and what does the clusterer sweep actually establish? (Answer: only that the gate's interface accepts any clusterer — see the retraction below.) This is the
 **Result 1 (methods validation)** evidence for the cautionary-framework paper.
 
 ## ⚠️ READ FIRST — the honest re-analysis supersedes the headline numbers below
@@ -126,10 +126,7 @@ rule, rather than ruling the data continuous. The earlier wording here ("rejects
 per-run breakdown is in `results/clusterer_sweep_results.md`, which labels each run
 CERTIFY / REJECT / ABSTAIN.
 
-The clusterer-agnostic part of the claim is unaffected and is the substantive R2.2
-answer: the framework is **not another clustering method to be benchmarked against
-DEC/VAE** — it is a validation layer that wraps any of them, because Gate A tests the
-discreteness of the *data* at a given k, not the confidence of the algorithm.
+⚠️ **The clusterer-agnostic part of the claim is ALSO retracted as an empirical finding.** The gate is called once per condition and its verdict copied into all three clusterer rows, so the arms are identical by construction, not by agreement. What survives is a statement about the **interface**: `DiscretenessGateA.run()` takes no partition argument and re-clusters internally, so it can be applied downstream of any clusterer — the framework is a validation layer rather than another clustering method to benchmark against DEC/VAE. That is definitional, not experimental, and must not be reported as a result.
 
 **Secondary observation (reported honestly):** on the continuum, mean self-stability
 ARI is GMM 0.88 vs DEC 0.34 vs VAE-GMM 0.22. GMM's near-0.8 self-stability is

@@ -3,9 +3,7 @@
 Added to answer Scientific Reports reviewer point R2.2: the manuscript compared
 pathway-level clustering against PCA/spectral/Leiden/k-means/NMF but not modern
 deep-learning clustering. This module adds two standard DL clusterers so they can
-be (a) benchmarked as methods and (b) — the load-bearing point — run through the
-same validation gates, demonstrating that the gates are *clusterer-agnostic*: a
-DL method's clusters need discreteness validation exactly like a GMM's.
+be (a) benchmarked as methods and (b) — the load-bearing point — run through the same validation gates: a DL method's clusters need discreteness validation exactly like a GMM's. NOTE: this shows the gates can be APPLIED downstream of any clusterer (they re-cluster internally and take no partition argument). It is not evidence that their verdicts agree across clusterers — that comparison was withdrawn as tautological.
 
 Both functions match the comparison-harness convention used by the sklearn
 baselines: ``run_x(X, k, ...) -> (labels: np.ndarray, silhouette: float)``.

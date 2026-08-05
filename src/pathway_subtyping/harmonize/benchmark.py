@@ -23,6 +23,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+import zlib
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
@@ -76,7 +77,7 @@ def simulate_platform_distortion(
         Distorted DataFrame with the same shape and column names.
     """
     rng = np.random.default_rng(seed if seed is not None else 0)
-    platform_rng = np.random.default_rng(abs(hash(platform)) % (2**32))
+    platform_rng = np.random.default_rng(zlib.crc32(str(platform).encode()) % (2**32))
 
     n_cells, n_pathways = scores.shape
     shift = platform_rng.standard_normal(n_pathways) * shift_scale

@@ -277,7 +277,7 @@ class ValidationGates:
                 n_components=n_clusters,
                 covariance_type="full",
                 n_init=5,
-                random_state=(gmm_seed + i) if gmm_seed else None,
+                random_state=(gmm_seed + i) if gmm_seed is not None else None,
                 reg_covar=1e-6,  # Regularization for numerical stability
             )
             gmm.fit(pathway_scores.values)
@@ -386,7 +386,7 @@ class ValidationGates:
                 n_components=n_clusters,
                 covariance_type="full",
                 n_init=5,
-                random_state=(gmm_seed + i + 1000) if gmm_seed else None,
+                random_state=(gmm_seed + i + 1000) if gmm_seed is not None else None,
                 reg_covar=1e-6,  # Regularization for numerical stability
             )
             gmm.fit(random_scores_df.values)
@@ -473,7 +473,7 @@ class ValidationGates:
                 n_components=n_clusters,
                 covariance_type="full",
                 n_init=5,
-                random_state=(gmm_seed + i + 2000) if gmm_seed else None,
+                random_state=(gmm_seed + i + 2000) if gmm_seed is not None else None,
                 reg_covar=1e-6,  # Regularization for numerical stability
             )
             try:
