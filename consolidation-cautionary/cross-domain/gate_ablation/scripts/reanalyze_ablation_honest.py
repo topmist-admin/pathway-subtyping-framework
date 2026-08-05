@@ -81,6 +81,9 @@ def main() -> None:
     ap.add_argument("--raw", default=os.path.join(here, "../results/gate_ablation_raw.csv"))
     ap.add_argument("--sweep", default=os.path.join(here, "../results/clusterer_sweep_raw.csv"))
     ap.add_argument("--out", default=os.path.join(here, "../results"))
+    ap.add_argument("--n-ref", dest="n_ref", type=int, default=None,
+                    help="Gate A reference draws used by the run being re-analysed. "
+                         "Default: inferred from the smallest observed empirical p.")
     args = ap.parse_args()
 
     d = pd.read_csv(args.raw)
@@ -146,11 +149,19 @@ def main() -> None:
     pos_gate = pos.gate_certify.values
     b2 = int(((pos_stab) & (~pos_gate)).sum())
     c2 = int(((~pos_stab) & (pos_gate)).sum())
+    _dTPR = (pos_stab.mean() - pos_gate.mean())
+    _interp_tpr = (
+        f"{b2 + c2} discordant pairs; TPR difference {_dTPR:+.3f}. "
+        + ("The two gate sets classify every positive identically, so there is no "
+           "measurable TPR cost on this benchmark — but with n=%d positives the study "
+           "still cannot exclude a small one." % len(pos_stab)
+           if b2 + c2 == 0 else
+           "The difference is not statistically distinguishable from zero; do not "
+           "claim a 'cost', and do not claim it is absent either."))
     mcnemar_tpr = {"discordant_stab_only": b2, "discordant_gate_only": c2,
                    "exact_p": mcnemar_exact(b2, c2),
-                   "interpretation": ("p ~ 1 with 1 discordant pair => the ~3% TPR "
-                                      "difference is not statistically distinguishable "
-                                      "from zero; do not claim a 'cost'")}
+                   "tpr_difference": round(float(_dTPR), 4),
+                   "interpretation": _interp_tpr}
 
     # --- 3. head-to-head: SigClust p ALONE vs the full composite gate ---
     head = {
@@ -173,14 +184,22 @@ def main() -> None:
                       "not a new multi-test instrument."),
     }
 
-    # p-value floor disclosure
-    ref_n = 120
+    # p-value floor disclosure.
+    # ref_n was previously HARDCODED to 120 while the deposited ablation ran with
+    # n_ref=100. That put the floor at 0.0083 when the true floor is 1/101 = 0.0099,
+    # which made `all_certified_at_floor` report False even though every certified
+    # positive sits exactly on the floor — contradicting this block's own note.
+    # Infer it from the smallest empirical p actually observed (p_min = 1/(n_ref+1)).
+    _pmin = float(d["sg_empirical_p"].min())
+    ref_n = args.n_ref if getattr(args, "n_ref", None) else int(round(1.0 / _pmin)) - 1
     floor = 1.0 / (ref_n + 1)
     cert_ps = sorted(d[d.gate_certify]["sg_empirical_p"].unique().tolist())
     floor_note = {
         "n_ref": ref_n, "p_floor": round(floor, 4),
         "unique_p_among_certified": cert_ps,
         "all_certified_at_floor": bool(len(cert_ps) == 1 and abs(cert_ps[0] - floor) < 1e-4),
+        "n_ref_source": ("explicit --n-ref" if getattr(args, "n_ref", None)
+                         else "inferred from min observed empirical p"),
         "note": ("every certified positive sits at the p-floor; report as "
                  "p <= 1/(n_ref+1), and see the separation sweep for whether the "
                  "gate has resolution between borderline and obvious structure")}

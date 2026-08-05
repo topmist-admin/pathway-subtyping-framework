@@ -309,7 +309,7 @@ Built-in tests prevent overfitting:
 
 ⚠️ **Two properties of Gate A to know before quoting it.** It has three outcomes —
 certify, reject, and `not-testable` (an abstention) — and on synthetic negative controls
-it abstained on 28/30, so any false-positive rate must be quoted with its *testable*
+it abstained on 26/30, so any false-positive rate must be quoted with its *testable*
 denominator. It is also conservative: on a separation sweep it certifies nothing below
 δ=2.5 SD. It is built to refuse over-called subtypes, not to detect subtle real ones.
 See [`docs/discreteness_gate.md`](docs/discreteness_gate.md).

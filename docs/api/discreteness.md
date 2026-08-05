@@ -32,8 +32,8 @@ criteria — it requires one, and reports two more alongside it as diagnostics.
 
 **Three outcomes, not two.** The gate returns certify, reject, or `not-testable` —
 the last being an *abstention* triggered by the k-stability rule, not a rejection. On
-the synthetic negative controls it abstained on **28 of 30 (93%)**, so any
-false-positive rate must be quoted against the **testable denominator (2)**, never
+the synthetic negative controls it abstained on **26 of 30 (87%)**, so any
+false-positive rate must be quoted against the **testable denominator (4)**, never
 against 30.
 
 **It is conservative.** On the separation sweep it certifies nothing below δ = 2.5 SD:

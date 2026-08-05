@@ -22,15 +22,19 @@ because its null tested independence, not discreteness. Adding the v0.8.0
 discreteness gate (Gate A) removes those false certifications.
 
 Two honesty constraints on how that result may be stated:
-  1. Gate A reaches the low FPR mostly by ABSTAINING, not by rejecting. On the
-     negative controls it returns "not-testable (no reproducible k)" on 28/30
-     (93%); the testable-negative denominator is 2. Never report FPR=0.000 or
-     "rejects the continuum on 100% of runs" without that denominator.
-  2. It is not free: TPR moves 1.000 -> 0.967 (one discrete_k3 replicate lost).
-     Exact McNemar on positives is p=1.0, so the cost is not distinguishable
-     from zero, but the study has no power to exclude one. Report both the point
-     change and the p-value; do not write "TPR held" and do not assert a firm
-     "3% cost" as though it were resolved.
+  1. Gate A reaches the low FPR mostly by ABSTAINING, not by rejecting. Never
+     report FPR=0.000, or "rejects the continuum on 100% of runs", without the
+     testable-negative denominator beside it.
+  2. It is not free in principle: report the TPR change and its McNemar p-value
+     together; do not write "TPR held", and do not assert a settled percentage
+     cost as though it were resolved.
+
+  The counts behind both constraints are COMPUTED at the bottom of main() and
+  written into gate_ablation_results.md — they are not hardcoded here. Earlier
+  revisions of this file did hardcode them ("28/30", "denominator is 2",
+  "1.000 -> 0.967"); those literals went stale when the analysis was re-run and
+  ended up contradicting the JSON written beside them. The authoritative
+  accounting is results/ablation_honest.json (reanalyze_ablation_honest.py).
 
 Gate subsets compared (the ablation):
     stability_only          : {bootstrap stability}                 (pre-v0.8.0)
@@ -50,6 +54,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import time
 from pathlib import Path
 from typing import Dict, List
@@ -354,6 +359,18 @@ def _write_clusterer_sweep_md(df, out: Path) -> None:
     print(f"\nWrote: {out}/clusterer_sweep_results.md")
 
 
+def _wilson95(k: int, n: int):
+    """Wilson score 95% CI. Same definition as reanalyze_ablation_honest.py."""
+    if n == 0:
+        return (None, None)
+    z = 1.959963985
+    p = k / n
+    d = 1 + z * z / n
+    c = p + z * z / (2 * n)
+    h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n))
+    return (round((c - h) / d, 4), round((c + h) / d, 4))
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -368,9 +385,11 @@ def main() -> None:
     ap.add_argument("--sweep", action="store_true",
                     help="run the gate-agnostic clusterer sweep (GMM/DEC/VAE) instead")
     ap.add_argument("--render-only", action="store_true",
-                    help="with --sweep: re-render clusterer_sweep_results.md from an existing "
-                         "clusterer_sweep_raw.csv in --out, without re-clustering "
-                         "(no number changes; fixes labelling/summary only)")
+                    help="re-render the results .md from the existing raw CSV in --out, "
+                         "without re-clustering. Applies to the ablation "
+                         "(gate_ablation_raw.csv) and, with --sweep, to the clusterer "
+                         "sweep. Numbers are recomputed from the CSV; the JSON and CSV "
+                         "are left untouched, so only stale prose changes.")
     ap.add_argument("--out", type=Path, default=Path("outputs/gate_ablation"))
     args = ap.parse_args()
 
@@ -391,7 +410,8 @@ def main() -> None:
     t0 = time.time()
 
     rows: List[Dict] = []
-    for cond in CONDITIONS:
+    # --render-only reuses the deposited CSV; skip the (expensive) compute loop.
+    for cond in ([] if args.render_only else CONDITIONS):
         for rep in range(args.reps):
             seed = args.seed + 1000 * rep + _stable_key(cond)
             scores, k = generate(cond, args.n, args.p, args.sep, seed)
@@ -404,7 +424,22 @@ def main() -> None:
                   f"discreteness={'PASS' if res['discreteness_pass'] else 'fail'} "
                   f"({res['discreteness_verdict']})")
 
-    df = pd.DataFrame(rows)
+    if args.render_only:
+        _csv = args.out / "gate_ablation_raw.csv"
+        if not _csv.exists():
+            raise SystemExit(f"--render-only needs {_csv}")
+        df = pd.read_csv(_csv)
+        # Restore the ORIGINAL run's parameters from the recorded JSON. Without this
+        # the re-render would describe the run using argparse defaults (e.g. "10
+        # reps/condition" for a 15-rep run) — a false provenance line.
+        _jf0 = args.out / "gate_ablation_results.json"
+        if _jf0.exists():
+            _pr = json.loads(_jf0.read_text()).get("params", {})
+            for _k in ("reps", "n", "p", "sep", "n_ref", "n_bootstrap", "seed"):
+                if _k in _pr:
+                    setattr(args, _k, _pr[_k])
+    else:
+        df = pd.DataFrame(rows)
 
     # Aggregate: per-policy FPR (on negatives) and TPR (on positives)
     summary = {}
@@ -424,8 +459,48 @@ def main() -> None:
         elapsed_sec=round(time.time() - t0, 1),
         summary=summary,
     )
-    (args.out / "gate_ablation_results.json").write_text(json.dumps(out, indent=2, default=str))
-    df.to_csv(args.out / "gate_ablation_raw.csv", index=False)
+    if args.render_only:
+        # Preserve the original run's elapsed time and leave JSON/CSV untouched:
+        # re-rendering must change prose only, never the recorded results.
+        _jf = args.out / "gate_ablation_results.json"
+        if _jf.exists():
+            out["elapsed_sec"] = json.loads(_jf.read_text()).get("elapsed_sec",
+                                                                out["elapsed_sec"])
+    else:
+        (args.out / "gate_ablation_results.json").write_text(
+            json.dumps(out, indent=2, default=str))
+        df.to_csv(args.out / "gate_ablation_raw.csv", index=False)
+
+    # --- caveat numbers, computed from df (never hardcoded) -------------------
+    _neg = df[df["klass"] == "negative"]
+    _pos = df[df["klass"] == "positive"]
+    _n_neg = int(len(_neg))
+    _abst = int((~_neg["discreteness_testable"].astype(bool)).sum())
+    _testable = _neg[_neg["discreteness_testable"].astype(bool)]
+    _n_test = int(len(_testable))
+    _fp = int(_testable["discreteness_pass"].astype(bool).sum())
+    _lo, _hi = _wilson95(_fp, _n_test)
+    _tpr_stab = summary["stability_only"]["TPR"]
+    _tpr_gate = summary["stability+discreteness"]["TPR"]
+    _n_pos = int(len(_pos))
+    _lost = int(round((_tpr_stab - _tpr_gate) * _n_pos))
+    _ci = ("undefined (no testable negatives)" if _n_test == 0
+           else f"[{_lo:g}, {_hi:g}]")
+    _tpr_clause = (
+        f"TPR is unchanged at {_tpr_gate:.3f}" if _lost == 0 else
+        f"TPR moves {_tpr_stab:.3f} -> {_tpr_gate:.3f} "
+        f"({_lost} positive replicate{'s' if _lost != 1 else ''} lost)")
+    _caveats = (
+        "**Two caveats that must travel with the FPR number.** (1) The gate reaches its "
+        "low FPR mostly by ABSTAINING rather than rejecting — on the negative controls "
+        f"it returns \"not-testable (no reproducible k)\" on {_abst}/{_n_neg} "
+        f"({_abst / _n_neg:.0%}), leaving a testable-negative "
+        f"denominator of {_n_test}. An FPR quoted against n={_n_neg} is the "
+        f"over-generous convention; against the testable n={_n_test} the interval is "
+        f"{_ci} and is nearly uninformative. Do not quote FPR=0.000 unqualified. "
+        f"(2) The gate is not free in principle: {_tpr_clause}. Report the point change "
+        "and its McNemar p-value together; write neither \"TPR held\" nor a settled "
+        "percentage cost. Authoritative accounting: results/ablation_honest.json.")
 
     # Markdown table
     lines = [
@@ -454,22 +529,17 @@ def main() -> None:
         "those false certifications, which is the quantitative answer to R3.10: "
         "removing the discreteness gate reintroduces continuum false positives.",
         "",
-        "**Two caveats that must travel with the FPR number.** (1) The gate reaches its "
-        "low FPR mostly by ABSTAINING rather than rejecting — on the negative controls "
-        "it returns \"not-testable (no reproducible k)\" on 28/30 (93%), leaving a "
-        "testable-negative denominator of 2. An FPR quoted against n=30 is the "
-        "over-generous convention; against the testable n=2 the interval is "
-        "[0, 0.658] and is nearly uninformative. Do not quote FPR=0.000 unqualified. "
-        "(2) The gate is not free: TPR moves 1.000 -> 0.967 (one `discrete_k3` "
-        "replicate lost). Exact McNemar on positives is p=1.0, so that cost is not "
-        "distinguishable from zero — but the study has no power to exclude one. Report "
-        "the point change and the p-value together; write neither \"TPR held\" nor a "
-        "settled \"3% cost\".",
+        # Computed, never hardcoded — see the module docstring for why.
+        _caveats,
     ]
     (args.out / "gate_ablation_results.md").write_text("\n".join(lines))
 
     print("\n" + "\n".join(lines))
-    print(f"\nWrote: {args.out}/gate_ablation_results.{{json,md}} + gate_ablation_raw.csv")
+    if args.render_only:
+        print(f"\nRe-rendered (prose only): {args.out}/gate_ablation_results.md — "
+              "JSON and CSV deliberately left untouched")
+    else:
+        print(f"\nWrote: {args.out}/gate_ablation_results.{{json,md}} + gate_ablation_raw.csv")
 
 
 if __name__ == "__main__":

@@ -173,7 +173,8 @@ A mandatory statistical test that must pass before results are considered trustw
 8. **Gate K — KG sensitivity**: does the finding survive a knowledge-graph *version* swap? See [kg_sensitivity_gate.md](kg_sensitivity_gate.md).
 
 ### Abstention (`not-testable`)
-A gate outcome that is neither a pass nor a fail: the gate declined to rule because its preconditions were not met (no reproducible *k*, degenerate partition, identical inputs). **An abstention is not a rejection.** Counting abstentions as correct rejections is what produced a reported false-positive rate of 0.000 when the gate had actually declined to rule on 28 of 30 negative controls, leaving a testable denominator of 2. Any rate computed over many gate runs must use the *testable* subset as its denominator.
+A gate outcome that is neither a pass nor a fail: the gate declined to rule because its preconditions were not met (no reproducible *k*, degenerate partition, identical inputs). **An abstention is not a rejection.** Counting abstentions as correct rejections is what produced a reported false-positive rate of 0.000 when the gate had actually declined to rule on 26 of 30
+negative controls, leaving a testable denominator of 4. Any rate computed over many gate runs must use the *testable* subset as its denominator.
 
 ### Size-matched null
 A reference distribution built by perturbing an input by the same *magnitude* as the real change being tested, but at random — used by Gate K, where the perturbation matches the observed knowledge-graph diff's per-edge-type addition and removal counts. Without it, an agreement score between two conditions cannot be read, because a low value is equally consistent with "the real change mattered" and "this result breaks under any change of that size."

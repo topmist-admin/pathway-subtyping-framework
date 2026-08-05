@@ -26,8 +26,7 @@ exactly. Do not describe this gate as requiring a data set to clear three
 criteria -- it requires one, and reports two more alongside.
 
 Also note the gate has THREE outcomes, not two: certify, reject, and
-"not-testable" (no reproducible k), which is an abstention. It abstained on 28 of
-30 synthetic negative controls, so any false-positive rate quoted from it must
+"not-testable" (no reproducible k), which is an abstention. It abstained on 26 of 30 synthetic negative controls, so any false-positive rate quoted from it must
 carry its testable denominator.
 
   (A) SINGLE-GAUSSIAN reference (SigClust-style) -- PRIMARY.

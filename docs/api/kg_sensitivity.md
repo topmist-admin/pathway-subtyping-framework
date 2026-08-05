@@ -106,7 +106,7 @@ Returns a `not-testable (...)` verdict, with `testable=False`, when:
 
 Methods: `summary() -> str`, `to_dict() -> Dict[str, Any]`.
 
-> **`testable` is not cosmetic.** Gate A abstained on 28 of 30 synthetic negatives and its resulting "FPR 0.000" was quoted against n=30 rather than the testable n=2. Any rate computed over many Gate K runs must use the testable subset as its denominator.
+> **`testable` is not cosmetic.** Gate A abstained on 26 of 30 synthetic negatives and its resulting "FPR 0.000" was quoted against n=30 rather than the testable n=4. Any rate computed over many Gate K runs must use the testable subset as its denominator.
 
 ---
 

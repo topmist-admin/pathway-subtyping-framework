@@ -168,8 +168,8 @@ KG change did.
 > is a release that *introduces* an edge type the baseline lacks.
 
 `KGSensitivityResult.testable` is the flag that keeps abstentions out of failure
-rates. Gate A abstained on 28 of 30 synthetic negatives and the resulting
-"FPR 0.000" was quoted against n=30 rather than the testable n=2; the `testable`
+rates. Gate A abstained on 26 of 30 synthetic negatives and the resulting
+"FPR 0.000" was quoted against n=30 rather than the testable n=4; the `testable`
 field exists so that mistake is mechanical to avoid here. **Any rate computed
 over many Gate K runs must use the testable subset as its denominator.**
 

@@ -91,7 +91,8 @@
       "discordant_stab_only": 0,
       "discordant_gate_only": 0,
       "exact_p": 1.0,
-      "interpretation": "p ~ 1 with 1 discordant pair => the ~3% TPR difference is not statistically distinguishable from zero; do not claim a 'cost'"
+      "tpr_difference": 0.0,
+      "interpretation": "0 discordant pairs; TPR difference +0.000. The two gate sets classify every positive identically, so there is no measurable TPR cost on this benchmark \u2014 but with n=30 positives the study still cannot exclude a small one."
     }
   },
   "head_to_head": {
@@ -122,12 +123,13 @@
     "increment": "The single-Gaussian p-value alone reproduces the composite gate's TPR and FPR exactly. The gap statistic and dip test are computed but not in the decision rule; the k-stability routing only adds abstentions. The honest contribution is the null recalibration (feature-permutation -> single-Gaussian), not a new multi-test instrument."
   },
   "p_value_floor": {
-    "n_ref": 120,
-    "p_floor": 0.0083,
+    "n_ref": 100,
+    "p_floor": 0.0099,
     "unique_p_among_certified": [
       0.0099
     ],
-    "all_certified_at_floor": false,
+    "all_certified_at_floor": true,
+    "n_ref_source": "inferred from min observed empirical p",
     "note": "every certified positive sits at the p-floor; report as p <= 1/(n_ref+1), and see the separation sweep for whether the gate has resolution between borderline and obvious structure"
   }
 }

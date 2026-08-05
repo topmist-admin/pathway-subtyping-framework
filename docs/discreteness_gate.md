@@ -129,7 +129,7 @@ do not gate the verdict.
 
 **Two limits to state whenever the gate is cited.** It frequently returns
 `not-testable` rather than a ruling — on the synthetic negative controls it
-abstained on 28/30 — so a low false-positive rate is largely abstention, not
+abstained on 26/30 — so a low false-positive rate is largely abstention, not
 rejection, and must be quoted with its testable denominator. And it is
 conservative: on a separation sweep it certifies nothing below δ=2.5 SD, so it is
 good for refusing over-called subtypes and poor at detecting subtle real ones.

@@ -78,15 +78,15 @@ def figure1(cd, out):
     #
     # NO ERROR BAR IS DRAWN ON THE SCREEN'S FALSE-CERTIFY RATE, deliberately. Bar
     # HEIGHTS use `FPR_abstention_as_reject` (k=0, n=30) because the paired McNemar
-    # comparison is over all 30 negatives. But the screen abstained on 28 of those 30,
-    # so only 2 were testable, and NO interval on that bar can be honest:
+    # comparison is over all 30 negatives. But the screen abstained on 26 of those 30,
+    # so only 4 were testable, and NO interval on that bar can be honest:
     #   * Wilson(0,30) = [0, 0.114]  -> matches the plotted denominator but implies
-    #     ~6x more precision than 2 testable datasets support;
-    #   * Wilson(0, 2) = [0, 0.658]  -> the honest interval, but its denominator is
+    #     ~4x more precision than 4 testable datasets support;
+    #   * Wilson(0, 4) = [0, 0.490]  -> the honest interval, but its denominator is
     #     not the one the bar height is computed on.
     # Rather than pick a misleading one, the bar carries an explicit annotation of the
     # testable denominator. The other three bars have genuine n=30 denominators (the
-    # stability-only gate never abstains; the screen's TPR is 29/30) and keep their CIs.
+    # stability-only gate never abstains; the screen's TPR is 30/30) and keep their CIs.
     sb, gt = ab["stability_only_baseline"], ab["gate"]
     f_s, t_s = sb["FPR"], sb["TPR"]
     f_g, t_g = gt["FPR_abstention_as_reject"], gt["TPR"]
@@ -121,9 +121,18 @@ def figure1(cd, out):
     axA.set_ylim(0, 1.12)
     axA.legend(frameon=False, fontsize=7.5, loc="upper center")
     axA.set_title("Gate suppresses false certification")
-    axA.annotate("McNemar\np = 0.001", (0, fpr_stab), xytext=(0.02, 0.66),
+    # Both p-values are READ FROM THE ARTIFACT, never hardcoded. They were previously
+    # literal strings ("p = 0.001", "p = 1.0") and went stale when the analysis was
+    # re-run, leaving the figure contradicting the manuscript text it illustrates.
+    _mc = ab["paired_mcnemar"]
+    _p_neg = _mc["on_negatives_FPR"]["exact_p"]
+    _p_pos = _mc["on_positives_TPR"]["exact_p"]
+    # Match the manuscript's own rendering exactly (it writes p=0.0002, not 2e-4).
+    _fmt = lambda v: (f"p = {v:.4f}" if v < 0.001 else
+                      f"p = {v:g}" if v < 1 else f"p = {v:.1f}")
+    axA.annotate(f"McNemar\n{_fmt(_p_neg)}", (0, fpr_stab), xytext=(0.02, 0.66),
                  fontsize=7.5, ha="center")
-    axA.annotate("p = 1.0", (1, 1.0), xytext=(1, 1.06), fontsize=7.5, ha="center")
+    axA.annotate(_fmt(_p_pos), (1, 1.0), xytext=(1, 1.06), fontsize=7.5, ha="center")
     axA.text(0.0, -0.30,
              f"gate abstains on {gt['negatives_abstained']}/{gt['negatives_total']}"
              f" ({gt['negatives_abstain_rate']*100:.0f}%)",

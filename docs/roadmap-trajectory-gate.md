@@ -170,7 +170,7 @@ Three, not two — matching Gate A, and for the same reason:
 | `not-testable` | design minimum unmet, or direction unstable. **An abstention, not a rejection** |
 
 Any false-positive rate computed from this gate must be quoted with its
-**testable** denominator. Gate A abstained on 28/30 synthetic negatives and the
+**testable** denominator. Gate A abstained on 26/30 synthetic negatives and the
 resulting "FPR 0.000" was misleading; Gate T will abstain at least as often,
 because donor counts in postmortem psychiatric cohorts are small.
 

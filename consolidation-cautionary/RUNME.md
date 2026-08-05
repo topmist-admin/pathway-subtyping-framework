@@ -111,6 +111,8 @@ public cBioPortal/GEO/recount3 data with no authentication.
 | **Result 1** covariance/undersizing sweep | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job2b_shrinkage_parity.jsonl` (**check `parity_ok`**) | none (synthetic) |
 | **Result 3** TCGA-BRCA certification statistics | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job6_brca_certification.jsonl` | cBioPortal (delegates to `cancer_r38`'s fetcher) |
 | **Result 4** donor-level continuous statistics | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job4_donor_continuous.json` | none (reads deposited labels) |
+| **Result 5** SigClust on heteroscedastic continua | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job1e_sigclust_hetero.jsonl` | none — **needs R + CRAN `sigclust`** |
+| **Result 3** PC1 diagnostics for the cached controls | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job6b_pc1_diagnostics.jsonl` | none (reads deposited cached inputs) |
 | **Methods** gene column-order invariance | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job7_column_order.jsonl` | GEO (**raw counts**, a different route from the cached scores — see that folder's README) |
 
 > ⚠️ **The `revision-analyses-2026-08-03/` rows are newer than the 2026-07-30 independent
@@ -128,15 +130,14 @@ Every figure below is read directly from the deposited artifact named in its row
 None is restated from prose.
 
 **Gate ablation (authoritative: `ablation_honest.json`)** — three-way accounting
-- Negatives (n=30): stability-only false-certifies **11** (FPR 0.367, Wilson 95%
-  CI [0.22, 0.54]); the recalibrated gate certifies **0**. Paired exact McNemar
-  b=11 c=0 **p=0.001** — real reduction.
-- ⚠️ The gate reaches that by **abstaining on 28/30 (93%)** negatives; FPR excluding
-  abstentions is 0/2, CI [0.00, 0.66] — nearly uninformative. Do NOT quote "FPR 0.000".
-- TPR moves **1.000 → 0.967** (one `discrete_k3` replicate lost); exact McNemar on
-  positives **p=1.0**, so the cost is not distinguishable from zero and the study
-  cannot exclude one. Report both figures; write neither "TPR held" nor a settled
-  "3% cost".
+- Negatives (n=30): stability-only false-certifies **13** (FPR 0.433, Wilson 95%
+  CI [0.27, 0.61]); the recalibrated gate certifies **0**. Paired exact McNemar
+  b=13 c=0 **p=0.0002** — real reduction.
+- ⚠️ The gate reaches that by **abstaining on 26/30 (87%)** negatives; FPR excluding
+  abstentions is 0/4, CI [0.00, 0.49] — nearly uninformative. Do NOT quote "FPR 0.000".
+- TPR is **1.000 for both** gate sets (0 discordant pairs, exact McNemar **p=1.0**):
+  no TPR cost was measurable here. With 30 positives a small one cannot be excluded,
+  so write "no measurable cost", not "the gate is free".
 - Head-to-head: the SigClust p-value **alone** reproduces the composite gate exactly
   → the contribution is a null recalibration, not a new instrument.
 - Separation sweep (`separation_sweep.json`, 20 reps/step): gate resolves (certify 0.00

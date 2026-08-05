@@ -13,23 +13,23 @@ those, not the "FPR 0.000 / rejected 100%" framing in the older sections:
 
 1. **Three-way accounting.** The gate returns certify / reject / **not-testable**.
    On the 30 negative-control datasets it returned `not-testable` (an abstention) on
-   **28 (93%)** — it did not *judge* them as continua, it declined. The old write-up
+   **26 (87%)** — it did not *judge* them as continua, it declined. The old write-up
    scored abstentions as correct rejections, manufacturing FPR=0.000. Excluding
-   abstentions the testable-negative denominator is **2** (Wilson 95% CI on that FPR:
-   [0.00, 0.66] — nearly uninformative).
+   abstentions the testable-negative denominator is **4** (Wilson 95% CI on that FPR:
+   [0.00, 0.49] — nearly uninformative).
 2. **The real, defensible result is the paired contrast.** The stability-only gate
-   falsely certified **11/30** negatives (FPR 0.367, 95% CI [0.22, 0.54]); the
-   recalibrated gate certified **0/30**. Exact McNemar on the negatives: b=11, c=0,
-   **p=0.001** — the reduction in false certification is significant. The mechanism is
+   falsely certified **13/30** negatives (FPR 0.433, 95% CI [0.27, 0.61]); the
+   recalibrated gate certified **0/30**. Exact McNemar on the negatives: b=13, c=0,
+   **p=0.0002** — the reduction in false certification is significant. The mechanism is
    partly abstention, and we say so, but the improvement over stability-only is real.
-3. **The TPR cost is real but not resolved — state it as both numbers.** TPR moves
-   **1.000 → 0.967**: one of the 30 genuine-structure datasets (a `discrete_k3`
-   replicate) is lost. That is a single discordant pair, so exact McNemar gives
-   **p=1.0** — the cost is *not distinguishable from zero*, and the study has no
-   power to exclude one either. **The correct write-up reports the point change and
-   the p-value together.** Do not write "TPR held" (it did not), and do not assert a
-   settled "3% cost" (n=1 discordant pair cannot establish one). This supersedes the
-   two contradictory instructions that previously appeared in this file.
+3. **No measurable TPR cost on this benchmark — and that is not the same as none.**
+   TPR is **1.000 for both** gate sets: the two classify all 30 genuine-structure
+   datasets identically, so there are **0 discordant pairs** and exact McNemar gives
+   **p=1.0**. With 30 positives the study still cannot exclude a small cost, so write
+   "no cost was measurable here", not "the gate is free". ⚠️ Earlier revisions of this
+   file reported a **1.000 → 0.967** cost from one lost `discrete_k3` replicate; that
+   came from a run whose datasets were drawn under a per-process-salted `hash()` seed
+   and could not be regenerated. It is retired, not merely updated.
 
 **And the increment is a null recalibration, not a new instrument.** Head-to-head in
 `ablation_honest.json`: the SigClust-style single-Gaussian p-value **alone**
@@ -84,30 +84,29 @@ the tumor-purity / immune-infiltration analog).
 
 | Gate subset | TPR | FPR † | `continuum_1d` cert rate |
 |---|---|---|---|
-| `stability_only` (pre-v0.8.0) | 1.000 | **0.367** | **0.733** |
-| `discreteness_only` | 0.967 | 0.000 † | 0.000 |
-| `stability+discreteness` (v0.8.0) | 0.967 | **0.000** † | 0.000 |
+| `stability_only` (pre-v0.8.0) | 1.000 | **0.433** | **0.867** |
+| `discreteness_only` | 1.000 | 0.000 † | 0.000 |
+| `stability+discreteness` (v0.8.0) | 1.000 | **0.000** † | 0.000 |
 
 † **The 0.000 cells are computed against n=30 and are the over-generous
-convention.** The gate abstains (`not-testable`) on 28 of those 30 negatives, so
-the testable-negative denominator is **2** and the honest Wilson interval is
-[0.00, 0.66] — nearly uninformative. Never quote "FPR 0.000" from this table
+convention.** The gate abstains (`not-testable`) on 26 of those 30 negatives, so
+the testable-negative denominator is **4** and the honest Wilson interval is
+[0.00, 0.49] — nearly uninformative. Never quote "FPR 0.000" from this table
 without that denominator. See the READ FIRST section above.
 
 **Reading.** The pre-v0.8.0 stability-only gate false-certifies the 1-D continuum
-in 73% of runs — this is the erratum finding reproduced under controlled
+in 87% of runs — this is the erratum finding reproduced under controlled
 conditions: the old bootstrap null tested *pathway independence*, not
 *discreteness*, so a reproducibly-bisected gradient passed. Adding Gate A removes
 those false certifications — predominantly by declining to rule (abstaining) on
 the negatives rather than by rejecting them.
 
-**Honest note on TPR:** the ablation does not leave true positives *untouched* —
-TPR goes 1.000 → 0.967, i.e. one of the 30 genuine-structure datasets (a
-`discrete_k3` replicate) is lost. Exact McNemar on the positives is **p=1.0**, so
-that loss is not distinguishable from zero, and the study cannot exclude one
-either. Report both figures together; write neither "TPR held" nor a settled
-"3% cost". (See item 3 in the READ FIRST section — this file previously carried
-two contradictory instructions here.)
+**Honest note on TPR:** the ablation leaves true positives untouched on this
+benchmark — TPR is **1.000 for both** gate sets, with **0 discordant pairs** and
+exact McNemar **p=1.0**. That is an absence of *measurable* cost, not a proof of
+none: 30 positives cannot exclude a small one. Write "no measurable cost", never
+"the gate is free". (See item 3 in the READ FIRST section for the retired
+1.000 → 0.967 figure and why it was withdrawn rather than updated.)
 
 Source: `results/gate_ablation_results.json` (+ `_raw.csv` for per-replicate rows).
 Figure: `results/gate_ablation_figure.{png,svg}`.
