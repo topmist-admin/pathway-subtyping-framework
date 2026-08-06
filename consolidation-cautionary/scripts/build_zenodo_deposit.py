@@ -123,7 +123,12 @@ def zenodo_metadata(stamp):
             "language": "eng",
             "keywords": ["molecular subtyping", "cluster validation",
                          "reproducibility", "bioinformatics", "precision medicine",
-                         "SigClust", "discreteness"],
+                         "SigClust", "discreteness",
+                         # added 2026-08-07: the original set omitted the paper's own
+                         # subject. Hand-edits to the generated JSON do not survive a
+                         # rebuild, so they belong here.
+                         "discreteness screen", "subtype validation",
+                         "false positives", "research software"],
             "access_right": "open",
             "license": "MIT",
             "creators": [
