@@ -114,6 +114,7 @@ each job's own deposited JSONL, not estimates.
 | `job1c_canonical_sigclust` | not recorded | none | Result 5 (needs R + CRAN `sigclust`) |
 | `job1d_canonical_sweep` | not recorded | none | Result 5 (needs R + CRAN `sigclust`) |
 | `job1e_sigclust_hetero` | not recorded | none | Result 5 (needs R + CRAN `sigclust`; 120 R invocations — long) |
+| **`*_nrep100` variants of job1c/1d/1e** | as above | none | **the values Result 5 actually reports** — `--nrep 100` converges the k-means inside `sigclust`; the plain files are the `nrep=1` default and give TPR 27/30, FPR 1/30 |
 | `job2_shrinkage` | ~1 h 57 min | none | **superseded by `job2b`** |
 | `job2b_shrinkage_parity` | **~5 h 12 min** | none | Result 1 λ table — **longest job in the paper** |
 | `job3b_nsweep_validated` | **~4 h 38 min** | none | Result 5 *n*-sweep |
@@ -128,8 +129,18 @@ each job's own deposited JSONL, not estimates.
 needed to *use* the screen — these are characterisation sweeps.
 
 `job1c` / `job1d` / `job1e` require **R ≥ 4 with the CRAN `sigclust` package**; `job4`
-requires `statsmodels`. Each fails loudly with a clear message if its dependency is
-absent, rather than degrading silently.
+requires `statsmodels`.
+
+The three R jobs **probe for a working `Rscript` and a loadable `sigclust` before doing
+any work**, and exit non-zero writing no output if either is missing. ⚠️ *This was added
+2026-08-07 after an external review found the opposite: an earlier revision of this file
+asserted they "fail loudly", but `which Rscript` was the only check, so an Rscript that
+existed and errored let every call fall through to a `continue`. The job exited 0 and
+wrote a complete-looking file with **zero certifications** — indistinguishable from Result
+5's real finding. The claim was made without being tested; it is now true and tested.*
+
+`job4` raises a bare `ModuleNotFoundError` if `statsmodels` is absent — it fails, and
+writes nothing, but the message is a traceback rather than a written explanation.
 
 > **Do not run the cBioPortal packages concurrently.** Two large `molecular-data/fetch`
 > POSTs in parallel throttle each other badly — measured here, two jobs that each finish

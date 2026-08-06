@@ -1,4 +1,4 @@
-{"record": "provenance", "script": "job1d_canonical_sigclust_sweep.py", "argv": {"out": "job1d_nrep100.jsonl", "reps": 20, "n": 120, "p": 50, "nsim": 100, "nrep": 100, "seps": "0.0,0.5,1.0,1.5,2.0,2.5,3.0"}, "design": "canonical CRAN sigclust, icovest=2, full feature space", "deposited_gate": {"0.0": 0.0, "0.5": 0.0, "1.0": 0.0, "1.5": 0.0, "2.0": 0.0, "2.5": 0.15, "3.0": 0.55}, "note": "deposited loop params so the curve is directly comparable"}
+{"record": "provenance", "script": "job1d_canonical_sigclust_sweep.py", "argv": {"out": "job1d_canonical_sweep_nrep100.jsonl", "reps": 20, "n": 120, "p": 50, "nsim": 100, "nrep": 100, "seps": "0.0,0.5,1.0,1.5,2.0,2.5,3.0"}, "design": "canonical CRAN sigclust, icovest=2, full feature space", "deposited_gate": {"0.0": 0.0, "0.5": 0.0, "1.0": 0.0, "1.5": 0.0, "2.0": 0.0, "2.5": 0.15, "3.0": 0.55}, "note": "deposited loop params so the curve is directly comparable"}
 {"record": "run", "sep": 0.0, "rep": 0, "p": 1.0, "cindex": 0.962916}
 {"record": "run", "sep": 0.0, "rep": 1, "p": 1.0, "cindex": 0.963444}
 {"record": "run", "sep": 0.0, "rep": 2, "p": 1.0, "cindex": 0.959925}

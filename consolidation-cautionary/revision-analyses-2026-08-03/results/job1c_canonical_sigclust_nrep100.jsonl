@@ -1,4 +1,4 @@
-{"record": "provenance", "script": "job1c_canonical_sigclust.py", "argv": {"out": "job1c_nrep100.jsonl", "reps": 15, "n": 60, "p": 50, "sep": 3.0, "nsim": 100, "nrep": 100, "seed": 42}, "design": "canonical CRAN sigclust, full p-dim feature space, icovest=2", "closes": "job 1 caveats 1 (reimplementation) and 2 (PCA-reduced space)"}
+{"record": "provenance", "script": "job1c_canonical_sigclust.py", "argv": {"out": "job1c_canonical_sigclust_nrep100.jsonl", "reps": 15, "n": 60, "p": 50, "sep": 3.0, "nsim": 100, "nrep": 100, "seed": 42}, "design": "canonical CRAN sigclust, full p-dim feature space, icovest=2", "closes": "job 1 caveats 1 (reimplementation) and 2 (PCA-reduced space)"}
 {"record": "dataset", "condition": "discrete_k2", "klass": "positive", "rep": 0, "p": 0.0, "cindex": 0.586334}
 {"record": "dataset", "condition": "discrete_k2", "klass": "positive", "rep": 1, "p": 0.0, "cindex": 0.572953}
 {"record": "dataset", "condition": "discrete_k2", "klass": "positive", "rep": 2, "p": 0.0, "cindex": 0.614378}

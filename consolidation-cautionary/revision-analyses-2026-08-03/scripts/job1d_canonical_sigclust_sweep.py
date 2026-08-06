@@ -57,6 +57,35 @@ def make(sep, n, p, rng):
     return np.vstack([a, b])
 
 
+
+def _require_sigclust(rscript_body):
+    """Fail closed unless R AND the CRAN `sigclust` package actually work.
+
+    `which Rscript` is not enough: an Rscript that exists but errors (wrong R, missing
+    package, broken library path) passed that check, and every per-dataset call then failed
+    into a `continue`. The job exited 0, printed its success banner, and wrote a
+    deposited-shaped JSONL with ZERO certifications -- which is indistinguishable from this
+    paper's actual Result 5 headline. A reviewer without a working sigclust would have
+    "reproduced" our result by running nothing. Same class as the diptest fail-open, and
+    worse, because the empty answer here looks exactly like the true one.
+    """
+    import subprocess as _sp, tempfile as _tf, os as _os, shutil as _sh
+    if _sh.which("Rscript") is None:
+        raise SystemExit("Rscript not found. This job needs R >= 4 with the CRAN `sigclust` "
+                         "package. Refusing to run: a partial SigClust sweep is not a result.")
+    with _tf.TemporaryDirectory() as _td:
+        p = _os.path.join(_td, "probe.R")
+        open(p, "w").write('suppressMessages(library(sigclust)); cat("ok\\n")\n')
+        r = _sp.run(["Rscript", "--vanilla", p], capture_output=True, text=True)
+    if r.returncode != 0 or "ok" not in (r.stdout or ""):
+        raise SystemExit(
+            "R is present but the CRAN `sigclust` package could not be loaded "
+            "(install.packages(\"sigclust\")). Refusing to run: every SigClust call would "
+            "fail into a skip and this job would emit ZERO certifications, which is "
+            "indistinguishable from the paper's real Result 5 finding.\n"
+            "  Rscript said: " + (r.stderr or "").strip()[:300])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
@@ -68,6 +97,7 @@ def main():
                     help="k-means restarts inside sigclust (CRAN default 1; use 100 for a converged comparison)")
     ap.add_argument("--seps", default=",".join(str(s) for s in SEPS))
     a = ap.parse_args()
+    _require_sigclust(R_SCRIPT)
     seps = [float(x) for x in a.seps.split(",")]
 
     with tempfile.TemporaryDirectory() as td:
@@ -92,9 +122,9 @@ def main():
                                         str(a.nsim), str(42), str(a.nrep)],
                                        capture_output=True, text=True)
                     if r.returncode != 0 or not os.path.exists(txt):
-                        print(f"  R FAILED sep={sep} rep{rep}: {r.stderr.strip()[:150]}",
-                              flush=True)
-                        continue
+                        raise SystemExit(
+                            f"R/sigclust failed at sep={sep} rep{rep} -- refusing to continue.\n"
+                            f"  Rscript said: {r.stderr.strip()[:300]}")
                     pval, cindex = [float(v) for v in open(txt).read().split()]
                     ps.append(pval)
                     fh.write(json.dumps(dict(record="run", sep=sep, rep=rep,

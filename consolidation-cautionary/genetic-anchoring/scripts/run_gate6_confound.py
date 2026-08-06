@@ -5,8 +5,11 @@ Gate 6 — Confound Association Gate on the deposited partition.
 Thin driver over the shipped ``ValidationGates.confound_association_gate``. Applies
 the gate to the deposited SCZ+Control partition (39/92/10; framework v0.3.0, seed
 42) and shows it FAILS on brain region while exempting diagnosis. This is the gate
-whose absence let the anatomy artifact pass the original stability battery
-(bootstrap ARI ~0.914) — it is now a first-class framework gate, not a bolt-on.
+whose absence let the anatomy artifact pass the original stability battery — it is now a
+first-class framework gate, not a bolt-on. (An earlier revision quoted "bootstrap ARI
+~0.914" here. No deposited artifact contains that number, and the deposit elsewhere
+enumerates the values on record for this quantity; an unsourced fourth one does not belong
+in a docstring. For the canonical list see cross-domain/flagship_stats/README.md.)
 
 Reproduces (deposited reference: ../results/gate6_confound_association.json):
   passed=False, max nuisance Cramer's V=0.66 (brain region, chi2=125.1, p~4e-26),

@@ -1,11 +1,16 @@
-# Reproducibility package — "Stable but confounded…" (consolidation/cautionary paper)
+# Reproducibility package — "A Single-Gaussian Discreteness Screen for Molecular Subtypes"
+# (the cautionary-validation paper). The sibling README.md covers the companion
+# "Stable but confounded…" package; the two are not interchangeable.
 # Install the PUBLIC framework release; do NOT use a local working tree.
 #
 #   python -m venv .venv && . .venv/bin/activate
 #   pip install -r requirements.txt
 #
 # The manuscript numbers were GENERATED under framework v0.8.0 and re-verified
-# BYTE-IDENTICAL under v0.9.0 on 2026-07-29 (all four offline packages). The pin
+# BYTE-IDENTICAL under v0.9.0 on 2026-07-29. NOTE: that round covered four packages;
+# the settled count (2026-08-06) is SIX with an offline path, FIVE verified byte-identical
+# — see DATA-ACQUISITION.md. Earlier counts of "seven", "five" and "four" were each wrong
+# in a different way. The pin
 # below is v0.9.0, which carries statistical bug fixes that do not touch any
 # code path this bundle reaches. (framework v0.9.0,
 # scikit-learn 1.9.0). scikit-learn is the reproduction-sensitive pin (GMM/BIC
@@ -34,11 +39,15 @@ torch==2.11.0
 # diptest is the `discreteness` EXTRA rather than a core dependency because it is GPLv2+
 # while the framework is MIT. It is REQUIRED here: the negative-generator validation screen
 # in job3b/job5 is built on Hartigan's dip, and pathway_subtyping's dip_of() returns NaN
-# instead of raising when diptest is absent — so a missing install silently disables the
-# screen rather than failing loudly.
+# instead of raising when diptest is absent — so a missing install WOULD silently disable the
+# screen. That is why job3b, job5, job6, job6b and both gate_calibration scripts now probe
+# for it up front and exit non-zero, writing no output, rather than degrading quietly.
 diptest>=0.5.0
 
 # NOT installable with pip. job1c/job1d/job1e run the canonical SigClust comparator and need
 # R >= 4 with the CRAN `sigclust` package:  install.packages("sigclust")
-# This is the only non-Python dependency in the paper. Both jobs exit with a printed
-# error if Rscript is unavailable; every other result runs without R.
+# This is the only non-Python dependency in the paper. All THREE jobs probe for a working
+# Rscript AND a loadable sigclust up front, and exit non-zero writing no output if either is
+# missing — checking `which Rscript` alone was not enough, because an Rscript that exists but
+# errors let every call fail into a skip and produced a complete-looking file with zero
+# certifications. Every other result runs without R.

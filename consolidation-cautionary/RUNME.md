@@ -136,6 +136,14 @@ public cBioPortal/GEO/recount3 data with no authentication.
 | Scoping (negative result) | [`cross-domain/psychiatric_meta/`](cross-domain/psychiatric_meta/) | `track_a_recount3.tsv` | NCBI E-utilities |
 | Gate-6 domain remap | [`cross-domain/`](cross-domain/) | `results/confound_remap_results.json` | none (seeded) |
 | Gate-7 somatic anchoring (real TCGA-CRC positive control: BRAF-V600E / KRAS / MSI) | [`cross-domain/tcga_crc/`](cross-domain/tcga_crc/) | `tcga_crc_somatic_result.json` | cBioPortal |
+> ⚠️ **The manuscript reports the CONVERGED SigClust figures.** `sigclust()` runs `kmeans`
+> at the CRAN default of a single random start; the `*_nrep100.jsonl` files re-run it at 100
+> starts, which is what Result 5 quotes (ablation grid TPR **30/30**, FPR **0/30**). The
+> plain `job1c/1d/1e` files are the `nrep=1` default and give TPR 27/30, FPR 1/30 — kept so
+> the original reproduces, **not** the reported result. Compare against
+> `job1c_canonical_sigclust_nrep100.jsonl`, `job1d_canonical_sweep_nrep100.jsonl` and
+> `job1e_sigclust_hetero_nrep100.jsonl`.
+
 | **Result 5** where the screen fails (heteroscedastic continua) + SigClust regime comparison | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job3b_nsweep_validated.jsonl`, `job5_heteroscedastic_fpr.jsonl`, `job1c_canonical_sigclust.jsonl`, `job1d_canonical_sweep.jsonl` | none (synthetic) — but **needs R + CRAN `sigclust`** for 1c/1d and **`diptest`** for 3b/5 |
 | **Result 1** covariance/undersizing sweep | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job2b_shrinkage_parity.jsonl` (**check `parity_ok`**) | none (synthetic) |
 | **Result 3** TCGA-BRCA certification statistics | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job6_brca_certification.jsonl` | cBioPortal (delegates to `cancer_r38`'s fetcher) |

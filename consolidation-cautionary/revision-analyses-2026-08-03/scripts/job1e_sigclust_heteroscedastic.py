@@ -31,6 +31,7 @@ import pandas as pd
 _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
 from job5_heteroscedastic_fpr_confirmation import gen, KINDS, wilson  # noqa: E402
+from _provenance_safe import safe_argv  # noqa: E402
 
 R_SCRIPT = r"""
 suppressMessages(library(sigclust))
@@ -40,6 +41,35 @@ nrep <- if (length(a) >= 5) as.integer(a[5]) else 1
 r <- sigclust(x, nsim=as.integer(a[3]), nrep=nrep, labflag=0, icovest=2)
 cat(sprintf("%.6f %.6f\n", r@pval, r@xcindex), file=a[2])
 """
+
+
+
+def _require_sigclust(rscript_body):
+    """Fail closed unless R AND the CRAN `sigclust` package actually work.
+
+    `which Rscript` is not enough: an Rscript that exists but errors (wrong R, missing
+    package, broken library path) passed that check, and every per-dataset call then failed
+    into a `continue`. The job exited 0, printed its success banner, and wrote a
+    deposited-shaped JSONL with ZERO certifications -- which is indistinguishable from this
+    paper's actual Result 5 headline. A reviewer without a working sigclust would have
+    "reproduced" our result by running nothing. Same class as the diptest fail-open, and
+    worse, because the empty answer here looks exactly like the true one.
+    """
+    import subprocess as _sp, tempfile as _tf, os as _os, shutil as _sh
+    if _sh.which("Rscript") is None:
+        raise SystemExit("Rscript not found. This job needs R >= 4 with the CRAN `sigclust` "
+                         "package. Refusing to run: a partial SigClust sweep is not a result.")
+    with _tf.TemporaryDirectory() as _td:
+        p = _os.path.join(_td, "probe.R")
+        open(p, "w").write('suppressMessages(library(sigclust)); cat("ok\\n")\n')
+        r = _sp.run(["Rscript", "--vanilla", p], capture_output=True, text=True)
+    if r.returncode != 0 or "ok" not in (r.stdout or ""):
+        raise SystemExit(
+            "R is present but the CRAN `sigclust` package could not be loaded "
+            "(install.packages(\"sigclust\")). Refusing to run: every SigClust call would "
+            "fail into a skip and this job would emit ZERO certifications, which is "
+            "indistinguishable from the paper's real Result 5 finding.\n"
+            "  Rscript said: " + (r.stderr or "").strip()[:300])
 
 
 def main():
@@ -53,6 +83,7 @@ def main():
                     help="k-means restarts inside sigclust (CRAN default 1; use 100 for a converged comparison)")
     ap.add_argument("--seed", type=int, default=42)
     a = ap.parse_args()
+    _require_sigclust(R_SCRIPT)
     ns = [int(x) for x in a.ns.split(",")]
 
     if subprocess.run(["which", "Rscript"], capture_output=True).returncode != 0:
@@ -64,7 +95,7 @@ def main():
         with open(a.out, "w") as fh:
             w = lambda o: (fh.write(json.dumps(o) + "\n"), fh.flush())
             w(dict(record="provenance", script=os.path.basename(__file__),
-                   argv={k: v for k, v in vars(a).items()},
+                   argv=safe_argv(a),
                    design="canonical CRAN sigclust (icovest=2, full feature space) on job5's "
                           "generators, reproducing job5 Phase-B seeding exactly",
                    seeding="seed = args.seed + 1000*rep + n  (identical to job5)"))
@@ -80,9 +111,9 @@ def main():
                         r = subprocess.run(["Rscript", "--vanilla", rs, csv, txt,
                                             str(a.nsim), str(seed), str(a.nrep)], capture_output=True, text=True)
                         if r.returncode != 0 or not os.path.exists(txt):
-                            print(f"  R FAILED {kind} n={n} rep{rep}: {r.stderr.strip()[:160]}",
-                                  flush=True)
-                            continue
+                            raise SystemExit(
+                                f"R/sigclust failed on {kind} n={n} rep{rep} -- refusing to "
+                                f"continue.\n  Rscript said: {r.stderr.strip()[:300]}")
                         pval, ci = [float(v) for v in open(txt).read().split()]
                         os.remove(txt)
                         ps.append(pval); cert += int(pval < 0.05)
