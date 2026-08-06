@@ -41,7 +41,12 @@ torch==2.11.0
 # in job3b/job5 is built on Hartigan's dip, and pathway_subtyping's dip_of() returns NaN
 # instead of raising when diptest is absent — so a missing install WOULD silently disable the
 # screen. That is why job3b, job5, job6, job6b and both gate_calibration scripts now probe
-# for it up front and exit non-zero, writing no output, rather than degrading quietly.
+# for it and exit non-zero rather than degrading quietly. Precisely: job6, job6b and both
+# gate_calibration scripts probe BEFORE opening their output and write nothing at all;
+# job3b and job5 probe inside their generator loop, so they exit 1 having already flushed a
+# provenance header — a file with no verdicts in it, which cannot be mistaken for a result,
+# but not literally "no output". An earlier revision of this line claimed all six wrote
+# nothing; that was asserted rather than tested, which is the defect this comment describes.
 diptest>=0.5.0
 
 # NOT installable with pip. job1c/job1d/job1e run the canonical SigClust comparator and need

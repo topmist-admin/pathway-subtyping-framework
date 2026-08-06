@@ -75,6 +75,12 @@ reproduction is version-sensitive — those deposited numbers were produced unde
 earlier releases, and the invariant to check is the *conclusion*, not a
 bit-identical partition.
 
+> ⚠️ **Result 5 quotes the CONVERGED SigClust figures.** `sigclust()` runs `kmeans` at the
+> CRAN default of a single random start. The `*_nrep100.jsonl` files re-run it at 100 starts
+> — ablation grid TPR **30/30**, FPR **0/30** — and that is what the manuscript reports. The
+> plain `job1c/1d/1e` files are the `nrep=1` default (TPR 27/30, FPR 1/30), kept so the
+> original reproduces exactly; they are **not** the reported result.
+
 > 📄 **Re-running everything from source?** Read
 > [`DATA-ACQUISITION.md`](DATA-ACQUISITION.md) first. It lists what actually needs
 > downloading (almost nothing — six packages reproduce from deposited inputs; see the count note below), the
@@ -136,19 +142,12 @@ public cBioPortal/GEO/recount3 data with no authentication.
 | Scoping (negative result) | [`cross-domain/psychiatric_meta/`](cross-domain/psychiatric_meta/) | `track_a_recount3.tsv` | NCBI E-utilities |
 | Gate-6 domain remap | [`cross-domain/`](cross-domain/) | `results/confound_remap_results.json` | none (seeded) |
 | Gate-7 somatic anchoring (real TCGA-CRC positive control: BRAF-V600E / KRAS / MSI) | [`cross-domain/tcga_crc/`](cross-domain/tcga_crc/) | `tcga_crc_somatic_result.json` | cBioPortal |
-> ⚠️ **The manuscript reports the CONVERGED SigClust figures.** `sigclust()` runs `kmeans`
-> at the CRAN default of a single random start; the `*_nrep100.jsonl` files re-run it at 100
-> starts, which is what Result 5 quotes (ablation grid TPR **30/30**, FPR **0/30**). The
-> plain `job1c/1d/1e` files are the `nrep=1` default and give TPR 27/30, FPR 1/30 — kept so
-> the original reproduces, **not** the reported result. Compare against
-> `job1c_canonical_sigclust_nrep100.jsonl`, `job1d_canonical_sweep_nrep100.jsonl` and
-> `job1e_sigclust_hetero_nrep100.jsonl`.
 
-| **Result 5** where the screen fails (heteroscedastic continua) + SigClust regime comparison | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job3b_nsweep_validated.jsonl`, `job5_heteroscedastic_fpr.jsonl`, `job1c_canonical_sigclust.jsonl`, `job1d_canonical_sweep.jsonl` | none (synthetic) — but **needs R + CRAN `sigclust`** for 1c/1d and **`diptest`** for 3b/5 |
+| **Result 5** where the screen fails (heteroscedastic continua) + SigClust regime comparison | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job3b_nsweep_validated.jsonl`, `job5_heteroscedastic_fpr.jsonl`, `job1c_canonical_sigclust_nrep100.jsonl` (converged; the `nrep=1` file beside it is the CRAN default and gives 27/30), `job1d_canonical_sweep_nrep100.jsonl` (converged) | none (synthetic) — but **needs R + CRAN `sigclust`** for 1c/1d and **`diptest`** for 3b/5 |
 | **Result 1** covariance/undersizing sweep | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job2b_shrinkage_parity.jsonl` (**check `parity_ok`**) | none (synthetic) |
 | **Result 3** TCGA-BRCA certification statistics | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job6_brca_certification.jsonl` | cBioPortal (delegates to `cancer_r38`'s fetcher) |
 | **Result 4** donor-level continuous statistics | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job4_donor_continuous.json` | none (reads deposited labels) |
-| **Result 5** SigClust on heteroscedastic continua | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job1e_sigclust_hetero.jsonl` | none — **needs R + CRAN `sigclust`** |
+| **Result 5** SigClust on heteroscedastic continua | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job1e_sigclust_hetero_nrep100.jsonl` (converged) | none — **needs R + CRAN `sigclust`** |
 | **Result 3** PC1 diagnostics for the cached controls | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job6b_pc1_diagnostics.jsonl` | none (reads deposited cached inputs) |
 | **Methods** gene column-order invariance | [`revision-analyses-2026-08-03/`](revision-analyses-2026-08-03/) | `job7_column_order.jsonl` | GEO (**raw counts**, a different route from the cached scores — see that folder's README) |
 
@@ -168,7 +167,7 @@ None is restated from prose.
 
 **Gate ablation (authoritative: `ablation_honest.json`)** — three-way accounting
 - Negatives (n=30): stability-only false-certifies **13** (FPR 0.433, Wilson 95%
-  CI [0.27, 0.61]); the recalibrated gate certifies **0**. Paired exact McNemar
+  CI [0.27, 0.61]); the discreteness-screened gate certifies **0**. Paired exact McNemar
   b=13 c=0 **p=0.0002** — real reduction.
 - ⚠️ The gate reaches that by **abstaining on 26/30 (87%)** negatives; FPR excluding
   abstentions is 0/4, CI [0.00, 0.49] — nearly uninformative. Do NOT quote "FPR 0.000".
@@ -176,7 +175,7 @@ None is restated from prose.
   no TPR cost was measurable here. With 30 positives a small one cannot be excluded,
   so write "no measurable cost", not "the gate is free".
 - Head-to-head: the SigClust p-value **alone** reproduces the composite gate exactly
-  → the contribution is a null recalibration, not a new instrument.
+  → the contribution is a null *replacement*, not a new instrument ("recalibration" was retired as inaccurate — nothing is recalibrated; the reference distribution is swapped).
 - Separation sweep (`separation_sweep.json`, 20 reps/step): gate resolves (certify 0.00
   through δ≤2.0 → 0.15 at δ=2.5 → 0.55 at δ=3.0; median p 0.78→0.23→0.04) but is
   **conservative** — the transition is confined to δ=2.5–3.0. Script default `--reps 20`.
