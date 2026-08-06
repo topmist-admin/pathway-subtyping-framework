@@ -34,13 +34,13 @@ GSE64018 / GSE80655). The two are not interchangeable.
 > than staged. Verified from a clean venv against the published wheel.
 >
 > ⚠️ **But use the `src/` tree bundled in this archive, not the PyPI wheel, if you are
-> re-running anything.** The bundled source is framework commit **`36747bc`**; the
+> re-running anything.** The bundled source is framework commit **`b62864e`** (pushed 2026-08-07 to GitHub, Bitbucket and Codeberg); the
 > published wheel and the `v0.9.0` git tag are commit **`05c5798`**. Both declare
 > `__version__ = "0.9.0"`, so `import pathway_subtyping; p.__version__` cannot tell them
 > apart. The bundled tree is the one every deposited result was produced with, and it
 > carries five fixes the released wheel does not:
 >
-> | | released `v0.9.0` (PyPI / tag) | bundled `src/` (`36747bc`) |
+> | | released `v0.9.0` (PyPI / tag) | bundled `src/` (`b62864e`) |
 > |---|---|---|
 > | platform seed | `abs(hash(platform))` — **salted per process**, so the value differs on every run | `zlib.crc32(str(platform).encode())` — stable |
 > | bootstrap GMM seed | `if gmm_seed:` — **`gmm_seed=0` silently disables seeding** | `if gmm_seed is not None:` |
@@ -53,7 +53,7 @@ GSE64018 / GSE80655). The two are not interchangeable.
 > `simulate_platform_distortion` has no caller outside `src/` and `tests/`. The
 > divergence is a provenance and documentation defect, not a numerical one — but a
 > reviewer who installs the wheel is running code whose own docstrings assert two claims
-> this paper retracts. A `0.9.1` release folding `36747bc` into the published line is
+> this paper retracts. A `0.9.1` release folding `b62864e` into the published line is
 > **pending**; until it lands, prefer the bundled `src/`:
 >
 > ```bash
