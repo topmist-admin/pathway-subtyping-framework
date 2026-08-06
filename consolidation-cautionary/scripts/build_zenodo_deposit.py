@@ -150,11 +150,7 @@ def zenodo_metadata(stamp):
                 {"identifier": "RRID:SCR_028051",
                  "relation": "isIdenticalTo", "scheme": "url"},
             ],
-            "notes": ("Public data only; no controlled-access data included. Built %s. "
-                      "Reproduce against the BUNDLED src/ tree: it and the PyPI wheel "
-                      "pathway-subtyping==%s declare the same version but are different "
-                      "commits, and only the bundled tree carries the determinism fixes "
-                      "these results were produced with." % (stamp, VERSION)),
+            "notes": _record_notes(),
         }
     }
 
@@ -200,6 +196,43 @@ def sha256(path):
 
 
 
+def _description_file():
+    """Locate the maintained Zenodo record text, or None."""
+    import os
+    here = os.path.dirname(os.path.abspath(__file__))
+    cands = []
+    env = os.environ.get("PSF_ZENODO_DESCRIPTION")
+    if env:
+        cands.append(env)
+    cands.append(os.path.join(
+        here, "../../../../AIForAutismOutReach/manuscripts/"
+        "SCIENTIFIC-REPORTS-SUBMISSION-2026/SUBMISSION-2026-08-05/"
+        "08_zenodo-upload/DESCRIPTION-for-zenodo.md"))
+    for rel in cands:
+        path = os.path.normpath(os.path.join(here, rel))
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def _record_notes():
+    """Read the maintained 'Notes field' block, or refuse to invent one.
+
+    Same reasoning as _record_description(): an inline literal here previously told
+    reproducers the PyPI wheel was the primary install path, which contradicts RUNME.md
+    and points them at a build lacking the determinism fixes. Keep the text reviewable.
+    """
+    import re as _re
+    path = _description_file()
+    if path:
+        m = _re.search(r"## Notes field\n\n```\n(.*?)\n```",
+                       open(path, encoding="utf-8").read(), _re.S)
+        if m:
+            return m.group(1).strip()
+    return ("NOTES NOT FOUND AT BUILD TIME -- do not publish this record until the notes are "
+            "pasted from 08_zenodo-upload/DESCRIPTION-for-zenodo.md.")
+
+
 def _record_description():
     """Read the maintained Zenodo description, or say plainly that it was not found.
 
@@ -207,23 +240,12 @@ def _record_description():
     WITHDRAWN methodology paper -- and survived several rebuilds because nobody reads a string
     buried in a build script. Keeping the text in the submission package makes it reviewable.
     """
-    import os
-    here = os.path.dirname(os.path.abspath(__file__))
-    candidates = []
-    env = os.environ.get("PSF_ZENODO_DESCRIPTION")
-    if env:
-        candidates.append(env)
-    candidates.append(os.path.join(
-        here, "../../../../AIForAutismOutReach/manuscripts/"
-        "SCIENTIFIC-REPORTS-SUBMISSION-2026/SUBMISSION-2026-08-05/"
-        "08_zenodo-upload/DESCRIPTION-for-zenodo.md"))
-    for rel in candidates:
-        path = os.path.normpath(os.path.join(here, rel))
-        if os.path.exists(path):
-            import re as _re
-            m = _re.search(r"```html\n(.*?)\n```", open(path, encoding="utf-8").read(), _re.S)
-            if m:
-                return m.group(1).strip()
+    import re as _re
+    path = _description_file()
+    if path:
+        m = _re.search(r"```html\n(.*?)\n```", open(path, encoding="utf-8").read(), _re.S)
+        if m:
+            return m.group(1).strip()
     return ("DESCRIPTION NOT FOUND AT BUILD TIME -- do not publish this record until the "
             "description is pasted from 08_zenodo-upload/DESCRIPTION-for-zenodo.md. "
             "Emitting this placeholder rather than stale prose is deliberate.")
