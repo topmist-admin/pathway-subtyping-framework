@@ -459,7 +459,11 @@ def main() -> None:
         summary[pol] = dict(TPR=round(tpr, 3), FPR=round(fpr, 3), cert_rate_by_condition=by_cond)
 
     out = dict(
-        params=vars(args) | {"out": str(args.out)},
+        # Basename path-like values: every other provenance emitter in this deposit does
+        # the same, so an absolute --out cannot write a reviewer's machine path into a
+        # deposited result. (`Path` is imported here; `os` is not.)
+        params={key: (Path(val).name if key == "out" else val)
+                for key, val in vars(args).items()},
         n_datasets=len(df),
         elapsed_sec=round(time.time() - t0, 1),
         summary=summary,

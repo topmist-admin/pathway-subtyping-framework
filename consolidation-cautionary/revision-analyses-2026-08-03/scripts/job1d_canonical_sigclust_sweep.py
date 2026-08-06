@@ -58,7 +58,7 @@ def make(sep, n, p, rng):
 
 
 
-def _require_sigclust(rscript_body):
+def _require_sigclust():
     """Fail closed unless R AND the CRAN `sigclust` package actually work.
 
     `which Rscript` is not enough: an Rscript that exists but errors (wrong R, missing
@@ -97,7 +97,7 @@ def main():
                     help="k-means restarts inside sigclust (CRAN default 1; use 100 for a converged comparison)")
     ap.add_argument("--seps", default=",".join(str(s) for s in SEPS))
     a = ap.parse_args()
-    _require_sigclust(R_SCRIPT)
+    _require_sigclust()
     seps = [float(x) for x in a.seps.split(",")]
 
     with tempfile.TemporaryDirectory() as td:
@@ -118,6 +118,8 @@ def main():
                     csv = os.path.join(td, "x.csv")
                     pd.DataFrame(X).to_csv(csv, header=False, index=False)
                     txt = os.path.join(td, "o.txt")
+                    if os.path.exists(txt):
+                        os.remove(txt)  # see job1c: make the existence check meaningful
                     r = subprocess.run(["Rscript", "--vanilla", rs, csv, txt,
                                         str(a.nsim), str(42), str(a.nrep)],
                                        capture_output=True, text=True)

@@ -435,11 +435,17 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 If you use this framework in your research, please cite the preprint:
 
 ```
-Chauhan R. Pathway-Based Molecular Subtyping Reveals a GABA-Collapsed Autism Subgroup
-and Cross-Disease Convergence with Schizophrenia in Human Cerebral Cortex.
-Research Square. 2026. DOI: 10.21203/rs.3.rs-8913089/v1
-https://www.researchsquare.com/article/rs-8913089/v1
+Chauhan R. Stable but confounded: pathway-based molecular subtypes that pass
+validation and still track anatomy.
+Research Square. 2026. DOI: 10.21203/rs.3.rs-8913089/v2
+https://www.researchsquare.com/article/rs-8913089/v2
 ```
+
+⚠️ **Cite v2, not v1.** v1 reported a "GABA-Collapsed autism subgroup and cross-disease
+convergence with schizophrenia". **That claim was reversed** and the preprint rewritten as a
+cautionary paper; the subtypes were stable but tracked brain region, not diagnosis. An earlier
+revision of this section still gave the v1 DOI and the v1 title — corrected 2026-08-07.
+`CITATION.cff` in this repository has pointed at v2 throughout.
 
 To cite the software specifically:
 ```

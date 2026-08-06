@@ -61,7 +61,7 @@ def _stable_key(name: str) -> int:
 
 
 
-def _require_sigclust(rscript_body):
+def _require_sigclust():
     """Fail closed unless R AND the CRAN `sigclust` package actually work.
 
     `which Rscript` is not enough: an Rscript that exists but errors (wrong R, missing
@@ -101,7 +101,7 @@ def main():
                     help="k-means restarts inside sigclust (CRAN default 1; use 100 for a converged comparison)")
     ap.add_argument("--seed", type=int, default=42)
     a = ap.parse_args()
-    _require_sigclust(R_SCRIPT)
+    _require_sigclust()
 
     with tempfile.TemporaryDirectory() as td:
         rs = os.path.join(td, "sc.R")
@@ -123,6 +123,13 @@ def main():
                     csv = os.path.join(td, "x.csv")
                     pd.DataFrame(scores.values).to_csv(csv, header=False, index=False)
                     txt = os.path.join(td, "o.txt")
+                    # Unlink BEFORE the call so `os.path.exists(txt)` below actually tests
+                    # "did THIS invocation write a result". Without this the check passes on
+                    # the previous rep's leftover file and its p/cindex are silently reused --
+                    # job1c shipped that way and could report 100%% certification on data no R
+                    # process produced. Same class as the fail-open this guard was added for.
+                    if os.path.exists(txt):
+                        os.remove(txt)
                     r = subprocess.run(["Rscript", "--vanilla", rs, csv, txt,
                                         str(a.nsim), str(seed), str(a.nrep)],
                                        capture_output=True, text=True)
@@ -133,6 +140,7 @@ def main():
                             f"  which is the direction that flatters this paper.\n"
                             f"  Rscript said: {r.stderr.strip()[:300]}")
                     pval, cindex = [float(v) for v in open(txt).read().split()]
+                    os.remove(txt)
                     ps.append(pval)
                     fh.write(json.dumps(dict(record="dataset", condition=cond, klass=klass,
                                              rep=rep, p=pval, cindex=cindex)) + "\n")

@@ -44,7 +44,7 @@ cat(sprintf("%.6f %.6f\n", r@pval, r@xcindex), file=a[2])
 
 
 
-def _require_sigclust(rscript_body):
+def _require_sigclust():
     """Fail closed unless R AND the CRAN `sigclust` package actually work.
 
     `which Rscript` is not enough: an Rscript that exists but errors (wrong R, missing
@@ -83,11 +83,9 @@ def main():
                     help="k-means restarts inside sigclust (CRAN default 1; use 100 for a converged comparison)")
     ap.add_argument("--seed", type=int, default=42)
     a = ap.parse_args()
-    _require_sigclust(R_SCRIPT)
+    _require_sigclust()
     ns = [int(x) for x in a.ns.split(",")]
 
-    if subprocess.run(["which", "Rscript"], capture_output=True).returncode != 0:
-        sys.exit("Rscript not found. This job needs R >= 4 with the CRAN `sigclust` package.")
 
     with tempfile.TemporaryDirectory() as td:
         rs = os.path.join(td, "sc.R"); open(rs, "w").write(R_SCRIPT)
@@ -108,6 +106,8 @@ def main():
                         csv = os.path.join(td, "x.csv")
                         pd.DataFrame(X.values).to_csv(csv, header=False, index=False)
                         txt = os.path.join(td, "o.txt")
+                        if os.path.exists(txt):
+                            os.remove(txt)  # see job1c: make the existence check meaningful
                         r = subprocess.run(["Rscript", "--vanilla", rs, csv, txt,
                                             str(a.nsim), str(seed), str(a.nrep)], capture_output=True, text=True)
                         if r.returncode != 0 or not os.path.exists(txt):

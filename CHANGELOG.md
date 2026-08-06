@@ -21,8 +21,10 @@ whose scripts query live NCBI E-utilities and recount3 and have no offline path.
 ### Reproduction packages
 
 - **Fetch provenance on every network-derived result** (new `consolidation-cautionary/scripts/_provenance.py`).
-  Each now records endpoint, study, UTC fetch date, post-filter shape and a **SHA-256 of
-  the assembled matrix**, plus the library versions that can move a number.
+  Each now records endpoint, study, UTC fetch date, post-filter shape and a **SHA-256 of the assembled matrix (⚠️ **corrected 2026-08-07**: the emitter that writes
+  `matrix_sha256` postdates these runs, so **no deposited result actually carries the field**,
+  and the `drift_note` inside four deposited result JSONs still tells readers to compare it.
+  Compare the post-filter matrix shape and study id instead — see `DATA-ACQUISITION.md` §1b)**, plus the library versions that can move a number.
   `gate_calibration` previously recorded *nothing*, so its verdict could not be tied to
   any data snapshot. cBioPortal is not a versioned API; the hash is what makes drift
   detectable.
@@ -449,8 +451,11 @@ fixes it. See `docs/discreteness_gate.md` for the full rationale.
 - **`pathway_subtyping.clustering_dl`** — deep-learning clustering baselines, DEC
   (Xie, Girshick & Farhadi, ICML 2016) and VAE-GMM / VaDE (Jiang et al., IJCAI 2017),
   exposed as `run_dec` / `run_vae_gmm`. These let the validation gates be run over
-  DL-produced partitions (the gate is clusterer-agnostic — it tests the data, not the
-  algorithm) and provide the method-comparison baselines for the cancer worked example.
+  DL-produced partitions (⛔ **RETRACTED wording** — this entry originally said "the gate is clusterer-agnostic". The
+  gate takes no partition argument and re-clusters internally, so it can be APPLIED downstream
+  of any clusterer; that is definitional, not the empirical invariance the phrase implies. The
+  sweep that appeared to demonstrate it called the gate once per condition and copied the
+  verdict across arms. Marked 2026-08-07.) and provide the method-comparison baselines for the cancer worked example.
   Torch is an optional dependency; the baselines are skipped gracefully when absent.
 - **Synthetic-control tests** (`tests/test_discreteness_gate.py`): the new gate must fail
   a single Gaussian and a 1-D continuum (which the old null wrongly passed) and pass two
