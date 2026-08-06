@@ -109,25 +109,16 @@ GitHub/Codeberg tag `v%(version)s`. This deposit: the Zenodo DOI shown on the re
 def zenodo_metadata(stamp):
     return {
         "metadata": {
-            "title": ("Reproduction package: a discreteness-aware validation "
-                      "framework for molecular patient stratification (v%s)" % VERSION),
+            "title": ("Reproduction package: A single-Gaussian discreteness screen for "
+                      "molecular subtypes -- catching continua and confounds that pass "
+                      "stability (v%s)" % VERSION),
             "upload_type": "software",
-            "description": (
-                "Self-contained, public-data-only reproduction package for the "
-                "Scientific Reports manuscript on mandatory validation gates for "
-                "molecular subtyping. Contains the v%s framework source (installable "
-                "from PyPI as pathway-subtyping==%s), the cross-disease reproduction "
-                "packages (synthetic gate ablation, within-study real-data calibration, "
-                "corrected 47-dataset benchmark audit, TCGA-BRCA/CPTAC cancer worked "
-                "example, GTEx large-N, and the postmortem-psychiatric flagship), the "
-                "cached public inputs, and a concern-handling matrix mapping each "
-                "reviewer comment to its resolution and artifact, plus the 2026-08-03 revision "
-                "analyses behind Result 5 (SigClust comparison, heteroscedastic "
-                "false-positive characterisation, shrinkage parity). IMPORTANT: re-run "
-                "against the bundled src/ tree, NOT the PyPI wheel -- both report version "
-                "%s but they are different commits, and the wheel lacks determinism fixes "
-                "present here. See RUNME.md before reproducing."
-                % (VERSION, VERSION, VERSION)),
+            # The record description is maintained as paste-ready HTML in the
+            # submission package (08_zenodo-upload/DESCRIPTION-for-zenodo.md) so the
+            # text a DOI-follower reads and the text a human pastes cannot drift.
+            # If that file is reachable, use it; otherwise emit a short placeholder
+            # that says so rather than silently shipping stale prose.
+            "description": _record_description(),
             "version": VERSION,
             "language": "eng",
             "keywords": ["molecular subtyping", "cluster validation",
@@ -206,6 +197,36 @@ def sha256(path):
         for chunk in iter(lambda: fh.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+
+def _record_description():
+    """Read the maintained Zenodo description, or say plainly that it was not found.
+
+    An earlier inline literal here described "mandatory validation gates" -- the framing of the
+    WITHDRAWN methodology paper -- and survived several rebuilds because nobody reads a string
+    buried in a build script. Keeping the text in the submission package makes it reviewable.
+    """
+    import os
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = []
+    env = os.environ.get("PSF_ZENODO_DESCRIPTION")
+    if env:
+        candidates.append(env)
+    candidates.append(os.path.join(
+        here, "../../../../AIForAutismOutReach/manuscripts/"
+        "SCIENTIFIC-REPORTS-SUBMISSION-2026/SUBMISSION-2026-08-05/"
+        "08_zenodo-upload/DESCRIPTION-for-zenodo.md"))
+    for rel in candidates:
+        path = os.path.normpath(os.path.join(here, rel))
+        if os.path.exists(path):
+            import re as _re
+            m = _re.search(r"```html\n(.*?)\n```", open(path, encoding="utf-8").read(), _re.S)
+            if m:
+                return m.group(1).strip()
+    return ("DESCRIPTION NOT FOUND AT BUILD TIME -- do not publish this record until the "
+            "description is pasted from 08_zenodo-upload/DESCRIPTION-for-zenodo.md. "
+            "Emitting this placeholder rather than stale prose is deliberate.")
 
 
 def main():
