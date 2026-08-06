@@ -68,7 +68,7 @@ def main():
     if not np.isfinite(_probe):
         raise SystemExit(
             "Hartigan dip unavailable (install the `diptest` extra: pip install "
-            "'pathway-subtyping[diptest]'). Refusing to run: this job reports dip p-values "
+            "'pathway-subtyping[discreteness]'). Refusing to run: this job reports dip p-values "
             "as evidence, and NaN would be written to the output as invalid JSON.")
 
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)

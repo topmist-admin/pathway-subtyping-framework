@@ -71,7 +71,7 @@ def _require_diptest():
     if not _np.isfinite(dip_of(_np.linspace(0.0, 1.0, 32))["p"]):
         raise SystemExit(
             "Hartigan dip unavailable (install the `diptest` extra: pip install "
-            "'pathway-subtyping[diptest]'). Refusing to run: this script reports dip "
+            "'pathway-subtyping[discreteness]'). Refusing to run: this script reports dip "
             "p-values as evidence, and NaN would be written to the output as invalid JSON.")
 
 
