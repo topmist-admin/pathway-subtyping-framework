@@ -40,9 +40,10 @@ R_SCRIPT = r"""
 suppressMessages(library(sigclust))
 args <- commandArgs(trailingOnly=TRUE)
 csv <- args[1]; out <- args[2]; nsim <- as.integer(args[3]); seed <- as.integer(args[4])
+nrep <- if (length(args) >= 5) as.integer(args[5]) else 1
 x <- as.matrix(read.csv(csv, header=FALSE))
 set.seed(seed)
-r <- sigclust(x, nsim=nsim, labflag=0, icovest=2)
+r <- sigclust(x, nsim=nsim, nrep=nrep, labflag=0, icovest=2)
 cat(sprintf("%.6f %.6f\n", r@pval, r@xcindex), file=out)
 """
 
@@ -63,6 +64,8 @@ def main():
     ap.add_argument("--n", type=int, default=120)
     ap.add_argument("--p", type=int, default=50)
     ap.add_argument("--nsim", type=int, default=100)
+    ap.add_argument("--nrep", type=int, default=1,
+                    help="k-means restarts inside sigclust (CRAN default 1; use 100 for a converged comparison)")
     ap.add_argument("--seps", default=",".join(str(s) for s in SEPS))
     a = ap.parse_args()
     seps = [float(x) for x in a.seps.split(",")]
@@ -86,7 +89,7 @@ def main():
                     pd.DataFrame(X).to_csv(csv, header=False, index=False)
                     txt = os.path.join(td, "o.txt")
                     r = subprocess.run(["Rscript", "--vanilla", rs, csv, txt,
-                                        str(a.nsim), str(42)],
+                                        str(a.nsim), str(42), str(a.nrep)],
                                        capture_output=True, text=True)
                     if r.returncode != 0 or not os.path.exists(txt):
                         print(f"  R FAILED sep={sep} rep{rep}: {r.stderr.strip()[:150]}",

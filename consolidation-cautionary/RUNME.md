@@ -32,10 +32,39 @@ GSE64018 / GSE80655). The two are not interchangeable.
 > ✅ **v0.9.0 is published.** Released 2026-07-29 — `pip install
 > pathway-subtyping==0.9.0` resolves from PyPI, and the pins below are live rather
 > than staged. Verified from a clean venv against the published wheel.
+>
+> ⚠️ **But use the `src/` tree bundled in this archive, not the PyPI wheel, if you are
+> re-running anything.** The bundled source is framework commit **`36747bc`**; the
+> published wheel and the `v0.9.0` git tag are commit **`05c5798`**. Both declare
+> `__version__ = "0.9.0"`, so `import pathway_subtyping; p.__version__` cannot tell them
+> apart. The bundled tree is the one every deposited result was produced with, and it
+> carries five fixes the released wheel does not:
+>
+> | | released `v0.9.0` (PyPI / tag) | bundled `src/` (`36747bc`) |
+> |---|---|---|
+> | platform seed | `abs(hash(platform))` — **salted per process**, so the value differs on every run | `zlib.crc32(str(platform).encode())` — stable |
+> | bootstrap GMM seed | `if gmm_seed:` — **`gmm_seed=0` silently disables seeding** | `if gmm_seed is not None:` |
+> | `clustering_dl` docstring | claims the gates are *"clusterer-agnostic"* | **retracted**; states the gate takes no partition argument |
+> | gate docstring | hardcodes *"abstained on 28 of 30"* (a retired number) | reads the run's own counts; nothing hardcoded |
+> | `_k_stability` docstring | says k is BIC-selected | corrected to silhouette |
+>
+> **Does this change any deposited number? No.** No deposited path passes `gmm_seed=0`
+> (seeds are `42 + 1000*rep + crc32(...)`, and `job4`/`job7` use `SEED = 42`), and
+> `simulate_platform_distortion` has no caller outside `src/` and `tests/`. The
+> divergence is a provenance and documentation defect, not a numerical one — but a
+> reviewer who installs the wheel is running code whose own docstrings assert two claims
+> this paper retracts. A `0.9.1` release folding `36747bc` into the published line is
+> **pending**; until it lands, prefer the bundled `src/`:
+>
+> ```bash
+> PYTHONPATH="$PWD/src" python -c "import pathway_subtyping as p; print(p.__file__)"
+> # must print a path inside THIS archive, not inside site-packages
+> ```
 
-**One version, one install: `pathway-subtyping==0.9.0`.** Everything in this
-bundle — both this file's packages and the sibling README's — installs and runs
-against v0.9.0, which is a superset of v0.7.0. Where the older scripts and their
+**One version line, one install: `pathway-subtyping==0.9.0`** (with the bundled-`src/`
+caveat above — the wheel and the bundled tree are both "0.9.0" but are not the same
+commit). Everything in this bundle — both this file's packages and the sibling
+README's — installs and runs against the v0.9.0 line, which is a superset of v0.7.0. Where the older scripts and their
 READMEs mention v0.7.0, that is **provenance** (the release under which their
 deposited reference outputs were generated), *not* an instruction to install it.
 Do not downgrade: v0.7.0 lacks `pathway_subtyping.discreteness` and
@@ -48,9 +77,9 @@ bit-identical partition.
 
 > 📄 **Re-running everything from source?** Read
 > [`DATA-ACQUISITION.md`](DATA-ACQUISITION.md) first. It lists what actually needs
-> downloading (almost nothing — six packages reproduce from deposited inputs), the
+> downloading (almost nothing — six packages reproduce from deposited inputs; see the count note below), the
 > measured runtime of every job, and **the acceptance criterion per result**. That last
-> point matters: byte-identity is the right bar for the six deposited packages and the
+> point matters: byte-identity is the right bar for the five verified deposited packages and the
 > *wrong* bar for anything re-fetched from a live API, where the invariant is the
 > conclusion. Applying the wrong bar manufactures disagreements.
 
@@ -74,7 +103,7 @@ python -c "import pathway_subtyping as p; print(p.__version__)"   # 0.9.0
 **Verified reviewer reproduction (2026-07-25):** from a clean virtual environment with
 only the PyPI wheel installed (no local source tree), every no-network package
 reproduces its deposited headline numbers exactly — benchmark audit (22 valid rows),
-honest ablation (McNemar p=0.001, SigClust-p-alone == composite gate), donor-level
+SigClust-p-alone == composite gate (⚠️ the ablation is EXCLUDED from this 2026-07-25 verification: every Result 1 headline was corrected on 2026-08-05 after a seeding defect, so the p=0.001 that round verified is not the p=0.0002 reported now), donor-level
 flagship (region V 0.660, diagnosis permutation p 0.234), and the framework-gate
 flagship stability (0.921). The network packages (calibration, cancer, sweep) fetch
 public cBioPortal/GEO/recount3 data with no authentication.

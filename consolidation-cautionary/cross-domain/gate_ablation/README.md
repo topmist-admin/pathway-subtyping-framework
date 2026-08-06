@@ -36,9 +36,7 @@ those, not the "FPR 0.000 / rejected 100%" framing in the older sections:
 (threshold α=0.05) reproduces the full gate's TPR and FPR exactly. The gap statistic
 and Hartigan dip are computed but never enter the decision rule
 (`passed = obs > sg_p95 and sg_p < alpha`); the k-stability route only adds
-abstentions. Frame the contribution as replacing the feature-permutation null with a
-single-Gaussian null (SigClust; Liu et al. 2008) on the existing bootstrap-ARI
-statistic — not as a multi-test discreteness instrument.
+abstentions. Frame the contribution as giving the existing bootstrap-ARI statistic a single-Gaussian reference distribution (SigClust; Liu et al. 2008) — not as a multi-test discreteness instrument. ⚠️ Do NOT describe THIS ablation as a reference swap: the `stability_only` arm here is a fixed 0.80 ARI threshold (`validation.py`), so the contrast is threshold-vs-reference, and it is sensitive to where the threshold sits (14/13/13/7/5/2/0 false certifications at bars 0.70→0.97, TPR 30/30 throughout).
 
 **Resolution / operating characteristic** (`separation_sweep.py` /
 `results/separation_sweep.json`, 20 reps/step, 7 δ points): sweeping component
@@ -65,8 +63,8 @@ python scripts/gate_ablation_study.py --out consolidation-cautionary/cross-domai
 python scripts/plot_gate_ablation.py  --out consolidation-cautionary/cross-domain/gate_ablation/results
 ```
 
-⚠️ **The full run took 4,623.9 s (~77 min)** on the deposited settings
-(n=60, p=50, 15 reps/condition, n_ref=120, n_bootstrap=40). Use `--quick` for a
+⚠️ **The deposited run records 7,295.2 s (~2 h) in `gate_ablation_results.json`** (an earlier faster run on different hardware took 4,623.9 s; wall clock is machine-dependent, so quote the JSON) on the deposited settings
+(n=60, p=50, 15 reps/condition, n_ref=100, n_bootstrap=40). Use `--quick` for a
 smoke run — `--quick` numbers will NOT match the deposited values.
 
 Requires the **v0.8 line** of the framework (`pathway_subtyping.discreteness`,
@@ -109,15 +107,39 @@ none: 30 positives cannot exclude a small one. Write "no measurable cost", never
 1.000 → 0.967 figure and why it was withdrawn rather than updated.)
 
 Source: `results/gate_ablation_results.json` (+ `_raw.csv` for per-replicate rows).
-Figure: `results/gate_ablation_figure.{png,svg}`.
+
+**Figure: withdrawn 2026-08-06, not replaced in this directory.**
+`results/gate_ablation_figure.{png,svg}` was rendered 2026-07-23, two weeks before the
+data it depicted, and was never regenerated after the seeding fix moved the underlying
+numbers. It printed `FPR 0.37` (the retired 11/30) and `TPR 0.97` (the retired 29/30)
+against current values of 13/30 and 30/30, labelled its arms `pre-v0.8.0`/`v0.8.0` in a
+v0.9.0 deposit, and carried the title *"the discreteness gate removes continuum
+false-positives"* with an arrow annotated *"continuum false-positives eliminated"* — the
+abstention-as-rejection framing this analysis now retracts (see the READ FIRST section).
+
+It was deleted rather than re-rendered because the framing was withdrawn as well as the
+numbers: re-running `scripts/plot_gate_ablation.py` would correct the bar heights while
+still plotting the gate's FPR as a bare `0.00`, which is the over-generous
+abstention-as-reject convention. The honest rendering of this same analysis — which shows
+the abstention decomposition explicitly — is **Figure 1 of the manuscript**, built by
+`consolidation-cautionary/scripts/build_manuscript_figures.py` from `ablation_honest.json`.
+
+No text search could have caught this: the retired numbers existed only as rendered
+glyphs inside a PNG.
 
 ## Result 1b — clusterer generality (R2.2)
 
 The same synthetic data clustered three ways — GMM, DEC (Xie 2016), VAE-GMM
 (VaDE, Jiang 2017) — then passed to Gate A.
 
-**Primary result:** Gate A **declines to certify** the 1-D continuum on **100%** of
-runs, and does so identically regardless of which algorithm drew the partition.
+⚠️ **Read the two retractions below before reading any number in this subsection.**
+Both the "100%" framing and the across-clusterer framing have been narrowed for cause,
+and the corrected statement is weaker than it first appears.
+
+**What this sweep shows:** Gate A **declines to certify** the 1-D continuum on **100%**
+of runs. The three clusterer arms are reported for completeness, but they are **identical
+by construction** — see the second retraction — so this is one verdict, not three
+agreeing verdicts.
 
 ⚠️ **"Declines to certify" is not "rejects."** The bulk of those non-certifications
 are `not-testable` abstentions — the gate found no reproducible k and so declined to

@@ -120,7 +120,7 @@
         "rate": 0.0
       }
     },
-    "increment": "The single-Gaussian p-value alone reproduces the composite gate's TPR and FPR exactly. The gap statistic and dip test are computed but not in the decision rule; the k-stability routing only adds abstentions. The honest contribution is the null recalibration (feature-permutation -> single-Gaussian), not a new multi-test instrument."
+    "increment": "The single-Gaussian p-value alone reproduces the composite gate's TPR and FPR exactly. The gap statistic and dip test are computed but not in the decision rule; the k-stability routing only adds abstentions. The honest contribution is the reference recalibration (giving the existing statistic a single-Gaussian reference), not a new multi-test instrument."
   },
   "p_value_floor": {
     "n_ref": 100,

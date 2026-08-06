@@ -59,6 +59,22 @@ def std_gap_pc1(Z: np.ndarray, labels: np.ndarray) -> float:
     return float(abs(xa.mean() - xb.mean()) / sd) if sd > 0 else float("nan")
 
 
+def _require_diptest():
+    """Fail closed if the optional `diptest` extra is missing.
+
+    `dip_of()` returns NaN rather than raising when the extra is absent. Every dip value
+    this script writes is reported as evidence, and a NaN would be serialised as a bare
+    `NaN` token, which is not valid JSON (RFC 8259) and is accepted only by Python's own
+    parser. Probe once, up front, so no partial output is ever written.
+    """
+    import numpy as _np
+    if not _np.isfinite(dip_of(_np.linspace(0.0, 1.0, 32))["p"]):
+        raise SystemExit(
+            "Hartigan dip unavailable (install the `diptest` extra: pip install "
+            "'pathway-subtyping[diptest]'). Refusing to run: this script reports dip "
+            "p-values as evidence, and NaN would be written to the output as invalid JSON.")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
@@ -66,6 +82,7 @@ def main():
     ap.add_argument("--n-ref", type=int, default=200)     # deposited default
     ap.add_argument("--seed", type=int, default=42)
     a = ap.parse_args()
+    _require_diptest()
 
     t0 = time.time()
     print(f"Fetching TCGA-BRCA pathway scores from cBioPortal ({B.STUDY})...", flush=True)
@@ -109,7 +126,11 @@ def main():
                    observed_ci95=[float(x) for x in r.observed_ci95],
                    sg_ref_p95=float(r.sg_ref_p95),
                    sg_empirical_p=float(r.sg_empirical_p),
-                   p_at_floor=bool(float(r.sg_empirical_p) <= 1.0 / (a.n_ref + 1) + 1e-12),
+                   # `sg_empirical_p` is stored rounded to 4dp, so comparing it against the UNROUNDED
+                   # floor reported False for values that are exactly at the floor
+                   # (1/201 = 0.0049751 -> stored 0.005 > floor). Compare at the same precision.
+                   p_at_floor=bool(round(float(r.sg_empirical_p), 4)
+                                   <= round(1.0 / (a.n_ref + 1), 4) + 1e-12),
                    p_floor=1.0 / (a.n_ref + 1),
                    dip_pc1_p=float(dip_of(Z[:, 0])["p"]),
                    std_gap_pc1=std_gap_pc1(Z, lab))

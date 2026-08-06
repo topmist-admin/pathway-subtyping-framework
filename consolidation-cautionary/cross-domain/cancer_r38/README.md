@@ -120,4 +120,4 @@ structure); bootstrap-stability **FAIL** at 0.80 bar (mRNA 0.47, protein 0.36).
 ## Provenance
 cBioPortal study `brca_tcga_pan_can_atlas_2018`; Hallmark 50-set panel
 (`../../panels/hallmark_200genes.gmt`); mRNA median-Zscores; PAM50 = patient-level
-`SUBTYPE`. Deterministic (seed 42), n_ref=100. Results: `results/brca_pam50_validation.json`.
+`SUBTYPE`. n_ref=200 (the BRCA fetcher's default; the CPTAC fetcher uses 100). ⚠️ The gate is deterministic (seed 42), but the deposited **bootstrap-stability** figures were produced before `gmm_seed` was passed to `stability_test_bootstrap`, so their per-bootstrap GMM initialisations were unseeded — which is why two deposited runs give k=5 ARI 0.4076 and 0.3918. The call sites are now seeded; re-running will produce one stable value that will differ slightly from both deposited figures. Results: `results/brca_pam50_validation.json`.

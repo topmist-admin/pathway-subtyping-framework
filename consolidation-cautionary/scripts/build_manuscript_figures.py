@@ -150,16 +150,16 @@ def figure1(cd, out):
     axB.set_ylim(-0.03, 1.03)
     axB2 = axB.twinx()
     axB2.spines["top"].set_visible(False)
-    l2, = axB2.plot(seps, medp, "--s", color=ORANGE, ms=3.5, label="Median SigClust p")
+    l2, = axB2.plot(seps, medp, "--s", color=ORANGE, ms=3.5, label="Median single-Gaussian $p$")
     axB2.axhline(0.05, color=RED, lw=0.7, ls=":")
-    axB2.set_ylabel("Median SigClust p", color=ORANGE)
+    axB2.set_ylabel("Median single-Gaussian $p$", color=ORANGE)
     axB2.tick_params(axis="y", labelcolor=ORANGE)
     axB2.set_ylim(-0.03, 1.03)
     # Title is derived, and deliberately does NOT say "resolves only at" — the Results
     # text argues the zeros below the boundary are not missed structure.
     _onset = next((r["sep"] for r in sw["sweep"] if r["certify_rate"] > 0), None)
     axB.set_title(f"Certification begins just above the δ=2σ boundary (first at δ={_onset:g})")
-    axB.legend([l1, l2], ["Certify rate", "Median SigClust p"], frameon=False,
+    axB.legend([l1, l2], ["Certify rate", "Median single-Gaussian $p$"], frameon=False,
                fontsize=7.5, loc="center left")
     panel_label(axB, "b")
 
@@ -184,7 +184,7 @@ def figure2(cd, out, csv):
     _thr = au["reproducibility_distribution"]["valid_rows"]
     _npass = _thr["pass_rate_at_threshold"]["0.5"]["n_passing"]
     _nvalid = int(_thr["n"]) if "n" in _thr else len(valid)
-    axA.text(0.5, axA.get_ylim()[1] * 0.92, f"  0.5 bar\n  {_npass}/{_nvalid} clear", color=RED,
+    axA.text(0.5, axA.get_ylim()[1] * 0.92, "  0.5 bar\n  (uninformative:\n  5th pctile)", color=RED,
              fontsize=7.2, va="top")
     med = au["reproducibility_distribution"]["valid_rows"]["median"]
     mx = au["reproducibility_distribution"]["valid_rows"]["max"]
@@ -192,7 +192,10 @@ def figure2(cd, out, csv):
     axA.text(med, axA.get_ylim()[1] * 0.5, f" median\n {med:.3f}", fontsize=7)
     axA.set_xlabel("Reproducibility (bootstrap ARI, 5th percentile)")
     axA.set_ylabel(f"Cohorts (n={_nvalid} valid)")
-    axA.set_title("No cohort clears a 0.5 bar")
+    # NOT "No cohort clears a 0.5 bar": Result 2 withdraws that rate as uninterpretable
+    # (the statistic is a 5th percentile, so any fixed bar returns near-zero regardless
+    # of biology). The panel must not headline a number the text declines to report.
+    axA.set_title("A 5th-percentile statistic, not a reproducibility rate")
     axA.annotate(f"max {mx:.2f}", (mx, 0.5), xytext=(mx - 0.02, 2.2),
                  fontsize=7, ha="right", arrowprops=dict(arrowstyle="->", lw=0.6))
     panel_label(axA, "a")
@@ -209,7 +212,7 @@ def figure2(cd, out, csv):
                  fontsize=7)
     axB.set_ylabel("R²  (silhouette → bootstrap ARI)")
     axB.set_ylim(0, 1.0)
-    axB.set_title("Retracted model does not refit")
+    axB.set_title("Withdrawn model does not refit")
     panel_label(axB, "b")
 
     fig.tight_layout()
@@ -259,7 +262,8 @@ def figure3(cd, out):
     axB.set_ylim(0, 100)
     panel_label(axB, "b")
 
-    fig.suptitle("The method ranking flips with the metric (TCGA-BRCA, n=981)",
+    _n981 = ari[keys[0]]["n"]
+    fig.suptitle(f"Which method looks best depends on the metric (TCGA-BRCA, n={_n981} PAM50-labelled)",
                  fontsize=9.5, fontweight="bold", y=1.02)
     fig.tight_layout()
     for ext in ("png", "pdf"):
@@ -291,7 +295,8 @@ def figure4(cd, out):
     # NOT "(= chance)": Result 4 states p is a non-significant trend, not an absence of
     # signal. The estimator differs between the two bars, so both are labelled.
     ax.text(1, diag_obs + 0.02, f"V={diag_obs:.3f} (uncorrected)\np={pval:.3f}", ha="center", fontsize=7.2)
-    ax.set_title("Region, not diagnosis\n(GSE80655: 141 samples, 48 donors)")
+    ax.set_title("Region associates strongly; diagnosis does not reach significance\n"
+                 f"(GSE80655: {fl['n_samples']} samples, {fl['n_donors']} donors)")
     fig.tight_layout()
     for ext in ("png", "pdf"):
         fig.savefig(f"{out}/Figure4_region_vs_diagnosis.{ext}")

@@ -180,7 +180,8 @@ def main() -> None:
                       "gate's TPR and FPR exactly. The gap statistic and dip test "
                       "are computed but not in the decision rule; the k-stability "
                       "routing only adds abstentions. The honest contribution is the "
-                      "null recalibration (feature-permutation -> single-Gaussian), "
+                      "reference recalibration (giving the existing statistic a "
+                      "single-Gaussian reference), "
                       "not a new multi-test instrument."),
     }
 
@@ -191,7 +192,14 @@ def main() -> None:
     # positive sits exactly on the floor — contradicting this block's own note.
     # Infer it from the smallest empirical p actually observed (p_min = 1/(n_ref+1)).
     _pmin = float(d["sg_empirical_p"].min())
-    ref_n = args.n_ref if getattr(args, "n_ref", None) else int(round(1.0 / _pmin)) - 1
+    # Prefer the value the run RECORDED; inference from the smallest observed p only works
+    # when something sits at the floor, and silently misreports when nothing does.
+    _rec = None
+    _rj = os.path.join(os.path.dirname(args.raw), "gate_ablation_results.json")
+    if os.path.exists(_rj):
+        try: _rec = json.load(open(_rj)).get("params", {}).get("n_ref")
+        except Exception: _rec = None
+    ref_n = args.n_ref or _rec or (int(round(1.0 / _pmin)) - 1)
     floor = 1.0 / (ref_n + 1)
     cert_ps = sorted(d[d.gate_certify]["sg_empirical_p"].unique().tolist())
     floor_note = {

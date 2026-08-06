@@ -38,7 +38,7 @@ torch==2.11.0
 # screen rather than failing loudly.
 diptest>=0.5.0
 
-# NOT installable with pip. job1c/job1d run the canonical SigClust comparator and need
+# NOT installable with pip. job1c/job1d/job1e run the canonical SigClust comparator and need
 # R >= 4 with the CRAN `sigclust` package:  install.packages("sigclust")
 # This is the only non-Python dependency in the paper. Both jobs exit with a printed
 # error if Rscript is unavailable; every other result runs without R.

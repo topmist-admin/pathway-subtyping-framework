@@ -219,8 +219,8 @@ def main():
     else:
         g = ValidationGates(seed=42, show_progress=False)
         ns = g.negative_control_label_shuffle(P, lab_psf.to_numpy(), k)
-        stab_k = g.stability_test_bootstrap(P, lab_psf.to_numpy(), k)
-        stab_bic = g.stability_test_bootstrap(P, lab_bic.to_numpy(), k_bic)
+        stab_k = g.stability_test_bootstrap(P, lab_psf.to_numpy(), k, gmm_seed=42)
+        stab_bic = g.stability_test_bootstrap(P, lab_bic.to_numpy(), k_bic, gmm_seed=42)
         gateA = DiscretenessGateA(seed=42, n_ref=args.n_ref).run("BRCA", P, k, gmm_seed=42)
         gateA_bic = DiscretenessGateA(seed=42, n_ref=args.n_ref).run("BRCA", P, k_bic, gmm_seed=42)
         gates = {
@@ -240,7 +240,7 @@ def main():
            "recovery_vs_pam50_ARI": rec,
            "recovery_vs_pam50_single_subtype_enrichment": enrich, "gates": gates}
     out["provenance"] = {"environment": env_provenance(),
-                         "fetch": fetch_provenance(API, STUDY, n_samples=out.get("n_samples"))}
+                         "fetch": fetch_provenance(API, STUDY, matrix=P, n_samples=out.get("n_samples"))}
     with open(os.path.join(args.out, "brca_pam50_validation.json"), "w") as fh:
         json.dump(out, fh, indent=2)
 

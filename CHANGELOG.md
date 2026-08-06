@@ -7,13 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-**No framework code changed.** Everything below is in the reproduction packages and the
+**Framework code changed in one place: `discreteness/gate_a_discreteness_null.py` now fails CLOSED on the optional dip diagnostic (`unimodal_flag` becomes `None`, and no unimodality statement is emitted, when the `diptest` extra is absent) instead of reporting a confident "multimodal". Docstrings corrected in the same file. No deposited result value changes.** Everything below is in the reproduction packages and the
 manuscript — a pre-review alignment pass for a third party who re-derives every result
 from source rather than spot-checking the deposited artifacts.
 
 Deposited at Zenodo **2026-07-30** as `10.5281/zenodo.21704904`, under concept DOI
-`10.5281/zenodo.18638048` (which now resolves to it). **Seven** packages reproduce
-byte-identically with no network, up from four.
+`10.5281/zenodo.18638048` (which now resolves to it). **Five** packages reproduce byte-identically with no network, up from four
+(`gate_ablation`, `benchmark_audit`, `flagship_stats`, `autism_subgroup`, `gtex_brain`).
+*Corrected 2026-08-06: this line previously said "Seven", which double-counted
+`flagship_stats` (one package, two result files) and wrongly counted `psychiatric_meta`,
+whose scripts query live NCBI E-utilities and recount3 and have no offline path.*
 
 ### Reproduction packages
 
@@ -48,7 +51,9 @@ byte-identically with no network, up from four.
 
 - New `consolidation-cautionary/DATA-ACQUISITION.md`: what actually needs downloading
   (almost nothing), measured runtimes, and **the acceptance criterion per result** —
-  byte-identity for the six deposited packages, *conclusion* for anything re-fetched.
+  byte-identity for the five verified deposited packages, *conclusion* for anything re-fetched
+  (a sixth, `gate_calibration`, has an offline `--cache-in` path whose byte-identity is
+  unconfirmed; `psychiatric_meta` has no offline path).
   Applying the wrong bar manufactures disagreements.
 - New `consolidation-cautionary/FULL-RERUN-REVIEWER-PLAN.md`.
 - Measured runtimes corrected: `gate_calibration` ~16 min, `tcga_crc` ~10 min,

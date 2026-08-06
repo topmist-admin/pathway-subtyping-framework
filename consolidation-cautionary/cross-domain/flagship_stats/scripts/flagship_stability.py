@@ -66,10 +66,17 @@ def main() -> None:
         "passes_0.80_bar": bool(float(stab.metric_value) >= 0.80),
         "n_bootstrap": 100,
         "provenance_note": (
-            "0.923 in the original results_summary.json is this number. It was a "
-            "headline of the withdrawn methodology paper, but the withdrawal was "
-            "driven by the 47-dataset benchmark + adaptive-threshold model, not by "
-            "this computation. Distinct from the withdrawn CMS4 colorectal figures."),
+            "This recomputes the GSE80655 SCZ-partition bootstrap stability under the "
+            "released version, at n_bootstrap=100, seed 42. The original "
+            "results_summary.json records 0.9234 for the same quantity. We do NOT "
+            "assert the two are the same number: results_summary.json records no "
+            "n_bootstrap, so the identity cannot be checked, and the runs are under "
+            "different releases. They agree to ~0.003 and both clear the 0.80 bar, "
+            "which is the invariant that matters. Note also job7 reports 0.9540 for a "
+            "DIFFERENT quantity (the shipped-gene-order scoring arm of the column-order "
+            "test) -- it is not a competing estimate of this one. The withdrawal was "
+            "driven by the 47-dataset benchmark and the adaptive-threshold model, not "
+            "by this computation."),
     }
     path = os.path.join(args.out, "flagship_stability.json")
     with open(path, "w") as fh:

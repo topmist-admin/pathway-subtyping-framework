@@ -44,11 +44,25 @@ k=3 partition's mean bootstrap ARI from the cached per-sample pathway scores
 (`research-results/GSE80655/pathway_scores_scz.csv`) + the deposited labels:
 **0.921** (n=141, n_bootstrap=100, seed 42), passing the 0.80 bar.
 
-⚠️ **Provenance note.** The original `results_summary.json` records this as 0.9234.
-That 0.923 was a headline of the *withdrawn* methodology paper, but the withdrawal was
-driven by the 47-dataset benchmark and the adaptive-threshold model — **not** by this
-stability computation, which reproduces here. It is a valid GSE80655 figure and is
-distinct from the withdrawn CMS4 colorectal cross-platform ARI. Do not list it among
+⚠️ **Provenance note — three values are on record for "GSE80655 stability", and they are not
+interchangeable.** An earlier revision asserted that the original 0.9234 "is this number".
+**That identity is withdrawn**: `results_summary.json` records no `n_bootstrap`, so it cannot
+be checked even in principle, and the two runs are under different releases.
+
+| value | what it is | source |
+|---|---|---|
+| **0.9206** | bootstrap ARI, n=141, k=3, `n_bootstrap=100`, seed 42, recomputed under the **released** version | `flagship_stability.json` — **this is the value the manuscript cites** |
+| 0.9234 | same quantity, **original run** under an earlier release; `n_bootstrap` not recorded | `results_summary.json` → `validation_gates[2]` |
+| 0.9540 | **a different quantity** — the shipped-gene-order scoring arm of the column-order test, not a competing estimate of the above | `job7_column_order.jsonl` → `stability_shipped` |
+
+The first two agree to ~0.003 and both clear the 0.80 bar, which is the invariant that
+matters; the conclusion does not depend on which is used. The third must not be compared with
+them. The withdrawal was driven by the 47-dataset benchmark and the adaptive-threshold model —
+**not** by this stability computation. It is a valid GSE80655 figure and is
+distinct from BOTH withdrawn figures, which are two different results: the colorectal CMS4
+recovery (**75.9%**, not an ARI) and the cross-pathway-set **ARI 0.870** on GSE80655.
+("Cross-platform" is a retired descriptor for the latter — it is two curated panels on the
+same cohort.) Do not list it among
 disavowed figures.
 
 ## Provenance

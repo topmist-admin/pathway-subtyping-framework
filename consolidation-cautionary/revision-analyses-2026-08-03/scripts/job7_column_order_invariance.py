@@ -127,7 +127,7 @@ def main():
     used = sorted({g for ids in pathways.values() for g in ids})
     X = X[[c for c in X.columns if c in set(used)]]
     X = np.log2(X.div(X.sum(1), axis=0) * 1e6 + 1)     # log2(CPM+1): zeros -> exact ties
-    ties = int((X == X.iloc[:, 0].min()).sum().sum())
+    ties = int((X == 0).sum().sum())   # log2(CPM+1) floor: the tie mass the argsort argument is about
     print(f"  scoring matrix {X.shape}; log2(CPM+1); tied-at-floor cells = {ties}", flush=True)
 
     # ---------- three column orders ---------- #

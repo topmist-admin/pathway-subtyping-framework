@@ -57,13 +57,15 @@ SMALL-n HARDENING (fixed, not tuned; identical across observed and reference)
     HDLSS regime. The single Gaussian is simulated in this PCA space with a
     diagonal covariance equal to the retained per-PC variances (PCA components
     are uncorrelated by construction -> faithful SigClust null).
-  * Fixed k: k = the inherited BIC-selected k, held identical for the observed
+  * Fixed k: k is SUPPLIED BY THE CALLER and held fixed — this module performs no model selection for the tested k (it does run silhouette-based k-selection inside _k_stability and gap-optimal-k selection as diagnostics). It is held identical for the observed
     statistic AND every reference/gap replicate. k is never re-selected per
     replicate (structureless data would collapse to k=1 and ARI degenerates).
   * k-stability rule: select k by SILHOUETTE on each observed bootstrap resample
     (not BIC — see _k_stability, which explains why BIC is unreliable here); if the
-    fraction whose modal k equals the fixed k is < 0.5, the tumor is routed to
-    NOT-TESTABLE rather than pass/fail.
+    fraction of resamples agreeing on THEIR OWN modal k is < 0.5, the tumor is
+      routed to NOT-TESTABLE rather than pass/fail. NOTE: the rule does NOT require
+      that modal k equal the fixed k — `modal_matches_fixed` is reported for
+      diagnosis only and is not part of any decision.
   * Reports the full reference distribution and a CI on the observed statistic.
 
 The independence null (`_feature_permute`) is DEMOTED, not deleted: it is still
@@ -72,7 +74,9 @@ the structure depend on genuine cross-pathway dependence, or on a few marginals?
 -- it is simply no longer the discreteness test.
 
 Reuses ValidationGates.stability_test_bootstrap verbatim for observed, reference,
-and confound-control statistics so all are strictly comparable.
+and confound-control statistics so all are comparable EXCEPT the feature-permutation confound control, which scores the raw
+  n x p matrix while the observed and single-Gaussian arms score the reduced space —
+  so that control is NOT on a common footing and is not reported in the paper.
 
 Research use only.
 """
@@ -176,7 +180,7 @@ def _feature_permute_once(scores, n_clusters, seed, n_bootstrap, gmm_seed) -> fl
 # PCA-aligned bounding box.
 # --------------------------------------------------------------------------- #
 def _within_dispersion(data: np.ndarray, labels: np.ndarray, k: int) -> float:
-    """W_k = sum_r (1/2 n_r) D_r  ==  sum_r sum_{i in r} ||x_i - centroid_r||^2."""
+    """W_k = sum_r D_r / (2 n_r)  ==  sum_r sum_{i in r} ||x_i - centroid_r||^2."""
     W = 0.0
     for r in range(k):
         pts = data[labels == r]
@@ -446,7 +450,14 @@ class DiscretenessGateA(ValidationGates):
             disc = pc1
         dip_pc1 = dip_of(pc1)
         dip_disc = dip_of(disc)
-        unimodal = bool((dip_pc1["p"] > 0.05) and (dip_disc["p"] > 0.05))
+        # FAIL CLOSED, as job3b/job5 do. `dip_of` returns NaN when the optional `diptest`
+        # extra is absent, and `NaN > 0.05` is False — which would report a confident
+        # "(multimodal)" on every dataset, including known continua, from a test that never
+        # ran. This is a reported diagnostic, not a decision input, but a screen must not
+        # emit a verdict-shaped string when it did not execute.
+        _dips = (dip_pc1["p"], dip_disc["p"])
+        _dip_ok = all(v == v for v in _dips)          # NaN != NaN
+        unimodal = bool(all(v > 0.05 for v in _dips)) if _dip_ok else None
 
         # ---- k-stability + testability ------------------------------------ #
         kfrac, modal_k = self._k_stability(Z, n_clusters)
@@ -467,8 +478,11 @@ class DiscretenessGateA(ValidationGates):
             f"95th pctile {sg_p95:.3f} (p={sg_p:.3f}). "
             f"Independence (confound) null 95th {fp_p95:.3f}: would{'' if obs > fp_p95 else ' NOT'} pass. "
             f"Gap-optimal k={gap['gap_optimal_k']} ({'supports' if gap_supports else 'does not support'} k={n_clusters}). "
-            f"Dip PC1 p={dip_pc1['p']:.3f}, discriminant p={dip_disc['p']:.3f} "
-            f"({'unimodal' if unimodal else 'multimodal'})."
+            + (f"Dip PC1 p={dip_pc1['p']:.3f}, discriminant p={dip_disc['p']:.3f} "
+             f"({'unimodal' if unimodal else 'multimodal'})."
+             if unimodal is not None else
+             "Dip test unavailable (optional `diptest` extra not installed) — "
+             "no unimodality statement is made.")
         )
 
         res = GateAv2Result(

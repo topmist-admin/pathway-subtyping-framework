@@ -212,7 +212,9 @@ Contents:
 
 **Retracted figures that must appear NOWHERE in the proposed version** (use this
 list to run the de-leakage check): CMS4 recovery 75.9% (OR 16.71, p 1.4×10⁻²⁵),
-cross-platform ARI 0.870, adaptive-threshold R²=0.889 (RMSE 0.051). NOTE: the
+cross-PATHWAY-SET ARI 0.870 (two curated panels on the SAME 141 GSE80655 samples --
+NOT cross-platform and NOT autism, despite an earlier mislabel),
+adaptive-threshold R²=0.889 (RMSE 0.051). NOTE: the
 GSE80655 psychiatric-partition bootstrap stability (≈0.92) is a *valid* figure and
 is legitimately used in the proposed version's Result 4 — it is NOT retracted; see
 the erratum and the concern-handling matrix.
@@ -284,8 +286,12 @@ NOT survive into the proposed version:
   IDs), and the erratum. **Read its `README` first — DO NOT CITE anything in it.**
 - `manuscript/proposed-new-version/` — the PROPOSED rebuild (not yet submitted).
 - The retracted figures that must appear nowhere in the proposed version: **CMS4 75.9%
-  (OR 16.71), cross-platform ARI 0.870, adaptive-threshold R²=0.889.** Grep the proposed
-  draft for them — they appear only in its Prior-Work Disclosure, as retractions. (One
+  (OR 16.71), cross-pathway-set ARI 0.870, adaptive-threshold R²=0.889.**
+  WARNING: grep is NOT sufficient. The 0.870 figure is stored as
+  `0.8699465529168158`, which does not contain the substring `0.870`, and it was also
+  rendered into a PNG title where no text search can reach it (see
+  research-results/GSE80655/RETRACTED-FIGURE-NOTICE.md). Sweep on MEANING and on rounded
+  forms, and OPEN EVERY FIGURE. Grep the proposed draft for them — they appear only in its Prior-Work Disclosure, as retractions. (One
   subtlety flagged in the withdrawn folder's README: the GSE80655 stability ≈0.92 is a
   *valid* figure, legitimately used in Result 4, and is NOT among the retractions.)
 

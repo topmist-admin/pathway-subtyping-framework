@@ -43,6 +43,7 @@ ITEMS = [
     ("CHANGELOG.md", "CHANGELOG.md"),
     ("README.md", "README-framework.md"),
     ("consolidation-cautionary", "consolidation-cautionary"),
+    ("research-results/DEPOSIT-CAVEATS-2026-08-07.md", "research-results/DEPOSIT-CAVEATS-2026-08-07.md"),
     ("research-results/GSE28521", "research-results/GSE28521"),
     ("research-results/GSE80655", "research-results/GSE80655"),
     ("CORRECTION_2026-07", "CORRECTION_2026-07"),
@@ -88,9 +89,14 @@ minutes; the rest fetch public cBioPortal / GEO / recount3 data with no authenti
   Results 1/3/4 and the Methods column-order test. **Newer than the 2026-07-30 independent
   reproduction round and NOT third-party reproduced** — same public-data, seed-42 discipline,
   but do not read inclusion here as external verification. Two scripts are marked
-  SUPERSEDED and retained deliberately. `job1c`/`job1d` additionally need **R >= 4 with the
-  CRAN `sigclust` package** — the only non-Python dependency in the paper.
-- `research-results/`, `CORRECTION_2026-07/`  cached public data + the corrected benchmark
+  SUPERSEDED and retained deliberately. `job1c`/`job1d`/`job1e` additionally need **R >= 4 with the
+  CRAN `sigclust` package** — the only non-Python dependency in the paper. `job1e` runs 120
+  R invocations and is long.
+- `research-results/`  output of the WITHDRAWN methodology paper — 30 of the 31 figures
+  in this archive. Read `research-results/DEPOSIT-CAVEATS-2026-08-07.md` and
+  `research-results/GSE80655/RETRACTED-FIGURE-NOTICE.md` before quoting anything from it.
+  No result in the current manuscript depends on it.
+- `CORRECTION_2026-07/`  the corrected 47-dataset benchmark and the erratum
 - `REVIEWER-CONCERN-HANDLING-MATRIX.md`  each reviewer comment -> resolution -> the artifact that demonstrates it
 - `MANIFEST.txt`                      every file with its SHA-256
 
@@ -115,9 +121,13 @@ def zenodo_metadata(stamp):
                 "corrected 47-dataset benchmark audit, TCGA-BRCA/CPTAC cancer worked "
                 "example, GTEx large-N, and the postmortem-psychiatric flagship), the "
                 "cached public inputs, and a concern-handling matrix mapping each "
-                "reviewer comment to its resolution and artifact. Reproduction verified "
-                "from a clean PyPI install; see RUNME.md."
-                % (VERSION, VERSION)),
+                "reviewer comment to its resolution and artifact, plus the 2026-08-03 revision "
+                "analyses behind Result 5 (SigClust comparison, heteroscedastic "
+                "false-positive characterisation, shrinkage parity). IMPORTANT: re-run "
+                "against the bundled src/ tree, NOT the PyPI wheel -- both report version "
+                "%s but they are different commits, and the wheel lacks determinism fixes "
+                "present here. See RUNME.md before reproducing."
+                % (VERSION, VERSION, VERSION)),
             "version": VERSION,
             "language": "eng",
             "keywords": ["molecular subtyping", "cluster validation",
@@ -150,8 +160,10 @@ def zenodo_metadata(stamp):
                  "relation": "isIdenticalTo", "scheme": "url"},
             ],
             "notes": ("Public data only; no controlled-access data included. Built %s. "
-                      "Primary install path is pip install pathway-subtyping==%s; the "
-                      "bundled source is a permanence fallback." % (stamp, VERSION)),
+                      "Reproduce against the BUNDLED src/ tree: it and the PyPI wheel "
+                      "pathway-subtyping==%s declare the same version but are different "
+                      "commits, and only the bundled tree carries the determinism fixes "
+                      "these results were produced with." % (stamp, VERSION)),
         }
     }
 

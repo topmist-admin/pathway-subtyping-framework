@@ -210,7 +210,7 @@ def main():
     }
     dest = os.path.join(args.out, "tcga_crc_somatic_result.json")
     out["provenance"] = {"environment": env_provenance(),
-                         "fetch": fetch_provenance(API, STUDY)}
+                         "fetch": fetch_provenance(API, STUDY, matrix=P)}
     json.dump(out, open(dest, "w"), indent=2, default=str)
     print(f"\nsaved -> {dest}")
 

@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
-"""Publication figure for the gate ablation study (reviewer R3.10).
+"""SUPERSEDED 2026-08-06 — do not use for publication. Kept for provenance only.
 
-Reads outputs/gate_ablation/gate_ablation_results.json + gate_ablation_raw.csv
-and renders a two-panel figure:
-  A. TPR vs FPR by gate subset — the discreteness gate removes the false-positive
-     rate the stability-only gate incurs, at negligible true-positive cost.
-  B. Per-condition certification rate — the false positives are concentrated on
-     the 1-D continuum (the erratum failure mode); the discreteness gate zeroes it.
+This script renders the gate's false-positive rate as a bare `0.00`, which is the
+**abstention-as-rejection** convention the analysis has since retracted: on the 30
+negatives the screen removes all 13 stability-only false certifications by *abstaining*
+(26/30) and none by rejecting, so a `0.00` bar credits the screen with rejections it
+never made. The honest rendering, which shows the abstention decomposition and the
+0/4 testable-negative denominator, is **Figure 1 of the manuscript**
+(`consolidation-cautionary/scripts/build_manuscript_figures.py`, from
+`ablation_honest.json`).
 
-Usage: python scripts/plot_gate_ablation.py [--out DIR]
+Its output, `results/gate_ablation_figure.{png,svg}`, was **withdrawn from the deposit
+on 2026-08-06**: rendered 2026-07-23, it still printed the pre-seeding-fix `FPR 0.37`
+and `TPR 0.97` against current values of 13/30 and 30/30, and labelled its arms
+`pre-v0.8.0`/`v0.8.0` inside a v0.9.0 deposit. Because the numbers lived only as
+rendered glyphs, no text sweep could see them.
+
+If this figure is ever needed again, redesign panel A to plot three outcomes
+(certify / abstain / reject) rather than a two-way TPR-vs-FPR split, and drop the
+version-numbered arm labels.
+
+Original purpose (reviewer R3.10): reads
+outputs/gate_ablation/gate_ablation_results.json + gate_ablation_raw.csv and renders
+  A. TPR vs FPR by gate subset.
+  B. Per-condition certification rate — false positives concentrated on the 1-D
+     continuum (the erratum failure mode).
+
+Usage: python scripts/plot_gate_ablation.py [--out DIR]   (requires --i-know-this-is-superseded)
 """
 import argparse
 import json
@@ -31,7 +49,19 @@ LABELS = {"stability_only": "stability\nonly\n(pre-v0.8.0)",
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=Path("outputs/gate_ablation"))
+    ap.add_argument("--i-know-this-is-superseded", action="store_true",
+                    help="required: this figure uses the retracted abstention-as-rejection "
+                         "convention (see module docstring)")
     args = ap.parse_args()
+    if not getattr(args, "i_know_this_is_superseded"):
+        raise SystemExit(
+            "plot_gate_ablation.py is SUPERSEDED (2026-08-06) and will not run by default.\n"
+            "It plots the gate's FPR as a bare 0.00, which is the abstention-as-rejection\n"
+            "convention this analysis retracts: on the 30 negatives the screen removes all 13\n"
+            "stability-only false certifications by abstaining (26/30) and none by rejecting.\n"
+            "Use Figure 1 of the manuscript instead — consolidation-cautionary/scripts/\n"
+            "build_manuscript_figures.py, which reads ablation_honest.json and shows the\n"
+            "abstention decomposition. Pass --i-know-this-is-superseded to override.")
     d = json.loads((args.out / "gate_ablation_results.json").read_text())
     summ = d["summary"]
     policies = list(summ.keys())

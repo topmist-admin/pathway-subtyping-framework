@@ -400,4 +400,4 @@ and the gate proceeds unchanged — the decision rule never used them.
 - [Discreteness-aware Gate A](../discreteness_gate.md) — rationale, small-*n* hardening table, and the implication for prior "reproducible subtype" claims
 - [Validation Gates](validation.md) — the base `ValidationGates` class and the original stability gate
 - [Uncertainty](uncertainty.md) — `ConformalPathwayPredictor`, the split-conformal machinery Gate C builds on
-- [Deep-Learning Baselines](clustering_dl.md) — the gate is clusterer-agnostic; DL partitions need it too
+- [Deep-Learning Baselines](clustering_dl.md) — the gate takes no partition argument and re-clusters internally, so it can be APPLIED downstream of any clusterer, DL included. That is definitional, not an empirical finding: the "clusterer-agnostic" reading was RETRACTED as tautological

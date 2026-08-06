@@ -141,7 +141,7 @@ def recovery(labels, truth):
 
 def gate_summary(P, lab, k, n_ref):
     g = ValidationGates(seed=42, show_progress=False)
-    stab = g.stability_test_bootstrap(P, lab.to_numpy(), k)
+    stab = g.stability_test_bootstrap(P, lab.to_numpy(), k, gmm_seed=42)
     a = DiscretenessGateA(seed=42, n_ref=n_ref).run(STUDY, P, k, gmm_seed=42)
     return {"bootstrap_stability": {"passed": bool(stab.passed), "ari": float(stab.metric_value)},
             "discreteness_gateA": {"certified": bool(a.testable and a.passed), "verdict": a.verdict}}

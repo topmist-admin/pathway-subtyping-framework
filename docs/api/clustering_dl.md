@@ -6,7 +6,7 @@
 Two standard deep-clustering baselines — DEC and VAE-GMM (VaDE-style) — so that
 deep-learning clusterers can be (a) benchmarked as methods against the pathway-GMM
 pipeline and (b) run through the same validation gates, demonstrating that the gates
-are *clusterer-agnostic*: a DL method's clusters need discreteness validation exactly
+can be applied downstream of any clusterer (they take no partition argument and re-cluster internally — the *clusterer-agnostic* reading is RETRACTED as tautological): a DL method's clusters need discreteness validation exactly
 like a GMM's.
 
 `torch` is imported **lazily**, so importing this module never fails. The functions
@@ -182,5 +182,5 @@ torch is absent.
 ## See Also
 
 - [Clustering](clustering.md) — the sklearn-based clustering algorithms and model selection
-- [Discreteness Gate](discreteness.md) — clusterer-agnostic discreteness validation of any partition, including DL-produced ones
+- [Discreteness Gate](discreteness.md) — discreteness validation applied downstream of any clusterer, DL included. It receives **no partition**: it re-clusters internally and uses only *k*. The retracted phrasing ("clusterer-agnostic validation *of any partition*") claimed both more and something different.
 - [Benchmark](benchmark.md) — method comparison

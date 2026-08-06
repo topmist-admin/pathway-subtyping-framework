@@ -62,6 +62,25 @@ def main():
     chi2, p, v = cv(ctr); _, _, vc = cv(ctr, True)
     print(f"chi2={chi2:.2f}  p={p:.3e}  V(uncorr)={v:.4f}  V(Bergsma)={vc:.4f}")
 
+    # The 2-level coding, computed rather than asserted. The manuscript quotes a
+    # Bergsma-corrected V for this merged coding so that the drop from the 3-level
+    # headline is a like-for-like comparison; before 2026-08-06 only the UNCORRECTED
+    # 0.50 was recorded anywhere in the deposit, so the corrected figure the paper
+    # actually quotes had no source a referee could check. Derived here from the same
+    # deposited labels, by the same estimator, in the same run.
+    if df[reg].nunique() >= 3:
+        merged = df[reg].replace({"nAcc": "AnCg", "nACC": "AnCg", "nucleus accumbens": "AnCg"})
+        if merged.nunique() == 2:
+            print("\n=== SUBTYPE x REGION, BUGGY 2-LEVEL CODING (nAcc merged into AnCg) ===")
+            print("    Reported for contrast only -- this is NOT the manuscript headline.")
+            ct2 = pd.crosstab(df["subtype"], merged); print(ct2)
+            chi22, p2, v2 = cv(ct2); _, _, vc2 = cv(ct2, True)
+            print(f"chi2={chi22:.2f}  p={p2:.3e}  V(uncorr)={v2:.4f}  V(Bergsma)={vc2:.4f}")
+            print(f"    manuscript quotes chi2=34.6, V(Bergsma)=0.48, V(uncorr)=0.50 -> "
+                  f"match: {abs(chi22 - 34.6) < 0.5 and abs(vc2 - 0.48) < 0.01 and abs(v2 - 0.50) < 0.01}")
+        else:
+            print(f"\n(2-level contrast skipped: merge produced {merged.nunique()} levels, expected 2)")
+
     print("\n=== SUBTYPE x DIAGNOSIS ===")
     ctd = pd.crosstab(df["subtype"], df[dcol]); print(ctd)
     chi2d, pdv, vd = cv(ctd)

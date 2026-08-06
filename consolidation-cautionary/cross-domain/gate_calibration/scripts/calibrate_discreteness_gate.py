@@ -125,11 +125,28 @@ def gateA_call(P, k):
             "dip_pc1_p": round(float(a.dip_pc1_p), 4)}
 
 
+def _require_diptest():
+    """Fail closed if the optional `diptest` extra is missing.
+
+    `dip_of()` returns NaN rather than raising when the extra is absent. Every dip value
+    this script writes is reported as evidence, and a NaN would be serialised as a bare
+    `NaN` token, which is not valid JSON (RFC 8259) and is accepted only by Python's own
+    parser. Probe once, up front, so no partial output is ever written.
+    """
+    import numpy as _np
+    if not _np.isfinite(dip_of(_np.linspace(0.0, 1.0, 32))["p"]):
+        raise SystemExit(
+            "Hartigan dip unavailable (install the `diptest` extra: pip install "
+            "'pathway-subtyping[diptest]'). Refusing to run: this script reports dip "
+            "p-values as evidence, and NaN would be written to the output as invalid JSON.")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(_HERE, "../results"))
     ap.add_argument("--continuum-study", default="luad_tcga_pan_can_atlas_2018")
     args = ap.parse_args()
+    _require_diptest()
     os.makedirs(args.out, exist_ok=True)
     pw = read_gmt(PANEL)
     hallmark_genes = sorted({x for gs in pw.values() for x in gs})

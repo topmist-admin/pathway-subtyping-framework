@@ -235,8 +235,7 @@ def _self_stability(cluster_fn, X, k, labels, n_boot, seed, threshold=0.8):
 
 def clusterer_sweep(args) -> None:
     """Gate-agnostic demonstration (R2.2): cluster the SAME data with GMM, DEC,
-    and VAE-GMM. Each method's own bootstrap stability is high on a continuum it
-    bisects reproducibly (a naive stability check passes for all three), yet Gate A — which re-clusters internally and takes no partition argument — declines to certify the continuum. NOTE: the gate is called ONCE per condition and its verdict copied across the clusterer rows, so identical arms are a property of the harness, not evidence of agreement."""
+    and VAE-GMM. Each method's own bootstrap stability on a continuum a method bisects reproducibly can be high (GMM: mean 0.88, 4/5 above a 0.8 bar; DEC and VAE-GMM are far lower here, 0.34 and 0.22, and pass 0/5 -- so the naive check passes for GMM only), yet Gate A — which re-clusters internally and takes no partition argument — declines to certify the continuum. NOTE: the gate is called ONCE per condition and its verdict copied across the clusterer rows, so identical arms are a property of the harness, not evidence of agreement."""
     from functools import partial
     from pathway_subtyping.clustering_dl import run_dec, run_vae_gmm
 
@@ -256,7 +255,12 @@ def clusterer_sweep(args) -> None:
         for rep in range(max(2, args.reps // 2)):
             seed = args.seed + 1000 * rep + _stable_key(cond)
             scores, k = generate(cond, args.n, args.p, args.sep, seed)
-            # Gate A is clusterer-agnostic (re-clusters internally) -> run once
+            # Gate A takes no partition argument — it re-clusters internally — so it is
+            # run ONCE per condition and its verdict is copied into each clusterer's row.
+            # That is why the clusterer sweep cannot be read as evidence that the gate's
+            # verdicts agree across clusterers: the rows are identical by construction,
+            # not by measurement. The "clusterer-agnostic" reading is RETRACTED; see the
+            # retraction note in cross-domain/gate_ablation/README.md.
             gateA = DiscretenessGateA(seed=seed, n_ref=args.n_ref,
                                       n_bootstrap=args.n_bootstrap)
             a = gateA.run(tumor="synthetic", pathway_scores=scores, n_clusters=k,

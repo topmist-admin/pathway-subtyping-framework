@@ -63,7 +63,7 @@ def gen(kind: str, n: int, p: int, seed: int):
     if kind == "heteroscedastic_gradient":
         X = np.outer(t, d) + noise * scale[:, None]
     elif kind == "homoscedastic_gradient":
-        X = np.outer(t, d) + noise * float(scale.mean())        # same mean noise power
+        X = np.outer(t, d) + noise * float(scale.mean())        # same mean noise SCALE (not power: E[s^2] > (E[s])^2, so the control carries ~4% less total variance — the manuscript states scale, which is correct)
     else:
         raise ValueError(kind)
     return pd.DataFrame(X, columns=[f"PATHWAY_{j}" for j in range(p)])
@@ -76,7 +76,17 @@ def validate(kind, n, p, reps, seed):
     ps = [float(dip_of(reduce_scores(gen(kind, n, p, seed + 7919 * s).values,
                                      reduced_dim(n), 42)[0][:, 0])["p"])
           for s in range(reps)]
-    ps = np.asarray(ps); frac = float((ps < 0.05).mean())
+    ps = np.asarray(ps)
+    # FAIL CLOSED — see job3b. dip_of() returns NaN when the optional `diptest` extra is
+    # missing, and `NaN < 0.05` is False, so frac would be 0.0 and every generator would
+    # silently "qualify". This flag gates which cells are scored below, so a screen that
+    # returns PASS when it did not run would invert the result rather than blur it.
+    if not np.isfinite(ps).all():
+        raise SystemExit(
+            "Hartigan dip unavailable (install the `diptest` extra: "
+            "pip install 'pathway-subtyping[discreteness]'). Refusing to qualify negative "
+            "generators without the validation screen.")
+    frac = float((ps < 0.05).mean())
     return dict(kind=kind, n=n, dip_reject_frac=frac,
                 dip_median_p=float(np.median(ps)),
                 qualified=bool(frac <= DIP_MAX_REJECT_FRAC))

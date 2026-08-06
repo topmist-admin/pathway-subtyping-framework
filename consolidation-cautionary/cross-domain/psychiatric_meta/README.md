@@ -38,7 +38,11 @@ admits methylation, ChIP/ATAC, iPSC-derived, and single-nucleus studies, which
 are dropped by title/summary keyword (`iPSC`, `hiPSC`, `organoid`, `scRNA`,
 `snRNA`, `single-cell`, `single-nucleus`).
 
-**57 candidate series → 30 bulk-RNA-seq keepers after curation.**
+**57 candidate series → 30 keepers after curation.**
+
+⚠️ **Corrected 2026-08-07.** This line previously said "30 **bulk-RNA-seq** keepers". `DROP_TERMS` excludes only iPSC/single-cell terms, so it does not remove other assay types: **26 of the 30 are pure `Expression profiling by high throughput sequencing`**; the other four are mixed or non-expression (GSE119291 array+seq, GSE174407 ChIP, GSE112525 and GSE108066 seq+methylation). Call them keepers, not bulk-RNA-seq keepers.
+
+**Why only 14 of the 30 were looked up.** The recount3 check filters on a resolved SRP. Sixteen keepers have none — and that is a real property, not a gap in the search: on 2026-08-07 all 30 were re-resolved against GEO's `extrelations`, the positive control reproduced **12 of the 14** deposited accessions, and **0 of the 16** resolved. No public SRA study means no public raw reads, and recount3 is built from SRA, so those 16 cannot be in it. For human postmortem brain cohorts this is the expected pattern — reads usually go to controlled access. The headline (**6 studies / 243 samples**) was independently re-verified the same day against a live recount3 index of 8,882 human projects and reproduced exactly: 62+51+44+36+34+16 = 243.
 
 ## FINDING — Track A is not large-N
 

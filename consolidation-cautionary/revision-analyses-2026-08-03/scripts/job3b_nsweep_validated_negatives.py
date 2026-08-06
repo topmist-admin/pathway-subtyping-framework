@@ -125,6 +125,15 @@ def validate_negative(kind, n, p, reps, seed):
         Z, _ = reduce_scores(gen(kind, n, p, seed + 7919 * s)[0].values, reduced_dim(n), 42)
         ps.append(float(dip_of(Z[:, 0])["p"]))
     ps = np.asarray(ps)
+    # FAIL CLOSED. dip_of() returns NaN when the optional `diptest` extra is missing, and
+    # `NaN < 0.05` is False -> frac would be 0.0 -> every generator "qualifies", including
+    # curved_manifold_INVALID, whose exclusion is the entire premise of this job. A screen
+    # that silently returns PASS when it did not run is worse than no screen.
+    if not np.isfinite(ps).all():
+        raise SystemExit(
+            "Hartigan dip unavailable (install the `diptest` extra: "
+            "pip install 'pathway-subtyping[discreteness]'). Refusing to score negatives "
+            "without the validation screen — it would silently qualify every generator.")
     frac = float((ps < 0.05).mean())
     return dict(kind=kind, n=n, dip_reject_frac=frac, dip_median_p=float(np.median(ps)),
                 qualified=bool(frac <= DIP_MAX_REJECT_FRAC))

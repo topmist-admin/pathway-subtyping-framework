@@ -1,4 +1,14 @@
-# Gate-Agnostic Demonstration — clusterer sweep (R2.2)
+# Clusterer sweep — ⛔ SUPERSEDED framing, retained for the record — clusterer sweep (R2.2)
+
+> ⛔ **NON-REPRODUCIBLE ARTIFACT — do not cite any number below.** `clusterer_sweep_raw.csv`
+> was produced before the salted-`hash()` seeding defect was fixed, and cannot be regenerated
+> from the current code: recomputing `testable` for `continuum_1d` from the deposited
+> generator disagrees with this file on 4 of 5 reps (the ablation CSV, by contrast, matches
+> on 5 of 5). Its derived figures — the 60%/40% reject-vs-abstain split and the 0.88/0.34/0.22
+> self-stability means — are therefore unverifiable, and the 40% abstention rate contradicts
+> Result 1's 93% on the same generator. The manuscript withdraws this sweep as a result
+> (Result 1, clusterer-invariance retraction); it is retained only as a record.
+
 
 Same synthetic data clustered by GMM, DEC (Xie 2016), and VAE-GMM (VaDE, Jiang 2017). **self-stability** = the method's own bootstrap reproducibility (the naive check each would pass). **Gate A** = the discreteness gate's verdict (re-clusters internally; takes no partition argument, so the three rows are copies of one call).
 

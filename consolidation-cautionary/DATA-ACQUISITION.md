@@ -8,9 +8,11 @@ three questions the per-package READMEs answer only in pieces: **what do I downl
 
 ## 1. What you actually need to download
 
-**Nothing, for most of it.** Six packages reproduce byte-identically from inputs already
-inside the bundle. Downloads are needed only to *re-derive* what those inputs were built
-from, and for the three cBioPortal packages.
+**Nothing, for most of it.** Five packages are verified to reproduce byte-identically from inputs already
+inside the bundle. Downloads are needed only to *re-derive* what those inputs were built from, and for the
+network packages. ⚠️ Note `gate_calibration` appears on both sides: it fetches from
+cBioPortal by default **but ships a deposited offline replay** (`--cache-in`), so it is one
+of the six packages with an offline path. `job7` also needs a download (see §2).
 
 ### 1a. Already deposited — no download
 
@@ -54,8 +56,9 @@ deposited at `revision-analyses-2026-08-03/inputs/symbol_to_ensembl_scz_panel.js
 job does not depend on a third-party API remaining available. ⚠️ If you rebuild it, coverage
 changes the answer: a 5-of-14-set mapping gives partition ARI 0.979 instead of 1.000.
 
-**GSE64018 is not in this table on purpose.** It appears in bundle material inherited
-from the withdrawn methodology paper and supports no result reported in the manuscript.
+**GSE64018 is not in this table on purpose.** It appears in the bundle's
+double-dissociation material, which belongs to the companion "Stable but confounded"
+paper, and supports no result reported in the manuscript.
 
 > ⚠️ **Do not re-fetch GEO expecting a match.** GEO revises series matrices and platform
 > annotation files **in place, with no version bump**. The autism arm records the SHA-256
@@ -64,9 +67,16 @@ from the withdrawn methodology paper and supports no result reported in the manu
 
 > ⚠️ **cBioPortal is not a versioned API.** A study can gain or lose samples between
 > fetches. Every network result now records endpoint, study, UTC fetch date, post-filter
-> shape, and a SHA-256 of the assembled matrix under `provenance.fetch`. **If your numbers
-> disagree, compare `matrix_sha256` first** — a different hash means the upstream data
-> moved, not that the analysis is wrong.
+> shape, and a SHA-256 of the assembled matrix under `provenance.fetch`.
+>
+> ⚠️ **Correction (2026-08-07): the deposited results do NOT carry a `matrix_sha256`
+> value.** The emitter that writes it (`scripts/_provenance.py`) postdates these runs, so
+> the field is absent from every deposited artifact, and two `cancer_r38` results
+> (`brca_pam50_validation_with_DL.json`, `cptac_brca_multiomic.json`) carry no `provenance`
+> block at all. An earlier revision told reviewers to "compare `matrix_sha256` first";
+> **that check cannot be performed on this deposit.** Compare the post-filter matrix shape
+> and study identifier instead — a difference there means the upstream data moved, not that
+> the analysis is wrong.
 
 ---
 
@@ -81,15 +91,45 @@ Measured on a 2023-class laptop. Nothing below hangs; three jobs are simply long
 | `flagship_stability` | ~1 min | none |
 | `autism_subgroup` | ~2 min | none |
 | `gtex_brain` | **>25 min** | none |
-| `ablation_honest` | **~77 min** | none |
+| `ablation_honest` | **~122 min** | none |
 | separation sweep (20 reps/step) | **~1 h 47 min** | none |
-| `gate_calibration` | **~16 min** | **yes** |
+| `gate_calibration` | **~16 min** live; offline `--cache-in` replay is longer (SigClust n_ref=150) | **optional** — offline via `--cache-in` |
 | `tcga_crc` | ~10 min | **yes** |
 | `cancer_r38` (BRCA) | **~59 min** | **yes** |
 
-**Offline total ≈ 3.5 hours**, of which ~3.2 is the three long offline jobs. Add roughly
+**Offline total ≈ 4.2 hours**, of which ~3.2 is the three long offline jobs. Add roughly
 another 1.5 hours for the network packages. Run everything long detached and check the
 fast packages meanwhile.
+
+### Revision analyses (`revision-analyses-2026-08-03/`)
+
+These were omitted from the table above until 2026-08-06. They are **the longest jobs in
+the paper** — budget for them separately. Wall clocks are the `elapsed_sec` recorded in
+each job's own deposited JSONL, not estimates.
+
+| Job | Wall clock | Network | Feeds |
+|---|---|---|---|
+| `job1_sigclust` | **~26 min** | none | Result 5 comparator |
+| `job1b_sigclust_sweep` | ~28 s | none | Result 5 separation sweep |
+| `job1c_canonical_sigclust` | not recorded | none | Result 5 (needs R + CRAN `sigclust`) |
+| `job1d_canonical_sweep` | not recorded | none | Result 5 (needs R + CRAN `sigclust`) |
+| `job1e_sigclust_hetero` | not recorded | none | Result 5 (needs R + CRAN `sigclust`; 120 R invocations — long) |
+| `job2_shrinkage` | ~1 h 57 min | none | **superseded by `job2b`** |
+| `job2b_shrinkage_parity` | **~5 h 12 min** | none | Result 1 λ table — **longest job in the paper** |
+| `job3b_nsweep_validated` | **~4 h 38 min** | none | Result 5 *n*-sweep |
+| `job4_donor_continuous` | not recorded | none | Result 4 (needs `statsmodels`) |
+| `job5_heteroscedastic_fpr` | **~4 h 31 min** | none | Result 5 headline table |
+| `job6_brca_certification` | **~37 min** | **yes** | Result 3 certification table |
+| `job6b_pc1_diagnostics` | seconds | none | Result 3 PC1 diagnostics |
+| `job7_column_order` | ~2 s | **yes — a 14.3 MB GEO download** (`--expr` is required and the file is NOT deposited; see §1b) | Methods column-order test |
+
+**Revision-analyses total ≈ 15.5 hours** for the recorded jobs (excluding the superseded
+`job2` and the four unrecorded ones). Three jobs each exceed 4½ hours. Nothing here is
+needed to *use* the screen — these are characterisation sweeps.
+
+`job1c` / `job1d` / `job1e` require **R ≥ 4 with the CRAN `sigclust` package**; `job4`
+requires `statsmodels`. Each fails loudly with a clear message if its dependency is
+absent, rather than degrading silently.
 
 > **Do not run the cBioPortal packages concurrently.** Two large `molecular-data/fetch`
 > POSTs in parallel throttle each other badly — measured here, two jobs that each finish
@@ -112,13 +152,24 @@ disagreements. Use this table.
 | Result 4 flagship stats | `flagship_stats` | **byte-identical** | reads a deposited partition |
 | Result 4 autism arm | `results/autism_subgroup` | **byte-identical** | reads the deposited gene matrix |
 | large-N calibration | `gtex_brain` | **byte-identical** | reads deposited pathway scores |
-| Result 1 calibration | `gate_calibration` | **conclusion** | live cBioPortal; data may drift |
+| Result 1 calibration | `gate_calibration` | **offline** via `--cache-in` (byte-identity unconfirmed); **conclusion** on a live fetch | replays deposited `results/cached_inputs/`; live cBioPortal data may drift |
 | Result 3 cancer | `cancer_r38` | **conclusion** (in practice exact, except the two bootstrap ARIs) | live cBioPortal; DL baselines vary across torch releases, but not at the pinned version |
 | Gate 7 somatic | `tcga_crc` | **conclusion** | live cBioPortal |
-| scoping count | `psychiatric_meta` | **byte-identical** offline | count recomputable from the deposited TSV |
+| scoping count | `psychiatric_meta` | **conclusion** — NOT an offline reproduction | scripts query live NCBI E-utilities + recount3; only the headline count is re-derivable, by summing the deposited TSV, which is not regenerating the package |
 
-**"Byte-identical"** means `sha256` of your result JSON equals the deposited one. Six
-packages meet this and were verified from a clean room. If one of them differs, that is a
+**"Byte-identical"** means `sha256` of your result JSON equals the deposited one. **Five**
+packages are verified to meet this from a clean room; a sixth, `gate_calibration`, ships an
+offline `--cache-in` replay whose byte-identity is not independently confirmed.
+
+> **Package count, settled 2026-08-06.** **Six** packages ship an offline path:
+> `gate_ablation`, `benchmark_audit`, `flagship_stats`, `autism_subgroup`, `gtex_brain`,
+> and `gate_calibration` (via `--cache-in`, replaying `results/cached_inputs/`). Five are
+> verified byte-identical; `gate_calibration`'s offline path is verified but its
+> byte-identity is not independently confirmed. **`psychiatric_meta` is NOT one of them** —
+> its scripts query live NCBI E-utilities and the recount3 index, so only its headline
+> count is re-derivable, by summing a deposited TSV. Earlier counts of "seven" and of
+> "five" were both wrong.
+ If one of them differs, that is a
 genuine finding — report it.
 
 **"Conclusion"** means these must hold; the digits need not:
@@ -131,8 +182,9 @@ genuine finding — report it.
   bar; recovery is **metric-dependent**. Certified 2026-07-30: all four k-way ARIs and
   all PAM50 enrichments re-derived **exactly**, DEC and VAE-GMM included, so with the
   pinned torch this package is in practice much tighter than its "conclusion" bar. The
-  two bootstrap-stability ARIs are the exception — they move by up to 0.008 between runs
-  (0.399/0.436 vs 0.408/0.435). Quote them to two decimals.
+  two bootstrap-stability ARIs are the exception — they move by up to 0.016 between deposited runs (0.3918/0.4338 vs 0.4076/0.4350). The cause was
+  unseeded per-bootstrap GMM initialisation at the three cancer_r38 call sites, since fixed; a
+  re-run will give one stable value differing slightly from both deposited figures.
 - `tcga_crc` — the somatic association is **detected** (BRAF-V600E/KRAS/MSI strata), with
   the expected-count guard not tripped.
 
@@ -158,7 +210,8 @@ genuine finding — report it.
    not match byte-for-byte, stop — something is wrong with the environment, and the long
    jobs will not fix it.
 3. Launch `ablation_honest` and `gtex_brain` detached.
-4. Run the three network packages; check `provenance.fetch.matrix_sha256` against the
+4. Run the network packages; **note that `provenance.fetch.matrix_sha256` is absent from the
+   deposited results** (see §1b), so compare the post-filter shape and study id against the
    deposited value before comparing any number.
 5. Run the separation sweep last, if at all — it is the longest job and supports a
    supporting figure, not a headline.

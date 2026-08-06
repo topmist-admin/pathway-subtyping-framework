@@ -9,7 +9,9 @@ criticises elsewhere.
 
 It also matters that these be comparable. An earlier version of that table placed the LUAD
 control alongside LGG and BRCA as if "computed identically"; it is not — the deposited LUAD
-control is a **9-pathway immune panel** while LGG and BRCA are scored on 50-pathway matrices,
+control is an **8-pathway immune panel plus a derived `__immune_score__` aggregate** (this
+script selects all numeric columns and so reports 9) while LGG and BRCA are scored on
+50-pathway matrices,
 so its PC1 is a different object. This job therefore records the feature count for every row,
 so a reader can see which comparisons are like-for-like rather than having to trust a caption.
 
@@ -57,6 +59,18 @@ def main():
     ap.add_argument("--seed", type=int, default=42)
     a = ap.parse_args()
 
+    # Fail closed on a missing `diptest` extra. `dip_of` returns NaN when the optional
+    # dependency is absent; every downstream use here is a reported diagnostic, so a NaN
+    # would be written straight into the deposit as a bare `NaN` token — which is not valid
+    # JSON (RFC 8259) and is silently accepted only by Python's own parser. Probe once, up
+    # front, so we never emit a partial file.
+    _probe = dip_of(np.linspace(0.0, 1.0, 32))["p"]
+    if not np.isfinite(_probe):
+        raise SystemExit(
+            "Hartigan dip unavailable (install the `diptest` extra: pip install "
+            "'pathway-subtyping[diptest]'). Refusing to run: this job reports dip p-values "
+            "as evidence, and NaN would be written to the output as invalid JSON.")
+
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     with open(a.out, "w") as fh:
         w = lambda o: (fh.write(json.dumps(o) + "\n"), fh.flush())
@@ -88,7 +102,9 @@ def main():
         w(dict(record="comparability_note",
                text="TCGA-LGG (50 features) and TCGA-BRCA (50 features, see job6) are on a "
                     "common basis and may be compared. The deposited TCGA-LUAD control is a "
-                    "9-pathway immune panel; its PC1 is a different object and its gap must "
+                    "8-pathway immune panel plus a derived __immune_score__ aggregate (this script "
+                    "selects all numeric columns and so reports 9); its PC1 is a "
+                    "different object and its gap must "
                     "not be placed in the same column."))
         w(dict(record="done"))
     print(f"\nJOB6b done -> {a.out}")

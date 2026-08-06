@@ -77,7 +77,7 @@ python scripts/double_dissociation_interaction_test.py --data-dir <DATA>
 
 ## 4. The region-coding trap (must get right)
 
-GSE80655's derived `brain_region` field can carry a **corrupted 2-level coding** (nAcc merged into "ACC"). The manuscript headline **requires the 3-level `brain region` (AnCg/DLPFC/nAcc)** re-derived from the original GEO metadata. On the 2-level coding the same partition gives only χ²=34.6, V=0.50 (wrong). `region_crosstab_from_labels.py` warns if it sees <3 levels.
+GSE80655's derived `brain_region` field can carry a **corrupted 2-level coding** (nAcc merged into "ACC"). The manuscript headline **requires the 3-level `brain region` (AnCg/DLPFC/nAcc)** re-derived from the original GEO metadata. On the 2-level coding the same partition gives only χ²=34.61, **V=0.4954 uncorrected / 0.4825 Bergsma-corrected** (wrong). The manuscript quotes the Bergsma-corrected 0.48 against the 3-level Bergsma-corrected 0.660, so that comparison is like-for-like. Both codings are now **computed** by `region_crosstab_from_labels.py` from the same deposited labels by the same estimator in the same run — before 2026-08-06 only the uncorrected 0.50 was recorded anywhere, so the corrected figure the paper actually quotes had no source a referee could check. The script also warns if it sees <3 levels.
 
 ## 4b. §3.1 scoring: mean-z on the microarray, not ssGSEA (must get right)
 
@@ -91,8 +91,8 @@ The §3.1 autism analysis scores **GSE28521 (Illumina microarray)** against the 
 ## ⚠️ Known reproducibility gaps (report these, don't paper over them)
 
 1. ~~`scz_within_region_marker_panel.py` consumes processed intermediates~~ **RESOLVED 2026-07-11**: the script now builds everything from **raw public GSE80655** (Ensembl expression + covariates incl. brain pH from the series matrix) — no processed intermediates. §3.2 per-region SST/GABA numbers are reproducible from raw public data (SST AnCg *d* = −1.38, DLPFC −1.54; pan-GABA AnCg −1.20; PVALB n.s.; nAcc null).
-2. **The deposited partition labels** (`data/partition/sample_metadata_with_subtypes.csv`) are shipped in this package for convenience, but the manuscript's "Data and Code Availability" implies they are publicly deposited — confirm they (and this whole package) are actually published to Codeberg/Zenodo before the paper is posted, or a reader cannot reproduce Fig 1.
-3. This package is not yet a public deposit — it is the pre-post reproduction harness. Publishing it (Codeberg subfolder + Zenodo DOI, cited from the paper) is a manuscript-finalization step.
+2. **The deposited partition labels** (`data/partition/sample_metadata_with_subtypes.csv`) are shipped in this package for convenience, but the manuscript's "Data and Code Availability" implies they are publicly deposited — confirm they (and this whole package) are actually published to Codeberg/Zenodo before the paper is posted — ⚠️ superseded: the deposit build is what ships in this archive, or a reader cannot reproduce Fig 1.
+3. ⚠️ SUPERSEDED: this package IS the public deposit build. (Historical note: this line predates the deposit and read 'This package is not yet a public deposit' — it is the pre-post reproduction harness. Publishing it (Codeberg subfolder + Zenodo DOI, cited from the paper) is a manuscript-finalization step.
 
 ## Provenance
 Every script writes intermediate CSVs + (where applicable) a `provenance.json` with input SHA-256s, seed (20260708), and package versions. Keep these with your reproduction memo.

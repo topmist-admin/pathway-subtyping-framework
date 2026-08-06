@@ -40,7 +40,7 @@ Set `PSF_REPO` to override root detection. Two jobs have extra requirements — 
 | **`job4_donor_continuous_null.py`** | donor-level diagnosis association without the degenerate null | deposited V null has **exactly 3 atoms**; 44/48 donors split; **GEE p=0.067** |
 | **`job5_heteroscedastic_fpr_confirmation.py`** | is the heteroscedastic false certification real? | **0.15 / 0.80 / 1.00** at n=120/300/600 vs matched control 0.00 / 0.00 / 0.05 |
 | **`job6_brca_certification_stats.py`** | the TCGA-BRCA certification statistics | k=5: obs 0.4275, p95 0.2458, **p=0.0050 (floor)**; k=2: obs 0.8852, p95 0.6607, **p=0.0050** |
-| **`job6b_pc1_diagnostics.py`** | PC1 dip + standardised gap for the two cached controls, **with the feature count recorded per cohort** | TCGA-LGG (50 features) dip 0.9963, gap **1.359**; TCGA-LUAD (9-pathway immune panel) dip 0.9739, gap 1.887 — **not on a common basis with LGG/BRCA and not comparable**. Added 2026-08-05; the LGG gap was previously quoted with no deposited source. |
+| **`job6b_pc1_diagnostics.py`** | PC1 dip + standardised gap for the two cached controls, **with the feature count recorded per cohort** | TCGA-LGG (50 features) dip 0.9963, gap **1.359**; TCGA-LUAD (**8-pathway immune panel plus a derived `__immune_score__` aggregate**; a script selecting all numeric columns therefore reports 9) dip 0.9739, gap 1.887 — **not on a common basis with LGG/BRCA and not comparable**. Added 2026-08-05; the LGG gap was previously quoted with no deposited source. |
 | **`job7_column_order_invariance.py`** | does gene column order change Result 4? | partition **ARI 1.000** under canonical sort *and* reversal; stability 0.9540 / 0.9538 / 0.9535 |
 
 **The two superseded jobs are kept on purpose.** Both produced clean-looking, reportable
@@ -49,7 +49,7 @@ them would remove the evidence that the checks did their job.
 
 ## Dependencies beyond `requirements.txt`
 
-- **`job1c` and `job1d` require R ≥ 4 with the CRAN `sigclust` package**
+- **`job1c`, `job1d` and `job1e` require R ≥ 4 with the CRAN `sigclust` package**
   (`install.packages("sigclust")`). This is the only non-Python dependency in the paper. They
   shell out via `Rscript --vanilla` and skip cleanly with a printed error if R is absent.
 - **`job3b` and `job5` require `diptest`**, which is the `discreteness` extra rather than a
@@ -87,3 +87,10 @@ them would remove the evidence that the checks did their job.
 - `job2b` asserts parity against the deposited separation sweep per-δ and writes `parity_ok`
   into its output. **If `parity_ok` is false, nothing else in that file is usable** — that is
   the standard job 2 failed.
+
+> ⚠️ **Known stale flag in `job6_brca_certification.jsonl`.** Both `gate` records carry
+> `"p_at_floor": false` while the manuscript states both p-values sit at the floor. The
+> manuscript is correct: the true p is 1/201 = 0.0049751, stored rounded to 0.005, and the
+> old comparison tested the rounded value against the unrounded floor. `job6_brca_certification_stats.py`
+> now compares at matched precision, but the deposited JSONL predates that fix and was not
+> regenerated because job6 requires a live cBioPortal fetch.

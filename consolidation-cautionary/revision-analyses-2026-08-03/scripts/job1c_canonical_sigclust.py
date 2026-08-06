@@ -41,10 +41,11 @@ R_SCRIPT = r"""
 suppressMessages(library(sigclust))
 args <- commandArgs(trailingOnly=TRUE)
 csv <- args[1]; out <- args[2]; nsim <- as.integer(args[3]); seed <- as.integer(args[4])
+nrep <- if (length(args) >= 5) as.integer(args[5]) else 1
 x <- as.matrix(read.csv(csv, header=FALSE))
 set.seed(seed)
 # icovest=2 : soft-thresholded covariance estimate, Liu et al.'s HDLSS recommendation
-r <- sigclust(x, nsim=nsim, labflag=0, icovest=2)
+r <- sigclust(x, nsim=nsim, nrep=nrep, labflag=0, icovest=2)
 cat(sprintf("%.6f %.6f\n", r@pval, r@xcindex), file=out)
 """
 
@@ -67,6 +68,8 @@ def main():
     ap.add_argument("--p", type=int, default=50)
     ap.add_argument("--sep", type=float, default=3.0)
     ap.add_argument("--nsim", type=int, default=100)
+    ap.add_argument("--nrep", type=int, default=1,
+                    help="k-means restarts inside sigclust (CRAN default 1; use 100 for a converged comparison)")
     ap.add_argument("--seed", type=int, default=42)
     a = ap.parse_args()
 
@@ -91,7 +94,7 @@ def main():
                     pd.DataFrame(scores.values).to_csv(csv, header=False, index=False)
                     txt = os.path.join(td, "o.txt")
                     r = subprocess.run(["Rscript", "--vanilla", rs, csv, txt,
-                                        str(a.nsim), str(seed)],
+                                        str(a.nsim), str(seed), str(a.nrep)],
                                        capture_output=True, text=True)
                     if r.returncode != 0 or not os.path.exists(txt):
                         print(f"  R FAILED {cond} rep{rep}: {r.stderr.strip()[:200]}",
